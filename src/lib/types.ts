@@ -18,6 +18,7 @@ export interface Guest {
   imageUrl?: string;
   socialLinks: SocialLinks;
   notes?: string;
+  status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;
   updatedAt: string;
 }
