@@ -31,8 +31,10 @@ export interface Topic {
 
 export interface Episode {
   id: string;
+  episodeNumber: number;
   title: string;
-  scheduled: string;
+  scheduled: string;       // Recording session date and time
+  publishDate?: string;    // Date the episode will be published
   status: 'scheduled' | 'recorded' | 'published';
   guestIds: string[];
   introduction: string;

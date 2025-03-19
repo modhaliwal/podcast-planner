@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight, CalendarDays, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,12 +19,21 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
     episode.guestIds.includes(guest.id)
   );
   
-  // Format the scheduled date
-  const formattedDate = new Date(episode.scheduled).toLocaleDateString(undefined, {
+  // Format the recording date
+  const formattedRecordingDate = new Date(episode.scheduled).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
   });
+  
+  // Format the publish date if it exists
+  const formattedPublishDate = episode.publishDate 
+    ? new Date(episode.publishDate).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : null;
   
   return (
     <Link to={`/episodes/${episode.id}`}>
@@ -52,10 +61,26 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
                 }>
                   {episode.status}
                 </Badge>
-                <span className="text-sm text-muted-foreground">{formattedDate}</span>
+                <Badge variant="outline" className="font-mono">
+                  Ep #{episode.episodeNumber}
+                </Badge>
               </div>
               
               <h3 className="font-medium text-lg truncate mb-2">{episode.title}</h3>
+              
+              <div className="flex flex-col gap-1 mb-3">
+                <div className="flex items-center">
+                  <Clock className="h-3 w-3 text-muted-foreground mr-1" />
+                  <span className="text-xs text-muted-foreground">Recording: {formattedRecordingDate}</span>
+                </div>
+                
+                {formattedPublishDate && (
+                  <div className="flex items-center">
+                    <CalendarDays className="h-3 w-3 text-muted-foreground mr-1" />
+                    <span className="text-xs text-muted-foreground">Publish: {formattedPublishDate}</span>
+                  </div>
+                )}
+              </div>
               
               <div className="flex items-center -space-x-2 mb-3">
                 {episodeGuests.slice(0, 3).map((guest, index) => {

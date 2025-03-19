@@ -58,8 +58,10 @@ export const guests: Guest[] = [
 export const episodes: Episode[] = [
   {
     id: '1',
+    episodeNumber: 1,
     title: 'The Ethics of Artificial Intelligence',
     scheduled: '2023-04-25T15:00:00Z',
+    publishDate: '2023-05-02T12:00:00Z',
     status: 'published',
     guestIds: ['1'],
     introduction: 'In this episode, we explore the ethical considerations surrounding artificial intelligence with Dr. Jane Smith, a leading researcher in AI ethics.',
@@ -90,8 +92,10 @@ export const episodes: Episode[] = [
   },
   {
     id: '2',
+    episodeNumber: 2,
     title: 'Entrepreneurship in Blockchain Technology',
     scheduled: '2023-05-18T14:00:00Z',
+    publishDate: '2023-05-25T12:00:00Z',
     status: 'recorded',
     guestIds: ['2'],
     introduction: 'Join us for an exciting conversation with Michael Johnson, a serial entrepreneur who has founded multiple successful blockchain startups.',
@@ -122,8 +126,10 @@ export const episodes: Episode[] = [
   },
   {
     id: '3',
+    episodeNumber: 3,
     title: 'Quantum Computing: The Next Frontier',
     scheduled: '2023-06-10T13:00:00Z',
+    publishDate: '2023-06-17T12:00:00Z',
     status: 'scheduled',
     guestIds: ['3'],
     introduction: 'Dr. Lisa Chen joins us to demystify quantum computing and discuss its potential to solve previously intractable problems in various fields.',
@@ -150,8 +156,10 @@ export const episodes: Episode[] = [
   },
   {
     id: '4',
+    episodeNumber: 4,
     title: 'Intersection of AI and Quantum Computing',
     scheduled: '2023-07-15T16:00:00Z',
+    publishDate: '2023-07-22T12:00:00Z',
     status: 'scheduled',
     guestIds: ['1', '3'],
     introduction: 'In this special episode, we bring together Dr. Jane Smith and Dr. Lisa Chen to explore how artificial intelligence and quantum computing might converge in the coming years.',

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronLeft, FileAudio, FileText, Film, Headphones, Link2, PlayCircle } from 'lucide-react';
+import { Calendar, ChevronLeft, FileAudio, FileText, Film, Headphones, Link2, PlayCircle, CalendarDays, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest, Topic } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -25,19 +25,28 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
     episode.guestIds.includes(guest.id)
   );
   
-  // Format the scheduled date
-  const formattedDate = new Date(episode.scheduled).toLocaleDateString(undefined, {
+  // Format the recording date
+  const formattedRecordingDate = new Date(episode.scheduled).toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
   
-  // Format the scheduled time
-  const formattedTime = new Date(episode.scheduled).toLocaleTimeString(undefined, {
+  // Format the recording time
+  const formattedRecordingTime = new Date(episode.scheduled).toLocaleTimeString(undefined, {
     hour: '2-digit',
     minute: '2-digit'
   });
+  
+  // Format the publish date if it exists
+  const formattedPublishDate = episode.publishDate 
+    ? new Date(episode.publishDate).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : null;
   
   return (
     <div className={cn("space-y-6", className)}>
@@ -73,14 +82,38 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                     {episode.status}
                   </Badge>
                   
-                  <span className="text-sm text-muted-foreground">
-                    {formattedDate} at {formattedTime}
-                  </span>
+                  <Badge variant="outline" className="font-mono">
+                    Episode #{episode.episodeNumber}
+                  </Badge>
                 </div>
                 
                 <h1 className="text-2xl font-semibold mb-4">{episode.title}</h1>
                 
                 <div className="space-y-4">
+                  {/* Recording Date and Time */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm font-medium text-muted-foreground">Recording:</span>
+                    </div>
+                    <span className="text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded">
+                      {formattedRecordingDate} at {formattedRecordingTime}
+                    </span>
+                  </div>
+                  
+                  {/* Publish Date */}
+                  {formattedPublishDate && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+                      <div className="flex items-center">
+                        <CalendarDays className="h-4 w-4 text-muted-foreground mr-2" />
+                        <span className="text-sm font-medium text-muted-foreground">Publish Date:</span>
+                      </div>
+                      <span className="text-sm bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300 px-2 py-1 rounded">
+                        {formattedPublishDate}
+                      </span>
+                    </div>
+                  )}
+                  
                   <div>
                     <h2 className="text-sm font-medium text-muted-foreground mb-2">Guests</h2>
                     <div className="flex flex-wrap gap-2">

@@ -33,7 +33,10 @@ const EpisodeView = () => {
       <div className="page-container">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
-            <h1 className="section-title truncate">{episode.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="section-title truncate">{episode.title}</h1>
+              <span className="text-sm font-mono bg-muted px-2 py-1 rounded">#{episode.episodeNumber}</span>
+            </div>
             <p className="section-subtitle">
               {new Date(episode.scheduled).toLocaleDateString(undefined, {
                 year: 'numeric',
