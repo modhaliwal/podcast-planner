@@ -9,17 +9,26 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { CalendarIcon, MicIcon, PlusIcon, SearchIcon, RefreshCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Episodes = () => {
   const { episodes, guests, refreshEpisodes, isDataLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   
   useEffect(() => {
-    if (episodes.length === 0 && !isDataLoading) {
+    console.log("Episodes component mounted or updated");
+    console.log("Number of episodes:", episodes.length);
+    console.log("Loading state:", isDataLoading);
+    
+    // Only attempt to refresh episodes once on initial load
+    if (!initialLoadDone && !isDataLoading) {
+      console.log("Initial load, triggering refresh once");
       refreshEpisodes();
+      setInitialLoadDone(true);
     }
-  }, [episodes.length, isDataLoading, refreshEpisodes]);
+  }, [episodes.length, isDataLoading, refreshEpisodes, initialLoadDone]);
   
   // Filter episodes based on search query and status
   const filteredEpisodes = episodes.filter(episode => {
@@ -82,9 +91,7 @@ const Episodes = () => {
         </div>
         
         {isDataLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
+          <LoadingIndicator message="Loading episodes..." />
         ) : sortedEpisodes.length > 0 ? (
           <div className="space-y-4">
             {sortedEpisodes.map(episode => (
