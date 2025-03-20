@@ -8,21 +8,42 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarIcon, Plus, Trash, ArrowRight } from 'lucide-react';
+import { CalendarIcon, Plus, Trash, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 interface EpisodeFormData {
   episodeNumber: number;
   scheduled: Date;
 }
 
+// Helper function to generate time options
+const generateTimeOptions = () => {
+  const options = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const hourFormatted = hour.toString().padStart(2, '0');
+      const minuteFormatted = minute.toString().padStart(2, '0');
+      options.push(`${hourFormatted}:${minuteFormatted}`);
+    }
+  }
+  return options;
+};
+
 const CreateEpisode = () => {
   const navigate = useNavigate();
   const [episodes, setEpisodes] = useState<EpisodeFormData[]>([
     { episodeNumber: 1, scheduled: new Date() }
   ]);
+  const timeOptions = generateTimeOptions();
 
   const addEpisode = () => {
     const lastEpisode = episodes[episodes.length - 1];
@@ -52,6 +73,16 @@ const CreateEpisode = () => {
       [field]: value
     };
     setEpisodes(updatedEpisodes);
+  };
+
+  const updateTime = (index: number, timeString: string) => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const updatedDate = new Date(episodes[index].scheduled);
+    updatedDate.setHours(hours);
+    updatedDate.setMinutes(minutes);
+    updatedDate.setSeconds(0);
+    
+    updateEpisode(index, 'scheduled', updatedDate);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -98,14 +129,15 @@ const CreateEpisode = () => {
             <CardContent>
               <div className="space-y-4">
                 {/* Header row with field labels */}
-                <div className="grid grid-cols-2 gap-4 font-medium text-sm mb-1">
+                <div className="grid grid-cols-3 gap-4 font-medium text-sm mb-1">
                   <Label>Episode Number</Label>
-                  <Label>Recording Date & Time</Label>
+                  <Label>Recording Date</Label>
+                  <Label>Recording Time</Label>
                 </div>
                 
                 {/* Episode rows */}
                 {episodes.map((episode, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-4 items-center">
+                  <div key={index} className="grid grid-cols-3 gap-4 items-center">
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
@@ -152,6 +184,26 @@ const CreateEpisode = () => {
                         />
                       </PopoverContent>
                     </Popover>
+                    <Select
+                      value={format(episode.scheduled, 'HH:mm')}
+                      onValueChange={(value) => updateTime(index, value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select time">
+                          <div className="flex items-center">
+                            <Clock className="mr-2 h-4 w-4" />
+                            {format(episode.scheduled, 'HH:mm')}
+                          </div>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 ))}
                 
