@@ -59,23 +59,18 @@ export function CombinedBasicInfoSection({ form }: CombinedBasicInfoSectionProps
     form.setValue('coverArt', previewUrl, { shouldValidate: true });
   };
 
-  const resetImage = () => {
+  const removeImage = () => {
     // Revoke the temporary blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
     
-    // Reset to initial image if it's not a blob URL
-    if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
-      setImagePreview(currentCoverArt);
-      form.setValue('coverArt', currentCoverArt, { shouldValidate: true });
-    } else {
-      setImagePreview(undefined);
-      form.setValue('coverArt', undefined, { shouldValidate: true });
-    }
+    // Clear the image preview and form value
+    setImagePreview(undefined);
+    form.setValue('coverArt', undefined, { shouldValidate: true });
     
-    toast.info("Cover art selection reset");
+    toast.info("Cover art removed");
   };
 
   useEffect(() => {
@@ -213,7 +208,7 @@ export function CombinedBasicInfoSection({ form }: CombinedBasicInfoSectionProps
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={resetImage}
+                      onClick={removeImage}
                     >
                       <Trash className="h-4 w-4 mr-1" />
                       Remove

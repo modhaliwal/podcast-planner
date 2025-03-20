@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -92,10 +93,13 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           toast.error("Error uploading cover art");
           coverArt = undefined;
         }
-      } else if (coverArt !== originalCoverArt && originalCoverArt && !coverArt) {
-        // Cover art was removed and we need to delete the old one
-        console.log("Deleting old cover art on removal:", originalCoverArt);
-        await deleteImage(originalCoverArt);
+      } else if (coverArt !== originalCoverArt) {
+        // Cover art was changed or removed and we need to delete the old one
+        if (originalCoverArt && coverArt === undefined) {
+          console.log("Deleting old cover art on removal:", originalCoverArt);
+          await deleteImage(originalCoverArt);
+          toast.success("Cover art removed successfully");
+        }
       }
       
       // Step 1: Update the episode
