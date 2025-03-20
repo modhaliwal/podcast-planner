@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
@@ -140,10 +139,8 @@ const CreateEpisode = () => {
     e.preventDefault();
     
     if (!user) {
-      toast({
-        title: "Authentication Error",
+      toast("Authentication Error", {
         description: "You must be logged in to create episodes",
-        variant: "destructive",
       });
       return;
     }
@@ -151,10 +148,8 @@ const CreateEpisode = () => {
     // Validation
     const hasErrors = episodes.some(ep => !ep.episodeNumber || !ep.scheduled);
     if (hasErrors) {
-      toast({
-        title: "Validation Error",
+      toast("Validation Error", {
         description: "All episodes must have a number and recording date",
-        variant: "destructive",
       });
       return;
     }
@@ -183,18 +178,15 @@ const CreateEpisode = () => {
       // Refresh episodes list
       await refreshEpisodes();
       
-      toast({
-        title: "Success!",
+      toast("Success!", {
         description: `Created ${episodes.length} new episodes`,
       });
       
       // Navigate back to episodes list
       navigate('/episodes');
     } catch (error: any) {
-      toast({
-        title: "Error Creating Episodes",
+      toast("Error Creating Episodes", {
         description: error.message || "An unexpected error occurred",
-        variant: "destructive",
       });
       console.error("Error creating episodes:", error);
     } finally {
