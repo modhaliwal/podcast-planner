@@ -66,62 +66,76 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Episode Cover Art</FormLabel>
-              <div className="mt-2 space-y-4">
-                <div className="max-w-[300px] mx-auto">
-                  {previewUrl ? (
-                    <div className="relative rounded-md overflow-hidden border border-border">
-                      <AspectRatio ratio={1}>
-                        <img 
-                          src={previewUrl} 
-                          alt="Cover art preview" 
-                          className="object-cover w-full h-full"
-                        />
-                      </AspectRatio>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                        onClick={removeCoverArt}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="rounded-md overflow-hidden border border-border bg-muted">
-                      <AspectRatio ratio={1}>
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <Image className="h-12 w-12 mb-2 opacity-40" />
-                          <span className="text-sm">No cover art</span>
-                          <span className="text-xs mt-1">Recommended: 1400×1400 px</span>
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="flex-1 order-2 md:order-1">
+                  <div className="flex flex-col space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Upload a square image for your episode's cover art. This will be displayed in podcast directories and players.
+                    </p>
+                    <p className="text-sm font-medium">Requirements:</p>
+                    <ul className="text-xs text-muted-foreground space-y-1 list-disc pl-4">
+                      <li>Recommended size: 1400×1400 pixels</li>
+                      <li>Maximum size: 5MB</li>
+                      <li>Formats: JPG, PNG, GIF</li>
+                      <li>Square aspect ratio (1:1)</li>
+                    </ul>
+                    
+                    <div className="mt-4">
+                      <FormControl>
+                        <div className="flex flex-col">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="relative overflow-hidden w-full md:w-auto"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            {previewUrl ? "Change Cover Art" : "Upload Cover Art"}
+                            <Input
+                              type="file"
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                            />
+                          </Button>
                         </div>
-                      </AspectRatio>
+                      </FormControl>
                     </div>
-                  )}
+                  </div>
                 </div>
                 
-                <div className="flex justify-center mt-4">
-                  <FormControl>
-                    <div className="flex flex-col items-center">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="relative overflow-hidden"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {previewUrl ? "Change Cover Art" : "Upload Cover Art"}
-                        <Input
-                          type="file"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                        />
-                      </Button>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Maximum size: 5MB. Formats: JPG, PNG, GIF.
-                      </p>
-                    </div>
-                  </FormControl>
+                <div className="w-full md:w-auto order-1 md:order-2">
+                  <div className="max-w-[240px] mx-auto md:mx-0 md:ml-auto">
+                    {previewUrl ? (
+                      <div className="relative rounded-md overflow-hidden border border-border">
+                        <AspectRatio ratio={1}>
+                          <img 
+                            src={previewUrl} 
+                            alt="Cover art preview" 
+                            className="object-cover w-full h-full"
+                          />
+                        </AspectRatio>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                          onClick={removeCoverArt}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="rounded-md overflow-hidden border border-border bg-muted">
+                        <AspectRatio ratio={1}>
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <Image className="h-12 w-12 mb-2 opacity-40" />
+                            <span className="text-sm">No cover art</span>
+                            <span className="text-xs mt-1">Recommended: 1400×1400 px</span>
+                          </div>
+                        </AspectRatio>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <FormMessage />

@@ -38,10 +38,21 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
         <Card>
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Episode Details */}
+              <div className="md:col-span-2 order-2 md:order-1">
+                <EpisodeStatusHeader episode={episode} />
+                
+                <div className="mt-6 space-y-4">
+                  <EpisodeGuests guests={episodeGuests} />
+                  
+                  <EpisodeRecordingLinks episode={episode} />
+                </div>
+              </div>
+              
               {/* Cover Art */}
-              <div className="md:col-span-1">
+              <div className="md:col-span-1 order-1 md:order-2">
                 {episode.coverArt ? (
-                  <div className="rounded-md overflow-hidden border border-border shadow-sm">
+                  <div className="rounded-md overflow-hidden border border-border shadow-sm max-w-[240px] mx-auto md:ml-auto md:mr-0">
                     <AspectRatio ratio={1}>
                       <img 
                         src={episode.coverArt} 
@@ -51,7 +62,7 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                     </AspectRatio>
                   </div>
                 ) : (
-                  <div className="rounded-md overflow-hidden border border-border shadow-sm bg-muted flex items-center justify-center">
+                  <div className="rounded-md overflow-hidden border border-border shadow-sm bg-muted flex items-center justify-center max-w-[240px] mx-auto md:ml-auto md:mr-0">
                     <AspectRatio ratio={1}>
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
                         <Image className="h-12 w-12 mb-2 opacity-40" />
@@ -60,17 +71,6 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                     </AspectRatio>
                   </div>
                 )}
-              </div>
-              
-              {/* Episode Details */}
-              <div className="md:col-span-2">
-                <EpisodeStatusHeader episode={episode} />
-                
-                <div className="mt-6 space-y-4">
-                  <EpisodeGuests guests={episodeGuests} />
-                  
-                  <EpisodeRecordingLinks episode={episode} />
-                </div>
               </div>
             </div>
           </CardContent>
