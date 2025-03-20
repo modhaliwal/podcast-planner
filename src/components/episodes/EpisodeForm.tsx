@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { CalendarIcon, PlusCircle, Trash } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Episode, Guest, Topic } from '@/lib/types';
+import { Episode, Guest } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,6 +38,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { toast } from 'sonner';
 
 interface EpisodeFormProps {
@@ -53,14 +55,13 @@ const episodeFormSchema = z.object({
   status: z.enum(["scheduled", "recorded", "published"]),
   scheduled: z.date(),
   publishDate: z.date().optional().nullable(),
-  guestIds: z.array(z.string()).optional(),
+  guestIds: z.array(z.string()).min(1, "Select at least one guest"),
 });
 
 type EpisodeFormValues = z.infer<typeof episodeFormSchema>;
 
 export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const navigate = useNavigate();
-  const [topics, setTopics] = useState<Topic[]>(episode.topics || []);
   
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
@@ -79,34 +80,9 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const onSubmit = (data: EpisodeFormValues) => {
     // In a real app, this would send the data to an API
     console.log("Form submitted:", data);
-    console.log("Topics:", topics);
     
     toast.success("Episode updated successfully");
     navigate(`/episodes/${episode.id}`);
-  };
-  
-  const addTopic = () => {
-    const newTopic: Topic = {
-      id: `topic-${Date.now()}`,
-      title: '',
-      notes: '',
-    };
-    setTopics([...topics, newTopic]);
-  };
-  
-  const updateTopic = (index: number, field: keyof Topic, value: string) => {
-    const updatedTopics = [...topics];
-    updatedTopics[index] = {
-      ...updatedTopics[index],
-      [field]: value,
-    };
-    setTopics(updatedTopics);
-  };
-  
-  const removeTopic = (index: number) => {
-    const updatedTopics = [...topics];
-    updatedTopics.splice(index, 1);
-    setTopics(updatedTopics);
   };
   
   return (
@@ -276,26 +252,81 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Select Guests</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "all") {
+                          field.onChange(guests.map(guest => guest.id));
+                        } else {
+                          const currentValues = [...field.value || []];
+                          
+                          // Add or remove the value
+                          const valueIndex = currentValues.indexOf(value);
+                          if (valueIndex === -1) {
+                            // Add value if not already selected
+                            currentValues.push(value);
+                          } else {
+                            // Remove value if already selected
+                            currentValues.splice(valueIndex, 1);
+                          }
+                          
+                          field.onChange(currentValues);
+                        }
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select guests">
+                            {field.value?.length === 1 
+                              ? guests.find(g => g.id === field.value![0])?.name 
+                              : `${field.value?.length || 0} guests selected`}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {guests.map((guest) => (
+                          <SelectItem 
+                            key={guest.id} 
+                            value={guest.id}
+                            className={cn(
+                              "flex items-center",
+                              field.value?.includes(guest.id) && "bg-secondary"
+                            )}
+                          >
+                            <div className="flex items-center">
+                              {field.value?.includes(guest.id) && (
+                                <span className="mr-2">✓</span>
+                              )}
+                              {guest.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="all">Select All Guests</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {guests.map((guest) => (
-                        <Button
-                          key={guest.id}
-                          type="button"
-                          variant={field.value?.includes(guest.id) ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => {
-                            const currentValue = field.value || [];
-                            field.onChange(
-                              currentValue.includes(guest.id)
-                                ? currentValue.filter((id) => id !== guest.id)
-                                : [...currentValue, guest.id]
+                      {field.value && field.value.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {field.value.map((guestId) => {
+                            const guest = guests.find(g => g.id === guestId);
+                            return (
+                              <div key={guestId} className="flex items-center bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm">
+                                {guest?.name}
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 w-4 p-0 ml-2"
+                                  onClick={() => {
+                                    field.onChange(field.value?.filter(id => id !== guestId));
+                                  }}
+                                >
+                                  ×
+                                </Button>
+                              </div>
                             );
-                          }}
-                          className={field.value?.includes(guest.id) ? "bg-primary text-primary-foreground" : ""}
-                        >
-                          {guest.name}
-                        </Button>
-                      ))}
+                          })}
+                        </div>
+                      )}
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -334,79 +365,20 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
                   <FormItem>
                     <FormLabel>Episode Notes</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Enter episode notes" 
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                      <div className="min-h-[200px]">
+                        <ReactQuill 
+                          theme="snow" 
+                          value={field.value || ''} 
+                          onChange={field.onChange}
+                          placeholder="Enter episode notes"
+                          className="h-[200px] mb-12"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </CardContent>
-          </Card>
-          
-          <Card className="md:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Conversation Topics</CardTitle>
-              <Button 
-                type="button"
-                variant="outline" 
-                size="sm"
-                onClick={addTopic}
-              >
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Topic
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {topics.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No topics added yet. Click the button above to add one.
-                  </div>
-                ) : (
-                  topics.map((topic, index) => (
-                    <div key={topic.id} className="space-y-3 border-b pb-4 last:border-b-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium">Topic {index + 1}</h3>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeTopic(index)}
-                          className="h-8 w-8 p-0 text-destructive"
-                        >
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Remove topic</span>
-                        </Button>
-                      </div>
-                      
-                      <div className="grid gap-3">
-                        <div>
-                          <FormLabel>Topic Title</FormLabel>
-                          <Input
-                            value={topic.title}
-                            onChange={(e) => updateTopic(index, 'title', e.target.value)}
-                            placeholder="Enter topic title"
-                          />
-                        </div>
-                        
-                        <div>
-                          <FormLabel>Topic Notes</FormLabel>
-                          <Textarea
-                            value={topic.notes}
-                            onChange={(e) => updateTopic(index, 'notes', e.target.value)}
-                            placeholder="Enter topic notes"
-                            className="min-h-[80px]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
             </CardContent>
           </Card>
         </div>

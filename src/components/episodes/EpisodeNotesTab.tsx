@@ -14,7 +14,11 @@ export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
       </CardHeader>
       <CardContent>
         <div className="prose dark:prose-invert max-w-none">
-          <p className="whitespace-pre-line">{episode.notes || "No notes added yet"}</p>
+          {episode.notes ? (
+            <div dangerouslySetInnerHTML={{ __html: episode.notes }} />
+          ) : (
+            <p>No notes added yet</p>
+          )}
         </div>
       </CardContent>
     </Card>
