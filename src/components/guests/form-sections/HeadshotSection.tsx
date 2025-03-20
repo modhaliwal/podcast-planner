@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +58,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       setIsUploading(true);
       toast.info("Uploading image...");
       
+      // Ensure we always use the same bucket and folder
       const uploadedUrl = await uploadImage(file, 'podcast-planner', 'headshots');
       
       if (uploadedUrl) {

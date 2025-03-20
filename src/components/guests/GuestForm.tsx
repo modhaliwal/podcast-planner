@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -58,22 +57,27 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     try {
       // Handle image URL
       let imageUrl = guest.imageUrl;
+      let oldImageDeleted = false;
       
       // If we have a pre-uploaded image URL from HeadshotSection, use that
       if (uploadedImageUrl) {
         console.log("Using pre-uploaded image URL:", uploadedImageUrl);
         
         // If there was a previous image, try to delete it
-        if (imageUrl && !isBlobUrl(imageUrl)) {
-          await deleteImage(imageUrl);
+        if (imageUrl && !isBlobUrl(imageUrl) && uploadedImageUrl !== imageUrl) {
+          console.log("Deleting previous image:", imageUrl);
+          oldImageDeleted = await deleteImage(imageUrl);
+          console.log("Previous image deleted:", oldImageDeleted);
         }
         
         imageUrl = uploadedImageUrl;
       } else if (imageFile === null && guest.imageUrl) {
-        // User reset the image
+        // User reset the image (clicked delete button)
         if (!isBlobUrl(guest.imageUrl)) {
           // Only delete from storage if it's a real URL, not a blob
-          await deleteImage(guest.imageUrl);
+          console.log("Removing guest image completely:", guest.imageUrl);
+          oldImageDeleted = await deleteImage(guest.imageUrl);
+          console.log("Image deleted:", oldImageDeleted);
         }
         imageUrl = undefined;
       }
