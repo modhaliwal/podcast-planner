@@ -134,7 +134,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
             </CardContent>
           </Card>
           
-          {/* Personal Notes section moved here, below the profile card */}
+          {/* Personal Notes section with rich text display */}
           {guest.notes && (
             <Card className="mb-6">
               <CardHeader>
@@ -169,6 +169,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                 </CardContent>
               </Card>
               
+              {/* Background Research section with rich text display */}
               {guest.backgroundResearch && (
                 <Card className="mt-6">
                   <CardHeader>
@@ -182,8 +183,6 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                   </CardContent>
                 </Card>
               )}
-              
-              {/* Personal Notes moved to the left column */}
             </TabsContent>
             
             <TabsContent value="episodes" className="animate-fade-in">
