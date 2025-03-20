@@ -1,0 +1,137 @@
+
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Guest, SocialLinks } from '@/lib/types';
+
+export function useGuestData(guestId: string | undefined) {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [guest, setGuest] = useState<Guest | undefined>(undefined);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { user, refreshGuests } = useAuth();
+  
+  useEffect(() => {
+    const fetchGuest = async () => {
+      if (!guestId) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('guests')
+          .select('*')
+          .eq('id', guestId)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          // Transform the data to match our Guest interface
+          const formattedGuest: Guest = {
+            id: data.id,
+            name: data.name,
+            title: data.title,
+            company: data.company || undefined,
+            email: data.email || undefined,
+            phone: data.phone || undefined,
+            bio: data.bio,
+            imageUrl: data.image_url || undefined,
+            socialLinks: data.social_links as SocialLinks,
+            notes: data.notes || undefined,
+            backgroundResearch: data.background_research || undefined,
+            status: (data.status as Guest['status']) || 'potential',
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+          };
+          
+          setGuest(formattedGuest);
+        }
+      } catch (error: any) {
+        toast("Error", {
+          description: `Failed to fetch guest: ${error.message}`
+        });
+        console.error("Error fetching guest:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchGuest();
+  }, [guestId]);
+
+  const handleSave = async (updatedGuest: Guest) => {
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .update({
+          name: updatedGuest.name,
+          title: updatedGuest.title,
+          company: updatedGuest.company,
+          email: updatedGuest.email,
+          phone: updatedGuest.phone,
+          bio: updatedGuest.bio,
+          image_url: updatedGuest.imageUrl,
+          social_links: updatedGuest.socialLinks as any,
+          notes: updatedGuest.notes,
+          background_research: updatedGuest.backgroundResearch,
+          status: updatedGuest.status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', guestId);
+      
+      if (error) throw error;
+      
+      setGuest(updatedGuest);
+      setIsEditing(false);
+      await refreshGuests();
+      toast.success("Guest updated successfully");
+    } catch (error: any) {
+      toast("Error", {
+        description: `Failed to update guest: ${error.message}`
+      });
+      console.error("Error updating guest:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .delete()
+        .eq('id', guestId);
+      
+      if (error) throw error;
+      
+      // Close the dialog
+      setIsDeleteDialogOpen(false);
+      
+      // Show success message
+      toast.success("Guest deleted successfully");
+      
+      // Refresh guests list
+      await refreshGuests();
+      
+      // Redirect to guests list
+      navigate('/guests');
+    } catch (error: any) {
+      toast("Error", {
+        description: `Failed to delete guest: ${error.message}`
+      });
+      console.error("Error deleting guest:", error);
+    }
+  };
+
+  return {
+    isLoading,
+    guest,
+    isEditing,
+    isDeleteDialogOpen,
+    setIsEditing,
+    setIsDeleteDialogOpen,
+    handleSave,
+    handleDelete
+  };
+}
