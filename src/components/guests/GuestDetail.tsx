@@ -1,15 +1,14 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronLeft, ExternalLink, FileText, Globe, Instagram, Linkedin, Mail, Phone, Twitter, Youtube } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Guest, Episode } from '@/lib/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { GuestProfileCard } from './GuestProfileCard';
+import { GuestAboutSection } from './GuestAboutSection';
+import { GuestEpisodesList } from './GuestEpisodesList';
 
 interface GuestDetailProps {
   guest: Guest;
@@ -19,18 +18,6 @@ interface GuestDetailProps {
 
 export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
   const [activeTab, setActiveTab] = useState("info");
-  
-  // Get initials from name
-  const initials = guest.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase();
-  
-  // Filter episodes that include this guest
-  const guestEpisodes = episodes.filter(
-    episode => episode.guestIds.includes(guest.id)
-  );
   
   return (
     <div className={cn("space-y-6", className)}>
@@ -45,119 +32,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-1/3 lg:w-1/4">
-          <Card className="sticky top-28 mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-col items-center text-center">
-                {guest.imageUrl ? (
-                  <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
-                    <AspectRatio ratio={2/3} className="bg-muted">
-                      <img 
-                        src={guest.imageUrl} 
-                        alt={`${guest.name} headshot`}
-                        className="object-cover w-full h-full"
-                      />
-                    </AspectRatio>
-                  </div>
-                ) : (
-                  <Avatar className="h-24 w-24 border mb-4">
-                    <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-                  </Avatar>
-                )}
-                
-                <h2 className="text-xl font-semibold">{guest.name}</h2>
-                <p className="text-muted-foreground mb-1">{guest.title}</p>
-                {guest.company && (
-                  <p className="text-sm text-muted-foreground mb-4">{guest.company}</p>
-                )}
-                
-                <div className="flex flex-wrap justify-center gap-2 mb-6">
-                  {guest.socialLinks.twitter && (
-                    <a 
-                      href={guest.socialLinks.twitter} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="Twitter"
-                    >
-                      <Twitter className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.linkedin && (
-                    <a 
-                      href={guest.socialLinks.linkedin} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="LinkedIn"
-                    >
-                      <Linkedin className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.instagram && (
-                    <a 
-                      href={guest.socialLinks.instagram} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="Instagram"
-                    >
-                      <Instagram className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.youtube && (
-                    <a 
-                      href={guest.socialLinks.youtube} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="YouTube"
-                    >
-                      <Youtube className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.website && (
-                    <a 
-                      href={guest.socialLinks.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="Website"
-                    >
-                      <Globe className="h-4 w-4" />
-                    </a>
-                  )}
-                </div>
-                
-                {guest.email && (
-                  <div className="flex items-center space-x-2 text-sm mb-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a href={`mailto:${guest.email}`} className="hover:underline">{guest.email}</a>
-                  </div>
-                )}
-                
-                {guest.phone && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <a href={`tel:${guest.phone}`} className="hover:underline">{guest.phone}</a>
-                  </div>
-                )}
-              </div>
-              
-              {guest.notes && (
-                <div className="mt-6 pt-6 border-t">
-                  <h3 className="font-medium text-lg mb-2">Personal Notes</h3>
-                  <div 
-                    className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none text-sm"
-                    dangerouslySetInnerHTML={{ __html: guest.notes }}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <GuestProfileCard guest={guest} />
         </div>
         
         <div className="flex-1">
@@ -168,75 +43,11 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
             </TabsList>
             
             <TabsContent value="info" className="animate-fade-in">
-              <Card>
-                <CardHeader>
-                  <CardTitle>About</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-line">{guest.bio}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {guest.backgroundResearch && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Background Research</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div 
-                      className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
+              <GuestAboutSection guest={guest} />
             </TabsContent>
             
             <TabsContent value="episodes" className="animate-fade-in">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Episodes with {guest.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {guestEpisodes.length > 0 ? (
-                    <div className="space-y-4">
-                      {guestEpisodes.map((episode) => (
-                        <div key={episode.id} className="flex items-start space-x-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                          <div className={cn(
-                            "h-10 w-10 rounded-full flex items-center justify-center",
-                            episode.status === 'published' ? "bg-green-100 text-green-700" :
-                            episode.status === 'recorded' ? "bg-blue-100 text-blue-700" :
-                            "bg-orange-100 text-orange-700"
-                          )}>
-                            <Calendar className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium">{episode.title}</h4>
-                            <div className="flex items-center text-sm text-muted-foreground mb-2">
-                              <span className="capitalize">{episode.status}</span>
-                              <span className="mx-2">•</span>
-                              <span>{new Date(episode.scheduled).toLocaleDateString()}</span>
-                            </div>
-                            <p className="text-sm line-clamp-2">{episode.introduction}</p>
-                          </div>
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link to={`/episodes/${episode.id}`}>
-                              <FileText className="h-4 w-4 mr-1" />
-                              Details
-                            </Link>
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">No episodes with this guest yet</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <GuestEpisodesList guest={guest} episodes={episodes} />
             </TabsContent>
           </Tabs>
         </div>
