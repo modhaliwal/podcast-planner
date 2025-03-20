@@ -1,15 +1,18 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronLeft, FileAudio, FileText, Film, Headphones, Link2, PlayCircle, CalendarDays, Clock } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Episode, Guest, Topic } from '@/lib/types';
+import { Episode, Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { EpisodeStatusHeader } from './EpisodeStatusHeader';
+import { EpisodeGuests } from './EpisodeGuests';
+import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
+import { EpisodeInfoTab } from './EpisodeInfoTab';
+import { EpisodeTopicsTab } from './EpisodeTopicsTab';
+import { EpisodeNotesTab } from './EpisodeNotesTab';
 
 interface EpisodeDetailProps {
   episode: Episode;
@@ -25,29 +28,6 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
     episode.guestIds.includes(guest.id)
   );
   
-  // Format the recording date
-  const formattedRecordingDate = new Date(episode.scheduled).toLocaleDateString(undefined, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  // Format the recording time
-  const formattedRecordingTime = new Date(episode.scheduled).toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  
-  // Format the publish date if it exists
-  const formattedPublishDate = episode.publishDate 
-    ? new Date(episode.publishDate).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    : null;
-  
   return (
     <div className={cn("space-y-6", className)}>
       <div className="flex items-center mb-6">
@@ -62,140 +42,12 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
       <div className="flex flex-col space-y-6">
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className={cn(
-                "h-16 w-16 rounded-xl flex items-center justify-center shrink-0",
-                episode.status === 'published' ? "bg-green-100 text-green-700" :
-                episode.status === 'recorded' ? "bg-blue-100 text-blue-700" :
-                "bg-orange-100 text-orange-700"
-              )}>
-                <Calendar className="h-8 w-8" />
-              </div>
+            <EpisodeStatusHeader episode={episode} />
+            
+            <div className="mt-6 space-y-4">
+              <EpisodeGuests guests={episodeGuests} />
               
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <Badge variant={
-                    episode.status === 'published' ? "default" :
-                    episode.status === 'recorded' ? "secondary" :
-                    "outline"
-                  }>
-                    {episode.status}
-                  </Badge>
-                  
-                  <Badge variant="outline" className="font-mono">
-                    Episode #{episode.episodeNumber}
-                  </Badge>
-                </div>
-                
-                <h1 className="text-2xl font-semibold mb-4">{episode.title}</h1>
-                
-                <div className="space-y-4">
-                  {/* Recording Date and Time */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 text-muted-foreground mr-2" />
-                      <span className="text-sm font-medium text-muted-foreground">Recording:</span>
-                    </div>
-                    <span className="text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2 py-1 rounded">
-                      {formattedRecordingDate} at {formattedRecordingTime}
-                    </span>
-                  </div>
-                  
-                  {/* Publish Date */}
-                  {formattedPublishDate && (
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-                      <div className="flex items-center">
-                        <CalendarDays className="h-4 w-4 text-muted-foreground mr-2" />
-                        <span className="text-sm font-medium text-muted-foreground">Publish Date:</span>
-                      </div>
-                      <span className="text-sm bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300 px-2 py-1 rounded">
-                        {formattedPublishDate}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <h2 className="text-sm font-medium text-muted-foreground mb-2">Guests</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {episodeGuests.length > 0 ? (
-                        episodeGuests.map(guest => (
-                          <Link 
-                            key={guest.id} 
-                            to={`/guests/${guest.id}`}
-                            className="flex items-center p-2 bg-muted rounded-lg hover:bg-accent transition-colors"
-                          >
-                            <Avatar className="h-6 w-6 mr-2">
-                              <AvatarImage src={guest.imageUrl} alt={guest.name} />
-                              <AvatarFallback className="text-xs">
-                                {guest.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{guest.name}</span>
-                          </Link>
-                        ))
-                      ) : (
-                        <span className="text-sm text-muted-foreground">No guests assigned</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {(episode.status === 'recorded' || episode.status === 'published') && episode.recordingLinks && (
-                    <div>
-                      <h2 className="text-sm font-medium text-muted-foreground mb-2">Recordings</h2>
-                      <div className="flex flex-wrap gap-2">
-                        {episode.recordingLinks.audio && (
-                          <a 
-                            href={episode.recordingLinks.audio}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                          >
-                            <Headphones className="h-4 w-4 mr-2" />
-                            <span className="text-sm">Audio</span>
-                          </a>
-                        )}
-                        
-                        {episode.recordingLinks.video && (
-                          <a 
-                            href={episode.recordingLinks.video}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                          >
-                            <Film className="h-4 w-4 mr-2" />
-                            <span className="text-sm">Video</span>
-                          </a>
-                        )}
-                        
-                        {episode.recordingLinks.transcript && (
-                          <a 
-                            href={episode.recordingLinks.transcript}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            <span className="text-sm">Transcript</span>
-                          </a>
-                        )}
-                        
-                        {episode.recordingLinks.other && episode.recordingLinks.other.map((link, index) => (
-                          <a 
-                            key={index}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                          >
-                            <Link2 className="h-4 w-4 mr-2" />
-                            <span className="text-sm">{link.label}</span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <EpisodeRecordingLinks episode={episode} />
             </div>
           </CardContent>
         </Card>
@@ -208,56 +60,15 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
           </TabsList>
           
           <TabsContent value="info" className="animate-fade-in">
-            <Card>
-              <CardHeader>
-                <CardTitle>Introduction</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line">{episode.introduction}</p>
-                </div>
-              </CardContent>
-            </Card>
+            <EpisodeInfoTab episode={episode} />
           </TabsContent>
           
           <TabsContent value="topics" className="animate-fade-in">
-            <Card>
-              <CardHeader>
-                <CardTitle>Conversation Topics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {episode.topics.length > 0 ? (
-                  <div className="space-y-6">
-                    {episode.topics.map((topic, index) => (
-                      <div key={topic.id}>
-                        {index > 0 && <Separator className="my-6" />}
-                        <div>
-                          <h3 className="text-lg font-medium mb-2">{topic.title}</h3>
-                          <p className="text-muted-foreground whitespace-pre-line">{topic.notes}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No topics added yet</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <EpisodeTopicsTab episode={episode} />
           </TabsContent>
           
           <TabsContent value="notes" className="animate-fade-in">
-            <Card>
-              <CardHeader>
-                <CardTitle>Episode Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line">{episode.notes || "No notes added yet"}</p>
-                </div>
-              </CardContent>
-            </Card>
+            <EpisodeNotesTab episode={episode} />
           </TabsContent>
         </Tabs>
       </div>
