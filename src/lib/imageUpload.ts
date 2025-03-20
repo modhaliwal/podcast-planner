@@ -53,11 +53,9 @@ export const uploadImage = async (
   try {
     if (!file) return null;
     
-    // Make sure we're not trying to upload a blob URL
-    if (typeof file === 'string' && file.startsWith('blob:')) {
-      console.error('Cannot upload blob URL directly');
-      return null;
-    }
+    // Make sure we're not trying to upload a blob URL directly
+    // The file is of type File, so we don't need to check if it's a blob URL
+    // Removing the incorrect check that was causing the TypeScript error
     
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
