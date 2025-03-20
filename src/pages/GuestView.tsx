@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { Guest } from '@/lib/types';
+import { Guest, SocialLinks } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 
 const GuestView = () => {
@@ -53,7 +53,7 @@ const GuestView = () => {
             phone: data.phone || undefined,
             bio: data.bio,
             imageUrl: data.image_url || undefined,
-            socialLinks: data.social_links,
+            socialLinks: data.social_links as SocialLinks,
             notes: data.notes || undefined,
             backgroundResearch: data.background_research || undefined,
             status: (data.status as Guest['status']) || 'potential',
@@ -88,7 +88,7 @@ const GuestView = () => {
           phone: updatedGuest.phone,
           bio: updatedGuest.bio,
           image_url: updatedGuest.imageUrl,
-          social_links: updatedGuest.socialLinks,
+          social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
           background_research: updatedGuest.backgroundResearch,
           status: updatedGuest.status,

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,20 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isDataLoading, setIsDataLoading] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // If user signs in, fetch their data
         if (event === 'SIGNED_IN' && session) {
           refreshGuests();
           refreshEpisodes();
         }
         
-        // If user signs out, clear data
         if (event === 'SIGNED_OUT') {
           setGuests([]);
           setEpisodes([]);
@@ -49,13 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // If a session exists, fetch user data
       if (session) {
         refreshGuests();
         refreshEpisodes();
@@ -77,7 +71,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) throw error;
       
-      // Transform the data to match our Guest interface
       const formattedGuests: Guest[] = data.map(guest => ({
         id: guest.id,
         name: guest.name,
@@ -109,7 +102,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setIsDataLoading(true);
     try {
-      // Fetch episodes
       const { data: episodesData, error: episodesError } = await supabase
         .from('episodes')
         .select('*')
@@ -117,14 +109,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (episodesError) throw episodesError;
       
-      // Fetch episode_guests relationships for all episodes
       const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
         .from('episode_guests')
         .select('episode_id, guest_id');
       
       if (episodeGuestsError) throw episodeGuestsError;
       
-      // Group guest IDs by episode ID
       const guestsByEpisode: Record<string, string[]> = {};
       
       episodeGuestsData.forEach(({ episode_id, guest_id }) => {
@@ -134,7 +124,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         guestsByEpisode[episode_id].push(guest_id);
       });
       
-      // Transform the data to match our Episode interface
       const formattedEpisodes: Episode[] = episodesData.map(episode => ({
         id: episode.id,
         episodeNumber: episode.episode_number,
