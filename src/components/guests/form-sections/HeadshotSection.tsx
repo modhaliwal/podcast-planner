@@ -10,7 +10,7 @@ import { toast } from "sonner";
 interface HeadshotSectionProps {
   initialImageUrl?: string;
   guestName: string;
-  onImageChange: (preview: string | undefined, file: File | null) => void;
+  onImageChange: (file: File | null) => void;
 }
 
 export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: HeadshotSectionProps) {
@@ -42,7 +42,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
-    onImageChange(previewUrl, file);
+    onImageChange(file);
     toast.success("Image ready for upload");
   };
 
@@ -54,7 +54,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     }
     
     setImagePreview(initialImageUrl);
-    onImageChange(initialImageUrl, null);
+    onImageChange(null);
   };
 
   useEffect(() => {
@@ -66,10 +66,12 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     };
   }, [localBlobUrl]);
 
-  // Update preview if the initialImageUrl changes (e.g., after successful upload)
+  // Update preview when initialImageUrl changes (e.g., after successful upload)
   useEffect(() => {
-    setImagePreview(initialImageUrl);
-  }, [initialImageUrl]);
+    if (!localBlobUrl) {
+      setImagePreview(initialImageUrl);
+    }
+  }, [initialImageUrl, localBlobUrl]);
 
   return (
     <div className="flex flex-col items-center mb-6">

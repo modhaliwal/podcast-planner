@@ -5,12 +5,15 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Guest } from '@/lib/types';
 import { GuestSocialLinks } from './GuestSocialLinks';
 import { GuestContactInfo } from './GuestContactInfo';
+import { useState } from 'react';
 
 interface GuestProfileCardProps {
   guest: Guest;
 }
 
 export function GuestProfileCard({ guest }: GuestProfileCardProps) {
+  const [imageError, setImageError] = useState(false);
+  
   // Get initials from name
   const initials = guest.name
     .split(' ')
@@ -18,11 +21,14 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
     .join('')
     .toUpperCase();
   
+  // Determine if we should show image or avatar
+  const showAvatar = !guest.imageUrl || imageError;
+  
   return (
     <Card className="sticky top-28 mb-6">
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
-          {guest.imageUrl ? (
+          {!showAvatar ? (
             <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
               <AspectRatio ratio={2/3} className="bg-muted">
                 <img 
@@ -31,7 +37,7 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
                   className="object-cover w-full h-full"
                   onError={(e) => {
                     console.error("Image failed to load:", guest.imageUrl);
-                    (e.target as HTMLImageElement).style.display = 'none';
+                    setImageError(true);
                   }}
                 />
               </AspectRatio>

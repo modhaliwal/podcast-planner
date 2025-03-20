@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
-import { uploadImage } from '@/lib/imageUpload';
 
 const AddGuest = () => {
   const navigate = useNavigate();

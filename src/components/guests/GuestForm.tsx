@@ -21,7 +21,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
   const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [notes, setNotes] = useState(guest.notes || "");
-  const [imagePreview, setImagePreview] = useState<string | undefined>(guest.imageUrl);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,8 +43,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     },
   });
 
-  const handleImageChange = (preview: string | undefined, file: File | null) => {
-    setImagePreview(preview);
+  const handleImageChange = (file: File | null) => {
     setImageFile(file);
   };
 
@@ -57,10 +55,12 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       let imageUrl = guest.imageUrl;
       
       if (imageFile) {
+        toast.info("Uploading image...");
         const uploadedUrl = await uploadImage(imageFile);
         
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
+          toast.success("Image uploaded successfully");
         } else {
           toast.error("Failed to upload image. Using previous image if available.");
         }
