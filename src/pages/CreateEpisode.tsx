@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon, Plus, Trash, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -91,96 +91,96 @@ const CreateEpisode = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 mb-6">
-            {episodes.map((episode, index) => (
-              <Card key={index}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl flex items-center justify-between">
-                    <span>Episode {index + 1}</span>
-                    {episodes.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeEpisode(index)}
-                      >
-                        <Trash className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor={`episode-number-${index}`}>Episode Number</Label>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl">Episode Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Header row with field labels */}
+                <div className="grid grid-cols-2 gap-4 font-medium text-sm mb-1">
+                  <Label>Episode Number</Label>
+                  <Label>Recording Date & Time</Label>
+                </div>
+                
+                {/* Episode rows */}
+                {episodes.map((episode, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-4 items-center">
+                    <div className="flex items-center gap-2">
                       <Input
-                        id={`episode-number-${index}`}
                         type="number"
                         value={episode.episodeNumber}
                         onChange={(e) => updateEpisode(index, 'episodeNumber', parseInt(e.target.value))}
                         required
                       />
+                      {episodes.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeEpisode(index)}
+                          className="flex-shrink-0"
+                        >
+                          <Trash className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Recording Date & Time</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !episode.scheduled && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {episode.scheduled ? (
-                              format(episode.scheduled, "PPP")
-                            ) : (
-                              <span>Select date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={episode.scheduled}
-                            onSelect={(date) => updateEpisode(index, 'scheduled', date || new Date())}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !episode.scheduled && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {episode.scheduled ? (
+                            format(episode.scheduled, "PPP")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={episode.scheduled}
+                          onSelect={(date) => updateEpisode(index, 'scheduled', date || new Date())}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                ))}
+                
+                {/* Add episode button */}
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={addEpisode}
+                  className="gap-1 w-full"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Another Episode
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="flex justify-between items-center">
+          <div className="flex justify-end items-center mt-6 space-x-2">
             <Button 
               type="button" 
               variant="outline" 
-              onClick={addEpisode}
-              className="gap-1"
+              onClick={() => navigate('/episodes')}
             >
-              <Plus className="h-4 w-4" />
-              Add Another Episode
+              Cancel
             </Button>
-            
-            <div className="space-x-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => navigate('/episodes')}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">
-                Create Episodes
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+            <Button type="submit">
+              Create Episodes
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         </form>
       </div>
