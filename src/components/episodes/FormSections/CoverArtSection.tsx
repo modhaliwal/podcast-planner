@@ -17,12 +17,20 @@ interface CoverArtSectionProps {
 
 export function CoverArtSection({ form }: CoverArtSectionProps) {
   const currentCoverArt = form.getValues('coverArt');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentCoverArt || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    currentCoverArt && typeof currentCoverArt === 'string' 
+      ? currentCoverArt 
+      : null
+  );
   const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(currentCoverArt);
   
   // Store the original cover art URL when component mounts
   useEffect(() => {
-    setOriginalCoverArt(form.getValues('coverArt'));
+    const coverArtValue = form.getValues('coverArt');
+    if (coverArtValue && typeof coverArtValue === 'string') {
+      setOriginalCoverArt(coverArtValue);
+      setPreviewUrl(coverArtValue);
+    }
   }, [form]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
