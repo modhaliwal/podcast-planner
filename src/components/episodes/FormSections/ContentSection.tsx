@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
+import { BookText, Info } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -15,19 +16,25 @@ export function ContentSection({ form }: ContentSectionProps) {
   return (
     <Card className="md:col-span-2">
       <CardHeader>
-        <CardTitle>Episode Content</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <BookText className="h-5 w-5 text-primary" />
+          Episode Content
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <FormField
           control={form.control}
           name="introduction"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Introduction</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                <Info className="h-4 w-4 text-muted-foreground" />
+                Introduction
+              </FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Enter episode introduction" 
-                  className="min-h-[120px]"
+                  className="min-h-[120px] resize-y"
                   {...field} 
                 />
               </FormControl>
@@ -41,7 +48,10 @@ export function ContentSection({ form }: ContentSectionProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Episode Notes</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                <BookText className="h-4 w-4 text-muted-foreground" />
+                Episode Notes
+              </FormLabel>
               <FormControl>
                 <div className="min-h-[200px]">
                   <ReactQuill 

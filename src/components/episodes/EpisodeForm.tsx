@@ -34,6 +34,8 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
       guestIds: episode.guestIds,
       coverArt: episode.coverArt,
+      topics: episode.topics,
+      recordingLinks: episode.recordingLinks || {}
     },
   });
   

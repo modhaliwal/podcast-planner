@@ -33,6 +33,13 @@ export interface Topic {
   notes: string;
 }
 
+export interface RecordingLinks {
+  audio?: string;
+  video?: string;
+  transcript?: string;
+  other?: { label: string; url: string }[];
+}
+
 export interface Episode {
   id: string;
   episodeNumber: number;
@@ -45,12 +52,7 @@ export interface Episode {
   introduction: string;
   topics: Topic[];
   notes: string;
-  recordingLinks?: {
-    audio?: string;
-    video?: string;
-    transcript?: string;
-    other?: { label: string; url: string }[];
-  };
+  recordingLinks?: RecordingLinks;
   createdAt: string;
   updatedAt: string;
 }
