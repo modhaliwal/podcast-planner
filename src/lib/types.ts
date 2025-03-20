@@ -1,8 +1,10 @@
 
 export interface SocialLinks {
-  twitter?: string;
+  twitter?: string; // Keeping for backward compatibility, now represents X
+  facebook?: string;
   linkedin?: string;
   instagram?: string;
+  tiktok?: string;
   website?: string;
   youtube?: string;
   other?: { label: string; url: string }[];
