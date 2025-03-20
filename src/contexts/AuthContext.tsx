@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { Guest, Episode } from "@/lib/types";
+import { Guest, Episode, SocialLinks, RecordingLinks } from "@/lib/types";
 import { toast } from "sonner";
 
 type AuthContextType = {
