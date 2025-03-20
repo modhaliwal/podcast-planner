@@ -9,6 +9,7 @@ import Guests from "./pages/Guests";
 import GuestView from "./pages/GuestView";
 import Episodes from "./pages/Episodes";
 import EpisodeView from "./pages/EpisodeView";
+import EditEpisode from "./pages/EditEpisode";
 import CreateEpisode from "./pages/CreateEpisode";
 import NotFound from "./pages/NotFound";
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/guests/:id" element={<GuestView />} />
           <Route path="/episodes" element={<Episodes />} />
           <Route path="/episodes/:id" element={<EpisodeView />} />
+          <Route path="/episodes/:id/edit" element={<EditEpisode />} />
           <Route path="/episodes/create" element={<CreateEpisode />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

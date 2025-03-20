@@ -1,5 +1,5 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { guests, episodes } from '@/lib/data';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
@@ -47,9 +47,11 @@ const EpisodeView = () => {
           </div>
           
           <div className="flex space-x-2 mt-4 md:mt-0">
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/episodes/${id}/edit`}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Link>
             </Button>
             <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
               <Trash className="h-4 w-4 mr-2" />
