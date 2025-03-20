@@ -1,18 +1,14 @@
 
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Info, BookText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EpisodeStatusHeader } from './EpisodeStatusHeader';
 import { EpisodeGuests } from './EpisodeGuests';
 import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
-import { EpisodeInfoTab } from './EpisodeInfoTab';
-import { EpisodeTopicsTab } from './EpisodeTopicsTab';
-import { EpisodeNotesTab } from './EpisodeNotesTab';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EpisodeDetailProps {
   episode: Episode;
@@ -21,8 +17,6 @@ interface EpisodeDetailProps {
 }
 
 export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps) {
-  const [activeTab, setActiveTab] = useState("info");
-  
   // Get the guests for this episode
   const episodeGuests = guests.filter(guest => 
     episode.guestIds.includes(guest.id)
@@ -52,25 +46,43 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
           </CardContent>
         </Card>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full mb-6">
-            <TabsTrigger value="info" className="flex-1">Episode Info</TabsTrigger>
-            <TabsTrigger value="topics" className="flex-1">Topics</TabsTrigger>
-            <TabsTrigger value="notes" className="flex-1">Notes</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="info" className="animate-fade-in">
-            <EpisodeInfoTab episode={episode} />
-          </TabsContent>
-          
-          <TabsContent value="topics" className="animate-fade-in">
-            <EpisodeTopicsTab episode={episode} />
-          </TabsContent>
-          
-          <TabsContent value="notes" className="animate-fade-in">
-            <EpisodeNotesTab episode={episode} />
-          </TabsContent>
-        </Tabs>
+        {/* Introduction Section */}
+        <Card className="shadow-sm border-slate-200 dark:border-slate-700">
+          <CardContent className="p-6">
+            <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
+              <Info className="h-5 w-5 text-primary" />
+              Introduction
+            </h2>
+            
+            <div className="prose dark:prose-invert max-w-none">
+              {episode.introduction ? (
+                <p className="whitespace-pre-line text-slate-700 dark:text-slate-300 leading-relaxed">{episode.introduction}</p>
+              ) : (
+                <p className="text-slate-500 dark:text-slate-400 italic">No introduction added yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Episode Notes Section */}
+        <Card className="shadow-sm border-slate-200 dark:border-slate-700">
+          <CardContent className="p-6">
+            <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
+              <BookText className="h-5 w-5 text-primary" />
+              Episode Notes
+            </h2>
+            
+            <ScrollArea className="max-h-[600px]">
+              <div className="prose dark:prose-invert max-w-none">
+                {episode.notes ? (
+                  <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: episode.notes }} />
+                ) : (
+                  <p className="text-slate-500 dark:text-slate-400 italic">No notes added yet</p>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
