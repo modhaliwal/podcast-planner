@@ -5,11 +5,17 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
+import { useEffect } from 'react';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { episodes, guests } = useAuth();
+  const { episodes, guests, refreshGuests } = useAuth();
+  
+  // Ensure we have the latest guest data
+  useEffect(() => {
+    refreshGuests();
+  }, [refreshGuests]);
   
   // Find the episode with the matching ID
   const episode = episodes.find(e => e.id === id);
@@ -33,6 +39,8 @@ const EditEpisode = () => {
   const handleBack = () => {
     navigate(`/episodes/${id}`);
   };
+
+  console.log("Available guests for selection:", guests);
   
   return (
     <Shell>
@@ -58,7 +66,7 @@ const EditEpisode = () => {
             ...episode,
             coverArt: episode.coverArt || undefined,
           }} 
-          guests={guests} 
+          guests={guests}
         />
       </div>
     </Shell>

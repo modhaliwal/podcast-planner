@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Guest, SocialLinks } from "@/lib/types";
@@ -60,6 +60,13 @@ export function useGuestsData(userId: string | undefined) {
       setIsLoadingGuests(false);
     }
   };
+
+  // Add an effect to refresh guests on component mount
+  useEffect(() => {
+    if (userId) {
+      refreshGuests();
+    }
+  }, [userId]);
 
   return {
     guests,

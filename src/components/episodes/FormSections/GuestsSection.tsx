@@ -8,6 +8,7 @@ import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Guest } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
 
 interface GuestsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -16,8 +17,39 @@ interface GuestsSectionProps {
 
 export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) {
   // Use guests from Auth context if none are provided as props
-  const { guests: contextGuests } = useAuth();
-  const guests = propGuests || contextGuests;
+  const { guests: contextGuests, refreshGuests } = useAuth();
+  const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
+  
+  useEffect(() => {
+    // Ensure we have up-to-date guests data
+    refreshGuests();
+    
+    // Set available guests, preferring props over context
+    setAvailableGuests(propGuests || contextGuests);
+  }, [propGuests, contextGuests, refreshGuests]);
+  
+  // Debug logs to identify guest loading issues
+  useEffect(() => {
+    console.log("GuestsSection - Guest sources:", { 
+      propsGuests: propGuests?.length || 0,
+      contextGuests: contextGuests?.length || 0,
+      availableGuests: availableGuests?.length || 0
+    });
+  }, [propGuests, contextGuests, availableGuests]);
+
+  // If no guests are available, show a message
+  if (!availableGuests || availableGuests.length === 0) {
+    return (
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Guests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">No guests available. Please add guests from the Guests page.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="md:col-span-2">
@@ -34,7 +66,7 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
               <Select
                 onValueChange={(value) => {
                   if (value === "all") {
-                    field.onChange(guests.map(guest => guest.id));
+                    field.onChange(availableGuests.map(guest => guest.id));
                   } else {
                     const currentValues = [...field.value || []];
                     
@@ -56,13 +88,13 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
                   <SelectTrigger>
                     <SelectValue placeholder="Select guests">
                       {field.value?.length === 1 
-                        ? guests.find(g => g.id === field.value![0])?.name 
+                        ? availableGuests.find(g => g.id === field.value![0])?.name 
                         : `${field.value?.length || 0} guests selected`}
                     </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {guests.map((guest) => (
+                  {availableGuests.map((guest) => (
                     <SelectItem 
                       key={guest.id} 
                       value={guest.id}
@@ -86,7 +118,7 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
                 {field.value && field.value.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {field.value.map((guestId) => {
-                      const guest = guests.find(g => g.id === guestId);
+                      const guest = availableGuests.find(g => g.id === guestId);
                       return (
                         <div key={guestId} className="flex items-center bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm">
                           {guest?.name || 'Unknown Guest'}
