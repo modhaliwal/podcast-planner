@@ -142,7 +142,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
               </CardHeader>
               <CardContent>
                 <div 
-                  className="prose dark:prose-invert max-w-none"
+                  className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: guest.notes }}
                 />
               </CardContent>
@@ -177,7 +177,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                   </CardHeader>
                   <CardContent>
                     <div 
-                      className="prose dark:prose-invert max-w-none"
+                      className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none"
                       dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
                     />
                   </CardContent>
