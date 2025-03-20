@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Headphones, Home, Menu, Settings, User, Users } from 'lucide-react';
+import { Calendar, Headphones, Home, Menu, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -22,7 +21,6 @@ export function Header() {
     { name: 'Dashboard', path: '/dashboard', icon: <Home className="h-4 w-4 mr-2" /> },
     { name: 'Guests', path: '/guests', icon: <Users className="h-4 w-4 mr-2" /> },
     { name: 'Episodes', path: '/episodes', icon: <Calendar className="h-4 w-4 mr-2" /> },
-    { name: 'Settings', path: '/settings', icon: <Settings className="h-4 w-4 mr-2" /> },
   ];
   
   useEffect(() => {
