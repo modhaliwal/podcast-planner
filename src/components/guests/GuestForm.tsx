@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Guest } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -30,8 +31,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, Trash, Sparkles, Building } from "lucide-react";
+import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, Trash, Sparkles, Building, Upload, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface GuestFormProps {
   guest: Guest;
@@ -69,6 +71,17 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [isGeneratingResearch, setIsGeneratingResearch] = useState(false);
   const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [notes, setNotes] = useState(guest.notes || "");
+  const [imagePreview, setImagePreview] = useState<string | undefined>(guest.imageUrl);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Get initials from name for avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
 
   const form = useForm({
     defaultValues: {
@@ -89,7 +102,35 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     },
   });
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please upload a valid image file (JPEG, PNG or WebP)");
+      return;
+    }
+
+    // Check file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      toast.error("Image is too large. Maximum size is 10MB");
+      return;
+    }
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setImageFile(file);
+    toast.success("Image uploaded successfully");
+  };
+
   const handleSubmit = (data: any) => {
+    // In a real app, you would upload the image to a server
+    // and get a URL back. For this demo, we'll just use the preview URL.
+    
     // Update the guest object with form data
     const updatedGuest: Guest = {
       ...guest,
@@ -102,6 +143,9 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       notes: notes || undefined,
       backgroundResearch: backgroundResearch || undefined,
       status: data.status,
+      // If we have a new image file, use the preview URL
+      // In a real app, this would be the URL from the server
+      imageUrl: imageFile ? imagePreview : guest.imageUrl,
       socialLinks: {
         twitter: data.twitter || undefined,
         facebook: data.facebook || undefined,
@@ -116,6 +160,15 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
 
     onSave(updatedGuest);
   };
+
+  // Clean up preview URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview !== guest.imageUrl) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview, guest.imageUrl]);
 
   const generateBio = async () => {
     setIsGeneratingBio(true);
@@ -185,6 +238,50 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
+              <div className="flex flex-col items-center mb-6">
+                <div className="mb-4">
+                  <Avatar className="h-24 w-24 border">
+                    <AvatarImage src={imagePreview} alt={form.getValues('name')} />
+                    <AvatarFallback>{getInitials(form.getValues('name'))}</AvatarFallback>
+                  </Avatar>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="headshot-upload" className="cursor-pointer">
+                    <div className="flex items-center gap-2 py-2 px-3 bg-muted rounded-md hover:bg-accent transition-colors">
+                      <Upload className="h-4 w-4" />
+                      <span>Upload Headshot</span>
+                    </div>
+                    <Input 
+                      id="headshot-upload" 
+                      type="file" 
+                      className="hidden" 
+                      onChange={handleImageChange}
+                      accept="image/jpeg,image/png,image/webp"
+                    />
+                  </Label>
+                  
+                  {imagePreview && imagePreview !== guest.imageUrl && (
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setImagePreview(guest.imageUrl);
+                        setImageFile(null);
+                      }}
+                    >
+                      <Trash className="h-4 w-4 mr-1" />
+                      Reset
+                    </Button>
+                  )}
+                </div>
+                
+                <p className="text-xs text-muted-foreground mt-2">
+                  Supports JPEG, PNG or WebP up to 10MB. High-resolution images recommended.
+                </p>
+              </div>
+
               <FormField
                 control={form.control}
                 name="name"
