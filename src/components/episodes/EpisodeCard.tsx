@@ -127,8 +127,8 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
                 </div>
               </div>
               
-              {/* Podcast links */}
-              {episode.status === EpisodeStatus.PUBLISHED && hasPodcastUrls && (
+              {/* Podcast links - removed the episode.status === EpisodeStatus.PUBLISHED condition */}
+              {hasPodcastUrls && (
                 <div className="flex flex-wrap gap-3 py-2 mb-3 border-y border-border">
                   {episode.podcastUrls?.spotify && (
                     <div className="flex items-center text-sm text-primary">
