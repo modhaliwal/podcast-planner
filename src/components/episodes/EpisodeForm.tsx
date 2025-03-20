@@ -11,6 +11,7 @@ import { BasicInfoSection } from './FormSections/BasicInfoSection';
 import { ScheduleSection } from './FormSections/ScheduleSection';
 import { GuestsSection } from './FormSections/GuestsSection';
 import { ContentSection } from './FormSections/ContentSection';
+import { CoverArtSection } from './FormSections/CoverArtSection';
 import { FormActions } from './FormSections/FormActions';
 
 interface EpisodeFormProps {
@@ -32,6 +33,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       scheduled: new Date(episode.scheduled),
       publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
       guestIds: episode.guestIds,
+      coverArt: episode.coverArt,
     },
   });
   
@@ -47,10 +49,17 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BasicInfoSection form={form} />
-          <ScheduleSection form={form} />
-          <GuestsSection form={form} guests={guests} />
-          <ContentSection form={form} />
+          <div className="space-y-6">
+            <BasicInfoSection form={form} />
+            <CoverArtSection form={form} />
+          </div>
+          <div className="space-y-6">
+            <ScheduleSection form={form} />
+            <GuestsSection form={form} guests={guests} />
+          </div>
+          <div className="md:col-span-2">
+            <ContentSection form={form} />
+          </div>
         </div>
         
         <FormActions episodeId={episode.id} />

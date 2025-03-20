@@ -10,6 +10,7 @@ export const episodeFormSchema = z.object({
   scheduled: z.date(),
   publishDate: z.date().optional().nullable(),
   guestIds: z.array(z.string()).min(1, "Select at least one guest"),
+  coverArt: z.string().optional(),
 });
 
 export type EpisodeFormValues = z.infer<typeof episodeFormSchema>;

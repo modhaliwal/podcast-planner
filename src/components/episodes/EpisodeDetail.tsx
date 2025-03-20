@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Info, BookText } from 'lucide-react';
+import { ChevronLeft, Info, BookText, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { EpisodeStatusHeader } from './EpisodeStatusHeader';
 import { EpisodeGuests } from './EpisodeGuests';
 import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface EpisodeDetailProps {
   episode: Episode;
@@ -36,12 +37,41 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
       <div className="flex flex-col space-y-6">
         <Card>
           <CardContent className="p-6">
-            <EpisodeStatusHeader episode={episode} />
-            
-            <div className="mt-6 space-y-4">
-              <EpisodeGuests guests={episodeGuests} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Cover Art */}
+              <div className="md:col-span-1">
+                {episode.coverArt ? (
+                  <div className="rounded-md overflow-hidden border border-border shadow-sm">
+                    <AspectRatio ratio={1}>
+                      <img 
+                        src={episode.coverArt} 
+                        alt={`Cover art for ${episode.title}`}
+                        className="object-cover w-full h-full"
+                      />
+                    </AspectRatio>
+                  </div>
+                ) : (
+                  <div className="rounded-md overflow-hidden border border-border shadow-sm bg-muted flex items-center justify-center">
+                    <AspectRatio ratio={1}>
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        <Image className="h-12 w-12 mb-2 opacity-40" />
+                        <span className="text-sm">No cover art</span>
+                      </div>
+                    </AspectRatio>
+                  </div>
+                )}
+              </div>
               
-              <EpisodeRecordingLinks episode={episode} />
+              {/* Episode Details */}
+              <div className="md:col-span-2">
+                <EpisodeStatusHeader episode={episode} />
+                
+                <div className="mt-6 space-y-4">
+                  <EpisodeGuests guests={episodeGuests} />
+                  
+                  <EpisodeRecordingLinks episode={episode} />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
