@@ -44,7 +44,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-1/3 lg:w-1/4">
-          <Card className="sticky top-28">
+          <Card className="sticky top-28 mb-6">
             <CardContent className="p-6">
               <div className="flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24 border mb-4">
@@ -133,6 +133,20 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Personal Notes section moved here, below the profile card */}
+          {guest.notes && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Personal Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className="whitespace-pre-line">{guest.notes}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
         
         <div className="flex-1">
@@ -167,18 +181,7 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                 </Card>
               )}
               
-              {guest.notes && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Personal Notes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose dark:prose-invert max-w-none">
-                      <p className="whitespace-pre-line">{guest.notes}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Personal Notes moved to the left column */}
             </TabsContent>
             
             <TabsContent value="episodes" className="animate-fade-in">
