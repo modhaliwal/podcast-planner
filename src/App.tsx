@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './contexts/AuthContext';
+import { LoadingIndicator } from './components/ui/loading-indicator';
 
 // Lazy loaded pages
 const Index = lazy(() => import('./pages/Index'));
@@ -21,7 +22,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 function App() {
   return (
     <AuthProvider>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoadingIndicator fullPage />}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />

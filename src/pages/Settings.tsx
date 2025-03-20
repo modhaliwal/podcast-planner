@@ -7,6 +7,7 @@ import { ProfileSettings } from '@/components/settings/ProfileSettings';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings as SettingsIcon, User } from 'lucide-react';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 export default function Settings() {
   const { user, loading } = useAuth();
@@ -19,7 +20,13 @@ export default function Settings() {
   }, [user, loading, navigate]);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <Shell>
+        <div className="page-container">
+          <LoadingIndicator message="Loading settings..." fullPage />
+        </div>
+      </Shell>
+    );
   }
 
   return (
