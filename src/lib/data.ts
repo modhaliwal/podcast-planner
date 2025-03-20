@@ -34,8 +34,8 @@ export const guests: Guest[] = [
       linkedin: 'https://linkedin.com/in/michaelj',
       website: 'https://michaeljohnson.co'
     },
-    notes: '<p>Michael speaks quickly and has lots of stories.</p><ul><li>Very enthusiastic about blockchain technology</li><li>Sometimes goes on tangents</li><li>Responds well to specific questions</li></ul><p>He's passionate about decentralized technologies.</p>',
-    backgroundResearch: '<p>Michael's startups:</p><ol><li><strong>ChainTrack</strong> - Supply chain management using blockchain</li><li><strong>DataSecure</strong> - Acquired for $25M in 2019</li><li><strong>NetConnect</strong> - Early social networking platform</li></ol>',
+    notes: '<p>Michael speaks quickly and has lots of stories.</p><ul><li>Very enthusiastic about blockchain technology</li><li>Sometimes goes on tangents</li><li>Responds well to specific questions</li></ul><p>He\'s passionate about decentralized technologies.</p>',
+    backgroundResearch: '<p>Michael\'s startups:</p><ol><li><strong>ChainTrack</strong> - Supply chain management using blockchain</li><li><strong>DataSecure</strong> - Acquired for $25M in 2019</li><li><strong>NetConnect</strong> - Early social networking platform</li></ol>',
     createdAt: '2023-02-10T10:15:00Z',
     updatedAt: '2023-02-10T10:15:00Z'
   },
