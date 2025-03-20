@@ -23,6 +23,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
   useEffect(() => {
     // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
+      console.log("Setting initial image preview:", initialImageUrl);
       setImagePreview(initialImageUrl);
     }
   }, [initialImageUrl]);
@@ -58,9 +59,10 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       setIsUploading(true);
       toast.info("Uploading image...");
       
-      const uploadedUrl = await uploadImage(file);
+      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'headshots');
       
       if (uploadedUrl) {
+        console.log("Image uploaded successfully, URL:", uploadedUrl);
         // Set the preview to the actual uploaded URL (not the blob)
         setImagePreview(uploadedUrl);
         // Pass both the file and the uploaded URL to the parent component
@@ -146,7 +148,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
           />
         </Label>
         
-        {(imagePreview) && (
+        {imagePreview && (
           <Button 
             type="button"
             variant="outline"

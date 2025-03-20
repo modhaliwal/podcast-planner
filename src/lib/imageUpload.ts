@@ -27,11 +27,19 @@ export const deleteImage = async (url?: string): Promise<boolean> => {
     
     if (!path || !bucket) return false;
     
+    console.log(`Attempting to delete image from ${bucket}/${path}`);
+    
     const { error } = await supabase.storage
       .from(bucket)
       .remove([path]);
     
-    return !error;
+    if (error) {
+      console.error('Error deleting image:', error);
+      return false;
+    }
+    
+    console.log(`Successfully deleted image from ${bucket}/${path}`);
+    return true;
   } catch (error) {
     console.error('Error deleting image:', error);
     return false;

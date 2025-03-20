@@ -77,6 +77,8 @@ export function useGuestData(guestId: string | undefined) {
         ? undefined 
         : updatedGuest.imageUrl;
       
+      console.log("Final image URL to save to database:", imageUrl);
+      
       const { error } = await supabase
         .from('guests')
         .update({
