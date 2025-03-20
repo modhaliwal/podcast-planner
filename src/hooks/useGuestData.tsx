@@ -29,6 +29,8 @@ export function useGuestData(guestId: string | undefined) {
         if (error) throw error;
         
         if (data) {
+          console.log("Fetched guest data:", data);
+          
           // Transform the data to match our Guest interface
           const formattedGuest: Guest = {
             id: data.id,
@@ -64,6 +66,8 @@ export function useGuestData(guestId: string | undefined) {
 
   const handleSave = async (updatedGuest: Guest) => {
     try {
+      console.log("Saving guest with image:", updatedGuest.imageUrl);
+      
       const { error } = await supabase
         .from('guests')
         .update({

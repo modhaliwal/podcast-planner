@@ -29,6 +29,10 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
                   src={guest.imageUrl} 
                   alt={`${guest.name} headshot`}
                   className="object-cover w-full h-full"
+                  onError={(e) => {
+                    console.error("Image failed to load:", guest.imageUrl);
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
               </AspectRatio>
             </div>

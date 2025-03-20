@@ -15,6 +15,7 @@ interface HeadshotSectionProps {
 
 export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: HeadshotSectionProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(initialImageUrl);
+  const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
   
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -32,24 +33,43 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       return;
     }
 
+    // Revoke any existing blob URL to prevent memory leaks
+    if (localBlobUrl) {
+      URL.revokeObjectURL(localBlobUrl);
+    }
+
+    // Create a new blob URL for preview
     const previewUrl = URL.createObjectURL(file);
+    setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     onImageChange(previewUrl, file);
-    toast.success("Image uploaded successfully");
+    toast.success("Image ready for upload");
   };
 
   const resetImage = () => {
+    // Revoke the temporary blob URL to prevent memory leaks
+    if (localBlobUrl) {
+      URL.revokeObjectURL(localBlobUrl);
+      setLocalBlobUrl(undefined);
+    }
+    
     setImagePreview(initialImageUrl);
     onImageChange(initialImageUrl, null);
   };
 
   useEffect(() => {
+    // Clean up blob URLs when component unmounts
     return () => {
-      if (imagePreview && imagePreview !== initialImageUrl) {
-        URL.revokeObjectURL(imagePreview);
+      if (localBlobUrl) {
+        URL.revokeObjectURL(localBlobUrl);
       }
     };
-  }, [imagePreview, initialImageUrl]);
+  }, [localBlobUrl]);
+
+  // Update preview if the initialImageUrl changes (e.g., after successful upload)
+  useEffect(() => {
+    setImagePreview(initialImageUrl);
+  }, [initialImageUrl]);
 
   return (
     <div className="flex flex-col items-center mb-6">
@@ -84,7 +104,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
           />
         </Label>
         
-        {imagePreview && imagePreview !== initialImageUrl && (
+        {localBlobUrl && (
           <Button 
             type="button"
             variant="outline"
