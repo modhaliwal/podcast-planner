@@ -1,4 +1,6 @@
+
 import { Guest, Episode } from './types';
+import { EpisodeStatus } from './enums';
 
 // Mock guests data
 export const guests: Guest[] = [
@@ -64,7 +66,7 @@ export const episodes: Episode[] = [
     title: 'The Ethics of Artificial Intelligence',
     scheduled: '2023-04-25T15:00:00Z',
     publishDate: '2023-05-02T12:00:00Z',
-    status: 'published',
+    status: EpisodeStatus.PUBLISHED,
     guestIds: ['1'],
     introduction: 'In this episode, we explore the ethical considerations surrounding artificial intelligence with Dr. Jane Smith, a leading researcher in AI ethics.',
     notes: 'This was a fascinating conversation. Jane had great insights about the practical steps companies can take to implement ethical AI practices.',
@@ -81,7 +83,7 @@ export const episodes: Episode[] = [
     title: 'Entrepreneurship in Blockchain Technology',
     scheduled: '2023-05-18T14:00:00Z',
     publishDate: '2023-05-25T12:00:00Z',
-    status: 'recorded',
+    status: EpisodeStatus.RECORDED,
     guestIds: ['2'],
     introduction: 'Join us for an exciting conversation with Michael Johnson, a serial entrepreneur who has founded multiple successful blockchain startups.',
     notes: 'Michael was very energetic and shared some great stories about his failures as well as successes. We should edit down the tangent about his fishing hobby.',
@@ -98,7 +100,7 @@ export const episodes: Episode[] = [
     title: 'Quantum Computing: The Next Frontier',
     scheduled: '2023-06-10T13:00:00Z',
     publishDate: '2023-06-17T12:00:00Z',
-    status: 'scheduled',
+    status: EpisodeStatus.SCHEDULED,
     guestIds: ['3'],
     introduction: 'Dr. Lisa Chen joins us to demystify quantum computing and discuss its potential to solve previously intractable problems in various fields.',
     notes: 'Prepare by reading Lisa\'s recent paper on quantum error correction. She mentioned she\'s excited to discuss new breakthroughs in quantum coherence.',
@@ -111,7 +113,7 @@ export const episodes: Episode[] = [
     title: 'Intersection of AI and Quantum Computing',
     scheduled: '2023-07-15T16:00:00Z',
     publishDate: '2023-07-22T12:00:00Z',
-    status: 'scheduled',
+    status: EpisodeStatus.SCHEDULED,
     guestIds: ['1', '3'],
     introduction: 'In this special episode, we bring together Dr. Jane Smith and Dr. Lisa Chen to explore how artificial intelligence and quantum computing might converge in the coming years.',
     notes: 'This will be our first episode with two guests. Make sure to balance speaking time between Jane and Lisa.',

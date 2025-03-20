@@ -1,9 +1,9 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Guest, Episode, SocialLinks, RecordingLinks } from "@/lib/types";
 import { toast } from "sonner";
+import { EpisodeStatus } from "@/lib/enums";
 
 type AuthContextType = {
   session: Session | null;
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: episode.title,
         scheduled: episode.scheduled,
         publishDate: episode.publish_date || undefined,
-        status: episode.status as 'scheduled' | 'recorded' | 'published',
+        status: episode.status as EpisodeStatus,
         coverArt: episode.cover_art || undefined,
         guestIds: guestsByEpisode[episode.id] || [],
         introduction: episode.introduction,
