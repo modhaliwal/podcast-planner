@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -15,56 +14,56 @@ export function useGuestData(guestId: string | undefined) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user, refreshGuests } = useAuth();
   
-  useEffect(() => {
-    const fetchGuest = async () => {
-      if (!guestId) return;
-      
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from('guests')
-          .select('*')
-          .eq('id', guestId)
-          .single();
-        
-        if (error) throw error;
-        
-        if (data) {
-          console.log("Fetched guest data:", data);
-          
-          // Skip blob URLs as they won't be valid after page refresh
-          const imageUrl = data.image_url && !isBlobUrl(data.image_url) 
-            ? data.image_url 
-            : undefined;
-          
-          // Transform the data to match our Guest interface
-          const formattedGuest: Guest = {
-            id: data.id,
-            name: data.name,
-            title: data.title,
-            company: data.company || undefined,
-            email: data.email || undefined,
-            phone: data.phone || undefined,
-            bio: data.bio,
-            imageUrl: imageUrl,
-            socialLinks: data.social_links as SocialLinks,
-            notes: data.notes || undefined,
-            backgroundResearch: data.background_research || undefined,
-            status: (data.status as Guest['status']) || 'potential',
-            createdAt: data.created_at,
-            updatedAt: data.updated_at
-          };
-          
-          setGuest(formattedGuest);
-        }
-      } catch (error: any) {
-        toast.error(`Failed to fetch guest: ${error.message}`);
-        console.error("Error fetching guest:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchGuest = async () => {
+    if (!guestId) return;
     
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('guests')
+        .select('*')
+        .eq('id', guestId)
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        console.log("Fetched guest data:", data);
+        
+        // Skip blob URLs as they won't be valid after page refresh
+        const imageUrl = data.image_url && !isBlobUrl(data.image_url) 
+          ? data.image_url 
+          : undefined;
+        
+        // Transform the data to match our Guest interface
+        const formattedGuest: Guest = {
+          id: data.id,
+          name: data.name,
+          title: data.title,
+          company: data.company || undefined,
+          email: data.email || undefined,
+          phone: data.phone || undefined,
+          bio: data.bio,
+          imageUrl: imageUrl,
+          socialLinks: data.social_links as SocialLinks,
+          notes: data.notes || undefined,
+          backgroundResearch: data.background_research || undefined,
+          status: (data.status as Guest['status']) || 'potential',
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        };
+        
+        setGuest(formattedGuest);
+      }
+    } catch (error: any) {
+      toast.error(`Failed to fetch guest: ${error.message}`);
+      console.error("Error fetching guest:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchGuest();
   }, [guestId]);
 
@@ -102,14 +101,20 @@ export function useGuestData(guestId: string | undefined) {
       // Make sure we're not setting a blob URL in our state
       updatedGuest.imageUrl = imageUrl;
       
+      // Update state and UI
       setGuest(updatedGuest);
       setIsEditing(false);
+      
+      // Refresh the guest list
       await refreshGuests();
       
-      // Stay on the current guest page after saving
+      // Show success message
       toast.success("Guest updated successfully");
       
-      // Explicitly navigate to the current guest page to ensure we stay on it
+      // First, fetch the latest guest data to ensure we have the most up-to-date information
+      await fetchGuest();
+      
+      // Then explicitly navigate to the current guest page to ensure UI refresh
       if (guestId) {
         navigate(`/guests/${guestId}`, { replace: true });
       }

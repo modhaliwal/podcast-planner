@@ -1,5 +1,5 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { GuestForm } from '@/components/guests/GuestForm';
@@ -9,9 +9,11 @@ import { GuestViewHeader } from '@/components/guests/GuestViewHeader';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
+import { useEffect } from 'react';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const { episodes } = useAuth();
   const {
     isLoading,
@@ -23,6 +25,12 @@ const GuestView = () => {
     handleSave,
     handleDelete
   } = useGuestData(id);
+  
+  // Force component to rerender when the location changes
+  useEffect(() => {
+    // This effect will run when the component mounts or when location changes
+    console.log('Guest view mounted or location changed:', location.pathname);
+  }, [location]);
   
   if (isLoading) {
     return <GuestViewLoading />;
