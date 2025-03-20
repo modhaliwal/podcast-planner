@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon, Plus, Trash, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, addDays, nextFriday } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { 
   Select, 
@@ -38,23 +38,38 @@ const generateTimeOptions = () => {
   return options;
 };
 
+// Helper to get next Friday at 10:00 AM
+const getUpcomingFriday = () => {
+  const today = new Date();
+  const friday = nextFriday(today);
+  friday.setHours(10, 0, 0, 0); // Set to 10:00 AM
+  return friday;
+};
+
+// Helper to get the same date but at 11:30 AM
+const getSecondTimeSlot = (date: Date) => {
+  const newDate = new Date(date);
+  newDate.setHours(11, 30, 0, 0); // Set to 11:30 AM
+  return newDate;
+};
+
 const CreateEpisode = () => {
   const navigate = useNavigate();
   const [episodes, setEpisodes] = useState<EpisodeFormData[]>([
-    { episodeNumber: 1, scheduled: new Date() }
+    { episodeNumber: 1, scheduled: getUpcomingFriday() }
   ]);
   const timeOptions = generateTimeOptions();
 
   const addEpisode = () => {
     const lastEpisode = episodes[episodes.length - 1];
-    const nextDate = new Date(lastEpisode.scheduled);
-    nextDate.setDate(nextDate.getDate() + 7); // Default to one week later
+    // Use the same date but set to 11:30 AM for additional episodes
+    const sameDate = getSecondTimeSlot(lastEpisode.scheduled);
     
     setEpisodes([
       ...episodes,
       { 
         episodeNumber: lastEpisode.episodeNumber + 1,
-        scheduled: nextDate
+        scheduled: sameDate
       }
     ]);
   };
