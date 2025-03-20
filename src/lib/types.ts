@@ -36,6 +36,13 @@ export interface RecordingLinks {
   other?: { label: string; url: string }[];
 }
 
+export interface PodcastUrls {
+  spotify?: string;
+  applePodcasts?: string;
+  amazonPodcasts?: string;
+  youtube?: string;
+}
+
 export interface Episode {
   id: string;
   episodeNumber: number;
@@ -48,6 +55,7 @@ export interface Episode {
   introduction: string;
   notes: string;
   recordingLinks?: RecordingLinks;
+  podcastUrls?: PodcastUrls;
   createdAt: string;
   updatedAt: string;
 }

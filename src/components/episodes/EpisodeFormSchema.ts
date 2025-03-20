@@ -22,6 +22,12 @@ export const episodeFormSchema = z.object({
         url: z.string()
       })
     ).optional()
+  }).optional().default({}),
+  podcastUrls: z.object({
+    spotify: z.string().optional(),
+    applePodcasts: z.string().optional(),
+    amazonPodcasts: z.string().optional(),
+    youtube: z.string().optional()
   }).optional().default({})
 });
 

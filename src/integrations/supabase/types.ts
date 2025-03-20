@@ -53,6 +53,7 @@ export type Database = {
           id: string
           introduction: string
           notes: string | null
+          podcast_urls: Json | null
           publish_date: string | null
           recording_links: Json | null
           scheduled: string
@@ -68,6 +69,7 @@ export type Database = {
           id?: string
           introduction: string
           notes?: string | null
+          podcast_urls?: Json | null
           publish_date?: string | null
           recording_links?: Json | null
           scheduled: string
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           introduction?: string
           notes?: string | null
+          podcast_urls?: Json | null
           publish_date?: string | null
           recording_links?: Json | null
           scheduled?: string

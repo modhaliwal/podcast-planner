@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EpisodeStatusHeader } from './EpisodeStatusHeader';
 import { EpisodeGuests } from './EpisodeGuests';
 import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
+import { EpisodePodcastUrls } from './EpisodePodcastUrls';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
@@ -45,6 +46,9 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                 <div className="mt-6 space-y-4">
                   <EpisodeGuests guests={episodeGuests} />
                   <EpisodeRecordingLinks episode={episode} />
+                  {episode.status === 'published' && (
+                    <EpisodePodcastUrls episode={episode} />
+                  )}
                 </div>
               </div>
               

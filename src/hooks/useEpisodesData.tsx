@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Episode, RecordingLinks } from "@/lib/types";
+import { Episode, RecordingLinks, PodcastUrls } from "@/lib/types";
 import { EpisodeStatus } from "@/lib/enums";
 
 export function useEpisodesData(userId: string | undefined) {
@@ -61,6 +61,7 @@ export function useEpisodesData(userId: string | undefined) {
         introduction: episode.introduction,
         notes: episode.notes || '',
         recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
+        podcastUrls: episode.podcast_urls ? (episode.podcast_urls as PodcastUrls) : {},
         createdAt: episode.created_at,
         updatedAt: episode.updated_at
       }));

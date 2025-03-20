@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -14,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
 import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSection';
+import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeFormProps {
@@ -39,7 +41,8 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
       guestIds: episode.guestIds,
       coverArt: episode.coverArt,
-      recordingLinks: episode.recordingLinks || {}
+      recordingLinks: episode.recordingLinks || {},
+      podcastUrls: episode.podcastUrls || {}
     },
   });
   
@@ -106,6 +109,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           publish_date: data.publishDate ? data.publishDate.toISOString() : null,
           cover_art: coverArt,
           recording_links: data.recordingLinks,
+          podcast_urls: data.podcastUrls,
           updated_at: new Date().toISOString()
         })
         .eq('id', episode.id);
@@ -154,6 +158,10 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           </div>
           
           <ContentSection form={form} />
+          
+          {form.watch('status') === EpisodeStatus.PUBLISHED && (
+            <PodcastUrlsSection form={form} />
+          )}
         </div>
         
         <FormActions episodeId={episode.id} isSubmitting={isSubmitting} />
