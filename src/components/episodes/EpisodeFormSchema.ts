@@ -11,13 +11,6 @@ export const episodeFormSchema = z.object({
   publishDate: z.date().optional().nullable(),
   guestIds: z.array(z.string()).min(1, "Select at least one guest"),
   coverArt: z.string().optional(),
-  topics: z.array(
-    z.object({
-      id: z.string(),
-      title: z.string(),
-      notes: z.string()
-    })
-  ).optional().default([]),
   recordingLinks: z.object({
     audio: z.string().optional(),
     video: z.string().optional(),

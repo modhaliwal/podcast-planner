@@ -1,7 +1,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
-import { episodes, guests } from '@/lib/data';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
@@ -9,6 +9,7 @@ import { ChevronLeft } from 'lucide-react';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { episodes, guests } = useAuth();
   
   // Find the episode with the matching ID
   const episode = episodes.find(e => e.id === id);

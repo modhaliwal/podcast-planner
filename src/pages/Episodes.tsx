@@ -1,16 +1,17 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { guests, episodes } from '@/lib/data';
+import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeCard } from '@/components/episodes/EpisodeCard';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { CalendarIcon, MicIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { CalendarIcon, MicIcon, PlusIcon, SearchIcon, RefreshCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Episodes = () => {
+  const { episodes, guests, refreshEpisodes, isDataLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
@@ -26,6 +27,10 @@ const Episodes = () => {
     (a, b) => new Date(b.scheduled).getTime() - new Date(a.scheduled).getTime()
   );
   
+  const handleRefresh = () => {
+    refreshEpisodes();
+  };
+  
   return (
     <Shell>
       <div className="page-container">
@@ -35,12 +40,22 @@ const Episodes = () => {
             <p className="section-subtitle">Manage your episode schedule and content</p>
           </div>
           
-          <Button size="default" asChild>
-            <Link to="/episodes/create">
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Create Episode
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleRefresh} 
+              disabled={isDataLoading}
+            >
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
+            <Button size="default" asChild>
+              <Link to="/episodes/create">
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Create Episode
+              </Link>
+            </Button>
+          </div>
         </div>
         
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
@@ -64,7 +79,11 @@ const Episodes = () => {
           </Tabs>
         </div>
         
-        {sortedEpisodes.length > 0 ? (
+        {isDataLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+        ) : sortedEpisodes.length > 0 ? (
           <div className="space-y-4">
             {sortedEpisodes.map(episode => (
               <EpisodeCard 

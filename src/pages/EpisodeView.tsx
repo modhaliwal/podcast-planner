@@ -1,16 +1,71 @@
 
 import { useParams, Link } from 'react-router-dom';
-import { guests, episodes } from '@/lib/data';
+import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
+  const { episodes, guests, refreshEpisodes } = useAuth();
+  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   
   // Find the episode with the matching ID
   const episode = episodes.find(e => e.id === id);
+  
+  const handleDeleteEpisode = async () => {
+    if (!id) return;
+    
+    setIsDeleting(true);
+    try {
+      // First delete the episode_guests relationships
+      const { error: guestsError } = await supabase
+        .from('episode_guests')
+        .delete()
+        .eq('episode_id', id);
+      
+      if (guestsError) throw guestsError;
+      
+      // Then delete the episode
+      const { error } = await supabase
+        .from('episodes')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      toast.success("Episode deleted successfully");
+      
+      // Refresh episodes data
+      await refreshEpisodes();
+      
+      // Navigate back to episodes list
+      navigate('/episodes');
+    } catch (error: any) {
+      toast.error(`Error deleting episode: ${error.message}`);
+      console.error("Error deleting episode:", error);
+    } finally {
+      setIsDeleting(false);
+      setOpenDeleteDialog(false);
+    }
+  };
   
   if (!episode) {
     return (
@@ -53,7 +108,13 @@ const EpisodeView = () => {
                 Edit
               </Link>
             </Button>
-            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-destructive hover:text-destructive"
+              onClick={() => setOpenDeleteDialog(true)}
+              disabled={isDeleting}
+            >
               <Trash className="h-4 w-4 mr-2" />
               Delete
             </Button>
@@ -61,6 +122,26 @@ const EpisodeView = () => {
         </div>
         
         <EpisodeDetail episode={episode} guests={guests} />
+        
+        <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Episode</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this episode? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteEpisode}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Shell>
   );

@@ -9,6 +9,144 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      episode_guests: {
+        Row: {
+          created_at: string
+          episode_id: string
+          guest_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          episode_id: string
+          guest_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          episode_id?: string
+          guest_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episode_guests_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episode_guests_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      episodes: {
+        Row: {
+          cover_art: string | null
+          created_at: string
+          episode_number: number
+          id: string
+          introduction: string
+          notes: string | null
+          publish_date: string | null
+          recording_links: Json | null
+          scheduled: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_art?: string | null
+          created_at?: string
+          episode_number: number
+          id?: string
+          introduction: string
+          notes?: string | null
+          publish_date?: string | null
+          recording_links?: Json | null
+          scheduled: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_art?: string | null
+          created_at?: string
+          episode_number?: number
+          id?: string
+          introduction?: string
+          notes?: string | null
+          publish_date?: string | null
+          recording_links?: Json | null
+          scheduled?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      guests: {
+        Row: {
+          background_research: string | null
+          bio: string
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          image_url: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          social_links: Json
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          background_research?: string | null
+          bio: string
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          social_links?: Json
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          background_research?: string | null
+          bio?: string
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          social_links?: Json
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

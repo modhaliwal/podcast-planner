@@ -1,10 +1,12 @@
 
-import { guests, episodes } from '@/lib/data';
+import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 
 const Dashboard = () => {
+  const { guests, episodes, isDataLoading } = useAuth();
+  
   // Calculate statistics
   const totalGuests = guests.length;
   const totalEpisodes = episodes.length;
@@ -27,7 +29,6 @@ const Dashboard = () => {
             value={totalGuests}
             description="People in your database"
             icon={<Users className="h-5 w-5" />}
-            trend={{ value: "2 guests", positive: true }}
           />
           
           <StatsCard
@@ -35,7 +36,6 @@ const Dashboard = () => {
             value={totalEpisodes}
             description="Episodes created"
             icon={<MicIcon className="h-5 w-5" />}
-            trend={{ value: "3 episodes", positive: true }}
           />
           
           <StatsCard

@@ -14,7 +14,7 @@ export interface Guest {
   id: string;
   name: string;
   title: string;
-  company?: string; // Added company/organization field
+  company?: string;
   email?: string;
   phone?: string;
   bio: string;
@@ -25,12 +25,6 @@ export interface Guest {
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;
   updatedAt: string;
-}
-
-export interface Topic {
-  id: string;
-  title: string;
-  notes: string;
 }
 
 export interface RecordingLinks {
@@ -50,7 +44,6 @@ export interface Episode {
   coverArt?: string;       // URL to the cover art image
   guestIds: string[];
   introduction: string;
-  topics: Topic[];
   notes: string;
   recordingLinks?: RecordingLinks;
   createdAt: string;
