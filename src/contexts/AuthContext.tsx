@@ -61,16 +61,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshGuests = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user found, skipping guest refresh");
+      return;
+    }
     
     setIsDataLoading(true);
     try {
+      console.log("Fetching guests from database...");
+      
       const { data, error } = await supabase
         .from('guests')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching guests:", error);
+        throw error;
+      }
+      
+      console.log("Raw guests data:", data);
+      
+      if (!data || data.length === 0) {
+        console.log("No guests found in database");
+        setGuests([]);
+        return;
+      }
       
       const formattedGuests: Guest[] = data.map(guest => ({
         id: guest.id,
@@ -81,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         phone: guest.phone || undefined,
         bio: guest.bio,
         imageUrl: guest.image_url || undefined,
-        socialLinks: guest.social_links as SocialLinks,
+        socialLinks: guest.social_links as SocialLinks || {},
         notes: guest.notes || undefined,
         backgroundResearch: guest.background_research || undefined,
         status: (guest.status as Guest['status']) || 'potential',
@@ -89,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatedAt: guest.updated_at
       }));
       
+      console.log("Formatted guests:", formattedGuests);
       setGuests(formattedGuests);
     } catch (error: any) {
       toast.error(`Error fetching guests: ${error.message}`);

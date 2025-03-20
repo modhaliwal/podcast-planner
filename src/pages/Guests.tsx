@@ -5,7 +5,7 @@ import { Shell } from '@/components/layout/Shell';
 import { GuestCard } from '@/components/guests/GuestCard';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { PlusIcon, SearchIcon, Users, Filter, LayoutGrid, LayoutList } from 'lucide-react';
+import { PlusIcon, SearchIcon, Users, Filter, LayoutGrid, LayoutList, RefreshCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -23,11 +23,23 @@ type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'card';
 
 const Guests = () => {
-  const { guests, isDataLoading, user } = useAuth();
+  const { guests, isDataLoading, refreshGuests, user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+
+  useEffect(() => {
+    console.log("Guests component mounted or updated");
+    console.log("Number of guests:", guests.length);
+    console.log("Loading state:", isDataLoading);
+    
+    // If no guests are loaded and we're not currently loading, try refreshing
+    if (guests.length === 0 && !isDataLoading) {
+      console.log("No guests found, triggering refresh");
+      refreshGuests();
+    }
+  }, [guests.length, isDataLoading, refreshGuests]);
 
   // Filter guests based on search query and status
   const filteredGuests = guests.filter(guest => {
@@ -44,6 +56,12 @@ const Guests = () => {
     
     return matchesSearch && matchesStatus;
   });
+
+  // Handle refresh button click
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    refreshGuests();
+  };
 
   // Redirect to add guest page
   const handleAddGuest = () => {
@@ -66,10 +84,20 @@ const Guests = () => {
             <p className="section-subtitle">Manage your guest profiles and information</p>
           </div>
           
-          <Button size="default" onClick={handleAddGuest}>
-            <PlusIcon className="mr-2 h-4 w-4" />
-            Add Guest
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleRefresh} 
+              disabled={isDataLoading}
+            >
+              <RefreshCcw className={`h-4 w-4 ${isDataLoading ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button size="default" onClick={handleAddGuest}>
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Add Guest
+            </Button>
+          </div>
         </div>
         
         <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -138,7 +166,7 @@ const Guests = () => {
         
         {isDataLoading ? (
           <div className="flex items-center justify-center py-10">
-            <p className="text-muted-foreground">Loading guests...</p>
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>
         ) : filteredGuests.length > 0 ? (
           viewMode === 'list' ? (
