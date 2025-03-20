@@ -57,7 +57,11 @@ export function GuestList({ guests }: GuestListProps) {
               .toUpperCase();
             
             return (
-              <TableRow key={guest.id} className="group">
+              <TableRow 
+                key={guest.id} 
+                className="group cursor-pointer" 
+                onClick={() => window.location.href = `/guests/${guest.id}`}
+              >
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9 border">
@@ -116,13 +120,10 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link 
-                    to={`/guests/${guest.id}`}
-                    className="inline-flex items-center text-sm font-medium text-primary"
-                  >
+                  <span className="inline-flex items-center text-sm font-medium text-primary">
                     View
                     <ChevronRight className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </Link>
+                  </span>
                 </TableCell>
               </TableRow>
             );
