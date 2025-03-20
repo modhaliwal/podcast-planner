@@ -36,7 +36,7 @@ const Episodes = () => {
           </div>
           
           <Button size="default" asChild>
-            <Link to="#">
+            <Link to="/episodes/create">
               <PlusIcon className="mr-2 h-4 w-4" />
               Create Episode
             </Link>
@@ -81,7 +81,7 @@ const Episodes = () => {
             description={searchQuery ? "Try adjusting your search terms" : "Get started by creating your first episode"}
             action={{
               label: "Create Episode",
-              onClick: () => console.log("Create episode clicked")
+              onClick: () => window.location.href = "/episodes/create"
             }}
           />
         )}
