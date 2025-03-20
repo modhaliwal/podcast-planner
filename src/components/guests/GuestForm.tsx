@@ -58,6 +58,12 @@ const quillFormats = [
   'link'
 ];
 
+// Custom styles for ReactQuill
+const quillStyles = {
+  height: '200px',  // Increased default height
+  marginBottom: '50px', // Add space below the editor to accommodate the toolbar
+};
+
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
@@ -390,7 +396,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                   <FormControl>
                     <Textarea 
                       {...field} 
-                      rows={5}
+                      rows={8}
                       placeholder="Guest biography" 
                       required
                     />
@@ -421,7 +427,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                 formats={quillFormats}
                 placeholder="Research information about this guest"
                 theme="snow"
-                className="bg-background"
+                className="bg-background resize-vertical"
+                style={quillStyles}
               />
             </div>
 
@@ -435,7 +442,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                   formats={quillFormats}
                   placeholder="Private notes about this guest"
                   theme="snow"
-                  className="bg-background"
+                  className="bg-background resize-vertical"
+                  style={quillStyles}
                 />
               </div>
             </div>
