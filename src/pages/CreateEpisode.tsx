@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon, Plus, Trash, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, addDays, nextFriday } from 'date-fns';
+import { format, addDays, nextFriday, addWeeks } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { 
   Select, 
@@ -53,6 +53,32 @@ const getSecondTimeSlot = (date: Date) => {
   return newDate;
 };
 
+// Helper to determine the date for a new episode based on the current episodes count
+const getNextEpisodeDate = (episodesCount: number) => {
+  // Calculate which pair this episode belongs to (0-indexed)
+  const pairIndex = Math.floor(episodesCount / 2);
+  
+  // Get the base Friday for this pair
+  const baseFriday = getUpcomingFriday();
+  
+  // For first pair (0): upcoming Friday
+  // For second pair (1): +2 weeks
+  // For third pair (2): +4 weeks
+  // For subsequent pairs: +2 weeks per pair
+  const weeksToAdd = pairIndex > 0 ? pairIndex * 2 : 0;
+  
+  // Add the required number of weeks
+  const targetDate = addWeeks(baseFriday, weeksToAdd);
+  
+  // If this is an odd-indexed episode (second in the pair), set time to 11:30 AM
+  if (episodesCount % 2 === 1) {
+    return getSecondTimeSlot(targetDate);
+  }
+  
+  // For even-indexed episodes (first in the pair), return date at 10:00 AM
+  return targetDate;
+};
+
 const CreateEpisode = () => {
   const navigate = useNavigate();
   const [episodes, setEpisodes] = useState<EpisodeFormData[]>([
@@ -62,14 +88,13 @@ const CreateEpisode = () => {
 
   const addEpisode = () => {
     const lastEpisode = episodes[episodes.length - 1];
-    // Use the same date but set to 11:30 AM for additional episodes
-    const sameDate = getSecondTimeSlot(lastEpisode.scheduled);
+    const nextDate = getNextEpisodeDate(episodes.length);
     
     setEpisodes([
       ...episodes,
       { 
         episodeNumber: lastEpisode.episodeNumber + 1,
-        scheduled: sameDate
+        scheduled: nextDate
       }
     ]);
   };
