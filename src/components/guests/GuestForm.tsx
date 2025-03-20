@@ -29,7 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Twitter, Linkedin, Instagram, Globe, Youtube, Plus, Trash } from "lucide-react";
+import { Twitter, Linkedin, Instagram, Globe, Youtube, Plus, Trash, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 interface GuestFormProps {
   guest: Guest;
@@ -39,10 +40,8 @@ interface GuestFormProps {
 
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
-  const [otherLinks, setOtherLinks] = useState(guest.socialLinks.other || []);
-  const [newLinkLabel, setNewLinkLabel] = useState("");
-  const [newLinkUrl, setNewLinkUrl] = useState("");
-  const [showAddLinkDialog, setShowAddLinkDialog] = useState(false);
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [isGeneratingResearch, setIsGeneratingResearch] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -52,6 +51,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       phone: guest.phone || "",
       bio: guest.bio,
       notes: guest.notes || "",
+      backgroundResearch: guest.backgroundResearch || "",
       status: guest.status || "potential",
       twitter: socialLinks.twitter || "",
       linkedin: socialLinks.linkedin || "",
@@ -71,6 +71,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       phone: data.phone || undefined,
       bio: data.bio,
       notes: data.notes || undefined,
+      backgroundResearch: data.backgroundResearch || undefined,
       status: data.status,
       socialLinks: {
         twitter: data.twitter || undefined,
@@ -78,7 +79,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         instagram: data.instagram || undefined,
         youtube: data.youtube || undefined,
         website: data.website || undefined,
-        other: otherLinks.length > 0 ? otherLinks : undefined,
       },
       updatedAt: new Date().toISOString(),
     };
@@ -86,19 +86,62 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     onSave(updatedGuest);
   };
 
-  const addOtherLink = () => {
-    if (newLinkLabel && newLinkUrl) {
-      setOtherLinks([...otherLinks, { label: newLinkLabel, url: newLinkUrl }]);
-      setNewLinkLabel("");
-      setNewLinkUrl("");
-      setShowAddLinkDialog(false);
+  const generateBio = async () => {
+    setIsGeneratingBio(true);
+    try {
+      // In a real app, this would be a call to an AI service
+      // For now, we'll simulate a delay and generate a simple bio
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const name = form.getValues('name');
+      const title = form.getValues('title');
+      
+      const generatedBio = `${name} is a distinguished ${title} with extensive experience in their field. Known for innovative approaches and thought leadership, they have contributed significantly to industry advancements. Their unique perspective and insights make them a valuable voice in current discussions and an engaging podcast guest.`;
+      
+      form.setValue('bio', generatedBio);
+      toast.success("Bio generated successfully");
+    } catch (error) {
+      toast.error("Failed to generate bio");
+      console.error(error);
+    } finally {
+      setIsGeneratingBio(false);
     }
   };
 
-  const removeOtherLink = (index: number) => {
-    const updatedLinks = [...otherLinks];
-    updatedLinks.splice(index, 1);
-    setOtherLinks(updatedLinks);
+  const generateBackgroundResearch = async () => {
+    setIsGeneratingResearch(true);
+    try {
+      // In a real app, this would be a call to an AI service
+      // For now, we'll simulate a delay and generate simple research
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const name = form.getValues('name');
+      const title = form.getValues('title');
+      
+      const generatedResearch = `Research findings for ${name}:
+      
+1. Educational background: Graduated with honors in relevant field.
+2. Career highlights: Has over 10 years of experience as a ${title}.
+3. Previous media appearances: Has been featured on several industry podcasts.
+4. Publications: Author of multiple well-received articles in industry journals.
+5. Areas of expertise: Specializes in emerging trends and practical applications.
+6. Speaking style: Articulate, engaging, with a talent for making complex topics accessible.
+7. Recent projects: Currently involved in several innovative initiatives.
+8. Social media presence: Active on professional platforms with substantial following.
+
+Recommended topics to explore:
+- Their journey to becoming a ${title}
+- Their perspective on industry challenges and opportunities
+- Their vision for the future of their field`;
+      
+      form.setValue('backgroundResearch', generatedResearch);
+      toast.success("Background research generated successfully");
+    } catch (error) {
+      toast.error("Failed to generate background research");
+      console.error(error);
+    } finally {
+      setIsGeneratingResearch(false);
+    }
   };
 
   return (
@@ -302,18 +345,60 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           </div>
 
           <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <FormLabel>Bio</FormLabel>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={generateBio}
+                disabled={isGeneratingBio}
+              >
+                <Sparkles className="h-4 w-4 mr-1" />
+                {isGeneratingBio ? 'Generating...' : 'Generate Bio'}
+              </Button>
+            </div>
             <FormField
               control={form.control}
               name="bio"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bio</FormLabel>
                   <FormControl>
                     <Textarea 
                       {...field} 
                       rows={5}
                       placeholder="Guest biography" 
                       required
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex items-center justify-between">
+              <FormLabel>Background Research</FormLabel>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={generateBackgroundResearch}
+                disabled={isGeneratingResearch}
+              >
+                <Sparkles className="h-4 w-4 mr-1" />
+                {isGeneratingResearch ? 'Generating...' : 'Generate Research'}
+              </Button>
+            </div>
+            <FormField
+              control={form.control}
+              name="backgroundResearch"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      rows={8}
+                      placeholder="Research information about this guest" 
                     />
                   </FormControl>
                   <FormMessage />
@@ -340,49 +425,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
             />
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Other Links</h3>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowAddLinkDialog(true)}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Link
-              </Button>
-            </div>
-
-            {otherLinks.length > 0 ? (
-              <div className="space-y-3">
-                {otherLinks.map((link, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center justify-between p-3 rounded-lg border"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium">{link.label}</p>
-                      <p className="text-sm text-muted-foreground truncate">{link.url}</p>
-                    </div>
-                    <Button 
-                      type="button"
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => removeOtherLink(index)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 border rounded-lg bg-muted/20">
-                <p className="text-muted-foreground text-sm">No additional links added</p>
-              </div>
-            )}
-          </div>
-
           <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
@@ -393,46 +435,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           </div>
         </form>
       </Form>
-
-      {/* Dialog for adding a new link */}
-      <Dialog open={showAddLinkDialog} onOpenChange={setShowAddLinkDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Link</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="linkLabel">Link Label</Label>
-              <Input
-                id="linkLabel"
-                value={newLinkLabel}
-                onChange={(e) => setNewLinkLabel(e.target.value)}
-                placeholder="e.g., Personal Blog, GitHub Profile"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="linkUrl">URL</Label>
-              <Input
-                id="linkUrl"
-                value={newLinkUrl}
-                onChange={(e) => setNewLinkUrl(e.target.value)}
-                placeholder="https://"
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowAddLinkDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={addOtherLink}>
-              Add Link
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

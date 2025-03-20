@@ -154,6 +154,19 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                 </CardContent>
               </Card>
               
+              {guest.backgroundResearch && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Background Research</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="whitespace-pre-line">{guest.backgroundResearch}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               {guest.notes && (
                 <Card className="mt-6">
                   <CardHeader>
@@ -162,30 +175,6 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                   <CardContent>
                     <div className="prose dark:prose-invert max-w-none">
                       <p className="whitespace-pre-line">{guest.notes}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {guest.socialLinks.other && guest.socialLinks.other.length > 0 && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Other Links</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {guest.socialLinks.other.map((link, index) => (
-                        <a 
-                          key={index}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center p-3 rounded-lg border hover:bg-muted transition-colors"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-3 text-muted-foreground" />
-                          <span>{link.label}</span>
-                        </a>
-                      ))}
                     </div>
                   </CardContent>
                 </Card>
