@@ -10,8 +10,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarIcon, Plus, Trash, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, addDays, nextFriday, addWeeks } from 'date-fns';
-import { toast } from '@/hooks/use-toast';
+import { format, nextFriday, addWeeks } from 'date-fns';
+import { toast } from 'sonner';
 import { 
   Select, 
   SelectContent, 
@@ -19,10 +19,13 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EpisodeFormData {
   episodeNumber: number;
   scheduled: Date;
+  title?: string;
 }
 
 // Helper function to generate time options
@@ -81,20 +84,28 @@ const getNextEpisodeDate = (episodesCount: number) => {
 
 const CreateEpisode = () => {
   const navigate = useNavigate();
+  const { user, refreshEpisodes } = useAuth();
   const [episodes, setEpisodes] = useState<EpisodeFormData[]>([
-    { episodeNumber: 1, scheduled: getUpcomingFriday() }
+    { 
+      episodeNumber: 1, 
+      scheduled: getUpcomingFriday(),
+      title: `Episode #1` 
+    }
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const timeOptions = generateTimeOptions();
 
   const addEpisode = () => {
     const lastEpisode = episodes[episodes.length - 1];
+    const nextEpisodeNumber = lastEpisode.episodeNumber + 1;
     const nextDate = getNextEpisodeDate(episodes.length);
     
     setEpisodes([
       ...episodes,
       { 
-        episodeNumber: lastEpisode.episodeNumber + 1,
-        scheduled: nextDate
+        episodeNumber: nextEpisodeNumber,
+        scheduled: nextDate,
+        title: `Episode #${nextEpisodeNumber}`
       }
     ]);
   };
@@ -125,8 +136,17 @@ const CreateEpisode = () => {
     updateEpisode(index, 'scheduled', updatedDate);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to create episodes",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Validation
     const hasErrors = episodes.some(ep => !ep.episodeNumber || !ep.scheduled);
@@ -139,14 +159,47 @@ const CreateEpisode = () => {
       return;
     }
 
-    // Would normally save to database here
-    toast({
-      title: "Success!",
-      description: `Created ${episodes.length} new episodes`,
-    });
-    
-    // Navigate back to episodes list
-    navigate('/episodes');
+    setIsSubmitting(true);
+
+    try {
+      // Save each episode to the database
+      for (const episode of episodes) {
+        const { error } = await supabase
+          .from('episodes')
+          .insert({
+            user_id: user.id,
+            episode_number: episode.episodeNumber,
+            title: episode.title || `Episode #${episode.episodeNumber}`,
+            scheduled: episode.scheduled.toISOString(),
+            status: 'scheduled',
+            introduction: `Introduction for Episode #${episode.episodeNumber}`, // Default introduction
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+      }
+
+      // Refresh episodes list
+      await refreshEpisodes();
+      
+      toast({
+        title: "Success!",
+        description: `Created ${episodes.length} new episodes`,
+      });
+      
+      // Navigate back to episodes list
+      navigate('/episodes');
+    } catch (error: any) {
+      toast({
+        title: "Error Creating Episodes",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      console.error("Error creating episodes:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -169,15 +222,16 @@ const CreateEpisode = () => {
             <CardContent>
               <div className="space-y-4">
                 {/* Header row with field labels */}
-                <div className="grid grid-cols-3 gap-4 font-medium text-sm mb-1">
+                <div className="grid grid-cols-4 gap-4 font-medium text-sm mb-1">
                   <Label>Episode Number</Label>
+                  <Label>Title</Label>
                   <Label>Recording Date</Label>
                   <Label>Recording Time</Label>
                 </div>
                 
                 {/* Episode rows */}
                 {episodes.map((episode, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-4 items-center">
+                  <div key={index} className="grid grid-cols-4 gap-4 items-center">
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
@@ -197,6 +251,14 @@ const CreateEpisode = () => {
                         </Button>
                       )}
                     </div>
+                    
+                    <Input
+                      type="text"
+                      placeholder={`Episode #${episode.episodeNumber}`}
+                      value={episode.title || ''}
+                      onChange={(e) => updateEpisode(index, 'title', e.target.value)}
+                    />
+                    
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -269,8 +331,11 @@ const CreateEpisode = () => {
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Create Episodes
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Episodes'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
