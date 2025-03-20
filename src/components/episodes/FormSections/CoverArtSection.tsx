@@ -9,7 +9,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { uploadImage, deleteImage, isBlobUrl } from '@/lib/imageUpload';
+import { isBlobUrl } from '@/lib/imageUpload';
 
 interface CoverArtSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -17,7 +17,6 @@ interface CoverArtSectionProps {
 
 export function CoverArtSection({ form }: CoverArtSectionProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(form.getValues('coverArt') || null);
-  const [isUploading, setIsUploading] = useState(false);
   const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(form.getValues('coverArt'));
   
   // Store the original cover art URL when component mounts
@@ -25,7 +24,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
     setOriginalCoverArt(form.getValues('coverArt'));
   }, [form]);
   
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -44,52 +43,15 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
     // Create a preview URL
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
-    setIsUploading(true);
     
-    try {
-      toast.info("Uploading cover art...");
-      
-      // Upload to Supabase storage
-      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
-      
-      if (uploadedUrl) {
-        // If there was a previous image from Supabase (not a blob), delete it
-        if (originalCoverArt && !isBlobUrl(originalCoverArt) && uploadedUrl !== originalCoverArt) {
-          console.log("Deleting previous cover art:", originalCoverArt);
-          const deleted = await deleteImage(originalCoverArt);
-          console.log("Previous cover art deleted:", deleted);
-        }
-        
-        // Set the form value to the uploaded image URL
-        form.setValue('coverArt', uploadedUrl, { shouldValidate: true });
-        toast.success("Cover art uploaded successfully");
-        
-        // Revoke the temporary blob URL to prevent memory leaks
-        URL.revokeObjectURL(url);
-        setPreviewUrl(uploadedUrl);
-      } else {
-        toast.error("Failed to upload cover art");
-        form.setValue('coverArt', url, { shouldValidate: true });
-      }
-    } catch (error) {
-      console.error("Error uploading cover art:", error);
-      toast.error("Error uploading cover art");
-      form.setValue('coverArt', url, { shouldValidate: true });
-    } finally {
-      setIsUploading(false);
-    }
+    // Set the form value to the blob URL temporarily
+    // This allows the form to track that we have a new image
+    form.setValue('coverArt', url, { shouldValidate: true });
   };
   
-  const removeCoverArt = async () => {
+  const removeCoverArt = () => {
     if (previewUrl && isBlobUrl(previewUrl)) {
       URL.revokeObjectURL(previewUrl);
-    }
-    
-    // If there was a real image URL (not a blob), delete it from storage
-    if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
-      console.log("Deleting cover art on removal:", originalCoverArt);
-      const deleted = await deleteImage(originalCoverArt);
-      console.log("Cover art deleted:", deleted);
     }
     
     setPreviewUrl(null);
@@ -130,16 +92,14 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                             type="button"
                             variant="outline"
                             className="relative overflow-hidden w-full md:w-auto"
-                            disabled={isUploading}
                           >
                             <Upload className="h-4 w-4 mr-2" />
-                            {isUploading ? "Uploading..." : previewUrl ? "Change Cover Art" : "Upload Cover Art"}
+                            {previewUrl ? "Change Cover Art" : "Upload Cover Art"}
                             <Input
                               type="file"
                               className="absolute inset-0 opacity-0 cursor-pointer"
                               accept="image/*"
                               onChange={handleFileChange}
-                              disabled={isUploading}
                             />
                           </Button>
                         </div>
@@ -169,7 +129,6 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                           size="icon"
                           className="absolute top-2 right-2 h-8 w-8 rounded-full"
                           onClick={removeCoverArt}
-                          disabled={isUploading}
                         >
                           <X className="h-4 w-4" />
                         </Button>

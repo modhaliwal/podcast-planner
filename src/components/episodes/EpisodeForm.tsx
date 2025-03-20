@@ -15,7 +15,7 @@ import { CoverArtSection } from './FormSections/CoverArtSection';
 import { FormActions } from './FormSections/FormActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { isBlobUrl, deleteImage } from '@/lib/imageUpload';
+import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -53,19 +53,51 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Handle cover art URL cleanup
+      // Handle cover art URL
       let coverArt = data.coverArt;
       
-      // If cover art is a blob URL or has been removed, handle accordingly
+      // If the cover art is a blob URL, upload it to storage
       if (coverArt && isBlobUrl(coverArt)) {
-        console.log("Detected blob URL for cover art, skipping");
-        coverArt = undefined;
-      } else if (coverArt !== originalCoverArt) {
-        // If cover art has changed and old one exists, delete the old one
-        if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
-          console.log("Deleting old cover art on form submit:", originalCoverArt);
-          await deleteImage(originalCoverArt);
+        console.log("Detected blob URL for cover art, uploading to storage");
+        
+        // Extract the blob data as a file
+        try {
+          const response = await fetch(coverArt);
+          const blob = await response.blob();
+          const fileName = 'cover-art.jpg';
+          const file = new File([blob], fileName, { type: blob.type });
+          
+          toast.info("Uploading cover art...");
+          const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
+          
+          if (uploadedUrl) {
+            console.log("Cover art uploaded successfully:", uploadedUrl);
+            
+            // Delete the old cover art if it exists
+            if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
+              console.log("Deleting old cover art:", originalCoverArt);
+              await deleteImage(originalCoverArt);
+            }
+            
+            // Set the new cover art URL
+            coverArt = uploadedUrl;
+            toast.success("Cover art uploaded successfully");
+          } else {
+            toast.error("Failed to upload cover art");
+            coverArt = undefined;
+          }
+          
+          // Revoke the blob URL to prevent memory leaks
+          URL.revokeObjectURL(coverArt);
+        } catch (error) {
+          console.error("Error uploading cover art:", error);
+          toast.error("Error uploading cover art");
+          coverArt = undefined;
         }
+      } else if (coverArt !== originalCoverArt && originalCoverArt && !coverArt) {
+        // Cover art was removed and we need to delete the old one
+        console.log("Deleting old cover art on removal:", originalCoverArt);
+        await deleteImage(originalCoverArt);
       }
       
       // Step 1: Update the episode

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { HeadshotSection } from "./form-sections/HeadshotSection";
 import { BasicInfoSection } from "./form-sections/BasicInfoSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
-import { deleteImage, isBlobUrl } from "@/lib/imageUpload";
+import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
 import { toast } from "sonner";
 
 interface GuestFormProps {
@@ -21,7 +22,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [notes, setNotes] = useState(guest.notes || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | undefined>(undefined);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
@@ -43,11 +44,11 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     },
   });
 
-  const handleImageChange = (file: File | null, uploadedUrl?: string) => {
+  const handleImageChange = (file: File | null, previewUrl?: string) => {
     setImageFile(file);
-    if (uploadedUrl) {
-      console.log("Setting uploaded image URL:", uploadedUrl);
-      setUploadedImageUrl(uploadedUrl);
+    if (previewUrl) {
+      console.log("Setting image preview URL:", previewUrl);
+      setImagePreviewUrl(previewUrl);
     }
   };
 
@@ -59,19 +60,29 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       let imageUrl = guest.imageUrl;
       let oldImageDeleted = false;
       
-      // If we have a pre-uploaded image URL from HeadshotSection, use that
-      if (uploadedImageUrl) {
-        console.log("Using pre-uploaded image URL:", uploadedImageUrl);
+      // Only upload the image if the user has selected a new one
+      if (imageFile) {
+        toast.info("Uploading image...");
         
-        // If there was a previous image, try to delete it
-        if (imageUrl && !isBlobUrl(imageUrl) && uploadedImageUrl !== imageUrl) {
-          console.log("Deleting previous image:", imageUrl);
-          oldImageDeleted = await deleteImage(imageUrl);
-          console.log("Previous image deleted:", oldImageDeleted);
+        // Upload the image
+        const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
+        
+        if (uploadedUrl) {
+          console.log("Image uploaded successfully, URL:", uploadedUrl);
+          
+          // If there was a previous image, try to delete it
+          if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
+            console.log("Deleting previous image:", imageUrl);
+            oldImageDeleted = await deleteImage(imageUrl);
+            console.log("Previous image deleted:", oldImageDeleted);
+          }
+          
+          imageUrl = uploadedUrl;
+          toast.success("Image uploaded successfully");
+        } else {
+          toast.error("Failed to upload image");
         }
-        
-        imageUrl = uploadedImageUrl;
-      } else if (imageFile === null && guest.imageUrl) {
+      } else if (imageFile === null && imagePreviewUrl === undefined && guest.imageUrl) {
         // User reset the image (clicked delete button)
         if (!isBlobUrl(guest.imageUrl)) {
           // Only delete from storage if it's a real URL, not a blob
@@ -82,10 +93,9 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         imageUrl = undefined;
       }
       
-      // Clear blob URLs that were previously set but not uploaded
-      if (imageUrl && isBlobUrl(imageUrl)) {
-        console.log("Clearing blob URL:", imageUrl);
-        imageUrl = undefined;
+      // Clean up blob URLs
+      if (imagePreviewUrl && isBlobUrl(imagePreviewUrl)) {
+        URL.revokeObjectURL(imagePreviewUrl);
       }
       
       console.log("Final image URL to save:", imageUrl);

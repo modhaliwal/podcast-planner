@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -5,18 +6,17 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Upload, Trash, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { isBlobUrl, uploadImage } from "@/lib/imageUpload";
+import { isBlobUrl } from "@/lib/imageUpload";
 
 interface HeadshotSectionProps {
   initialImageUrl?: string;
   guestName: string;
-  onImageChange: (file: File | null, uploadedUrl?: string) => void;
+  onImageChange: (file: File | null, previewUrl?: string) => void;
 }
 
 export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: HeadshotSectionProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
-  const [isUploading, setIsUploading] = useState(false);
   
   // Set initial image preview
   useEffect(() => {
@@ -27,7 +27,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     }
   }, [initialImageUrl]);
   
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -53,34 +53,9 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     
-    // Upload the image immediately
-    try {
-      setIsUploading(true);
-      toast.info("Uploading image...");
-      
-      // Ensure we always use the same bucket and folder
-      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'headshots');
-      
-      if (uploadedUrl) {
-        console.log("Image uploaded successfully, URL:", uploadedUrl);
-        // Set the preview to the actual uploaded URL (not the blob)
-        setImagePreview(uploadedUrl);
-        // Pass both the file and the uploaded URL to the parent component
-        onImageChange(file, uploadedUrl);
-        toast.success("Image uploaded successfully");
-      } else {
-        // If upload failed, just pass the file without a permanent URL
-        onImageChange(file);
-        toast.error("Failed to upload image. Will try again on save.");
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Error uploading image. Will try again on save.");
-      // Still pass the file so it can be tried again on form submit
-      onImageChange(file);
-    } finally {
-      setIsUploading(false);
-    }
+    // Just pass the file and preview URL to the parent component
+    // without uploading immediately
+    onImageChange(file, previewUrl);
   };
 
   const resetImage = () => {
@@ -133,10 +108,10 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       </div>
       
       <div className="flex items-center gap-2">
-        <Label htmlFor="headshot-upload" className={`cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+        <Label htmlFor="headshot-upload" className="cursor-pointer">
           <div className="flex items-center gap-2 py-2 px-3 bg-muted rounded-md hover:bg-accent transition-colors">
             <Upload className="h-4 w-4" />
-            <span>{isUploading ? "Uploading..." : "Upload Headshot"}</span>
+            <span>Upload Headshot</span>
           </div>
           <Input 
             id="headshot-upload" 
@@ -144,7 +119,6 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
             className="hidden" 
             onChange={handleImageChange}
             accept="image/jpeg,image/png,image/webp"
-            disabled={isUploading}
           />
         </Label>
         
@@ -154,7 +128,6 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
             variant="outline"
             size="sm"
             onClick={resetImage}
-            disabled={isUploading}
           >
             <Trash className="h-4 w-4 mr-1" />
             Reset
