@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Guest } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -34,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, Trash, Sparkles, Building, Upload, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface GuestFormProps {
   guest: Guest;
@@ -41,7 +41,6 @@ interface GuestFormProps {
   onCancel: () => void;
 }
 
-// Rich text editor modules and formats configuration
 const quillModules = {
   toolbar: [
     [{ 'header': [1, 2, 3, false] }],
@@ -59,10 +58,9 @@ const quillFormats = [
   'link'
 ];
 
-// Custom styles for ReactQuill
 const quillStyles = {
-  height: '200px',  // Increased default height
-  marginBottom: '50px', // Add space below the editor to accommodate the toolbar
+  height: '200px',
+  marginBottom: '50px',
 };
 
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
@@ -74,7 +72,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(guest.imageUrl);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  // Get initials from name for avatar fallback
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -106,21 +103,18 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       toast.error("Please upload a valid image file (JPEG, PNG or WebP)");
       return;
     }
 
-    // Check file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error("Image is too large. Maximum size is 10MB");
       return;
     }
 
-    // Create preview URL
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
     setImageFile(file);
@@ -128,10 +122,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   };
 
   const handleSubmit = (data: any) => {
-    // In a real app, you would upload the image to a server
-    // and get a URL back. For this demo, we'll just use the preview URL.
-    
-    // Update the guest object with form data
     const updatedGuest: Guest = {
       ...guest,
       name: data.name,
@@ -143,8 +133,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       notes: notes || undefined,
       backgroundResearch: backgroundResearch || undefined,
       status: data.status,
-      // If we have a new image file, use the preview URL
-      // In a real app, this would be the URL from the server
       imageUrl: imageFile ? imagePreview : guest.imageUrl,
       socialLinks: {
         twitter: data.twitter || undefined,
@@ -161,7 +149,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     onSave(updatedGuest);
   };
 
-  // Clean up preview URL when component unmounts
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview !== guest.imageUrl) {
@@ -173,8 +160,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const generateBio = async () => {
     setIsGeneratingBio(true);
     try {
-      // In a real app, this would be a call to an AI service
-      // For now, we'll simulate a delay and generate a simple bio
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const name = form.getValues('name');
@@ -195,8 +180,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const generateBackgroundResearch = async () => {
     setIsGeneratingResearch(true);
     try {
-      // In a real app, this would be a call to an AI service
-      // For now, we'll simulate a delay and generate simple research
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const name = form.getValues('name');
@@ -239,11 +222,20 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="flex flex-col items-center mb-6">
-                <div className="mb-4">
-                  <Avatar className="h-24 w-24 border">
-                    <AvatarImage src={imagePreview} alt={form.getValues('name')} />
-                    <AvatarFallback>{getInitials(form.getValues('name'))}</AvatarFallback>
-                  </Avatar>
+                <div className="mb-4 w-full max-w-[240px]">
+                  <AspectRatio ratio={2/3} className="bg-muted rounded-md overflow-hidden border">
+                    {imagePreview ? (
+                      <img
+                        src={imagePreview}
+                        alt={form.getValues('name')}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full w-full bg-muted">
+                        <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                    )}
+                  </AspectRatio>
                 </div>
                 
                 <div className="flex items-center gap-2">
