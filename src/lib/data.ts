@@ -16,7 +16,8 @@ export const guests: Guest[] = [
       linkedin: 'https://linkedin.com/in/janesmith',
       website: 'https://janesmith.example.com'
     },
-    notes: 'Jane is very knowledgeable about AI ethics and has a calm speaking style. She prefers tea over coffee.',
+    notes: '<p>Jane is very knowledgeable about AI ethics and has a calm speaking style. She prefers tea over coffee.</p><ul><li>Speaks at a moderate pace</li><li>Very articulate about complex topics</li><li>Prefers philosophical questions over technical ones</li></ul>',
+    backgroundResearch: '<p>Dr. Smith has published the following notable papers:</p><ol><li><strong>Ethical Considerations in AI Development</strong> (2022)</li><li><strong>The Social Impact of Machine Learning</strong> (2021)</li><li><strong>Responsible AI: A Framework</strong> (2020)</li></ol><p>She has appeared on several technology podcasts including TechTalk and Future Forward.</p>',
     createdAt: '2023-01-15T08:00:00Z',
     updatedAt: '2023-01-15T08:00:00Z'
   },
@@ -33,7 +34,8 @@ export const guests: Guest[] = [
       linkedin: 'https://linkedin.com/in/michaelj',
       website: 'https://michaeljohnson.co'
     },
-    notes: 'Michael speaks quickly and has lots of stories. He\'s passionate about decentralized technologies.',
+    notes: '<p>Michael speaks quickly and has lots of stories.</p><ul><li>Very enthusiastic about blockchain technology</li><li>Sometimes goes on tangents</li><li>Responds well to specific questions</li></ul><p>He's passionate about decentralized technologies.</p>',
+    backgroundResearch: '<p>Michael's startups:</p><ol><li><strong>ChainTrack</strong> - Supply chain management using blockchain</li><li><strong>DataSecure</strong> - Acquired for $25M in 2019</li><li><strong>NetConnect</strong> - Early social networking platform</li></ol>',
     createdAt: '2023-02-10T10:15:00Z',
     updatedAt: '2023-02-10T10:15:00Z'
   },
@@ -48,7 +50,8 @@ export const guests: Guest[] = [
       linkedin: 'https://linkedin.com/in/lisachen',
       website: 'https://lisachen.science'
     },
-    notes: 'Lisa is brilliant at explaining complex topics in accessible ways. She appreciates when you do your homework on quantum basics.',
+    notes: '<p>Lisa is brilliant at explaining complex topics in accessible ways.</p><ul><li>Breaks down quantum concepts with helpful analogies</li><li>Patient with technical questions</li><li>Prefers to be asked challenging questions</li></ul><p>She appreciates when you do your homework on quantum basics.</p>',
+    backgroundResearch: '<p>Recent achievements:</p><ol><li><strong>Quantum Error Correction breakthrough</strong> (2023)</li><li><strong>Development of a new quantum algorithm for optimization problems</strong></li><li><strong>Collaboration with Major Tech Co. on quantum cryptography</strong></li></ol><p>She has received the Quantum Innovation Award in 2022.</p>',
     createdAt: '2023-03-05T14:30:00Z',
     updatedAt: '2023-03-05T14:30:00Z'
   }
