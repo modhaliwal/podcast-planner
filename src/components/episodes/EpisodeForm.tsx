@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,7 @@ import { CoverArtSection } from './FormSections/CoverArtSection';
 import { FormActions } from './FormSections/FormActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isBlobUrl, deleteImage } from '@/lib/imageUpload';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -25,6 +26,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const navigate = useNavigate();
   const { refreshEpisodes } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(episode.coverArt);
   
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
@@ -42,10 +44,30 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     },
   });
   
+  // Store original cover art URL for potential cleanup
+  useEffect(() => {
+    setOriginalCoverArt(episode.coverArt);
+  }, [episode.coverArt]);
+  
   const onSubmit = async (data: EpisodeFormValues) => {
     setIsSubmitting(true);
     
     try {
+      // Handle cover art URL cleanup
+      let coverArt = data.coverArt;
+      
+      // If cover art is a blob URL or has been removed, handle accordingly
+      if (coverArt && isBlobUrl(coverArt)) {
+        console.log("Detected blob URL for cover art, skipping");
+        coverArt = undefined;
+      } else if (coverArt !== originalCoverArt) {
+        // If cover art has changed and old one exists, delete the old one
+        if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
+          console.log("Deleting old cover art on form submit:", originalCoverArt);
+          await deleteImage(originalCoverArt);
+        }
+      }
+      
       // Step 1: Update the episode
       const { error: updateError } = await supabase
         .from('episodes')
@@ -57,7 +79,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           status: data.status,
           scheduled: data.scheduled.toISOString(),
           publish_date: data.publishDate ? data.publishDate.toISOString() : null,
-          cover_art: data.coverArt,
+          cover_art: coverArt,
           recording_links: data.recordingLinks,
           updated_at: new Date().toISOString()
         })

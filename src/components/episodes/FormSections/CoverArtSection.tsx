@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -9,7 +9,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { uploadImage, isBlobUrl } from '@/lib/imageUpload';
+import { uploadImage, deleteImage, isBlobUrl } from '@/lib/imageUpload';
 
 interface CoverArtSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -18,6 +18,12 @@ interface CoverArtSectionProps {
 export function CoverArtSection({ form }: CoverArtSectionProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(form.getValues('coverArt') || null);
   const [isUploading, setIsUploading] = useState(false);
+  const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(form.getValues('coverArt'));
+  
+  // Store the original cover art URL when component mounts
+  useEffect(() => {
+    setOriginalCoverArt(form.getValues('coverArt'));
+  }, [form]);
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,6 +53,13 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
       const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
       
       if (uploadedUrl) {
+        // If there was a previous image from Supabase (not a blob), delete it
+        if (originalCoverArt && !isBlobUrl(originalCoverArt) && uploadedUrl !== originalCoverArt) {
+          console.log("Deleting previous cover art:", originalCoverArt);
+          const deleted = await deleteImage(originalCoverArt);
+          console.log("Previous cover art deleted:", deleted);
+        }
+        
         // Set the form value to the uploaded image URL
         form.setValue('coverArt', uploadedUrl, { shouldValidate: true });
         toast.success("Cover art uploaded successfully");
@@ -67,10 +80,18 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
     }
   };
   
-  const removeCoverArt = () => {
+  const removeCoverArt = async () => {
     if (previewUrl && isBlobUrl(previewUrl)) {
       URL.revokeObjectURL(previewUrl);
     }
+    
+    // If there was a real image URL (not a blob), delete it from storage
+    if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
+      console.log("Deleting cover art on removal:", originalCoverArt);
+      const deleted = await deleteImage(originalCoverArt);
+      console.log("Cover art deleted:", deleted);
+    }
+    
     setPreviewUrl(null);
     form.setValue('coverArt', undefined, { shouldValidate: true });
     toast.success("Cover art removed");
