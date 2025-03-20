@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -7,15 +6,14 @@ import { Episode, Guest } from '@/lib/types';
 import { Form } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { episodeFormSchema, EpisodeFormValues } from './EpisodeFormSchema';
-import { BasicInfoSection } from './FormSections/BasicInfoSection';
 import { ScheduleSection } from './FormSections/ScheduleSection';
 import { GuestsSection } from './FormSections/GuestsSection';
 import { ContentSection } from './FormSections/ContentSection';
-import { CoverArtSection } from './FormSections/CoverArtSection';
 import { FormActions } from './FormSections/FormActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
+import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSection';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -155,18 +153,15 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <BasicInfoSection form={form} />
-            <CoverArtSection form={form} />
-          </div>
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6">
+          <CombinedBasicInfoSection form={form} />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ScheduleSection form={form} />
             <GuestsSection form={form} guests={guests} />
           </div>
-          <div className="md:col-span-2">
-            <ContentSection form={form} />
-          </div>
+          
+          <ContentSection form={form} />
         </div>
         
         <FormActions episodeId={episode.id} isSubmitting={isSubmitting} />
