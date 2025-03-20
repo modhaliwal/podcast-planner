@@ -6,21 +6,24 @@ import { Shell } from '@/components/layout/Shell';
 import { GuestCard } from '@/components/guests/GuestCard';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { PlusIcon, SearchIcon, Users, Filter } from 'lucide-react';
+import { PlusIcon, SearchIcon, Users, Filter, LayoutGrid, LayoutList } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { GuestList } from '@/components/guests/GuestList';
+import { Toggle } from '@/components/ui/toggle';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
+type ViewMode = 'list' | 'card';
 
 const Guests = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   // Filter guests based on search query and status
   const filteredGuests = guests.filter(guest => {
@@ -66,7 +69,30 @@ const Guests = () => {
             />
           </div>
           
-          <div className="md:w-auto">
+          <div className="flex items-center gap-2">
+            <div className="bg-muted/50 rounded-md flex p-1">
+              <Toggle
+                pressed={viewMode === 'list'}
+                onPressedChange={() => setViewMode('list')}
+                size="sm"
+                variant="outline"
+                aria-label="List view"
+                className="rounded-md data-[state=on]:bg-background data-[state=on]:text-foreground"
+              >
+                <LayoutList className="h-4 w-4" />
+              </Toggle>
+              <Toggle
+                pressed={viewMode === 'card'}
+                onPressedChange={() => setViewMode('card')}
+                size="sm"
+                variant="outline"
+                aria-label="Card view"
+                className="rounded-md data-[state=on]:bg-background data-[state=on]:text-foreground"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Toggle>
+            </div>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full md:w-auto">
@@ -97,11 +123,15 @@ const Guests = () => {
         </div>
         
         {filteredGuests.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGuests.map(guest => (
-              <GuestCard key={guest.id} guest={guest} />
-            ))}
-          </div>
+          viewMode === 'list' ? (
+            <GuestList guests={filteredGuests} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredGuests.map(guest => (
+                <GuestCard key={guest.id} guest={guest} />
+              ))}
+            </div>
+          )
         ) : (
           <EmptyState 
             icon={<Users className="h-8 w-8 text-muted-foreground" />}
