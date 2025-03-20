@@ -48,7 +48,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       URL.revokeObjectURL(localBlobUrl);
     }
 
-    // Create a new blob URL for preview
+    // Create a new blob URL for preview only
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
@@ -58,20 +58,23 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       setIsUploading(true);
       toast.info("Uploading image...");
       
-      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'headshots');
+      const uploadedUrl = await uploadImage(file);
       
       if (uploadedUrl) {
+        // Set the preview to the actual uploaded URL (not the blob)
+        setImagePreview(uploadedUrl);
         // Pass both the file and the uploaded URL to the parent component
         onImageChange(file, uploadedUrl);
         toast.success("Image uploaded successfully");
       } else {
-        // If upload failed, just pass the file
+        // If upload failed, just pass the file without a permanent URL
         onImageChange(file);
         toast.error("Failed to upload image. Will try again on save.");
       }
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error uploading image. Will try again on save.");
+      // Still pass the file so it can be tried again on form submit
       onImageChange(file);
     } finally {
       setIsUploading(false);
@@ -143,7 +146,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
           />
         </Label>
         
-        {(localBlobUrl || imagePreview) && (
+        {(imagePreview) && (
           <Button 
             type="button"
             variant="outline"

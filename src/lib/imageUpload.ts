@@ -53,27 +53,32 @@ export const uploadImage = async (
   try {
     if (!file) return null;
     
-    // Make sure we're not trying to upload a blob URL directly
-    // The file is of type File, so we don't need to check if it's a blob URL
-    // Removing the incorrect check that was causing the TypeScript error
-    
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
     
+    console.log(`Uploading ${file.name} to ${bucket}/${filePath}`);
+    
     // Upload the file
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucket)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
       });
     
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('Error uploading to Supabase:', uploadError);
+      throw uploadError;
+    }
+    
+    console.log('Upload successful, file path:', uploadData?.path);
     
     // Get the public URL
     const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    console.log('Generated public URL:', data.publicUrl);
+    
     return data.publicUrl;
   } catch (error) {
     console.error('Error uploading image:', error);

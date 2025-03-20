@@ -86,7 +86,7 @@ export function useGuestData(guestId: string | undefined) {
           email: updatedGuest.email,
           phone: updatedGuest.phone,
           bio: updatedGuest.bio,
-          image_url: imageUrl,
+          image_url: imageUrl, // Use the sanitized imageUrl
           social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
           background_research: updatedGuest.backgroundResearch,

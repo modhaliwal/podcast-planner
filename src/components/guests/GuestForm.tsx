@@ -47,6 +47,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const handleImageChange = (file: File | null, uploadedUrl?: string) => {
     setImageFile(file);
     if (uploadedUrl) {
+      console.log("Setting uploaded image URL:", uploadedUrl);
       setUploadedImageUrl(uploadedUrl);
     }
   };
@@ -60,6 +61,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       
       // If we have a pre-uploaded image URL from HeadshotSection, use that
       if (uploadedImageUrl) {
+        console.log("Using pre-uploaded image URL:", uploadedImageUrl);
+        
         // If there was a previous image, try to delete it
         if (imageUrl && !isBlobUrl(imageUrl)) {
           await deleteImage(imageUrl);
@@ -77,8 +80,11 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       
       // Clear blob URLs that were previously set but not uploaded
       if (imageUrl && isBlobUrl(imageUrl)) {
+        console.log("Clearing blob URL:", imageUrl);
         imageUrl = undefined;
       }
+      
+      console.log("Final image URL to save:", imageUrl);
       
       const updatedGuest: Guest = {
         ...guest,
