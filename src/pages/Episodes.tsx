@@ -60,7 +60,7 @@ const Episodes = () => {
               onClick={handleRefresh} 
               disabled={isDataLoading}
             >
-              <RefreshCcw className="h-4 w-4" />
+              <RefreshCcw className={`h-4 w-4 ${isDataLoading ? 'animate-spin' : ''}`} />
             </Button>
             <Button size="default" asChild>
               <Link to="/episodes/create">

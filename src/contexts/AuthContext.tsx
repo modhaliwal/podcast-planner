@@ -99,16 +99,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshEpisodes = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user found, skipping episode refresh");
+      return;
+    }
     
     setIsDataLoading(true);
     try {
+      console.log("Fetching episodes from database...");
+      
       const { data: episodesData, error: episodesError } = await supabase
         .from('episodes')
-        .select('*')
-        .order('episode_number', { ascending: false });
+        .select('*');
       
-      if (episodesError) throw episodesError;
+      if (episodesError) {
+        console.error("Error fetching episodes:", episodesError);
+        throw episodesError;
+      }
+      
+      console.log("Raw episodes data:", episodesData);
+      
+      if (!episodesData || episodesData.length === 0) {
+        console.log("No episodes found in database");
+        setEpisodes([]);
+        return;
+      }
       
       const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
         .from('episode_guests')
@@ -118,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const guestsByEpisode: Record<string, string[]> = {};
       
-      episodeGuestsData.forEach(({ episode_id, guest_id }) => {
+      episodeGuestsData?.forEach(({ episode_id, guest_id }) => {
         if (!guestsByEpisode[episode_id]) {
           guestsByEpisode[episode_id] = [];
         }
@@ -136,13 +151,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         guestIds: guestsByEpisode[episode.id] || [],
         introduction: episode.introduction,
         notes: episode.notes || '',
-        recordingLinks: episode.recording_links as RecordingLinks || {},
+        recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
         createdAt: episode.created_at,
         updatedAt: episode.updated_at
       }));
       
+      console.log("Formatted episodes:", formattedEpisodes);
       setEpisodes(formattedEpisodes);
-      console.log("Episodes loaded:", formattedEpisodes.length);
+      
     } catch (error: any) {
       toast.error(`Error fetching episodes: ${error.message}`);
       console.error("Error fetching episodes:", error);
