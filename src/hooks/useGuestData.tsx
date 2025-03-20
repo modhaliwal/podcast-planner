@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -105,7 +106,7 @@ export function useGuestData(guestId: string | undefined) {
       setGuest(updatedGuest);
       setIsEditing(false);
       
-      // Refresh the guest list
+      // Refresh the guest list in the background
       await refreshGuests();
       
       // Show success message
@@ -114,10 +115,7 @@ export function useGuestData(guestId: string | undefined) {
       // First, fetch the latest guest data to ensure we have the most up-to-date information
       await fetchGuest();
       
-      // Then explicitly navigate to the current guest page to ensure UI refresh
-      if (guestId) {
-        navigate(`/guests/${guestId}`, { replace: true });
-      }
+      // No navigation needed here, we'll stay on the current page with updated data
     } catch (error: any) {
       toast.error(`Failed to update guest: ${error.message}`);
       console.error("Error updating guest:", error);
