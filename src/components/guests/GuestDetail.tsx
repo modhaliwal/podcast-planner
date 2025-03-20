@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface GuestDetailProps {
   guest: Guest;
@@ -47,13 +48,27 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
           <Card className="sticky top-28 mb-6">
             <CardContent className="p-6">
               <div className="flex flex-col items-center text-center">
-                <Avatar className="h-24 w-24 border mb-4">
-                  <AvatarImage src={guest.imageUrl} alt={guest.name} />
-                  <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-                </Avatar>
+                {guest.imageUrl ? (
+                  <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
+                    <AspectRatio ratio={2/3} className="bg-muted">
+                      <img 
+                        src={guest.imageUrl} 
+                        alt={`${guest.name} headshot`}
+                        className="object-cover w-full h-full"
+                      />
+                    </AspectRatio>
+                  </div>
+                ) : (
+                  <Avatar className="h-24 w-24 border mb-4">
+                    <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+                  </Avatar>
+                )}
                 
                 <h2 className="text-xl font-semibold">{guest.name}</h2>
-                <p className="text-muted-foreground mb-4">{guest.title}</p>
+                <p className="text-muted-foreground mb-1">{guest.title}</p>
+                {guest.company && (
+                  <p className="text-sm text-muted-foreground mb-4">{guest.company}</p>
+                )}
                 
                 <div className="flex flex-wrap justify-center gap-2 mb-6">
                   {guest.socialLinks.twitter && (
