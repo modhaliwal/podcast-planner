@@ -14,6 +14,7 @@ export interface Guest {
   id: string;
   name: string;
   title: string;
+  company?: string; // Added company/organization field
   email?: string;
   phone?: string;
   bio: string;

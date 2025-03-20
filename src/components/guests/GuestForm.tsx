@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Guest } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, Trash, Sparkles } from "lucide-react";
+import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, Trash, Sparkles, Building } from "lucide-react";
 import { toast } from "sonner";
 
 interface GuestFormProps {
@@ -75,6 +74,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     defaultValues: {
       name: guest.name,
       title: guest.title,
+      company: guest.company || "",
       email: guest.email || "",
       phone: guest.phone || "",
       bio: guest.bio,
@@ -95,6 +95,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       ...guest,
       name: data.name,
       title: data.title,
+      company: data.company || undefined,
       email: data.email || undefined,
       phone: data.phone || undefined,
       bio: data.bio,
@@ -206,6 +207,23 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                     <FormLabel>Title/Role</FormLabel>
                     <FormControl>
                       <Input {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center">
+                      <Building className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <FormLabel>Company/Organization</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Input {...field} placeholder="Company or organization name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
