@@ -1,11 +1,12 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight, CalendarDays, Clock } from 'lucide-react';
+import { Calendar, ChevronRight, CalendarDays, Clock, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -119,6 +120,22 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
               
               <p className="text-sm text-muted-foreground line-clamp-2">{episode.introduction}</p>
             </div>
+            
+            {episode.coverArt ? (
+              <div className="h-24 w-24 rounded-md overflow-hidden shrink-0 hidden sm:block">
+                <AspectRatio ratio={1/1} className="h-full">
+                  <img 
+                    src={episode.coverArt} 
+                    alt={`Cover for ${episode.title}`}
+                    className="object-cover w-full h-full"
+                  />
+                </AspectRatio>
+              </div>
+            ) : (
+              <div className="h-24 w-24 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0 hidden sm:block">
+                <Image className="h-8 w-8 text-muted-foreground" />
+              </div>
+            )}
             
             <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </div>
