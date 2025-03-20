@@ -1,7 +1,6 @@
 
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { guests, episodes } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { GuestForm } from '@/components/guests/GuestForm';
@@ -16,16 +15,140 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { Guest } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [localGuests, setLocalGuests] = useState(guests);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [guest, setGuest] = useState<Guest | undefined>(undefined);
+  const { user, episodes, refreshGuests } = useAuth();
   
-  // Find the guest with the matching ID
-  const guestIndex = localGuests.findIndex(g => g.id === id);
-  const guest = guestIndex !== -1 ? localGuests[guestIndex] : undefined;
+  useEffect(() => {
+    const fetchGuest = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('guests')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          // Transform the data to match our Guest interface
+          const formattedGuest: Guest = {
+            id: data.id,
+            name: data.name,
+            title: data.title,
+            company: data.company || undefined,
+            email: data.email || undefined,
+            phone: data.phone || undefined,
+            bio: data.bio,
+            imageUrl: data.image_url || undefined,
+            socialLinks: data.social_links,
+            notes: data.notes || undefined,
+            backgroundResearch: data.background_research || undefined,
+            status: (data.status as Guest['status']) || 'potential',
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+          };
+          
+          setGuest(formattedGuest);
+        }
+      } catch (error: any) {
+        toast("Error", {
+          description: `Failed to fetch guest: ${error.message}`
+        });
+        console.error("Error fetching guest:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchGuest();
+  }, [id]);
+
+  const handleSave = async (updatedGuest: Guest) => {
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .update({
+          name: updatedGuest.name,
+          title: updatedGuest.title,
+          company: updatedGuest.company,
+          email: updatedGuest.email,
+          phone: updatedGuest.phone,
+          bio: updatedGuest.bio,
+          image_url: updatedGuest.imageUrl,
+          social_links: updatedGuest.socialLinks,
+          notes: updatedGuest.notes,
+          background_research: updatedGuest.backgroundResearch,
+          status: updatedGuest.status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setGuest(updatedGuest);
+      setIsEditing(false);
+      await refreshGuests();
+      toast.success("Guest updated successfully");
+    } catch (error: any) {
+      toast("Error", {
+        description: `Failed to update guest: ${error.message}`
+      });
+      console.error("Error updating guest:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('guests')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Close the dialog
+      setIsDeleteDialogOpen(false);
+      
+      // Show success message
+      toast.success("Guest deleted successfully");
+      
+      // Refresh guests list
+      await refreshGuests();
+      
+      // Redirect to guests list
+      navigate('/guests');
+    } catch (error: any) {
+      toast("Error", {
+        description: `Failed to delete guest: ${error.message}`
+      });
+      console.error("Error deleting guest:", error);
+    }
+  };
+  
+  if (isLoading) {
+    return (
+      <Shell>
+        <div className="page-container">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <p className="text-muted-foreground">Loading guest information...</p>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
   
   if (!guest) {
     return (
@@ -43,30 +166,10 @@ const GuestView = () => {
     );
   }
 
-  const handleSave = (updatedGuest: any) => {
-    // In a real app, this would make an API call
-    // For now, we'll just update our local state
-    const updatedGuests = [...localGuests];
-    updatedGuests[guestIndex] = updatedGuest;
-    
-    setLocalGuests(updatedGuests);
-    setIsEditing(false);
-    toast.success("Guest updated successfully");
-  };
-
-  const handleDelete = () => {
-    // In a real app, this would make an API call
-    // For now, we'll just update our local state
-    const updatedGuests = localGuests.filter(g => g.id !== id);
-    setLocalGuests(updatedGuests);
-    setIsDeleteDialogOpen(false);
-    
-    // Show success message
-    toast.success("Guest deleted successfully");
-    
-    // Redirect to guests list
-    window.location.href = '/guests';
-  };
+  // Filter episodes to only include the ones this guest appears in
+  const guestEpisodes = episodes.filter(episode => 
+    episode.guestIds.includes(guest.id)
+  );
   
   return (
     <Shell>
@@ -105,7 +208,7 @@ const GuestView = () => {
             onCancel={() => setIsEditing(false)}
           />
         ) : (
-          <GuestDetail guest={guest} episodes={episodes} />
+          <GuestDetail guest={guest} episodes={guestEpisodes} />
         )}
 
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -7,13 +7,18 @@ import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Guest } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GuestsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
-  guests: Guest[];
+  guests?: Guest[]; // Make this optional
 }
 
-export function GuestsSection({ form, guests }: GuestsSectionProps) {
+export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) {
+  // Use guests from Auth context if none are provided as props
+  const { guests: contextGuests } = useAuth();
+  const guests = propGuests || contextGuests;
+
   return (
     <Card className="md:col-span-2">
       <CardHeader>
@@ -84,7 +89,7 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
                       const guest = guests.find(g => g.id === guestId);
                       return (
                         <div key={guestId} className="flex items-center bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm">
-                          {guest?.name}
+                          {guest?.name || 'Unknown Guest'}
                           <Button
                             type="button"
                             variant="ghost"

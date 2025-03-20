@@ -1,7 +1,6 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { guests } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestCard } from '@/components/guests/GuestCard';
 import { Button } from '@/components/ui/button';
@@ -16,11 +15,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { GuestList } from '@/components/guests/GuestList';
 import { Toggle } from '@/components/ui/toggle';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { Guest } from '@/lib/types';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'card';
 
 const Guests = () => {
+  const { guests, isDataLoading, user } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -40,6 +44,18 @@ const Guests = () => {
     
     return matchesSearch && matchesStatus;
   });
+
+  // Redirect to add guest page
+  const handleAddGuest = () => {
+    if (!user) {
+      toast("Authentication Required", {
+        description: "You need to be logged in to add guests"
+      });
+      return;
+    }
+    
+    navigate('/guests/new');
+  };
   
   return (
     <Shell>
@@ -50,11 +66,9 @@ const Guests = () => {
             <p className="section-subtitle">Manage your guest profiles and information</p>
           </div>
           
-          <Button size="default" asChild>
-            <Link to="#">
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Add Guest
-            </Link>
+          <Button size="default" onClick={handleAddGuest}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add Guest
           </Button>
         </div>
         
@@ -122,7 +136,11 @@ const Guests = () => {
           </div>
         </div>
         
-        {filteredGuests.length > 0 ? (
+        {isDataLoading ? (
+          <div className="flex items-center justify-center py-10">
+            <p className="text-muted-foreground">Loading guests...</p>
+          </div>
+        ) : filteredGuests.length > 0 ? (
           viewMode === 'list' ? (
             <GuestList guests={filteredGuests} />
           ) : (
@@ -141,7 +159,7 @@ const Guests = () => {
               "Get started by adding your first guest"}
             action={{
               label: "Add Guest",
-              onClick: () => console.log("Add guest clicked")
+              onClick: handleAddGuest
             }}
           />
         )}
