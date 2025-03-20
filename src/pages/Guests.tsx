@@ -28,18 +28,20 @@ const Guests = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   useEffect(() => {
     console.log("Guests component mounted or updated");
     console.log("Number of guests:", guests.length);
     console.log("Loading state:", isDataLoading);
     
-    // If no guests are loaded and we're not currently loading, try refreshing
-    if (guests.length === 0 && !isDataLoading) {
-      console.log("No guests found, triggering refresh");
+    // Only attempt to refresh guests once on initial load
+    if (!initialLoadDone && !isDataLoading) {
+      console.log("Initial load, triggering refresh once");
       refreshGuests();
+      setInitialLoadDone(true);
     }
-  }, [guests.length, isDataLoading, refreshGuests]);
+  }, [guests.length, isDataLoading, refreshGuests, initialLoadDone]);
 
   // Filter guests based on search query and status
   const filteredGuests = guests.filter(guest => {
