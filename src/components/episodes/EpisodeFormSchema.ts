@@ -9,7 +9,7 @@ export const episodeFormSchema = z.object({
   status: z.enum(["scheduled", "recorded", "published"]),
   scheduled: z.date(),
   publishDate: z.date().optional().nullable(),
-  guestIds: z.array(z.string()).min(1, "Select at least one guest"),
+  guestIds: z.array(z.string()).optional().default([]), // Changed from min(1) to optional with default empty array
   coverArt: z.string().optional(),
   recordingLinks: z.object({
     audio: z.string().optional(),
