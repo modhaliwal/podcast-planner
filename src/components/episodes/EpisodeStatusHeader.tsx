@@ -3,6 +3,7 @@ import { Calendar, Clock, CalendarDays } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Episode } from '@/lib/types';
+import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeStatusHeaderProps {
   episode: Episode;
@@ -34,8 +35,8 @@ export function EpisodeStatusHeader({ episode }: EpisodeStatusHeaderProps) {
     <div className="flex flex-col md:flex-row gap-6">
       <div className={cn(
         "h-16 w-16 rounded-xl flex items-center justify-center shrink-0",
-        episode.status === 'published' ? "bg-green-100 text-green-700" :
-        episode.status === 'recorded' ? "bg-blue-100 text-blue-700" :
+        episode.status === EpisodeStatus.PUBLISHED ? "bg-green-100 text-green-700" :
+        episode.status === EpisodeStatus.RECORDED ? "bg-blue-100 text-blue-700" :
         "bg-orange-100 text-orange-700"
       )}>
         <Calendar className="h-8 w-8" />
@@ -44,8 +45,8 @@ export function EpisodeStatusHeader({ episode }: EpisodeStatusHeaderProps) {
       <div className="flex-1">
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <Badge variant={
-            episode.status === 'published' ? "default" :
-            episode.status === 'recorded' ? "secondary" :
+            episode.status === EpisodeStatus.PUBLISHED ? "default" :
+            episode.status === EpisodeStatus.RECORDED ? "secondary" :
             "outline"
           }>
             {episode.status}

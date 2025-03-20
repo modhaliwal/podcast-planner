@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -15,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
 import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSection';
+import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -43,7 +43,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     },
   });
   
-  // Store original cover art URL for potential cleanup
   useEffect(() => {
     setOriginalCoverArt(episode.coverArt);
   }, [episode.coverArt]);
@@ -52,14 +51,11 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Handle cover art URL
       let coverArt = data.coverArt;
       
-      // If the cover art is a blob URL, upload it to storage
       if (coverArt && isBlobUrl(coverArt)) {
         console.log("Detected blob URL for cover art, uploading to storage");
         
-        // Extract the blob data as a file
         try {
           const response = await fetch(coverArt);
           const blob = await response.blob();
@@ -72,13 +68,11 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           if (uploadedUrl) {
             console.log("Cover art uploaded successfully:", uploadedUrl);
             
-            // Delete the old cover art if it exists
             if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
               console.log("Deleting old cover art:", originalCoverArt);
               await deleteImage(originalCoverArt);
             }
             
-            // Set the new cover art URL
             coverArt = uploadedUrl;
             toast.success("Cover art uploaded successfully");
           } else {
@@ -86,7 +80,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
             coverArt = undefined;
           }
           
-          // Revoke the blob URL to prevent memory leaks
           URL.revokeObjectURL(coverArt);
         } catch (error) {
           console.error("Error uploading cover art:", error);
@@ -94,7 +87,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           coverArt = undefined;
         }
       } else if (coverArt !== originalCoverArt) {
-        // Cover art was changed or removed and we need to delete the old one
         if (originalCoverArt && coverArt === undefined) {
           console.log("Deleting old cover art on removal:", originalCoverArt);
           await deleteImage(originalCoverArt);
@@ -102,7 +94,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
         }
       }
       
-      // Step 1: Update the episode
       const { error: updateError } = await supabase
         .from('episodes')
         .update({
@@ -121,7 +112,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (updateError) throw updateError;
       
-      // Step 2: Clear existing episode_guests relationships
       const { error: deleteError } = await supabase
         .from('episode_guests')
         .delete()
@@ -129,7 +119,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (deleteError) throw deleteError;
       
-      // Step 3: Create new episode_guests relationships
       const episodeGuestsToInsert = data.guestIds.map(guestId => ({
         episode_id: episode.id,
         guest_id: guestId
@@ -141,7 +130,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (insertError) throw insertError;
       
-      // Refresh episodes data
       await refreshEpisodes();
       
       toast.success("Episode updated successfully");

@@ -1,4 +1,6 @@
 
+import { EpisodeStatus } from './enums';
+
 export interface SocialLinks {
   twitter?: string; // Keeping for backward compatibility, now represents X
   facebook?: string;
@@ -40,7 +42,7 @@ export interface Episode {
   title: string;
   scheduled: string;       // Recording session date and time
   publishDate?: string;    // Date the episode will be published
-  status: 'scheduled' | 'recorded' | 'published';
+  status: EpisodeStatus;
   coverArt?: string;       // URL to the cover art image
   guestIds: string[];
   introduction: string;

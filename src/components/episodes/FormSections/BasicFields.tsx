@@ -5,6 +5,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PenLine, Hash, Activity } from 'lucide-react';
+import { EpisodeStatus } from '@/lib/enums';
 
 interface BasicFieldsProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -70,9 +71,9 @@ export function BasicFields({ form }: BasicFieldsProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="recorded">Recorded</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value={EpisodeStatus.SCHEDULED}>{EpisodeStatus.SCHEDULED}</SelectItem>
+                <SelectItem value={EpisodeStatus.RECORDED}>{EpisodeStatus.RECORDED}</SelectItem>
+                <SelectItem value={EpisodeStatus.PUBLISHED}>{EpisodeStatus.PUBLISHED}</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />

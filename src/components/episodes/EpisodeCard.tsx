@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -46,8 +47,8 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
           <div className="flex items-start gap-4">
             <div className={cn(
               "h-12 w-12 rounded-full flex items-center justify-center shrink-0",
-              episode.status === 'published' ? "bg-green-100 text-green-700" :
-              episode.status === 'recorded' ? "bg-blue-100 text-blue-700" :
+              episode.status === EpisodeStatus.PUBLISHED ? "bg-green-100 text-green-700" :
+              episode.status === EpisodeStatus.RECORDED ? "bg-blue-100 text-blue-700" :
               "bg-orange-100 text-orange-700"
             )}>
               <Calendar className="h-6 w-6" />
@@ -56,8 +57,8 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant={
-                  episode.status === 'published' ? "default" :
-                  episode.status === 'recorded' ? "secondary" :
+                  episode.status === EpisodeStatus.PUBLISHED ? "default" :
+                  episode.status === EpisodeStatus.RECORDED ? "secondary" :
                   "outline"
                 }>
                   {episode.status}

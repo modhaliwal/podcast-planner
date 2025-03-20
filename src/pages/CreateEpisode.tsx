@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeFormData {
   episodeNumber: number;
@@ -166,7 +168,7 @@ const CreateEpisode = () => {
             episode_number: episode.episodeNumber,
             title: episode.title || `Episode #${episode.episodeNumber}`,
             scheduled: episode.scheduled.toISOString(),
-            status: 'scheduled',
+            status: EpisodeStatus.SCHEDULED,
             introduction: `Introduction for Episode #${episode.episodeNumber}`, // Default introduction
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()

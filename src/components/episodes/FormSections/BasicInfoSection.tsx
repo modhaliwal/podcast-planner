@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { PenLine, Hash, Activity } from 'lucide-react';
+import { EpisodeStatus } from '@/lib/enums';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -78,9 +79,9 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="recorded">Recorded</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value={EpisodeStatus.SCHEDULED}>{EpisodeStatus.SCHEDULED}</SelectItem>
+                  <SelectItem value={EpisodeStatus.RECORDED}>{EpisodeStatus.RECORDED}</SelectItem>
+                  <SelectItem value={EpisodeStatus.PUBLISHED}>{EpisodeStatus.PUBLISHED}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
