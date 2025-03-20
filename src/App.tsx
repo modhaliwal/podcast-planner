@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,11 +10,12 @@ const Auth = lazy(() => import('./pages/Auth'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Guests = lazy(() => import('./pages/Guests'));
 const GuestView = lazy(() => import('./pages/GuestView'));
-const AddGuest = lazy(() => import('./pages/AddGuest')); // Add this import
+const AddGuest = lazy(() => import('./pages/AddGuest'));
 const Episodes = lazy(() => import('./pages/Episodes'));
 const CreateEpisode = lazy(() => import('./pages/CreateEpisode'));
 const EpisodeView = lazy(() => import('./pages/EpisodeView'));
 const EditEpisode = lazy(() => import('./pages/EditEpisode'));
+const Settings = lazy(() => import('./pages/Settings'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function App() {
@@ -31,6 +33,7 @@ function App() {
           <Route path="/episodes/new" element={<CreateEpisode />} />
           <Route path="/episodes/:id" element={<EpisodeView />} />
           <Route path="/episodes/:id/edit" element={<EditEpisode />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

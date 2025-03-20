@@ -6,3 +6,8 @@ export interface NavItem {
   path: string;
   icon: ReactNode;
 }
+
+export interface ThemeConfig {
+  theme: 'light' | 'dark' | 'system';
+  reduceMotion: boolean;
+}
