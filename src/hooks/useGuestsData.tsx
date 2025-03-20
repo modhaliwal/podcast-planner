@@ -28,8 +28,6 @@ export function useGuestsData(userId: string | undefined) {
         throw error;
       }
       
-      console.log("Raw guests data:", data);
-      
       if (!data || data.length === 0) {
         console.log("No guests found in database");
         setGuests([]);
@@ -53,7 +51,7 @@ export function useGuestsData(userId: string | undefined) {
         updatedAt: guest.updated_at
       }));
       
-      console.log("Formatted guests:", formattedGuests);
+      console.log("Formatted guests:", formattedGuests.length);
       setGuests(formattedGuests);
     } catch (error: any) {
       toast.error(`Error fetching guests: ${error.message}`);

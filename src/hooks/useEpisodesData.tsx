@@ -28,8 +28,6 @@ export function useEpisodesData(userId: string | undefined) {
         throw episodesError;
       }
       
-      console.log("Raw episodes data:", episodesData);
-      
       if (!episodesData || episodesData.length === 0) {
         console.log("No episodes found in database");
         setEpisodes([]);
@@ -67,7 +65,7 @@ export function useEpisodesData(userId: string | undefined) {
         updatedAt: episode.updated_at
       }));
       
-      console.log("Formatted episodes:", formattedEpisodes);
+      console.log("Formatted episodes:", formattedEpisodes.length);
       setEpisodes(formattedEpisodes);
       
     } catch (error: any) {

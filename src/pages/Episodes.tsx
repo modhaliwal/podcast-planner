@@ -16,13 +16,7 @@ const Episodes = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   
   useEffect(() => {
-    console.log("Episodes component mounted or updated");
-    console.log("Number of episodes:", episodes.length);
-    console.log("Loading state:", isDataLoading);
-    
-    // If no episodes are loaded and we're not currently loading, try refreshing
     if (episodes.length === 0 && !isDataLoading) {
-      console.log("No episodes found, triggering refresh");
       refreshEpisodes();
     }
   }, [episodes.length, isDataLoading, refreshEpisodes]);
@@ -39,11 +33,6 @@ const Episodes = () => {
     (a, b) => new Date(b.scheduled).getTime() - new Date(a.scheduled).getTime()
   );
   
-  const handleRefresh = () => {
-    console.log("Manual refresh triggered");
-    refreshEpisodes();
-  };
-  
   return (
     <Shell>
       <div className="page-container">
@@ -57,13 +46,13 @@ const Episodes = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              onClick={handleRefresh} 
+              onClick={refreshEpisodes} 
               disabled={isDataLoading}
             >
               <RefreshCcw className={`h-4 w-4 ${isDataLoading ? 'animate-spin' : ''}`} />
             </Button>
             <Button size="default" asChild>
-              <Link to="/episodes/create">
+              <Link to="/episodes/new">
                 <PlusIcon className="mr-2 h-4 w-4" />
                 Create Episode
               </Link>
@@ -113,7 +102,7 @@ const Episodes = () => {
             description={searchQuery ? "Try adjusting your search terms" : "Get started by creating your first episode"}
             action={{
               label: "Create Episode",
-              onClick: () => window.location.href = "/episodes/create"
+              onClick: () => window.location.href = "/episodes/new"
             }}
           />
         )}
