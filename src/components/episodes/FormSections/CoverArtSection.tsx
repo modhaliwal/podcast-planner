@@ -6,7 +6,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Image, Upload, X } from 'lucide-react';
+import { Image, Upload, X, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { isBlobUrl } from '@/lib/imageUpload';
@@ -16,8 +16,9 @@ interface CoverArtSectionProps {
 }
 
 export function CoverArtSection({ form }: CoverArtSectionProps) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(form.getValues('coverArt') || null);
-  const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(form.getValues('coverArt'));
+  const currentCoverArt = form.getValues('coverArt');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(currentCoverArt || null);
+  const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(currentCoverArt);
   
   // Store the original cover art URL when component mounts
   useEffect(() => {
@@ -47,6 +48,18 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
     // Set the form value to the blob URL temporarily
     // This allows the form to track that we have a new image
     form.setValue('coverArt', url, { shouldValidate: true });
+  };
+  
+  const resetCoverArt = () => {
+    // If current preview is a blob URL, revoke it to prevent memory leaks
+    if (previewUrl && isBlobUrl(previewUrl)) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    
+    // Reset to original image
+    setPreviewUrl(originalCoverArt || null);
+    form.setValue('coverArt', originalCoverArt, { shouldValidate: true });
+    toast.info("Cover art reset to original");
   };
   
   const removeCoverArt = () => {
@@ -85,7 +98,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                       <li>Square aspect ratio (1:1)</li>
                     </ul>
                     
-                    <div className="mt-4">
+                    <div className="mt-4 flex gap-2">
                       <FormControl>
                         <div className="flex flex-col">
                           <Button
@@ -104,6 +117,17 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                           </Button>
                         </div>
                       </FormControl>
+                      
+                      {previewUrl && previewUrl !== originalCoverArt && (
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={resetCoverArt}
+                        >
+                          <Trash className="h-4 w-4 mr-1" />
+                          Reset
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
