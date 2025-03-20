@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight, CalendarDays, Clock, Image } from 'lucide-react';
+import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +36,14 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
         day: 'numeric'
       })
     : null;
+  
+  // Check if any podcast URLs exist
+  const hasPodcastUrls = episode.podcastUrls && (
+    episode.podcastUrls.spotify || 
+    episode.podcastUrls.applePodcasts || 
+    episode.podcastUrls.amazonPodcasts || 
+    episode.podcastUrls.youtube
+  );
   
   return (
     <Link to={`/episodes/${episode.id}`}>
@@ -85,7 +93,7 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
               </div>
               
               <div className="flex items-center -space-x-2 mb-3">
-                {episodeGuests.slice(0, 3).map((guest, index) => {
+                {episodeGuests.slice(0, 3).map((guest) => {
                   const initials = guest.name
                     .split(' ')
                     .map(n => n[0])
@@ -118,6 +126,39 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
                   )}
                 </div>
               </div>
+              
+              {/* Podcast links */}
+              {episode.status === EpisodeStatus.PUBLISHED && hasPodcastUrls && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {episode.podcastUrls?.spotify && (
+                    <div className="flex items-center text-xs text-primary">
+                      <Music className="h-3 w-3 mr-1" />
+                      <span>Spotify</span>
+                    </div>
+                  )}
+                  
+                  {episode.podcastUrls?.applePodcasts && (
+                    <div className="flex items-center text-xs text-primary">
+                      <Music className="h-3 w-3 mr-1" />
+                      <span>Apple</span>
+                    </div>
+                  )}
+                  
+                  {episode.podcastUrls?.amazonPodcasts && (
+                    <div className="flex items-center text-xs text-primary">
+                      <Music className="h-3 w-3 mr-1" />
+                      <span>Amazon</span>
+                    </div>
+                  )}
+                  
+                  {episode.podcastUrls?.youtube && (
+                    <div className="flex items-center text-xs text-primary">
+                      <Youtube className="h-3 w-3 mr-1" />
+                      <span>YouTube</span>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <p className="text-sm text-muted-foreground line-clamp-2">{episode.introduction}</p>
             </div>

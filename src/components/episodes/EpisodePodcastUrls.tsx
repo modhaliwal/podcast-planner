@@ -1,3 +1,4 @@
+
 import { Music, Youtube, ExternalLink } from 'lucide-react';
 import { Episode } from '@/lib/types';
 
@@ -30,6 +31,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            title="Listen on Spotify"
           >
             <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Spotify</span>
@@ -42,6 +44,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            title="Listen on Apple Podcasts"
           >
             <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Apple Podcasts</span>
@@ -54,6 +57,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            title="Listen on Amazon Podcasts"
           >
             <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Amazon Podcasts</span>
@@ -66,6 +70,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            title="Watch on YouTube"
           >
             <Youtube className="h-4 w-4 mr-2" />
             <span className="text-sm">YouTube</span>
