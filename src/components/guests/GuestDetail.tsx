@@ -141,9 +141,10 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                 <CardTitle>Personal Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line">{guest.notes}</p>
-                </div>
+                <div 
+                  className="prose dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: guest.notes }}
+                />
               </CardContent>
             </Card>
           )}
@@ -174,9 +175,10 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                     <CardTitle>Background Research</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose dark:prose-invert max-w-none">
-                      <p className="whitespace-pre-line">{guest.backgroundResearch}</p>
-                    </div>
+                    <div 
+                      className="prose dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
+                    />
                   </CardContent>
                 </Card>
               )}

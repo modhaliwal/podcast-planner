@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Guest } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { 
   Dialog,
   DialogContent,
@@ -38,10 +40,30 @@ interface GuestFormProps {
   onCancel: () => void;
 }
 
+// Rich text editor modules and formats configuration
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{'list': 'ordered'}, {'list': 'bullet'}],
+    ['link'],
+    ['clean']
+  ],
+};
+
+const quillFormats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'link'
+];
+
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [isGeneratingResearch, setIsGeneratingResearch] = useState(false);
+  const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
+  const [notes, setNotes] = useState(guest.notes || "");
 
   const form = useForm({
     defaultValues: {
@@ -50,8 +72,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       email: guest.email || "",
       phone: guest.phone || "",
       bio: guest.bio,
-      notes: guest.notes || "",
-      backgroundResearch: guest.backgroundResearch || "",
       status: guest.status || "potential",
       twitter: socialLinks.twitter || "",
       linkedin: socialLinks.linkedin || "",
@@ -70,8 +90,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       email: data.email || undefined,
       phone: data.phone || undefined,
       bio: data.bio,
-      notes: data.notes || undefined,
-      backgroundResearch: data.backgroundResearch || undefined,
+      notes: notes || undefined,
+      backgroundResearch: backgroundResearch || undefined,
       status: data.status,
       socialLinks: {
         twitter: data.twitter || undefined,
@@ -118,23 +138,27 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       const name = form.getValues('name');
       const title = form.getValues('title');
       
-      const generatedResearch = `Research findings for ${name}:
+      const generatedResearch = `<h3>Research findings for ${name}:</h3>
       
-1. Educational background: Graduated with honors in relevant field.
-2. Career highlights: Has over 10 years of experience as a ${title}.
-3. Previous media appearances: Has been featured on several industry podcasts.
-4. Publications: Author of multiple well-received articles in industry journals.
-5. Areas of expertise: Specializes in emerging trends and practical applications.
-6. Speaking style: Articulate, engaging, with a talent for making complex topics accessible.
-7. Recent projects: Currently involved in several innovative initiatives.
-8. Social media presence: Active on professional platforms with substantial following.
+<ol>
+  <li><strong>Educational background:</strong> Graduated with honors in relevant field.</li>
+  <li><strong>Career highlights:</strong> Has over 10 years of experience as a ${title}.</li>
+  <li><strong>Previous media appearances:</strong> Has been featured on several industry podcasts.</li>
+  <li><strong>Publications:</strong> Author of multiple well-received articles in industry journals.</li>
+  <li><strong>Areas of expertise:</strong> Specializes in emerging trends and practical applications.</li>
+  <li><strong>Speaking style:</strong> Articulate, engaging, with a talent for making complex topics accessible.</li>
+  <li><strong>Recent projects:</strong> Currently involved in several innovative initiatives.</li>
+  <li><strong>Social media presence:</strong> Active on professional platforms with substantial following.</li>
+</ol>
 
-Recommended topics to explore:
-- Their journey to becoming a ${title}
-- Their perspective on industry challenges and opportunities
-- Their vision for the future of their field`;
+<h3>Recommended topics to explore:</h3>
+<ul>
+  <li>Their journey to becoming a ${title}</li>
+  <li>Their perspective on industry challenges and opportunities</li>
+  <li>Their vision for the future of their field</li>
+</ul>`;
       
-      form.setValue('backgroundResearch', generatedResearch);
+      setBackgroundResearch(generatedResearch);
       toast.success("Background research generated successfully");
     } catch (error) {
       toast.error("Failed to generate background research");
@@ -389,40 +413,32 @@ Recommended topics to explore:
                 {isGeneratingResearch ? 'Generating...' : 'Generate Research'}
               </Button>
             </div>
-            <FormField
-              control={form.control}
-              name="backgroundResearch"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      rows={8}
-                      placeholder="Research information about this guest" 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="border rounded-md">
+              <ReactQuill 
+                value={backgroundResearch} 
+                onChange={setBackgroundResearch} 
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="Research information about this guest"
+                theme="snow"
+                className="bg-background"
+              />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Personal Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      rows={3}
-                      placeholder="Private notes about this guest" 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="mt-10 pt-4">
+              <FormLabel>Personal Notes</FormLabel>
+              <div className="border rounded-md mt-2">
+                <ReactQuill 
+                  value={notes} 
+                  onChange={setNotes} 
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Private notes about this guest"
+                  theme="snow"
+                  className="bg-background"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4 border-t">
