@@ -53,18 +53,16 @@ export const uploadImage = async (
   try {
     if (!file) return null;
     
-    // Check if the URL is a blob URL
-    if (file.name.includes('blob:')) {
+    // Make sure we're not trying to upload a blob URL
+    if (typeof file === 'string' && file.startsWith('blob:')) {
       console.error('Cannot upload blob URL directly');
       return null;
     }
     
-    // Check if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.error('User must be authenticated to upload images');
-      return null;
-    }
+    // Create a unique file path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${uuidv4()}.${fileExt}`;
+    const filePath = folder ? `${folder}/${fileName}` : fileName;
     
     // Check if bucket exists, create it if not
     const { data: buckets } = await supabase.storage.listBuckets();
@@ -77,11 +75,6 @@ export const uploadImage = async (
       
       if (bucketError) throw bucketError;
     }
-    
-    // Create a unique file path
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = folder ? `${folder}/${fileName}` : fileName;
     
     // Upload the file
     const { error: uploadError } = await supabase.storage

@@ -8,7 +8,7 @@ import { HeadshotSection } from "./form-sections/HeadshotSection";
 import { BasicInfoSection } from "./form-sections/BasicInfoSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
-import { uploadImage, deleteImage, isBlobUrl } from "@/lib/imageUpload";
+import { deleteImage, isBlobUrl } from "@/lib/imageUpload";
 import { toast } from "sonner";
 
 interface GuestFormProps {
@@ -22,6 +22,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [notes, setNotes] = useState(guest.notes || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
@@ -43,35 +44,41 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     },
   });
 
-  const handleImageChange = (file: File | null) => {
+  const handleImageChange = (file: File | null, uploadedUrl?: string) => {
     setImageFile(file);
+    if (uploadedUrl) {
+      setUploadedImageUrl(uploadedUrl);
+    }
   };
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     
     try {
-      // Handle image upload/deletion
+      // Handle image URL
       let imageUrl = guest.imageUrl;
       
-      // If we have a new image file, upload it and replace the old URL
-      if (imageFile) {
-        toast.info("Uploading image...");
-        const uploadedUrl = await uploadImage(imageFile);
-        
-        if (uploadedUrl) {
-          // If there was a previous image, try to delete it
-          if (imageUrl && !isBlobUrl(imageUrl)) {
-            await deleteImage(imageUrl);
-          }
-          
-          imageUrl = uploadedUrl;
-          toast.success("Image uploaded successfully");
-        } else {
-          toast.error("Failed to upload image. Using previous image if available.");
+      // If we have a pre-uploaded image URL from HeadshotSection, use that
+      if (uploadedImageUrl) {
+        // If there was a previous image, try to delete it
+        if (imageUrl && !isBlobUrl(imageUrl)) {
+          await deleteImage(imageUrl);
         }
-      } else if (imageFile === null && guest.imageUrl && isBlobUrl(guest.imageUrl)) {
-        // Clear blob URLs that were previously set but not uploaded
+        
+        imageUrl = uploadedImageUrl;
+      } else if (imageFile === null) {
+        // User reset the image
+        if (guest.imageUrl) {
+          if (!isBlobUrl(guest.imageUrl)) {
+            // Only delete from storage if it's a real URL, not a blob
+            await deleteImage(guest.imageUrl);
+          }
+          imageUrl = undefined;
+        }
+      }
+      
+      // Clear blob URLs that were previously set but not uploaded
+      if (imageUrl && isBlobUrl(imageUrl)) {
         imageUrl = undefined;
       }
       

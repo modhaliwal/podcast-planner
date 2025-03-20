@@ -58,9 +58,7 @@ export function useGuestData(guestId: string | undefined) {
           setGuest(formattedGuest);
         }
       } catch (error: any) {
-        toast("Error", {
-          description: `Failed to fetch guest: ${error.message}`
-        });
+        toast.error(`Failed to fetch guest: ${error.message}`);
         console.error("Error fetching guest:", error);
       } finally {
         setIsLoading(false);
@@ -74,6 +72,11 @@ export function useGuestData(guestId: string | undefined) {
     try {
       console.log("Saving guest with image:", updatedGuest.imageUrl);
       
+      // Make sure we're not saving a blob URL
+      const imageUrl = updatedGuest.imageUrl && isBlobUrl(updatedGuest.imageUrl) 
+        ? undefined 
+        : updatedGuest.imageUrl;
+      
       const { error } = await supabase
         .from('guests')
         .update({
@@ -83,7 +86,7 @@ export function useGuestData(guestId: string | undefined) {
           email: updatedGuest.email,
           phone: updatedGuest.phone,
           bio: updatedGuest.bio,
-          image_url: updatedGuest.imageUrl,
+          image_url: imageUrl,
           social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
           background_research: updatedGuest.backgroundResearch,
@@ -94,14 +97,15 @@ export function useGuestData(guestId: string | undefined) {
       
       if (error) throw error;
       
+      // Make sure we're not setting a blob URL in our state
+      updatedGuest.imageUrl = imageUrl;
+      
       setGuest(updatedGuest);
       setIsEditing(false);
       await refreshGuests();
       toast.success("Guest updated successfully");
     } catch (error: any) {
-      toast("Error", {
-        description: `Failed to update guest: ${error.message}`
-      });
+      toast.error(`Failed to update guest: ${error.message}`);
       console.error("Error updating guest:", error);
     }
   };
@@ -127,9 +131,7 @@ export function useGuestData(guestId: string | undefined) {
       // Redirect to guests list
       navigate('/guests');
     } catch (error: any) {
-      toast("Error", {
-        description: `Failed to delete guest: ${error.message}`
-      });
+      toast.error(`Failed to delete guest: ${error.message}`);
       console.error("Error deleting guest:", error);
     }
   };

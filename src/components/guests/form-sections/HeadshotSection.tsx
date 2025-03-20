@@ -6,17 +6,18 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Upload, Trash, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { isBlobUrl } from "@/lib/imageUpload";
+import { isBlobUrl, uploadImage } from "@/lib/imageUpload";
 
 interface HeadshotSectionProps {
   initialImageUrl?: string;
   guestName: string;
-  onImageChange: (file: File | null) => void;
+  onImageChange: (file: File | null, uploadedUrl?: string) => void;
 }
 
 export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: HeadshotSectionProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Set initial image preview
   useEffect(() => {
@@ -26,7 +27,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     }
   }, [initialImageUrl]);
   
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -51,8 +52,30 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
-    onImageChange(file);
-    toast.success("Image ready for upload");
+    
+    // Upload the image immediately
+    try {
+      setIsUploading(true);
+      toast.info("Uploading image...");
+      
+      const uploadedUrl = await uploadImage(file);
+      
+      if (uploadedUrl) {
+        // Pass both the file and the uploaded URL to the parent component
+        onImageChange(file, uploadedUrl);
+        toast.success("Image uploaded successfully");
+      } else {
+        // If upload failed, just pass the file
+        onImageChange(file);
+        toast.error("Failed to upload image. Will try again on save.");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Error uploading image. Will try again on save.");
+      onImageChange(file);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const resetImage = () => {
@@ -105,10 +128,10 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       </div>
       
       <div className="flex items-center gap-2">
-        <Label htmlFor="headshot-upload" className="cursor-pointer">
+        <Label htmlFor="headshot-upload" className={`cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
           <div className="flex items-center gap-2 py-2 px-3 bg-muted rounded-md hover:bg-accent transition-colors">
             <Upload className="h-4 w-4" />
-            <span>Upload Headshot</span>
+            <span>{isUploading ? "Uploading..." : "Upload Headshot"}</span>
           </div>
           <Input 
             id="headshot-upload" 
@@ -116,6 +139,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
             className="hidden" 
             onChange={handleImageChange}
             accept="image/jpeg,image/png,image/webp"
+            disabled={isUploading}
           />
         </Label>
         
@@ -125,6 +149,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
             variant="outline"
             size="sm"
             onClick={resetImage}
+            disabled={isUploading}
           >
             <Trash className="h-4 w-4 mr-1" />
             Reset
