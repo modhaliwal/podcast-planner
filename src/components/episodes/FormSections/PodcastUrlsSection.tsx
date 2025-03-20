@@ -16,10 +16,14 @@ export function PodcastUrlsSection({ form }: PodcastUrlsSectionProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Link className="h-5 w-5 text-primary" />
-          Podcast URLs
+          Podcast Distribution URLs
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground mb-4">
+          Add links to where listeners can find this episode on different platforms.
+        </p>
+        
         <FormField
           control={form.control}
           name="podcastUrls.spotify"

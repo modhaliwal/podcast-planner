@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -159,9 +158,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           
           <ContentSection form={form} />
           
-          {form.watch('status') === EpisodeStatus.PUBLISHED && (
-            <PodcastUrlsSection form={form} />
-          )}
+          <PodcastUrlsSection form={form} />
         </div>
         
         <FormActions episodeId={episode.id} isSubmitting={isSubmitting} />

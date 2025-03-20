@@ -1,4 +1,3 @@
-
 import { Music, Youtube, ExternalLink } from 'lucide-react';
 import { Episode } from '@/lib/types';
 
@@ -7,19 +6,25 @@ interface EpisodePodcastUrlsProps {
 }
 
 export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
-  if (!episode.podcastUrls || 
-      (!episode.podcastUrls.spotify && 
-       !episode.podcastUrls.applePodcasts && 
-       !episode.podcastUrls.amazonPodcasts && 
-       !episode.podcastUrls.youtube)) {
+  // Check if any podcast URLs exist
+  const hasPodcastUrls = episode.podcastUrls && (
+    episode.podcastUrls.spotify || 
+    episode.podcastUrls.applePodcasts || 
+    episode.podcastUrls.amazonPodcasts || 
+    episode.podcastUrls.youtube
+  );
+  
+  // If no podcast URLs exist, return null (don't render anything)
+  if (!hasPodcastUrls) {
     return null;
   }
 
+  // Otherwise, render the podcast URLs section
   return (
-    <div>
+    <div className="mt-4">
       <h2 className="text-sm font-medium text-muted-foreground mb-2">Listen on</h2>
       <div className="flex flex-wrap gap-2">
-        {episode.podcastUrls.spotify && (
+        {episode.podcastUrls?.spotify && (
           <a 
             href={episode.podcastUrls.spotify}
             target="_blank"
@@ -31,7 +36,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
           </a>
         )}
         
-        {episode.podcastUrls.applePodcasts && (
+        {episode.podcastUrls?.applePodcasts && (
           <a 
             href={episode.podcastUrls.applePodcasts}
             target="_blank"
@@ -43,7 +48,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
           </a>
         )}
         
-        {episode.podcastUrls.amazonPodcasts && (
+        {episode.podcastUrls?.amazonPodcasts && (
           <a 
             href={episode.podcastUrls.amazonPodcasts}
             target="_blank"
@@ -55,7 +60,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
           </a>
         )}
         
-        {episode.podcastUrls.youtube && (
+        {episode.podcastUrls?.youtube && (
           <a 
             href={episode.podcastUrls.youtube}
             target="_blank"
