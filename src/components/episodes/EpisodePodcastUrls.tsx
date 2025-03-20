@@ -1,4 +1,3 @@
-
 import { Music, Youtube, ExternalLink } from 'lucide-react';
 import { Episode } from '@/lib/types';
 
@@ -24,7 +23,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
   return (
     <div className="mt-4">
       <h2 className="text-sm font-medium text-muted-foreground mb-2">Listen on</h2>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {episode.podcastUrls?.spotify && (
           <a 
             href={episode.podcastUrls.spotify}
@@ -60,7 +59,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             title="Listen on Amazon Podcasts"
           >
             <Music className="h-4 w-4 mr-2" />
-            <span className="text-sm">Amazon Podcasts</span>
+            <span className="text-sm">Amazon Music</span>
           </a>
         )}
         

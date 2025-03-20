@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube } from 'lucide-react';
+import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube, Podcast, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -129,31 +129,31 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
               
               {/* Podcast links */}
               {episode.status === EpisodeStatus.PUBLISHED && hasPodcastUrls && (
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-3 py-2 mb-3 border-y border-border">
                   {episode.podcastUrls?.spotify && (
-                    <div className="flex items-center text-xs text-primary">
-                      <Music className="h-3 w-3 mr-1" />
+                    <div className="flex items-center text-sm text-primary">
+                      <Music className="h-4 w-4 mr-1.5" />
                       <span>Spotify</span>
                     </div>
                   )}
                   
                   {episode.podcastUrls?.applePodcasts && (
-                    <div className="flex items-center text-xs text-primary">
-                      <Music className="h-3 w-3 mr-1" />
+                    <div className="flex items-center text-sm text-primary">
+                      <Music className="h-4 w-4 mr-1.5" />
                       <span>Apple</span>
                     </div>
                   )}
                   
                   {episode.podcastUrls?.amazonPodcasts && (
-                    <div className="flex items-center text-xs text-primary">
-                      <Music className="h-3 w-3 mr-1" />
+                    <div className="flex items-center text-sm text-primary">
+                      <Music className="h-4 w-4 mr-1.5" />
                       <span>Amazon</span>
                     </div>
                   )}
                   
                   {episode.podcastUrls?.youtube && (
-                    <div className="flex items-center text-xs text-primary">
-                      <Youtube className="h-3 w-3 mr-1" />
+                    <div className="flex items-center text-sm text-primary">
+                      <Youtube className="h-4 w-4 mr-1.5" />
                       <span>YouTube</span>
                     </div>
                   )}
