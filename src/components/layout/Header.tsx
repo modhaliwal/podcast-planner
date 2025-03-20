@@ -30,7 +30,7 @@ export function Header() {
   const { user, signOut } = useAuth();
   
   const navItems: NavItem[] = [
-    { name: 'Dashboard', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
+    { name: 'Dashboard', path: '/dashboard', icon: <Home className="h-4 w-4 mr-2" /> },
     { name: 'Guests', path: '/guests', icon: <Users className="h-4 w-4 mr-2" /> },
     { name: 'Episodes', path: '/episodes', icon: <Calendar className="h-4 w-4 mr-2" /> },
   ];
@@ -73,7 +73,7 @@ export function Header() {
     )}>
       <div className="container max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-2">
             <Headphones className="h-6 w-6 text-primary" />
             <span className="font-medium text-xl">PodCast Manager</span>
           </Link>
@@ -144,7 +144,7 @@ export function Header() {
             isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
           )}>
             <div className="flex items-center justify-between mb-8">
-              <Link to="/" className="flex items-center space-x-2" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-2" onClick={() => setIsMobileMenuOpen(false)}>
                 <Headphones className="h-6 w-6 text-primary" />
                 <span className="font-medium text-xl">PodCast Manager</span>
               </Link>
