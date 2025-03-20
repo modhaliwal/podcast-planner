@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -104,7 +105,14 @@ export function useGuestData(guestId: string | undefined) {
       setGuest(updatedGuest);
       setIsEditing(false);
       await refreshGuests();
+      
+      // Stay on the current guest page after saving
       toast.success("Guest updated successfully");
+      
+      // Explicitly navigate to the current guest page to ensure we stay on it
+      if (guestId) {
+        navigate(`/guests/${guestId}`, { replace: true });
+      }
     } catch (error: any) {
       toast.error(`Failed to update guest: ${error.message}`);
       console.error("Error updating guest:", error);
