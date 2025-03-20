@@ -34,6 +34,12 @@ const EditEpisode = () => {
     navigate(`/episodes/${id}`);
   };
   
+  // Ensure cover art is properly defined in the episode data
+  const episodeData = {
+    ...episode,
+    coverArt: episode.coverArt || undefined,
+  };
+  
   return (
     <Shell>
       <div className="page-container">
@@ -53,7 +59,7 @@ const EditEpisode = () => {
           </div>
         </div>
         
-        <EpisodeForm episode={episode} guests={guests} />
+        <EpisodeForm episode={episodeData} guests={guests} />
       </div>
     </Shell>
   );
