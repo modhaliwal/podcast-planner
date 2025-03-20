@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
@@ -15,6 +15,18 @@ const Episodes = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
+  useEffect(() => {
+    console.log("Episodes component mounted or updated");
+    console.log("Number of episodes:", episodes.length);
+    console.log("Loading state:", isDataLoading);
+    
+    // If no episodes are loaded and we're not currently loading, try refreshing
+    if (episodes.length === 0 && !isDataLoading) {
+      console.log("No episodes found, triggering refresh");
+      refreshEpisodes();
+    }
+  }, [episodes.length, isDataLoading, refreshEpisodes]);
+  
   // Filter episodes based on search query and status
   const filteredEpisodes = episodes.filter(episode => {
     const matchesSearch = episode.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -28,6 +40,7 @@ const Episodes = () => {
   );
   
   const handleRefresh = () => {
+    console.log("Manual refresh triggered");
     refreshEpisodes();
   };
   

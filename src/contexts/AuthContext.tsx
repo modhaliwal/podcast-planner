@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }));
       
       setEpisodes(formattedEpisodes);
+      console.log("Episodes loaded:", formattedEpisodes.length);
     } catch (error: any) {
       toast.error(`Error fetching episodes: ${error.message}`);
       console.error("Error fetching episodes:", error);
