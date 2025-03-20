@@ -1,23 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
-import { GuestCard } from '@/components/guests/GuestCard';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PlusIcon, SearchIcon, Users, Filter, LayoutGrid, LayoutList, RefreshCcw } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { GuestList } from '@/components/guests/GuestList';
-import { Toggle } from '@/components/ui/toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Guest } from '@/lib/types';
+import { GuestHeader } from '@/components/guests/GuestHeader';
+import { GuestControls } from '@/components/guests/GuestControls';
+import { GuestContent } from '@/components/guests/GuestContent';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'card';
@@ -80,119 +69,27 @@ const Guests = () => {
   return (
     <Shell>
       <div className="page-container">
-        <div className="page-header">
-          <div>
-            <h1 className="section-title">Podcast Guests</h1>
-            <p className="section-subtitle">Manage your guest profiles and information</p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={handleRefresh} 
-              disabled={isDataLoading}
-            >
-              <RefreshCcw className={`h-4 w-4 ${isDataLoading ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button size="default" onClick={handleAddGuest}>
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Add Guest
-            </Button>
-          </div>
-        </div>
+        <GuestHeader 
+          onRefresh={handleRefresh} 
+          onAddGuest={handleAddGuest}
+          isLoading={isDataLoading}
+        />
         
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search guests..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="bg-muted/50 rounded-md flex p-1">
-              <Toggle
-                pressed={viewMode === 'list'}
-                onPressedChange={() => setViewMode('list')}
-                size="sm"
-                variant="outline"
-                aria-label="List view"
-                className="rounded-md data-[state=on]:bg-background data-[state=on]:text-foreground"
-              >
-                <LayoutList className="h-4 w-4" />
-              </Toggle>
-              <Toggle
-                pressed={viewMode === 'card'}
-                onPressedChange={() => setViewMode('card')}
-                size="sm"
-                variant="outline"
-                aria-label="Card view"
-                className="rounded-md data-[state=on]:bg-background data-[state=on]:text-foreground"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Toggle>
-            </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full md:w-auto">
-                  <Filter className="h-4 w-4 mr-2" />
-                  {statusFilter === 'all' ? 'All Guests' : 
-                   statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setStatusFilter('all')}>
-                  All Guests
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('potential')}>
-                  Potential
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('contacted')}>
-                  Contacted
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('confirmed')}>
-                  Confirmed
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('appeared')}>
-                  Appeared
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <GuestControls
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
         
-        {isDataLoading ? (
-          <div className="flex items-center justify-center py-10">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        ) : filteredGuests.length > 0 ? (
-          viewMode === 'list' ? (
-            <GuestList guests={filteredGuests} />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGuests.map(guest => (
-                <GuestCard key={guest.id} guest={guest} />
-              ))}
-            </div>
-          )
-        ) : (
-          <EmptyState 
-            icon={<Users className="h-8 w-8 text-muted-foreground" />}
-            title="No guests found"
-            description={searchQuery ? 
-              "Try adjusting your search terms or filters" : 
-              "Get started by adding your first guest"}
-            action={{
-              label: "Add Guest",
-              onClick: handleAddGuest
-            }}
-          />
-        )}
+        <GuestContent
+          isLoading={isDataLoading}
+          filteredGuests={filteredGuests}
+          viewMode={viewMode}
+          handleAddGuest={handleAddGuest}
+        />
       </div>
     </Shell>
   );
