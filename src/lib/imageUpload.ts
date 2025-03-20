@@ -47,7 +47,7 @@ export const deleteImage = async (url?: string): Promise<boolean> => {
  */
 export const uploadImage = async (
   file: File,
-  bucket: string = 'guest-images',
+  bucket: string = 'podcast-planner',
   folder: string = 'headshots'
 ): Promise<string | null> => {
   try {
@@ -61,18 +61,6 @@ export const uploadImage = async (
     const fileExt = file.name.split('.').pop();
     const fileName = `${uuidv4()}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
-    
-    // Check if bucket exists, create it if not
-    const { data: buckets } = await supabase.storage.listBuckets();
-    
-    if (!buckets?.find(b => b.name === bucket)) {
-      const { error: bucketError } = await supabase.storage.createBucket(bucket, {
-        public: true,
-        fileSizeLimit: 10485760 // 10MB limit
-      });
-      
-      if (bucketError) throw bucketError;
-    }
     
     // Upload the file
     const { error: uploadError } = await supabase.storage

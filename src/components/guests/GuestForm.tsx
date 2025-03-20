@@ -66,15 +66,13 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         }
         
         imageUrl = uploadedImageUrl;
-      } else if (imageFile === null) {
+      } else if (imageFile === null && guest.imageUrl) {
         // User reset the image
-        if (guest.imageUrl) {
-          if (!isBlobUrl(guest.imageUrl)) {
-            // Only delete from storage if it's a real URL, not a blob
-            await deleteImage(guest.imageUrl);
-          }
-          imageUrl = undefined;
+        if (!isBlobUrl(guest.imageUrl)) {
+          // Only delete from storage if it's a real URL, not a blob
+          await deleteImage(guest.imageUrl);
         }
+        imageUrl = undefined;
       }
       
       // Clear blob URLs that were previously set but not uploaded

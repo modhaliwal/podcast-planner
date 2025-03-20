@@ -9,6 +9,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { uploadImage, isBlobUrl } from '@/lib/imageUpload';
 
 interface CoverArtSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -16,8 +17,9 @@ interface CoverArtSectionProps {
 
 export function CoverArtSection({ form }: CoverArtSectionProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(form.getValues('coverArt') || null);
+  const [isUploading, setIsUploading] = useState(false);
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -36,17 +38,37 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
     // Create a preview URL
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
+    setIsUploading(true);
     
-    // In a real application, you would upload the file to a server here
-    // and set the returned URL as the coverArt value
-    // For this example, we'll just use the preview URL
-    form.setValue('coverArt', url, { shouldValidate: true });
-    
-    toast.success("Cover art uploaded successfully");
+    try {
+      toast.info("Uploading cover art...");
+      
+      // Upload to Supabase storage
+      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
+      
+      if (uploadedUrl) {
+        // Set the form value to the uploaded image URL
+        form.setValue('coverArt', uploadedUrl, { shouldValidate: true });
+        toast.success("Cover art uploaded successfully");
+        
+        // Revoke the temporary blob URL to prevent memory leaks
+        URL.revokeObjectURL(url);
+        setPreviewUrl(uploadedUrl);
+      } else {
+        toast.error("Failed to upload cover art");
+        form.setValue('coverArt', url, { shouldValidate: true });
+      }
+    } catch (error) {
+      console.error("Error uploading cover art:", error);
+      toast.error("Error uploading cover art");
+      form.setValue('coverArt', url, { shouldValidate: true });
+    } finally {
+      setIsUploading(false);
+    }
   };
   
   const removeCoverArt = () => {
-    if (previewUrl) {
+    if (previewUrl && isBlobUrl(previewUrl)) {
       URL.revokeObjectURL(previewUrl);
     }
     setPreviewUrl(null);
@@ -87,14 +109,16 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                             type="button"
                             variant="outline"
                             className="relative overflow-hidden w-full md:w-auto"
+                            disabled={isUploading}
                           >
                             <Upload className="h-4 w-4 mr-2" />
-                            {previewUrl ? "Change Cover Art" : "Upload Cover Art"}
+                            {isUploading ? "Uploading..." : previewUrl ? "Change Cover Art" : "Upload Cover Art"}
                             <Input
                               type="file"
                               className="absolute inset-0 opacity-0 cursor-pointer"
                               accept="image/*"
                               onChange={handleFileChange}
+                              disabled={isUploading}
                             />
                           </Button>
                         </div>
@@ -112,6 +136,10 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                             src={previewUrl} 
                             alt="Cover art preview" 
                             className="object-cover w-full h-full"
+                            onError={() => {
+                              console.error("Failed to load image preview:", previewUrl);
+                              setPreviewUrl(null);
+                            }}
                           />
                         </AspectRatio>
                         <Button
@@ -120,6 +148,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                           size="icon"
                           className="absolute top-2 right-2 h-8 w-8 rounded-full"
                           onClick={removeCoverArt}
+                          disabled={isUploading}
                         >
                           <X className="h-4 w-4" />
                         </Button>

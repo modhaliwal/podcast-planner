@@ -58,7 +58,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       setIsUploading(true);
       toast.info("Uploading image...");
       
-      const uploadedUrl = await uploadImage(file);
+      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'headshots');
       
       if (uploadedUrl) {
         // Pass both the file and the uploaded URL to the parent component
