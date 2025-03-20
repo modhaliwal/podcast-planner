@@ -5,7 +5,8 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Guest } from '@/lib/types';
 import { GuestSocialLinks } from './GuestSocialLinks';
 import { GuestContactInfo } from './GuestContactInfo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { isBlobUrl } from '@/lib/imageUpload';
 
 interface GuestProfileCardProps {
   guest: Guest;
@@ -13,6 +14,7 @@ interface GuestProfileCardProps {
 
 export function GuestProfileCard({ guest }: GuestProfileCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [validImageUrl, setValidImageUrl] = useState<string | undefined>(undefined);
   
   // Get initials from name
   const initials = guest.name
@@ -21,8 +23,19 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
     .join('')
     .toUpperCase();
   
+  // Validate image URL when it changes
+  useEffect(() => {
+    // If the URL is a blob URL, it won't be valid after a page refresh
+    if (guest.imageUrl && !isBlobUrl(guest.imageUrl)) {
+      setValidImageUrl(guest.imageUrl);
+      setImageError(false);
+    } else {
+      setValidImageUrl(undefined);
+    }
+  }, [guest.imageUrl]);
+  
   // Determine if we should show image or avatar
-  const showAvatar = !guest.imageUrl || imageError;
+  const showAvatar = !validImageUrl || imageError;
   
   return (
     <Card className="sticky top-28 mb-6">
@@ -32,11 +45,11 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
             <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
               <AspectRatio ratio={2/3} className="bg-muted">
                 <img 
-                  src={guest.imageUrl} 
+                  src={validImageUrl} 
                   alt={`${guest.name} headshot`}
                   className="object-cover w-full h-full"
                   onError={(e) => {
-                    console.error("Image failed to load:", guest.imageUrl);
+                    console.error("Image failed to load:", validImageUrl);
                     setImageError(true);
                   }}
                 />

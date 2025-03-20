@@ -8,7 +8,7 @@ import { HeadshotSection } from "./form-sections/HeadshotSection";
 import { BasicInfoSection } from "./form-sections/BasicInfoSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
-import { uploadImage } from "@/lib/imageUpload";
+import { uploadImage, deleteImage, isBlobUrl } from "@/lib/imageUpload";
 import { toast } from "sonner";
 
 interface GuestFormProps {
@@ -51,19 +51,28 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     setIsSubmitting(true);
     
     try {
-      // If there's a new image file, upload it to Supabase storage
+      // Handle image upload/deletion
       let imageUrl = guest.imageUrl;
       
+      // If we have a new image file, upload it and replace the old URL
       if (imageFile) {
         toast.info("Uploading image...");
         const uploadedUrl = await uploadImage(imageFile);
         
         if (uploadedUrl) {
+          // If there was a previous image, try to delete it
+          if (imageUrl && !isBlobUrl(imageUrl)) {
+            await deleteImage(imageUrl);
+          }
+          
           imageUrl = uploadedUrl;
           toast.success("Image uploaded successfully");
         } else {
           toast.error("Failed to upload image. Using previous image if available.");
         }
+      } else if (imageFile === null && guest.imageUrl && isBlobUrl(guest.imageUrl)) {
+        // Clear blob URLs that were previously set but not uploaded
+        imageUrl = undefined;
       }
       
       const updatedGuest: Guest = {

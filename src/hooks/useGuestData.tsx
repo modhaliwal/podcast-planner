@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Guest, SocialLinks } from '@/lib/types';
+import { isBlobUrl } from '@/lib/imageUpload';
 
 export function useGuestData(guestId: string | undefined) {
   const navigate = useNavigate();
@@ -31,6 +32,11 @@ export function useGuestData(guestId: string | undefined) {
         if (data) {
           console.log("Fetched guest data:", data);
           
+          // Skip blob URLs as they won't be valid after page refresh
+          const imageUrl = data.image_url && !isBlobUrl(data.image_url) 
+            ? data.image_url 
+            : undefined;
+          
           // Transform the data to match our Guest interface
           const formattedGuest: Guest = {
             id: data.id,
@@ -40,7 +46,7 @@ export function useGuestData(guestId: string | undefined) {
             email: data.email || undefined,
             phone: data.phone || undefined,
             bio: data.bio,
-            imageUrl: data.image_url || undefined,
+            imageUrl: imageUrl,
             socialLinks: data.social_links as SocialLinks,
             notes: data.notes || undefined,
             backgroundResearch: data.background_research || undefined,

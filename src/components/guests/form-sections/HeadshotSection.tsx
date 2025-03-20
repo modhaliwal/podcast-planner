@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Upload, Trash, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { isBlobUrl } from "@/lib/imageUpload";
 
 interface HeadshotSectionProps {
   initialImageUrl?: string;
@@ -14,8 +15,16 @@ interface HeadshotSectionProps {
 }
 
 export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: HeadshotSectionProps) {
-  const [imagePreview, setImagePreview] = useState<string | undefined>(initialImageUrl);
+  const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
+  
+  // Set initial image preview
+  useEffect(() => {
+    // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
+    if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
+      setImagePreview(initialImageUrl);
+    }
+  }, [initialImageUrl]);
   
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,8 +62,15 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       setLocalBlobUrl(undefined);
     }
     
-    setImagePreview(initialImageUrl);
+    // Reset to initial image if it's not a blob URL
+    if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
+      setImagePreview(initialImageUrl);
+    } else {
+      setImagePreview(undefined);
+    }
+    
     onImageChange(null);
+    toast.info("Image selection reset");
   };
 
   useEffect(() => {
@@ -66,13 +82,6 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     };
   }, [localBlobUrl]);
 
-  // Update preview when initialImageUrl changes (e.g., after successful upload)
-  useEffect(() => {
-    if (!localBlobUrl) {
-      setImagePreview(initialImageUrl);
-    }
-  }, [initialImageUrl, localBlobUrl]);
-
   return (
     <div className="flex flex-col items-center mb-6">
       <div className="mb-4 w-full max-w-[240px]">
@@ -82,6 +91,10 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
               src={imagePreview}
               alt={guestName}
               className="w-full h-full object-cover"
+              onError={() => {
+                console.error("Failed to load image preview:", imagePreview);
+                setImagePreview(undefined);
+              }}
             />
           ) : (
             <div className="flex items-center justify-center h-full w-full bg-muted">
@@ -106,7 +119,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
           />
         </Label>
         
-        {localBlobUrl && (
+        {(localBlobUrl || imagePreview) && (
           <Button 
             type="button"
             variant="outline"
