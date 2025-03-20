@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ChevronLeft, ExternalLink, FileText, Globe, Instagram, Linkedin, Mail, Phone, Twitter, Youtube } from 'lucide-react';
@@ -10,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface GuestDetailProps {
   guest: Guest;
@@ -46,123 +46,120 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-1/3 lg:w-1/4">
           <Card className="sticky top-28 mb-6">
-            <CardContent className="p-6">
-              <div className="flex flex-col items-center text-center">
-                {guest.imageUrl ? (
-                  <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
-                    <AspectRatio ratio={2/3} className="bg-muted">
-                      <img 
-                        src={guest.imageUrl} 
-                        alt={`${guest.name} headshot`}
-                        className="object-cover w-full h-full"
-                      />
-                    </AspectRatio>
+            <ScrollArea className="max-h-[calc(100vh-180px)]">
+              <CardContent className="p-6">
+                <div className="flex flex-col items-center text-center">
+                  {guest.imageUrl ? (
+                    <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
+                      <AspectRatio ratio={2/3} className="bg-muted">
+                        <img 
+                          src={guest.imageUrl} 
+                          alt={`${guest.name} headshot`}
+                          className="object-cover w-full h-full"
+                        />
+                      </AspectRatio>
+                    </div>
+                  ) : (
+                    <Avatar className="h-24 w-24 border mb-4">
+                      <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  
+                  <h2 className="text-xl font-semibold">{guest.name}</h2>
+                  <p className="text-muted-foreground mb-1">{guest.title}</p>
+                  {guest.company && (
+                    <p className="text-sm text-muted-foreground mb-4">{guest.company}</p>
+                  )}
+                  
+                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {guest.socialLinks.twitter && (
+                      <a 
+                        href={guest.socialLinks.twitter} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
+                        aria-label="Twitter"
+                      >
+                        <Twitter className="h-4 w-4" />
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.linkedin && (
+                      <a 
+                        href={guest.socialLinks.linkedin} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
+                        aria-label="LinkedIn"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.instagram && (
+                      <a 
+                        href={guest.socialLinks.instagram} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
+                        aria-label="Instagram"
+                      >
+                        <Instagram className="h-4 w-4" />
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.youtube && (
+                      <a 
+                        href={guest.socialLinks.youtube} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
+                        aria-label="YouTube"
+                      >
+                        <Youtube className="h-4 w-4" />
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.website && (
+                      <a 
+                        href={guest.socialLinks.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
+                        aria-label="Website"
+                      >
+                        <Globe className="h-4 w-4" />
+                      </a>
+                    )}
                   </div>
-                ) : (
-                  <Avatar className="h-24 w-24 border mb-4">
-                    <AvatarFallback className="text-xl">{initials}</AvatarFallback>
-                  </Avatar>
-                )}
-                
-                <h2 className="text-xl font-semibold">{guest.name}</h2>
-                <p className="text-muted-foreground mb-1">{guest.title}</p>
-                {guest.company && (
-                  <p className="text-sm text-muted-foreground mb-4">{guest.company}</p>
-                )}
-                
-                <div className="flex flex-wrap justify-center gap-2 mb-6">
-                  {guest.socialLinks.twitter && (
-                    <a 
-                      href={guest.socialLinks.twitter} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="Twitter"
-                    >
-                      <Twitter className="h-4 w-4" />
-                    </a>
+                  
+                  {guest.email && (
+                    <div className="flex items-center space-x-2 text-sm mb-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <a href={`mailto:${guest.email}`} className="hover:underline">{guest.email}</a>
+                    </div>
                   )}
                   
-                  {guest.socialLinks.linkedin && (
-                    <a 
-                      href={guest.socialLinks.linkedin} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="LinkedIn"
-                    >
-                      <Linkedin className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.instagram && (
-                    <a 
-                      href={guest.socialLinks.instagram} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="Instagram"
-                    >
-                      <Instagram className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.youtube && (
-                    <a 
-                      href={guest.socialLinks.youtube} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="YouTube"
-                    >
-                      <Youtube className="h-4 w-4" />
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.website && (
-                    <a 
-                      href={guest.socialLinks.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-                      aria-label="Website"
-                    >
-                      <Globe className="h-4 w-4" />
-                    </a>
+                  {guest.phone && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <a href={`tel:${guest.phone}`} className="hover:underline">{guest.phone}</a>
+                    </div>
                   )}
                 </div>
                 
-                {guest.email && (
-                  <div className="flex items-center space-x-2 text-sm mb-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a href={`mailto:${guest.email}`} className="hover:underline">{guest.email}</a>
+                {guest.notes && (
+                  <div className="mt-6 pt-6 border-t">
+                    <h3 className="font-medium text-lg mb-2">Personal Notes</h3>
+                    <div 
+                      className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none text-sm"
+                      dangerouslySetInnerHTML={{ __html: guest.notes }}
+                    />
                   </div>
                 )}
-                
-                {guest.phone && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <a href={`tel:${guest.phone}`} className="hover:underline">{guest.phone}</a>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Personal Notes section with rich text display */}
-          {guest.notes && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Personal Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: guest.notes }}
-                />
               </CardContent>
-            </Card>
-          )}
+            </ScrollArea>
+          </Card>
         </div>
         
         <div className="flex-1">
@@ -184,7 +181,6 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
                 </CardContent>
               </Card>
               
-              {/* Background Research section with rich text display */}
               {guest.backgroundResearch && (
                 <Card className="mt-6">
                   <CardHeader>
