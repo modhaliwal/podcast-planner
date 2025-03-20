@@ -1,5 +1,5 @@
 
-import { Spotify, Music, Youtube, ExternalLink } from 'lucide-react';
+import { Music, Youtube, ExternalLink } from 'lucide-react';
 import { Episode } from '@/lib/types';
 
 interface EpisodePodcastUrlsProps {
@@ -26,7 +26,7 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             rel="noopener noreferrer"
             className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
           >
-            <Spotify className="h-4 w-4 mr-2" />
+            <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Spotify</span>
           </a>
         )}

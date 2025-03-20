@@ -4,7 +4,7 @@ import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Link, Spotify, Music, Youtube } from 'lucide-react';
+import { Link, Music, Youtube } from 'lucide-react';
 
 interface PodcastUrlsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -26,7 +26,7 @@ export function PodcastUrlsSection({ form }: PodcastUrlsSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-2">
-                <Spotify className="h-4 w-4 text-muted-foreground" />
+                <Music className="h-4 w-4 text-muted-foreground" />
                 Spotify
               </FormLabel>
               <FormControl>
