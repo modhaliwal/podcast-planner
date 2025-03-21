@@ -20,7 +20,8 @@ export function EpisodeRecordingLinks({ episode }: EpisodeRecordingLinksProps) {
             href={episode.recordingLinks.audio}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
+            onClick={(e) => e.stopPropagation()}
           >
             <Headphones className="h-4 w-4 mr-2" />
             <span className="text-sm">Audio</span>
@@ -32,7 +33,8 @@ export function EpisodeRecordingLinks({ episode }: EpisodeRecordingLinksProps) {
             href={episode.recordingLinks.video}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
+            onClick={(e) => e.stopPropagation()}
           >
             <Film className="h-4 w-4 mr-2" />
             <span className="text-sm">Video</span>
@@ -44,7 +46,8 @@ export function EpisodeRecordingLinks({ episode }: EpisodeRecordingLinksProps) {
             href={episode.recordingLinks.transcript}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
+            onClick={(e) => e.stopPropagation()}
           >
             <FileText className="h-4 w-4 mr-2" />
             <span className="text-sm">Transcript</span>
@@ -57,7 +60,8 @@ export function EpisodeRecordingLinks({ episode }: EpisodeRecordingLinksProps) {
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
+            onClick={(e) => e.stopPropagation()}
           >
             <Link2 className="h-4 w-4 mr-2" />
             <span className="text-sm">{link.label}</span>

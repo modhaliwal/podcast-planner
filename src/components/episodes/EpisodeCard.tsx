@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube, Podcast, ExternalLink } from 'lucide-react';
+import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,6 +44,12 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
     episode.podcastUrls.amazonPodcasts || 
     episode.podcastUrls.youtube
   );
+
+  const handlePodcastLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
   
   return (
     <Link to={`/episodes/${episode.id}`}>
@@ -127,35 +133,51 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
                 </div>
               </div>
               
-              {/* Podcast links - removed the episode.status === EpisodeStatus.PUBLISHED condition */}
+              {/* Podcast links */}
               {hasPodcastUrls && (
                 <div className="flex flex-wrap gap-3 py-2 mb-3 border-y border-border">
                   {episode.podcastUrls?.spotify && (
-                    <div className="flex items-center text-sm text-primary">
+                    <a 
+                      href={episode.podcastUrls.spotify}
+                      onClick={(e) => handlePodcastLinkClick(e, episode.podcastUrls!.spotify!)}
+                      className="flex items-center text-sm text-primary relative z-10"
+                    >
                       <Music className="h-4 w-4 mr-1.5" />
                       <span>Spotify</span>
-                    </div>
+                    </a>
                   )}
                   
                   {episode.podcastUrls?.applePodcasts && (
-                    <div className="flex items-center text-sm text-primary">
+                    <a 
+                      href={episode.podcastUrls.applePodcasts}
+                      onClick={(e) => handlePodcastLinkClick(e, episode.podcastUrls!.applePodcasts!)}
+                      className="flex items-center text-sm text-primary relative z-10"
+                    >
                       <Music className="h-4 w-4 mr-1.5" />
                       <span>Apple</span>
-                    </div>
+                    </a>
                   )}
                   
                   {episode.podcastUrls?.amazonPodcasts && (
-                    <div className="flex items-center text-sm text-primary">
+                    <a 
+                      href={episode.podcastUrls.amazonPodcasts}
+                      onClick={(e) => handlePodcastLinkClick(e, episode.podcastUrls!.amazonPodcasts!)}
+                      className="flex items-center text-sm text-primary relative z-10"
+                    >
                       <Music className="h-4 w-4 mr-1.5" />
                       <span>Amazon</span>
-                    </div>
+                    </a>
                   )}
                   
                   {episode.podcastUrls?.youtube && (
-                    <div className="flex items-center text-sm text-primary">
+                    <a 
+                      href={episode.podcastUrls.youtube}
+                      onClick={(e) => handlePodcastLinkClick(e, episode.podcastUrls!.youtube!)}
+                      className="flex items-center text-sm text-primary relative z-10"
+                    >
                       <Youtube className="h-4 w-4 mr-1.5" />
                       <span>YouTube</span>
-                    </div>
+                    </a>
                   )}
                 </div>
               )}

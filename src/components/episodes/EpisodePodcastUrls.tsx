@@ -1,3 +1,4 @@
+
 import { Music, Youtube, ExternalLink } from 'lucide-react';
 import { Episode } from '@/lib/types';
 
@@ -29,8 +30,9 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             href={episode.podcastUrls.spotify}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
             title="Listen on Spotify"
+            onClick={(e) => e.stopPropagation()}
           >
             <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Spotify</span>
@@ -42,8 +44,9 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             href={episode.podcastUrls.applePodcasts}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
             title="Listen on Apple Podcasts"
+            onClick={(e) => e.stopPropagation()}
           >
             <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Apple Podcasts</span>
@@ -55,8 +58,9 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             href={episode.podcastUrls.amazonPodcasts}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
             title="Listen on Amazon Podcasts"
+            onClick={(e) => e.stopPropagation()}
           >
             <Music className="h-4 w-4 mr-2" />
             <span className="text-sm">Amazon Music</span>
@@ -68,8 +72,9 @@ export function EpisodePodcastUrls({ episode }: EpisodePodcastUrlsProps) {
             href={episode.podcastUrls.youtube}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+            className="flex items-center p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors relative z-10"
             title="Watch on YouTube"
+            onClick={(e) => e.stopPropagation()}
           >
             <Youtube className="h-4 w-4 mr-2" />
             <span className="text-sm">YouTube</span>
