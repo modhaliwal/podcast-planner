@@ -27,7 +27,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
           </CardHeader>
           <CardContent>
             <div 
-              className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none"
+              className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 prose-headings:mt-4 prose-headings:mb-2 prose-h3:text-lg prose-h3:font-medium prose-strong:font-semibold dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
             />
           </CardContent>
