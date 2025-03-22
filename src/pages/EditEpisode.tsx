@@ -39,8 +39,6 @@ const EditEpisode = () => {
   const handleBack = () => {
     navigate(`/episodes/${id}`);
   };
-
-  console.log("Available guests for selection:", guests);
   
   return (
     <Shell>
@@ -65,12 +63,13 @@ const EditEpisode = () => {
           episode={{
             ...episode,
             coverArt: episode.coverArt || undefined,
+            resources: episode.resources || []
           }} 
           guests={guests}
         />
       </div>
     </Shell>
   );
-};
+}
 
 export default EditEpisode;

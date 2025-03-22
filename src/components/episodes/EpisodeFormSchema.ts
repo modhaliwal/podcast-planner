@@ -28,7 +28,14 @@ export const episodeFormSchema = z.object({
     applePodcasts: z.string().optional(),
     amazonPodcasts: z.string().optional(),
     youtube: z.string().optional()
-  }).optional().default({})
+  }).optional().default({}),
+  resources: z.array(
+    z.object({
+      label: z.string().min(1, "Label is required"),
+      url: z.string().url("Please enter a valid URL"),
+      description: z.string().optional()
+    })
+  ).optional().default([])
 });
 
 export type EpisodeFormValues = z.infer<typeof episodeFormSchema>;

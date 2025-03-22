@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -15,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
 import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSection';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
+import { ResourcesSection } from './FormSections/ResourcesSection';
 import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeFormProps {
@@ -41,7 +43,8 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       guestIds: episode.guestIds,
       coverArt: episode.coverArt,
       recordingLinks: episode.recordingLinks || {},
-      podcastUrls: episode.podcastUrls || {}
+      podcastUrls: episode.podcastUrls || {},
+      resources: episode.resources || []
     },
   });
   
@@ -109,6 +112,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           cover_art: coverArt,
           recording_links: data.recordingLinks,
           podcast_urls: data.podcastUrls,
+          resources: data.resources,
           updated_at: new Date().toISOString()
         })
         .eq('id', episode.id);
@@ -157,6 +161,8 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           </div>
           
           <ContentSection form={form} />
+          
+          <ResourcesSection form={form} />
           
           <PodcastUrlsSection form={form} />
         </div>

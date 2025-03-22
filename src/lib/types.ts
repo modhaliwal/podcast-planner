@@ -43,6 +43,12 @@ export interface PodcastUrls {
   youtube?: string;
 }
 
+export interface Resource {
+  label: string;
+  url: string;
+  description?: string;
+}
+
 export interface Episode {
   id: string;
   episodeNumber: number;
@@ -56,6 +62,7 @@ export interface Episode {
   notes: string;
   recordingLinks?: RecordingLinks;
   podcastUrls?: PodcastUrls;
+  resources?: Resource[];  // Added resources field
   createdAt: string;
   updatedAt: string;
 }
