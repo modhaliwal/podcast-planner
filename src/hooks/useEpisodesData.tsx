@@ -49,23 +49,35 @@ export function useEpisodesData(userId: string | undefined) {
         guestsByEpisode[episode_id].push(guest_id);
       });
       
-      const formattedEpisodes: Episode[] = episodesData.map(episode => ({
-        id: episode.id,
-        episodeNumber: episode.episode_number,
-        title: episode.title,
-        scheduled: episode.scheduled,
-        publishDate: episode.publish_date || undefined,
-        status: episode.status as EpisodeStatus,
-        coverArt: episode.cover_art || undefined,
-        guestIds: guestsByEpisode[episode.id] || [],
-        introduction: episode.introduction,
-        notes: episode.notes || '',
-        recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
-        podcastUrls: episode.podcast_urls ? (episode.podcast_urls as PodcastUrls) : {},
-        resources: episode.resources ? (episode.resources as Resource[]) : [],
-        createdAt: episode.created_at,
-        updatedAt: episode.updated_at
-      }));
+      const formattedEpisodes: Episode[] = episodesData.map(episode => {
+        // Safely convert JSON resources to typed Resource array
+        let typedResources: Resource[] = [];
+        if (episode.resources && Array.isArray(episode.resources)) {
+          typedResources = episode.resources.map((resource: any) => ({
+            label: resource.label || '',
+            url: resource.url || '',
+            description: resource.description || undefined
+          }));
+        }
+        
+        return {
+          id: episode.id,
+          episodeNumber: episode.episode_number,
+          title: episode.title,
+          scheduled: episode.scheduled,
+          publishDate: episode.publish_date || undefined,
+          status: episode.status as EpisodeStatus,
+          coverArt: episode.cover_art || undefined,
+          guestIds: guestsByEpisode[episode.id] || [],
+          introduction: episode.introduction,
+          notes: episode.notes || '',
+          recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
+          podcastUrls: episode.podcast_urls ? (episode.podcast_urls as PodcastUrls) : {},
+          resources: typedResources,
+          createdAt: episode.created_at,
+          updatedAt: episode.updated_at
+        };
+      });
       
       console.log("Formatted episodes:", formattedEpisodes.length);
       setEpisodes(formattedEpisodes);
