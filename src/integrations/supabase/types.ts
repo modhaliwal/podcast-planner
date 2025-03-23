@@ -56,6 +56,7 @@ export type Database = {
           podcast_urls: Json | null
           publish_date: string | null
           recording_links: Json | null
+          resources: Json | null
           scheduled: string
           status: string
           title: string
@@ -72,6 +73,7 @@ export type Database = {
           podcast_urls?: Json | null
           publish_date?: string | null
           recording_links?: Json | null
+          resources?: Json | null
           scheduled: string
           status?: string
           title: string
@@ -88,6 +90,7 @@ export type Database = {
           podcast_urls?: Json | null
           publish_date?: string | null
           recording_links?: Json | null
+          resources?: Json | null
           scheduled?: string
           status?: string
           title?: string

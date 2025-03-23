@@ -9,6 +9,7 @@ import { EpisodeStatusHeader } from './EpisodeStatusHeader';
 import { EpisodeGuests } from './EpisodeGuests';
 import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
 import { EpisodePodcastUrls } from './EpisodePodcastUrls';
+import { EpisodeResources } from './EpisodeResources';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
@@ -114,6 +115,15 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
             </ScrollArea>
           </CardContent>
         </Card>
+        
+        {/* Resources Section */}
+        {episode.resources && episode.resources.length > 0 && (
+          <Card className="shadow-sm border-slate-200 dark:border-slate-700">
+            <CardContent className="p-6">
+              <EpisodeResources episode={episode} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
