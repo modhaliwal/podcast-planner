@@ -42,3 +42,75 @@ export const createEpisodes = async (
     return { success: false, error };
   }
 };
+
+// Add function to get episodes for current user
+export const getUserEpisodes = async (): Promise<{ data: any[] | null; error: any }> => {
+  try {
+    const { data, error } = await supabase
+      .from('episodes')
+      .select('*')
+      .order('episode_number', { ascending: false });
+    
+    if (error) throw error;
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error("Error fetching user episodes:", error);
+    return { data: null, error };
+  }
+};
+
+// Add function to get a specific episode
+export const getEpisode = async (id: string): Promise<{ data: any | null; error: any }> => {
+  try {
+    const { data, error } = await supabase
+      .from('episodes')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    
+    return { data, error: null };
+  } catch (error) {
+    console.error(`Error fetching episode with id ${id}:`, error);
+    return { data: null, error };
+  }
+};
+
+// Add function to update an episode
+export const updateEpisode = async (id: string, updates: any): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { error } = await supabase
+      .from('episodes')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error) {
+    console.error(`Error updating episode with id ${id}:`, error);
+    return { success: false, error };
+  }
+};
+
+// Add function to delete an episode
+export const deleteEpisode = async (id: string): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { error } = await supabase
+      .from('episodes')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    return { success: true };
+  } catch (error) {
+    console.error(`Error deleting episode with id ${id}:`, error);
+    return { success: false, error };
+  }
+};
