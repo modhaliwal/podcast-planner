@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,11 +24,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Use our custom hooks for guests and episodes
   const { guests, isLoadingGuests, refreshGuests } = useGuestsData(user?.id);
   const { episodes, isLoadingEpisodes, refreshEpisodes } = useEpisodesData(user?.id);
   
-  // Combined loading state
   const isDataLoading = isLoadingGuests || isLoadingEpisodes;
 
   useEffect(() => {

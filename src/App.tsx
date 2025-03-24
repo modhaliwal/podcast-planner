@@ -17,6 +17,7 @@ const CreateEpisode = lazy(() => import('./pages/CreateEpisode'));
 const EpisodeView = lazy(() => import('./pages/EpisodeView'));
 const EditEpisode = lazy(() => import('./pages/EditEpisode'));
 const Settings = lazy(() => import('./pages/Settings'));
+const Users = lazy(() => import('./pages/Users'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
           <Route path="/episodes/:id" element={<EpisodeView />} />
           <Route path="/episodes/:id/edit" element={<EditEpisode />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/users" element={<Users />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
