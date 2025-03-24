@@ -58,6 +58,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     try {
       let coverArt = data.coverArt;
       
+      // Case 1: New image uploaded (blob URL)
       if (coverArt && isBlobUrl(coverArt)) {
         console.log("Detected blob URL for cover art, uploading to storage");
         
@@ -85,19 +86,21 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
             coverArt = undefined;
           }
           
-          URL.revokeObjectURL(coverArt);
+          URL.revokeObjectURL(data.coverArt);
         } catch (error) {
           console.error("Error uploading cover art:", error);
           toast.error("Error uploading cover art");
           coverArt = undefined;
         }
-      } else if (coverArt !== originalCoverArt) {
-        if (originalCoverArt && coverArt === undefined) {
-          console.log("Deleting old cover art on removal:", originalCoverArt);
-          await deleteImage(originalCoverArt);
-          toast.success("Cover art removed successfully");
-        }
       }
+      // Case 2: Image removed (undefined) but there was an original image
+      else if (coverArt === undefined && originalCoverArt) {
+        console.log("Deleting old cover art on removal:", originalCoverArt);
+        await deleteImage(originalCoverArt);
+        toast.success("Cover art removed successfully");
+        coverArt = null; // Use null to explicitly set NULL in database
+      }
+      // Case 3: No change to image
       
       const { error: updateError } = await supabase
         .from('episodes')

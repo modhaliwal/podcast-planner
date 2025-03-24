@@ -18,9 +18,13 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
   const currentCoverArt = form.getValues('coverArt');
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
+  const [isRemoved, setIsRemoved] = useState(false);
   
   // Set initial image preview
   useEffect(() => {
+    // Reset removed status when component mounts with new cover art
+    setIsRemoved(false);
+    
     // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
       console.log("Setting initial cover art preview:", currentCoverArt);
@@ -49,6 +53,9 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
       URL.revokeObjectURL(localBlobUrl);
     }
 
+    // Reset removed status when new image is selected
+    setIsRemoved(false);
+
     // Create a new blob URL for preview only
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
@@ -68,6 +75,7 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
     // Clear the image preview and form value
     setImagePreview(undefined);
     form.setValue('coverArt', undefined, { shouldValidate: true });
+    setIsRemoved(true);
     
     toast.info("Cover art removed");
   };
@@ -91,7 +99,7 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
           <div className="flex flex-col gap-4">
             <div className="w-full max-w-[200px]">
               <AspectRatio ratio={1} className="bg-muted rounded-md overflow-hidden border">
-                {imagePreview ? (
+                {imagePreview && !isRemoved ? (
                   <img
                     src={imagePreview}
                     alt="Cover art preview"
@@ -120,7 +128,7 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
                     size="sm"
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    {imagePreview ? "Change" : "Upload"}
+                    {imagePreview && !isRemoved ? "Change" : "Upload"}
                     <Input
                       type="file"
                       className="absolute inset-0 opacity-0 cursor-pointer"
@@ -131,7 +139,7 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
                 </div>
               </FormControl>
               
-              {imagePreview && (
+              {imagePreview && !isRemoved && (
                 <Button 
                   type="button"
                   variant="outline"

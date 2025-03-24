@@ -10,12 +10,13 @@ import { useEffect } from 'react';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { episodes, guests, refreshGuests } = useAuth();
+  const { episodes, guests, refreshGuests, refreshEpisodes } = useAuth();
   
-  // Ensure we have the latest guest data
+  // Ensure we have the latest guest and episode data
   useEffect(() => {
     refreshGuests();
-  }, [refreshGuests]);
+    refreshEpisodes();
+  }, [refreshGuests, refreshEpisodes]);
   
   // Find the episode with the matching ID
   const episode = episodes.find(e => e.id === id);
