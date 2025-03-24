@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Guest, SocialLinks } from '@/lib/types';
-import { isBlobUrl } from '@/lib/imageUpload';
+import { isBlobUrl, deleteImage } from '@/lib/imageUpload';
 
 export function useGuestData(guestId: string | undefined) {
   const navigate = useNavigate();
@@ -14,11 +15,12 @@ export function useGuestData(guestId: string | undefined) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user, refreshGuests } = useAuth();
   
-  const fetchGuest = async () => {
+  const fetchGuest = useCallback(async () => {
     if (!guestId) return;
     
     try {
       setIsLoading(true);
+      
       const { data, error } = await supabase
         .from('guests')
         .select('*')
@@ -28,7 +30,7 @@ export function useGuestData(guestId: string | undefined) {
       if (error) throw error;
       
       if (data) {
-        console.log("Fetched guest data:", data);
+        console.log("Fetched guest data:", data.id);
         
         const imageUrl = data.image_url && !isBlobUrl(data.image_url) 
           ? data.image_url 
@@ -59,23 +61,29 @@ export function useGuestData(guestId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [guestId]);
   
+  // Initial data loading
   useEffect(() => {
     fetchGuest();
-  }, [guestId]);
+  }, [fetchGuest]);
 
   const handleSave = async (updatedGuest: Guest) => {
     try {
       console.log("Saving guest with image:", updatedGuest.imageUrl);
       
-      let imageUrl = undefined;
+      // Handle image URL - if null is passed, it means remove the image
+      let imageUrl = updatedGuest.imageUrl === null ? null : updatedGuest.imageUrl;
       
-      if (updatedGuest.imageUrl === null) {
-        imageUrl = null;
+      // If there's an existing image and we're removing it, delete it from storage
+      if (guest?.imageUrl && imageUrl === null) {
+        await deleteImage(guest.imageUrl);
+        console.log("Deleted previous image from storage");
       }
-      else if (updatedGuest.imageUrl && !isBlobUrl(updatedGuest.imageUrl)) {
-        imageUrl = updatedGuest.imageUrl;
+      
+      // Don't save blob URLs to the database
+      if (imageUrl && isBlobUrl(imageUrl)) {
+        imageUrl = undefined;
       }
       
       console.log("Final image URL to save to database:", imageUrl);
@@ -100,15 +108,21 @@ export function useGuestData(guestId: string | undefined) {
       
       if (error) throw error;
       
-      updatedGuest.imageUrl = imageUrl === null ? undefined : imageUrl;
+      // Update guest with the correct imageUrl value
+      const savedGuest = {
+        ...updatedGuest,
+        imageUrl: imageUrl === null ? undefined : imageUrl,
+      };
       
-      setGuest(updatedGuest);
+      setGuest(savedGuest);
       setIsEditing(false);
       
+      // Refresh the guests list
       await refreshGuests();
       
       toast.success("Guest updated successfully");
       
+      // Refetch to ensure we have the latest data
       await fetchGuest();
     } catch (error: any) {
       toast.error(`Failed to update guest: ${error.message}`);
@@ -118,6 +132,11 @@ export function useGuestData(guestId: string | undefined) {
 
   const handleDelete = async () => {
     try {
+      // If the guest has an image, delete it from storage
+      if (guest?.imageUrl) {
+        await deleteImage(guest.imageUrl);
+      }
+      
       const { error } = await supabase
         .from('guests')
         .delete()

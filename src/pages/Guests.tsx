@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,17 +17,18 @@ const Guests = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const hasInitializedRef = useRef(false);
   
+  // Load guests data once on component mount
   useEffect(() => {
-    // Only refresh guests data once on component mount
-    if (!initialLoadDone) {
+    if (!hasInitializedRef.current) {
       console.log("Initial Guests component mount, refreshing data");
       refreshGuests();
-      setInitialLoadDone(true);
+      hasInitializedRef.current = true;
     }
-  }, [refreshGuests, initialLoadDone]);
+  }, [refreshGuests]);
 
+  // Filter guests based on search query and status filter
   const filteredGuests = guests.filter(guest => {
     const matchesSearch = 
       guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

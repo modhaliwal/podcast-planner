@@ -9,12 +9,14 @@ import { GuestViewHeader } from '@/components/guests/GuestViewHeader';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { episodes, refreshGuests } = useAuth();
+  const hasRefreshedRef = useRef(false);
+  
   const {
     isLoading,
     guest,
@@ -26,17 +28,21 @@ const GuestView = () => {
     handleDelete
   } = useGuestData(id);
   
-  // Force refresh only when visiting the page, not on every re-render
+  // Refresh guests data only once when the page is loaded
   useEffect(() => {
-    const currentPath = location.pathname;
-    console.log('Guest view mounted at path:', currentPath);
+    if (!hasRefreshedRef.current) {
+      console.log('Initial GuestView mount, refreshing guests data');
+      refreshGuests();
+      hasRefreshedRef.current = true;
+    }
     
-    // Only refresh once on component mount
-    refreshGuests();
-    
-    // No dependency on refreshGuests to prevent re-running on every render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+    // Reset the refresh flag when the path changes
+    return () => {
+      if (location.pathname !== `/guests/${id}`) {
+        hasRefreshedRef.current = false;
+      }
+    };
+  }, [id, location.pathname, refreshGuests]);
   
   if (isLoading) {
     return <GuestViewLoading />;

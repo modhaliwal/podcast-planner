@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Guest, SocialLinks } from "@/lib/types";
@@ -7,7 +7,8 @@ import { Guest, SocialLinks } from "@/lib/types";
 export function useGuestsData(userId: string | undefined) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoadingGuests, setIsLoadingGuests] = useState(false);
-  const [lastRefreshTime, setLastRefreshTime] = useState(0);
+  const lastRefreshTimeRef = useRef<number>(0);
+  const isInitialMountRef = useRef(true);
 
   const refreshGuests = useCallback(async () => {
     if (!userId) {
@@ -17,13 +18,13 @@ export function useGuestsData(userId: string | undefined) {
     
     // Prevent multiple rapid refreshes (must be at least 2 seconds apart)
     const now = Date.now();
-    if (now - lastRefreshTime < 2000) {
+    if (now - lastRefreshTimeRef.current < 2000) {
       console.log("Skipping refresh, too soon since last refresh");
       return;
     }
     
     setIsLoadingGuests(true);
-    setLastRefreshTime(now);
+    lastRefreshTimeRef.current = now;
     
     try {
       console.log("Fetching guests from database...");
@@ -34,7 +35,6 @@ export function useGuestsData(userId: string | undefined) {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error("Error fetching guests:", error);
         throw error;
       }
       
@@ -61,7 +61,7 @@ export function useGuestsData(userId: string | undefined) {
         updatedAt: guest.updated_at
       }));
       
-      console.log("Formatted guests:", formattedGuests.length);
+      console.log(`Loaded ${formattedGuests.length} guests`);
       setGuests(formattedGuests);
     } catch (error: any) {
       toast.error(`Error fetching guests: ${error.message}`);
@@ -69,15 +69,16 @@ export function useGuestsData(userId: string | undefined) {
     } finally {
       setIsLoadingGuests(false);
     }
-  }, [userId, lastRefreshTime]);
+  }, [userId]);
 
-  // Add an effect to refresh guests on component mount, but only once
+  // Load guests on initial mount only
   useEffect(() => {
-    if (userId && guests.length === 0) {
+    if (userId && isInitialMountRef.current) {
       console.log("Initial useGuestsData mount, refreshing guests");
       refreshGuests();
+      isInitialMountRef.current = false;
     }
-  }, [userId, refreshGuests, guests.length]);
+  }, [userId, refreshGuests]);
 
   return {
     guests,

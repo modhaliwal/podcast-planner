@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -45,9 +47,14 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
 
   const handleImageChange = (file: File | null, previewUrl?: string) => {
     setImageFile(file);
+    setIsImageRemoved(file === null);
+    
     if (previewUrl) {
       console.log("Setting image preview URL:", previewUrl);
       setImagePreviewUrl(previewUrl);
+    } else if (file === null) {
+      // Image was explicitly removed
+      setImagePreviewUrl(undefined);
     }
   };
 
@@ -55,7 +62,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Handle image URL
+      // Handle image URL logic
       let imageUrl = guest.imageUrl;
       
       // Case 1: New image uploaded (File selected)
@@ -66,11 +73,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
         
         if (uploadedUrl) {
-          console.log("Image uploaded successfully, URL:", uploadedUrl);
-          
           // If there was a previous image, try to delete it
           if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
-            console.log("Deleting previous image:", imageUrl);
             await deleteImage(imageUrl);
           }
           
@@ -81,16 +85,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         }
       } 
       // Case 2: Image removed (null set by removeImage)
-      else if (imageFile === null && guest.imageUrl) {
-        // User explicitly removed the image
-        if (!isBlobUrl(guest.imageUrl)) {
-          // Only delete from storage if it's a real URL, not a blob
-          console.log("Removing guest image completely:", guest.imageUrl);
-          await deleteImage(guest.imageUrl);
-          console.log("Image deleted from storage");
-        }
+      else if (isImageRemoved) {
         imageUrl = null; // Use null to explicitly set NULL in database
-        toast.success("Image removed successfully");
       }
       // Case 3: No change to image
       
@@ -98,8 +94,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       if (imagePreviewUrl && isBlobUrl(imagePreviewUrl)) {
         URL.revokeObjectURL(imagePreviewUrl);
       }
-      
-      console.log("Final image URL to save:", imageUrl);
       
       const updatedGuest: Guest = {
         ...guest,

@@ -76,7 +76,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     setImagePreview(undefined);
     setIsRemoved(true);
     
-    // Notify parent component
+    // Notify parent component - null signals image should be removed
     onImageChange(null);
     toast.info("Image removed");
   };
