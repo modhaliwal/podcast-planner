@@ -26,12 +26,17 @@ const GuestView = () => {
     handleDelete
   } = useGuestData(id);
   
-  // Force component to rerender when the location changes
+  // Force refresh only when visiting the page, not on every re-render
   useEffect(() => {
-    // This effect will run when the component mounts or when location changes
-    console.log('Guest view mounted or location changed:', location.pathname);
-    refreshGuests(); // Refresh guests data when component mounts or location changes
-  }, [location, refreshGuests]);
+    const currentPath = location.pathname;
+    console.log('Guest view mounted at path:', currentPath);
+    
+    // Only refresh once on component mount
+    refreshGuests();
+    
+    // No dependency on refreshGuests to prevent re-running on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
   
   if (isLoading) {
     return <GuestViewLoading />;

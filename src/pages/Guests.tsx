@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
@@ -16,11 +17,16 @@ const Guests = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   
   useEffect(() => {
-    console.log("Guests component mounted, refreshing data");
-    refreshGuests();
-  }, [refreshGuests]);
+    // Only refresh guests data once on component mount
+    if (!initialLoadDone) {
+      console.log("Initial Guests component mount, refreshing data");
+      refreshGuests();
+      setInitialLoadDone(true);
+    }
+  }, [refreshGuests, initialLoadDone]);
 
   const filteredGuests = guests.filter(guest => {
     const matchesSearch = 
