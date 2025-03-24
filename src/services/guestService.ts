@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Guest, SocialLinks } from "@/lib/types";
+import { Json } from "@/integrations/supabase/types";
 
 // Function to get all guests for the current user
 export const getUserGuests = async (): Promise<{ data: Guest[] | null; error: any }> => {
@@ -86,7 +87,7 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
         phone: guest.phone,
         bio: guest.bio || '',
         image_url: guest.imageUrl,
-        social_links: guest.socialLinks || {},
+        social_links: guest.socialLinks as unknown as Json || {},
         notes: guest.notes,
         background_research: guest.backgroundResearch,
         status: guest.status || 'potential',
@@ -118,7 +119,7 @@ export const updateGuest = async (id: string, updates: Partial<Guest>): Promise<
         phone: updates.phone,
         bio: updates.bio,
         image_url: updates.imageUrl,
-        social_links: updates.socialLinks,
+        social_links: updates.socialLinks as unknown as Json,
         notes: updates.notes,
         background_research: updates.backgroundResearch,
         status: updates.status,
