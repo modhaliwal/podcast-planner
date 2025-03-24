@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Info, BookText, Image } from 'lucide-react';
+import { ChevronLeft, Info, BookText, Image, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -62,6 +62,18 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                         className="object-cover w-full h-full"
                       />
                     </AspectRatio>
+                    <div className="p-2 bg-muted/50 border-t border-border flex justify-center">
+                      <a 
+                        href={episode.coverArt} 
+                        download={`cover-art-episode-${episode.episodeNumber}.jpg`}
+                        className="text-xs flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Download className="h-3 w-3" />
+                        Download original
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   <div className="rounded-md overflow-hidden border border-border shadow-sm bg-muted flex items-center justify-center max-w-[240px] mx-auto md:ml-auto md:mr-0">
@@ -128,3 +140,4 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
     </div>
   );
 }
+
