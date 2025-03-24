@@ -9,6 +9,7 @@ import { Guest } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface GuestsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -50,6 +51,15 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
       </Card>
     );
   }
+
+  // Helper function to get guest initials
+  const getGuestInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
 
   return (
     <Card className="md:col-span-2">
@@ -114,7 +124,51 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
                   <SelectItem value="all">Select All Guests</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex flex-wrap gap-2 mt-2">
+
+              {/* Guest mini cards display */}
+              {field.value && field.value.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  <div className="text-sm font-medium">Selected Guests:</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3">
+                    {field.value.map((guestId) => {
+                      const guest = availableGuests.find(g => g.id === guestId);
+                      if (!guest) return null;
+                      
+                      return (
+                        <div key={guestId} className="flex items-start p-3 bg-card border rounded-md group relative">
+                          <Avatar className="h-10 w-10 mr-3 border">
+                            <AvatarImage src={guest.imageUrl} alt={guest.name} />
+                            <AvatarFallback>{getGuestInitials(guest.name)}</AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm truncate">{guest.name}</h4>
+                            <p className="text-xs text-muted-foreground truncate">{guest.title}</p>
+                            {guest.company && (
+                              <p className="text-xs text-muted-foreground truncate">{guest.company}</p>
+                            )}
+                          </div>
+                          
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 absolute top-1 right-1"
+                            onClick={() => {
+                              field.onChange(field.value?.filter(id => id !== guestId));
+                            }}
+                          >
+                            ×
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* Legacy tag-style selected guests (now hidden) */}
+              <div className="hidden flex-wrap gap-2 mt-2">
                 {field.value && field.value.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {field.value.map((guestId) => {
