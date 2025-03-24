@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -58,9 +57,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     try {
       // Handle image URL
       let imageUrl = guest.imageUrl;
-      let oldImageDeleted = false;
       
-      // Only upload the image if the user has selected a new one
+      // Case 1: New image uploaded (File selected)
       if (imageFile) {
         toast.info("Uploading image...");
         
@@ -73,8 +71,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           // If there was a previous image, try to delete it
           if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
             console.log("Deleting previous image:", imageUrl);
-            oldImageDeleted = await deleteImage(imageUrl);
-            console.log("Previous image deleted:", oldImageDeleted);
+            await deleteImage(imageUrl);
           }
           
           imageUrl = uploadedUrl;
@@ -82,16 +79,20 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         } else {
           toast.error("Failed to upload image");
         }
-      } else if (imageFile === null && imagePreviewUrl === undefined && guest.imageUrl) {
-        // User reset the image (clicked delete button)
+      } 
+      // Case 2: Image removed (null set by removeImage)
+      else if (imageFile === null && guest.imageUrl) {
+        // User explicitly removed the image
         if (!isBlobUrl(guest.imageUrl)) {
           // Only delete from storage if it's a real URL, not a blob
           console.log("Removing guest image completely:", guest.imageUrl);
-          oldImageDeleted = await deleteImage(guest.imageUrl);
-          console.log("Image deleted:", oldImageDeleted);
+          await deleteImage(guest.imageUrl);
+          console.log("Image deleted from storage");
         }
-        imageUrl = undefined;
+        imageUrl = null; // Use null to explicitly set NULL in database
+        toast.success("Image removed successfully");
       }
+      // Case 3: No change to image
       
       // Clean up blob URLs
       if (imagePreviewUrl && isBlobUrl(imagePreviewUrl)) {
@@ -111,7 +112,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         notes: notes || undefined,
         backgroundResearch: backgroundResearch || undefined,
         status: data.status,
-        imageUrl,
+        imageUrl: imageUrl as string | undefined,
         socialLinks: {
           twitter: data.twitter || undefined,
           facebook: data.facebook || undefined,

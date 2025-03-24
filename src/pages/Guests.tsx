@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
@@ -17,44 +16,30 @@ const Guests = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-
+  
   useEffect(() => {
-    console.log("Guests component mounted or updated");
-    console.log("Number of guests:", guests.length);
-    console.log("Loading state:", isDataLoading);
-    
-    // Only attempt to refresh guests once on initial load
-    if (!initialLoadDone && !isDataLoading) {
-      console.log("Initial load, triggering refresh once");
-      refreshGuests();
-      setInitialLoadDone(true);
-    }
-  }, [guests.length, isDataLoading, refreshGuests, initialLoadDone]);
+    console.log("Guests component mounted, refreshing data");
+    refreshGuests();
+  }, [refreshGuests]);
 
-  // Filter guests based on search query and status
   const filteredGuests = guests.filter(guest => {
-    // Search filter
     const matchesSearch = 
       guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guest.title.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Status filter
     const matchesStatus = 
       statusFilter === 'all' || 
       guest.status === statusFilter || 
-      (statusFilter === 'potential' && !guest.status); // Treat undefined status as potential
+      (statusFilter === 'potential' && !guest.status);
     
     return matchesSearch && matchesStatus;
   });
 
-  // Handle refresh button click
   const handleRefresh = () => {
     console.log("Manual refresh triggered");
     refreshGuests();
   };
 
-  // Redirect to add guest page
   const handleAddGuest = () => {
     if (!user) {
       toast("Authentication Required", {

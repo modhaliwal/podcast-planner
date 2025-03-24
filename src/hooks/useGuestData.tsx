@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -31,12 +30,10 @@ export function useGuestData(guestId: string | undefined) {
       if (data) {
         console.log("Fetched guest data:", data);
         
-        // Skip blob URLs as they won't be valid after page refresh
         const imageUrl = data.image_url && !isBlobUrl(data.image_url) 
           ? data.image_url 
           : undefined;
         
-        // Transform the data to match our Guest interface
         const formattedGuest: Guest = {
           id: data.id,
           name: data.name,
@@ -72,10 +69,14 @@ export function useGuestData(guestId: string | undefined) {
     try {
       console.log("Saving guest with image:", updatedGuest.imageUrl);
       
-      // Make sure we're not saving a blob URL
-      const imageUrl = updatedGuest.imageUrl && isBlobUrl(updatedGuest.imageUrl) 
-        ? undefined 
-        : updatedGuest.imageUrl;
+      let imageUrl = undefined;
+      
+      if (updatedGuest.imageUrl === null) {
+        imageUrl = null;
+      }
+      else if (updatedGuest.imageUrl && !isBlobUrl(updatedGuest.imageUrl)) {
+        imageUrl = updatedGuest.imageUrl;
+      }
       
       console.log("Final image URL to save to database:", imageUrl);
       
@@ -99,23 +100,16 @@ export function useGuestData(guestId: string | undefined) {
       
       if (error) throw error;
       
-      // Make sure we're not setting a blob URL in our state
-      updatedGuest.imageUrl = imageUrl;
+      updatedGuest.imageUrl = imageUrl === null ? undefined : imageUrl;
       
-      // Update state and UI
       setGuest(updatedGuest);
       setIsEditing(false);
       
-      // Refresh the guest list in the background
       await refreshGuests();
       
-      // Show success message
       toast.success("Guest updated successfully");
       
-      // First, fetch the latest guest data to ensure we have the most up-to-date information
       await fetchGuest();
-      
-      // No navigation needed here, we'll stay on the current page with updated data
     } catch (error: any) {
       toast.error(`Failed to update guest: ${error.message}`);
       console.error("Error updating guest:", error);
@@ -131,16 +125,12 @@ export function useGuestData(guestId: string | undefined) {
       
       if (error) throw error;
       
-      // Close the dialog
       setIsDeleteDialogOpen(false);
       
-      // Show success message
       toast.success("Guest deleted successfully");
       
-      // Refresh guests list
       await refreshGuests();
       
-      // Redirect to guests list
       navigate('/guests');
     } catch (error: any) {
       toast.error(`Failed to delete guest: ${error.message}`);

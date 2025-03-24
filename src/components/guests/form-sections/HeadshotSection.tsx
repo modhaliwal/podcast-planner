@@ -17,9 +17,13 @@ interface HeadshotSectionProps {
 export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: HeadshotSectionProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
+  const [isRemoved, setIsRemoved] = useState(false);
   
   // Set initial image preview
   useEffect(() => {
+    // Reset removed status when component mounts with new image
+    setIsRemoved(false);
+    
     // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
       console.log("Setting initial image preview:", initialImageUrl);
@@ -48,6 +52,9 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       URL.revokeObjectURL(localBlobUrl);
     }
 
+    // Reset removed status when new image is selected
+    setIsRemoved(false);
+
     // Create a new blob URL for preview only
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
@@ -58,22 +65,20 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     onImageChange(file, previewUrl);
   };
 
-  const resetImage = () => {
+  const removeImage = () => {
     // Revoke the temporary blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
     
-    // Reset to initial image if it's not a blob URL
-    if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
-      setImagePreview(initialImageUrl);
-    } else {
-      setImagePreview(undefined);
-    }
+    // Clear the image preview
+    setImagePreview(undefined);
+    setIsRemoved(true);
     
+    // Notify parent component
     onImageChange(null);
-    toast.info("Image selection reset");
+    toast.info("Image removed");
   };
 
   useEffect(() => {
@@ -89,7 +94,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     <div className="flex flex-col items-center mb-6">
       <div className="mb-4 w-full max-w-[240px]">
         <AspectRatio ratio={2/3} className="bg-muted rounded-md overflow-hidden border">
-          {imagePreview ? (
+          {imagePreview && !isRemoved ? (
             <img
               src={imagePreview}
               alt={guestName}
@@ -111,7 +116,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
         <Label htmlFor="headshot-upload" className="cursor-pointer">
           <div className="flex items-center gap-2 py-2 px-3 bg-muted rounded-md hover:bg-accent transition-colors">
             <Upload className="h-4 w-4" />
-            <span>Upload Headshot</span>
+            <span>{imagePreview && !isRemoved ? "Change" : "Upload"} Headshot</span>
           </div>
           <Input 
             id="headshot-upload" 
@@ -122,15 +127,15 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
           />
         </Label>
         
-        {imagePreview && (
+        {imagePreview && !isRemoved && (
           <Button 
             type="button"
             variant="outline"
             size="sm"
-            onClick={resetImage}
+            onClick={removeImage}
           >
             <Trash className="h-4 w-4 mr-1" />
-            Reset
+            Remove
           </Button>
         )}
       </div>

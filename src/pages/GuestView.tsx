@@ -14,7 +14,7 @@ import { useEffect } from 'react';
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const { episodes } = useAuth();
+  const { episodes, refreshGuests } = useAuth();
   const {
     isLoading,
     guest,
@@ -30,7 +30,8 @@ const GuestView = () => {
   useEffect(() => {
     // This effect will run when the component mounts or when location changes
     console.log('Guest view mounted or location changed:', location.pathname);
-  }, [location]);
+    refreshGuests(); // Refresh guests data when component mounts or location changes
+  }, [location, refreshGuests]);
   
   if (isLoading) {
     return <GuestViewLoading />;
