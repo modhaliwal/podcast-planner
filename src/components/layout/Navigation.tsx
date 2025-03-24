@@ -5,9 +5,7 @@ import { cn } from '@/lib/utils';
 import {
   ChevronRight,
   LayoutDashboard,
-  Users as UsersIcon,
   Mic2,
-  Cog,
   UserRound
 } from 'lucide-react';
 
@@ -21,8 +19,6 @@ const navigationItems: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Guests', href: '/guests', icon: UserRound },
   { name: 'Episodes', href: '/episodes', icon: Mic2 },
-  { name: 'Users', href: '/users', icon: UsersIcon },
-  { name: 'Settings', href: '/settings', icon: Cog },
 ];
 
 export function Navigation() {

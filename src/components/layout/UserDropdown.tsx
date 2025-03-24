@@ -1,5 +1,5 @@
 
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,6 +38,13 @@ export function UserDropdown({ user, onSignOut, getInitials }: UserDropdownProps
             <span>Settings</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/users" className="flex items-center cursor-pointer w-full">
+            <Users className="mr-2 h-4 w-4" />
+            <span>User Management</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>

@@ -1,5 +1,5 @@
 
-import { X, User, LogOut, Headphones, Settings } from 'lucide-react';
+import { X, User, LogOut, Headphones, Settings, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -66,19 +66,35 @@ export function MobileMenu({
           ))}
           
           {user && (
-            <Link 
-              to="/settings"
-              className={cn(
-                "px-4 py-3 rounded-md text-base font-medium flex items-center",
-                location.pathname === "/settings"
-                  ? "bg-primary/10 text-primary"
-                  : "text-foreground/80 hover:text-foreground hover:bg-accent"
-              )}
-              onClick={onClose}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Link>
+            <>
+              <div className="border-t my-2"></div>
+              <Link 
+                to="/settings"
+                className={cn(
+                  "px-4 py-3 rounded-md text-base font-medium flex items-center",
+                  location.pathname === "/settings"
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/80 hover:text-foreground hover:bg-accent"
+                )}
+                onClick={onClose}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Link>
+              <Link 
+                to="/users"
+                className={cn(
+                  "px-4 py-3 rounded-md text-base font-medium flex items-center",
+                  location.pathname === "/users"
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/80 hover:text-foreground hover:bg-accent"
+                )}
+                onClick={onClose}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                User Management
+              </Link>
+            </>
           )}
           
           {!user && (
