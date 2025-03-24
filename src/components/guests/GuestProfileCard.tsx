@@ -75,16 +75,19 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
                 />
               </AspectRatio>
               
-              {/* Download button */}
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                className="absolute top-2 right-2 h-8 w-8 p-0"
-                onClick={handleDownload}
-                title="Download original image"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
+              {/* Download link - matching style from EpisodeDetail component */}
+              <div className="p-2 bg-muted/50 border-t border-border flex justify-center">
+                <a 
+                  href={validImageUrl} 
+                  download={`headshot-${guest.name.toLowerCase().replace(/\s+/g, '-')}.jpg`}
+                  className="text-xs flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="h-3 w-3" />
+                  Download original
+                </a>
+              </div>
             </div>
           ) : (
             <Avatar className="h-24 w-24 border mb-4">
