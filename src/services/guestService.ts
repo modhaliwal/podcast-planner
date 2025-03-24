@@ -77,9 +77,17 @@ export const getGuest = async (id: string): Promise<{ data: Guest | null; error:
 // Function to create a new guest
 export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | null; error: any }> => {
   try {
+    // Get current user ID from Supabase auth
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+    
     const { data, error } = await supabase
       .from('guests')
       .insert({
+        user_id: user.id,  // Include the user_id field
         name: guest.name,
         title: guest.title,
         company: guest.company,
