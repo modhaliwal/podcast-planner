@@ -7,6 +7,8 @@ import { GuestSocialLinks } from './GuestSocialLinks';
 import { GuestContactInfo } from './GuestContactInfo';
 import { useState, useEffect } from 'react';
 import { isBlobUrl } from '@/lib/imageUpload';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
 
 interface GuestProfileCardProps {
   guest: Guest;
@@ -37,12 +39,30 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
   // Determine if we should show image or avatar
   const showAvatar = !validImageUrl || imageError;
   
+  // Handle image download
+  const handleDownload = () => {
+    if (validImageUrl) {
+      // Create an anchor element
+      const link = document.createElement('a');
+      link.href = validImageUrl;
+      
+      // Extract filename from URL or use guest name with extension
+      const filename = validImageUrl.split('/').pop() || 
+        `${guest.name.replace(/\s+/g, '_')}_headshot.jpg`;
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  
   return (
     <Card className="sticky top-28 mb-6">
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
           {!showAvatar ? (
-            <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border">
+            <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border relative">
               <AspectRatio ratio={2/3} className="bg-muted">
                 <img 
                   src={validImageUrl} 
@@ -54,6 +74,17 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
                   }}
                 />
               </AspectRatio>
+              
+              {/* Download button */}
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="absolute top-2 right-2 h-8 w-8 p-0"
+                onClick={handleDownload}
+                title="Download original image"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
             </div>
           ) : (
             <Avatar className="h-24 w-24 border mb-4">
