@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +17,6 @@ import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
 import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSection';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
-import { EpisodeStatus } from '@/lib/enums';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -52,56 +51,69 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     setOriginalCoverArt(episode.coverArt);
   }, [episode.coverArt]);
   
+  const handleCoverArtUpload = useCallback(async (coverArt: string | undefined): Promise<string | null | undefined> => {
+    // If no change to cover art, return original value
+    if (coverArt === originalCoverArt) {
+      return coverArt;
+    }
+    
+    // Case 1: New image uploaded (blob URL)
+    if (coverArt && isBlobUrl(coverArt)) {
+      console.log("Detected blob URL for cover art, uploading to storage");
+      
+      try {
+        const response = await fetch(coverArt);
+        const blob = await response.blob();
+        const fileName = 'cover-art.jpg';
+        const file = new File([blob], fileName, { type: blob.type });
+        
+        toast.info("Uploading cover art...");
+        const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
+        
+        if (uploadedUrl) {
+          console.log("Cover art uploaded successfully:", uploadedUrl);
+          
+          if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
+            console.log("Deleting old cover art:", originalCoverArt);
+            await deleteImage(originalCoverArt);
+          }
+          
+          toast.success("Cover art uploaded successfully");
+          return uploadedUrl;
+        } else {
+          toast.error("Failed to upload cover art");
+          return undefined;
+        }
+      } catch (error) {
+        console.error("Error uploading cover art:", error);
+        toast.error("Error uploading cover art");
+        return undefined;
+      } finally {
+        if (coverArt) {
+          URL.revokeObjectURL(coverArt);
+        }
+      }
+    }
+    // Case 2: Image removed (undefined) but there was an original image
+    else if (coverArt === undefined && originalCoverArt) {
+      console.log("Deleting old cover art on removal:", originalCoverArt);
+      await deleteImage(originalCoverArt);
+      toast.success("Cover art removed successfully");
+      return null; // Use null to explicitly set NULL in database
+    }
+    
+    // Case 3: No change or other cases
+    return coverArt;
+  }, [originalCoverArt]);
+  
   const onSubmit = async (data: EpisodeFormValues) => {
     setIsSubmitting(true);
     
     try {
-      let coverArt = data.coverArt;
+      // Handle cover art upload/removal
+      const processedCoverArt = await handleCoverArtUpload(data.coverArt);
       
-      // Case 1: New image uploaded (blob URL)
-      if (coverArt && isBlobUrl(coverArt)) {
-        console.log("Detected blob URL for cover art, uploading to storage");
-        
-        try {
-          const response = await fetch(coverArt);
-          const blob = await response.blob();
-          const fileName = 'cover-art.jpg';
-          const file = new File([blob], fileName, { type: blob.type });
-          
-          toast.info("Uploading cover art...");
-          const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
-          
-          if (uploadedUrl) {
-            console.log("Cover art uploaded successfully:", uploadedUrl);
-            
-            if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
-              console.log("Deleting old cover art:", originalCoverArt);
-              await deleteImage(originalCoverArt);
-            }
-            
-            coverArt = uploadedUrl;
-            toast.success("Cover art uploaded successfully");
-          } else {
-            toast.error("Failed to upload cover art");
-            coverArt = undefined;
-          }
-          
-          URL.revokeObjectURL(data.coverArt);
-        } catch (error) {
-          console.error("Error uploading cover art:", error);
-          toast.error("Error uploading cover art");
-          coverArt = undefined;
-        }
-      }
-      // Case 2: Image removed (undefined) but there was an original image
-      else if (coverArt === undefined && originalCoverArt) {
-        console.log("Deleting old cover art on removal:", originalCoverArt);
-        await deleteImage(originalCoverArt);
-        toast.success("Cover art removed successfully");
-        coverArt = null; // Use null to explicitly set NULL in database
-      }
-      // Case 3: No change to image
-      
+      // Update episode in database
       const { error: updateError } = await supabase
         .from('episodes')
         .update({
@@ -112,7 +124,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           status: data.status,
           scheduled: data.scheduled.toISOString(),
           publish_date: data.publishDate ? data.publishDate.toISOString() : null,
-          cover_art: coverArt,
+          cover_art: processedCoverArt,
           recording_links: data.recordingLinks,
           podcast_urls: data.podcastUrls,
           resources: data.resources,
@@ -122,6 +134,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (updateError) throw updateError;
       
+      // Update episode-guest relationships
       const { error: deleteError } = await supabase
         .from('episode_guests')
         .delete()
@@ -129,16 +142,19 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (deleteError) throw deleteError;
       
-      const episodeGuestsToInsert = data.guestIds.map(guestId => ({
-        episode_id: episode.id,
-        guest_id: guestId
-      }));
-      
-      const { error: insertError } = await supabase
-        .from('episode_guests')
-        .insert(episodeGuestsToInsert);
-      
-      if (insertError) throw insertError;
+      // Insert new episode-guest relationships
+      if (data.guestIds.length > 0) {
+        const episodeGuestsToInsert = data.guestIds.map(guestId => ({
+          episode_id: episode.id,
+          guest_id: guestId
+        }));
+        
+        const { error: insertError } = await supabase
+          .from('episode_guests')
+          .insert(episodeGuestsToInsert);
+        
+        if (insertError) throw insertError;
+      }
       
       await refreshEpisodes();
       

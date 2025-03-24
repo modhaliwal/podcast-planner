@@ -17,18 +17,14 @@ const Episodes = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   
+  // Load episodes once on initial mount
   useEffect(() => {
-    console.log("Episodes component mounted or updated");
-    console.log("Number of episodes:", episodes.length);
-    console.log("Loading state:", isDataLoading);
-    
-    // Only attempt to refresh episodes once on initial load
     if (!initialLoadDone && !isDataLoading) {
-      console.log("Initial load, triggering refresh once");
+      console.log("Episodes initial load, refreshing data");
       refreshEpisodes();
       setInitialLoadDone(true);
     }
-  }, [episodes.length, isDataLoading, refreshEpisodes, initialLoadDone]);
+  }, [initialLoadDone, isDataLoading, refreshEpisodes]);
   
   // Filter episodes based on search query and status
   const filteredEpisodes = episodes.filter(episode => {
@@ -41,6 +37,11 @@ const Episodes = () => {
   const sortedEpisodes = [...filteredEpisodes].sort(
     (a, b) => new Date(b.scheduled).getTime() - new Date(a.scheduled).getTime()
   );
+  
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    refreshEpisodes();
+  };
   
   return (
     <Shell>
@@ -55,7 +56,7 @@ const Episodes = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              onClick={refreshEpisodes} 
+              onClick={handleRefresh} 
               disabled={isDataLoading}
             >
               <RefreshCcw className={`h-4 w-4 ${isDataLoading ? 'animate-spin' : ''}`} />

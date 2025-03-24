@@ -10,12 +10,15 @@ import { useEffect } from 'react';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { episodes, guests, refreshGuests, refreshEpisodes } = useAuth();
+  const { episodes, guests, refreshEpisodes, refreshGuests } = useAuth();
   
-  // Ensure we have the latest guest and episode data
+  // Ensure we have the latest data
   useEffect(() => {
-    refreshGuests();
-    refreshEpisodes();
+    const loadData = async () => {
+      await Promise.all([refreshGuests(), refreshEpisodes()]);
+    };
+    
+    loadData();
   }, [refreshGuests, refreshEpisodes]);
   
   // Find the episode with the matching ID
