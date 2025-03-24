@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import { MoreHorizontal, Copy, Edit, Trash, AlertCircle } from 'lucide-react';
+import { MoreHorizontal, Copy, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -39,7 +39,7 @@ export function UsersList() {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch profiles from the public profiles table instead
+      // Fetch profiles from the public profiles table
       const { data, error } = await supabase
         .from('profiles')
         .select('*');
@@ -64,11 +64,6 @@ export function UsersList() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const deleteUser = async (userId: string) => {
-    // This will only work in the context of Edge Functions
-    toast.error("Deleting users directly is not supported in the current version.");
   };
 
   const filteredUsers = users.filter(user => {
@@ -144,17 +139,6 @@ export function UsersList() {
                           >
                             <Copy className="mr-2 h-4 w-4" /> Copy ID
                           </DropdownMenuItem>
-                          <DropdownMenuItem disabled className="cursor-pointer">
-                            <Edit className="mr-2 h-4 w-4" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => deleteUser(user.id)}
-                            className="text-red-600 cursor-pointer focus:text-red-600"
-                            disabled
-                          >
-                            <Trash className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -171,6 +155,7 @@ export function UsersList() {
             <AlertTitle>Admin Access Required</AlertTitle>
             <AlertDescription>
               Full user management requires admin privileges. This view shows only profile information.
+              User management such as creation, deletion, and password reset should be done through the Supabase dashboard.
             </AlertDescription>
           </Alert>
         </div>
