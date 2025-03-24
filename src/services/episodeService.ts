@@ -1,14 +1,23 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { EpisodeStatus } from "@/lib/enums";
-import { User } from "@/lib/types";
+import { User as AppUser } from "@/lib/types";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import { EpisodeFormData } from "@/components/episodes/CreateEpisodeForm/types";
+
+// Create a type that accepts either User type
+type UserParam = AppUser | SupabaseUser;
 
 export const createEpisodes = async (
   episodes: EpisodeFormData[],
-  user: User
+  user: UserParam
 ): Promise<{ success: boolean; error?: any }> => {
   try {
+    // Ensure we have a user ID
+    if (!user || !user.id) {
+      throw new Error("User ID is required");
+    }
+
     // Save each episode to the database
     for (const episode of episodes) {
       const { error } = await supabase
