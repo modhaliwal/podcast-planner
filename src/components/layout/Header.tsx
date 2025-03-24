@@ -10,12 +10,14 @@ import { NavItem } from './types';
 import { Navigation } from './Navigation';
 import { UserDropdown } from './UserDropdown';
 import { MobileMenu } from './MobileMenu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
   
   const navItems: NavItem[] = [
     { name: 'Dashboard', path: '/dashboard', icon: <Home className="h-4 w-4 mr-2" /> },
@@ -67,7 +69,7 @@ export function Header() {
           </Link>
         </div>
         
-        <Navigation />
+        {!isMobile && <Navigation />}
         
         <div className="flex items-center space-x-2">
           {user ? (
