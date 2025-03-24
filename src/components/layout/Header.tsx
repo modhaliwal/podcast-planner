@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -68,7 +67,7 @@ export function Header() {
           </Link>
         </div>
         
-        <Navigation navItems={navItems} />
+        <Navigation />
         
         <div className="flex items-center space-x-2">
           {user ? (

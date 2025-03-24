@@ -1,187 +1,159 @@
-
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
-import { format } from 'date-fns';
-import { Trash2 } from 'lucide-react';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Copy, Edit, Trash } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 export function UsersList() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchUsers = async () => {
+  useEffect(() => {
+    refreshUsers();
+  }, []);
+
+  const refreshUsers = async () => {
+    setIsLoading(true);
     try {
-      setLoading(true);
-
-      // First get users from auth.users via admin function
-      const { data: authUsers, error: authError } = await supabase
-        .from('profiles')
+      const { data, error } = await supabase
+        .from('users')
         .select('*');
-
-      if (authError) throw authError;
-
-      // Convert the data format to match our User interface
-      const formattedUsers: User[] = authUsers.map((user: any) => ({
-        id: user.id,
-        email: user.email || '',
-        full_name: user.full_name || '',
-        avatar_url: user.avatar_url || '',
-        created_at: user.created_at || '',
-        last_sign_in: user.last_sign_in_at || '',
-      }));
-
-      setUsers(formattedUsers);
-    } catch (error: any) {
-      console.error('Error fetching users:', error);
-      toast.error(`Error fetching users: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteUser = async () => {
-    if (!userToDelete) return;
-
-    try {
-      // Since we can't directly delete from auth.users with RLS, we'll need
-      // an admin function or trigger that cascades deletes from profiles
-      const { error } = await supabase
-        .rpc('delete_user', {
-          user_id: userToDelete
-        });
 
       if (error) throw error;
 
-      toast.success('User deleted successfully');
-      setUsers(users.filter(user => user.id !== userToDelete));
+      setUsers(data || []);
     } catch (error: any) {
-      console.error('Error deleting user:', error);
-      toast.error(`Error deleting user: ${error.message}`);
+      console.error('Error fetching users:', error);
+      toast.error(`Failed to fetch users: ${error.message}`);
     } finally {
-      setUserToDelete(null);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const deleteUser = async (userId: string) => {
+  try {
+    const { error } = await supabase.rpc('delete_user', { user_id: userId });
+    if (error) throw error;
+    toast.success('User deleted successfully');
+    // Refresh the users list
+    refreshUsers();
+  } catch (error: any) {
+    console.error('Error deleting user:', error);
+    toast.error(`Failed to delete user: ${error.message}`);
+  }
+};
 
-  const getInitials = (name: string) => {
-    if (!name) return '??';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
-  };
+  const filteredUsers = users.filter(user => {
+    const searchTerm = searchQuery.toLowerCase();
+    return (
+      user.email.toLowerCase().includes(searchTerm) ||
+      (user.full_name && user.full_name.toLowerCase().includes(searchTerm)) ||
+      user.id.toLowerCase().includes(searchTerm)
+    );
+  });
 
-  if (loading) {
-    return <LoadingIndicator message="Loading users..." />;
+  if (isLoading) {
+    return <p>Loading users...</p>;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Users</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {users.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            No users found
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Last Sign In</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar_url || ''} />
-                        <AvatarFallback>{getInitials(user.full_name || '')}</AvatarFallback>
-                      </Avatar>
-                      <div>{user.full_name || 'Unknown'}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    {user.created_at ? format(new Date(user.created_at), 'MMM d, yyyy') : 'Unknown'}
-                  </TableCell>
-                  <TableCell>
-                    {user.last_sign_in ? format(new Date(user.last_sign_in), 'MMM d, yyyy') : 'Never'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => setUserToDelete(user.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+    <div>
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="Search users..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      {filteredUsers.length === 0 ? (
+        <p>No users found.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created At
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredUsers.map((user) => (
+                <tr key={user.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {user.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.full_name || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete User</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete this user? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel onClick={() => setUserToDelete(null)}>
-                            Cancel
-                          </AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={handleDeleteUser}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                </TableRow>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            navigator.clipboard.writeText(user.id);
+                            toast.success('User ID copied to clipboard');
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Copy className="mr-2 h-4 w-4" /> Copy ID
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled className="cursor-pointer">
+                          <Edit className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => deleteUser(user.id)}
+                          className="text-red-600 cursor-pointer focus:text-red-600"
+                        >
+                          <Trash className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { useMediaQuery } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import {
   ChevronRight,
@@ -27,7 +27,7 @@ const navigationItems: NavigationItem[] = [
 
 export function Navigation() {
   const { pathname } = useLocation();
-  const isMobile = useMediaQuery('(max-width: 640px)');
+  const isMobile = useIsMobile();
 
   return (
     <nav className="w-full md:w-56 px-2 py-4 md:py-8">
