@@ -43,7 +43,7 @@ export const createEpisodes = async (
   }
 };
 
-// Add function to get episodes for current user
+// Add function to get episodes
 export const getUserEpisodes = async (): Promise<{ data: any[] | null; error: any }> => {
   try {
     const { data, error } = await supabase
@@ -55,7 +55,7 @@ export const getUserEpisodes = async (): Promise<{ data: any[] | null; error: an
     
     return { data, error: null };
   } catch (error) {
-    console.error("Error fetching user episodes:", error);
+    console.error("Error fetching episodes:", error);
     return { data: null, error };
   }
 };

@@ -87,7 +87,7 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
     const { data, error } = await supabase
       .from('guests')
       .insert({
-        user_id: user.id,  // Include the user_id field
+        user_id: user.id,  // Still need to include user_id for database integrity
         name: guest.name,
         title: guest.title,
         company: guest.company,

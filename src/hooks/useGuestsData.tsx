@@ -29,6 +29,7 @@ export function useGuestsData(userId: string | undefined) {
     try {
       console.log("Fetching guests from database...");
       
+      // Fetch all guests regardless of user_id
       const { data, error } = await supabase
         .from('guests')
         .select('*')

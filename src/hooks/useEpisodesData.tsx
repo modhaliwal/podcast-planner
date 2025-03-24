@@ -30,7 +30,7 @@ export function useEpisodesData(userId: string | undefined) {
     try {
       console.log("Fetching episodes from database...");
       
-      // Fetch episodes
+      // Fetch episodes - no user_id filter
       const { data: episodesData, error: episodesError } = await supabase
         .from('episodes')
         .select('*');
