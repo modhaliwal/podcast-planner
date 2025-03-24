@@ -57,7 +57,6 @@ export function UserManagement() {
       toast.success('User created successfully');
       form.reset();
       
-      // Refresh the user list (implement this in parent component if needed)
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast.error(`Error creating user: ${error.message}`);

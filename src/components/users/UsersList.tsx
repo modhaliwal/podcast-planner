@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,13 +27,22 @@ export function UsersList() {
   const refreshUsers = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*');
+      // Query auth users through the auth.users RPC call
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
 
-      if (error) throw error;
+      if (authError) throw authError;
 
-      setUsers(data || []);
+      // Format the users to match our User type
+      const formattedUsers = authUsers.users.map(user => ({
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name as string | undefined,
+        avatar_url: user.user_metadata?.avatar_url as string | undefined,
+        created_at: user.created_at,
+        last_sign_in: user.last_sign_in_at || undefined
+      }));
+
+      setUsers(formattedUsers || []);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       toast.error(`Failed to fetch users: ${error.message}`);
@@ -42,17 +52,17 @@ export function UsersList() {
   };
 
   const deleteUser = async (userId: string) => {
-  try {
-    const { error } = await supabase.rpc('delete_user', { user_id: userId });
-    if (error) throw error;
-    toast.success('User deleted successfully');
-    // Refresh the users list
-    refreshUsers();
-  } catch (error: any) {
-    console.error('Error deleting user:', error);
-    toast.error(`Failed to delete user: ${error.message}`);
-  }
-};
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) throw error;
+      toast.success('User deleted successfully');
+      // Refresh the users list
+      refreshUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(`Failed to delete user: ${error.message}`);
+    }
+  };
 
   const filteredUsers = users.filter(user => {
     const searchTerm = searchQuery.toLowerCase();
