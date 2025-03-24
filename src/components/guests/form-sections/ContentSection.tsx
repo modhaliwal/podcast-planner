@@ -8,6 +8,7 @@ import { Sparkles } from "lucide-react";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContentSectionProps {
   form: UseFormReturn<any>;
@@ -52,18 +53,62 @@ export function ContentSection({
   const generateBio = async () => {
     setIsGeneratingBio(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const name = form.getValues('name');
+      const title = form.getValues('title');
+      const company = form.getValues('company');
       
+      // Get social links from the form
+      const socialLinks = {
+        twitter: form.getValues('twitter'),
+        facebook: form.getValues('facebook'),
+        linkedin: form.getValues('linkedin'),
+        instagram: form.getValues('instagram'),
+        tiktok: form.getValues('tiktok'),
+        youtube: form.getValues('youtube'),
+        website: form.getValues('website'),
+      };
+
+      // Filter out empty social links
+      const filteredSocialLinks = Object.fromEntries(
+        Object.entries(socialLinks).filter(([_, url]) => url)
+      );
+
+      toast.info("Generating bio from online presence...");
+      
+      if (Object.keys(filteredSocialLinks).length === 0) {
+        toast.warning("No social links provided. Using basic information only.");
+      }
+      
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('generate-bio', {
+        body: {
+          name,
+          title,
+          company,
+          socialLinks: filteredSocialLinks
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data && data.bio) {
+        form.setValue('bio', data.bio);
+        toast.success("Bio generated successfully");
+      } else {
+        throw new Error("No bio returned from API");
+      }
+    } catch (error: any) {
+      console.error("Error generating bio:", error);
+      toast.error(`Failed to generate bio: ${error.message || "Unknown error"}`);
+      
+      // Fallback to simple bio generation if AI fails
       const name = form.getValues('name');
       const title = form.getValues('title');
       
-      const generatedBio = `${name} is a distinguished ${title} with extensive experience in their field. Known for innovative approaches and thought leadership, they have contributed significantly to industry advancements. Their unique perspective and insights make them a valuable voice in current discussions and an engaging podcast guest.`;
+      const fallbackBio = `${name} is a distinguished ${title} with extensive experience in their field. Known for innovative approaches and thought leadership, they have contributed significantly to industry advancements. Their unique perspective and insights make them a valuable voice in current discussions and an engaging podcast guest.`;
       
-      form.setValue('bio', generatedBio);
-      toast.success("Bio generated successfully");
-    } catch (error) {
-      toast.error("Failed to generate bio");
-      console.error(error);
+      form.setValue('bio', fallbackBio);
+      toast.info("Used fallback bio generator");
     } finally {
       setIsGeneratingBio(false);
     }
@@ -119,7 +164,7 @@ export function ContentSection({
           disabled={isGeneratingBio}
         >
           <Sparkles className="h-4 w-4 mr-1" />
-          {isGeneratingBio ? 'Generating...' : 'Generate Bio'}
+          {isGeneratingBio ? 'Generating from links...' : 'Generate Bio'}
         </Button>
       </div>
       <FormField
