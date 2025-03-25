@@ -14,7 +14,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
   const location = useLocation();
-  const from = location.state?.from || "/";
+  const from = location.state?.from || "/dashboard"; // Default to dashboard instead of root
 
   useEffect(() => {
     // Get initial session
@@ -67,8 +67,8 @@ export default function Auth() {
           currentSession: fakeDevSession
         }));
         
-        // Force refresh the page to apply the new session
-        window.location.href = from;
+        // Always redirect to dashboard after dev sign-in
+        window.location.href = "/dashboard";
         
         toast.success("Development mode: Signed in as mo@skyrocket.is");
         return;
