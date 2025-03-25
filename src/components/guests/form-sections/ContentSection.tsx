@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { BioSection } from "./BioSection";
 import { NotesSection } from "./NotesSection";
@@ -15,16 +14,9 @@ export function ContentSection({
   notes,
   setNotes
 }: ContentSectionProps) {
-  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
-
   return (
     <div className="space-y-6">
-      <BioSection 
-        form={form} 
-        isGeneratingBio={isGeneratingBio}
-        setIsGeneratingBio={setIsGeneratingBio}
-      />
-
+      <BioSection form={form} />
       <NotesSection 
         notes={notes}
         setNotes={setNotes}

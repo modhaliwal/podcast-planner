@@ -25,7 +25,6 @@ export const getUserGuests = async (): Promise<{ data: Guest[] | null; error: an
       imageUrl: guest.image_url || undefined,
       socialLinks: guest.social_links as SocialLinks || {},
       notes: guest.notes || undefined,
-      backgroundResearch: guest.background_research || undefined,
       status: (guest.status as Guest['status']) || 'potential',
       createdAt: guest.created_at,
       updatedAt: guest.updated_at
@@ -61,7 +60,6 @@ export const getGuest = async (id: string): Promise<{ data: Guest | null; error:
       imageUrl: data.image_url || undefined,
       socialLinks: data.social_links as SocialLinks || {},
       notes: data.notes || undefined,
-      backgroundResearch: data.background_research || undefined,
       status: (data.status as Guest['status']) || 'potential',
       createdAt: data.created_at,
       updatedAt: data.updated_at
@@ -87,7 +85,7 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
     const { data, error } = await supabase
       .from('guests')
       .insert({
-        user_id: user.id,  // Still need to include user_id for database integrity
+        user_id: user.id,
         name: guest.name,
         title: guest.title,
         company: guest.company,
@@ -97,7 +95,6 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
         image_url: guest.imageUrl,
         social_links: guest.socialLinks as unknown as Json || {},
         notes: guest.notes,
-        background_research: guest.backgroundResearch,
         status: guest.status || 'potential',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -129,7 +126,6 @@ export const updateGuest = async (id: string, updates: Partial<Guest>): Promise<
         image_url: updates.imageUrl,
         social_links: updates.socialLinks as unknown as Json,
         notes: updates.notes,
-        background_research: updates.backgroundResearch,
         status: updates.status,
         updated_at: new Date().toISOString()
       })

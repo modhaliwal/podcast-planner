@@ -23,6 +23,7 @@ export interface Guest {
   imageUrl?: string;
   socialLinks: SocialLinks;
   notes?: string;
+  // @deprecated - Kept for backward compatibility
   backgroundResearch?: string;
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;

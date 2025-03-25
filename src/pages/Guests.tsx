@@ -22,7 +22,6 @@ const Guests = () => {
   // Load guests data once on component mount
   useEffect(() => {
     if (!hasInitializedRef.current) {
-      console.log("Initial Guests component mount, refreshing data");
       refreshGuests();
       hasInitializedRef.current = true;
     }
@@ -43,7 +42,6 @@ const Guests = () => {
   });
 
   const handleRefresh = () => {
-    console.log("Manual refresh triggered");
     refreshGuests();
   };
 

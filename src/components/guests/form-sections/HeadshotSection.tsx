@@ -26,7 +26,6 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     
     // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
-      console.log("Setting initial image preview:", initialImageUrl);
       setImagePreview(initialImageUrl);
     }
   }, [initialImageUrl]);
@@ -60,8 +59,7 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     
-    // Just pass the file and preview URL to the parent component
-    // without uploading immediately
+    // Pass the file and preview URL to the parent component
     onImageChange(file, previewUrl);
   };
 

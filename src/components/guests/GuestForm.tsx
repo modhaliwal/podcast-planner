@@ -21,9 +21,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
   const [notes, setNotes] = useState(guest.notes || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | undefined>(undefined);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImageRemoved, setIsImageRemoved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -47,13 +46,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const handleImageChange = (file: File | null, previewUrl?: string) => {
     setImageFile(file);
     setIsImageRemoved(file === null);
-    
-    if (previewUrl) {
-      console.log("Setting image preview URL:", previewUrl);
-      setImagePreviewUrl(previewUrl);
-    } else if (file === null) {
-      setImagePreviewUrl(undefined);
-    }
   };
 
   const handleSubmit = async (data: any) => {

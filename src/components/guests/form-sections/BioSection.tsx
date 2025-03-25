@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,16 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;
-  isGeneratingBio?: boolean;
-  setIsGeneratingBio?: (value: boolean) => void;
 }
 
-export function BioSection({ 
-  form, 
-  isGeneratingBio = false, 
-  setIsGeneratingBio = () => {} 
-}: BioSectionProps) {
-
+export function BioSection({ form }: BioSectionProps) {
   // Helper function to get social links from the form
   const getSocialLinks = () => {
     const socialLinks = {
@@ -51,10 +43,8 @@ export function BioSection({
   };
 
   const generateBio = async () => {
-    setIsGeneratingBio(true);
     try {
       if (!validateRequiredFields()) {
-        setIsGeneratingBio(false);
         return;
       }
       
@@ -109,8 +99,6 @@ export function BioSection({
       
       form.setValue('bio', fallbackBio);
       toast.info("Used fallback bio generator");
-    } finally {
-      setIsGeneratingBio(false);
     }
   };
 
@@ -123,10 +111,9 @@ export function BioSection({
           variant="outline" 
           size="sm" 
           onClick={generateBio}
-          disabled={isGeneratingBio}
         >
           <Sparkles className="h-4 w-4 mr-1" />
-          {isGeneratingBio ? 'Generating from links...' : 'Generate Bio'}
+          Generate Bio
         </Button>
       </div>
       <FormField

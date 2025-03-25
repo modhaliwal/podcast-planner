@@ -46,9 +46,8 @@ const AddGuest = () => {
           phone: newGuest.phone,
           bio: newGuest.bio,
           image_url: newGuest.imageUrl,
-          social_links: newGuest.socialLinks as any, // Cast to any to bypass TypeScript error
+          social_links: newGuest.socialLinks as any,
           notes: newGuest.notes,
-          background_research: newGuest.backgroundResearch,
           status: newGuest.status || 'potential',
           user_id: user.id,
           created_at: new Date().toISOString(),
