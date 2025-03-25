@@ -19,12 +19,11 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
         marked.setOptions({
           breaks: true,      // Convert line breaks to <br>
           gfm: true,         // Enable GitHub flavored markdown
-          mangle: false      // Don't mangle header IDs
         });
         
-        // Parse the markdown to HTML - ensure it's handled as a string
+        // Parse the markdown to HTML
         const parsedHtml = marked.parse(guest.backgroundResearch, { async: false }) as string;
-        console.log('Parsed HTML:', parsedHtml.slice(0, 200) + '...'); // Debug log using slice instead
+        console.log('Parsed HTML:', parsedHtml.slice(0, 200) + '...'); // Debug log
         
         setParsedResearch(parsedHtml);
       } catch (error) {
