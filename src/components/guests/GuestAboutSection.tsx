@@ -14,18 +14,22 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
   // Parse the markdown when the component loads or when the research changes
   useEffect(() => {
     if (guest.backgroundResearch) {
-      // Check if the content is already HTML (contains HTML tags)
-      const hasHtmlTags = /<\/?[a-z][\s\S]*>/i.test(guest.backgroundResearch);
-      
-      if (hasHtmlTags) {
-        // If it already has HTML tags, use it directly
-        setParsedResearch(guest.backgroundResearch);
-      } else {
-        // If it's markdown, convert it to HTML
-        // Use the synchronous version to avoid Promise issues
-        const parsedHtml = marked.parse(guest.backgroundResearch, { async: false }) as string;
+      try {
+        // Ensure the content is properly parsed
+        const parsedHtml = marked.parse(guest.backgroundResearch, { 
+          async: false,
+          breaks: true,
+          gfm: true
+        }) as string;
+        
         setParsedResearch(parsedHtml);
+      } catch (error) {
+        console.error('Error parsing markdown:', error);
+        // Fallback to raw content if parsing fails
+        setParsedResearch(`<p>${guest.backgroundResearch}</p>`);
       }
+    } else {
+      setParsedResearch('');
     }
   }, [guest.backgroundResearch]);
 
@@ -56,6 +60,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
                 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-5
                 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-5
                 prose-li:my-1 prose-li:pl-1
+                prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800
                 prose-strong:font-semibold prose-em:italic"
               dangerouslySetInnerHTML={{ __html: parsedResearch }}
             />

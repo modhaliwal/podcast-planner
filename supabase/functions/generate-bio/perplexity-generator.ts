@@ -27,13 +27,13 @@ export async function generateResearchWithPerplexity(
         messages: [
           {
             role: "system",
-            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews. Always format your responses using proper HTML with h3 tags for headings, ul/ol for lists, and p tags for paragraphs."
+            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews. Format your response in markdown using ## for section headings, * for bullet points, and proper markdown syntax for emphasis and structure."
           },
           {
             role: "user",
             content: `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
             
-            Format the output as HTML with proper headings (h3), lists (ul/ol), and structure.
+            Format the output as markdown with proper headings (##), lists (*, -), and structure.
             
             Include the following sections:
             - Educational background and career journey
@@ -51,7 +51,7 @@ export async function generateResearchWithPerplexity(
           }
         ],
         temperature: 0.2,
-        max_tokens: 1500,
+        max_tokens: 2000,
         return_images: false,
         return_related_questions: false,
       }),
