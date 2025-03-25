@@ -27,7 +27,7 @@ export async function generateResearchWithPerplexity(
         messages: [
           {
             role: "system",
-            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews."
+            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews. Always format your responses using proper HTML with h3 tags for headings, ul/ol for lists, and p tags for paragraphs."
           },
           {
             role: "user",
