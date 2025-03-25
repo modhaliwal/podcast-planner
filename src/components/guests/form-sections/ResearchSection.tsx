@@ -17,7 +17,7 @@ interface ResearchSectionProps {
   setIsGeneratingResearch?: (value: boolean) => void;
 }
 
-// Quill editor configuration
+// Quill editor configuration with more comprehensive toolbar
 const quillModules = {
   toolbar: [
     [{ 'header': [1, 2, 3, false] }],
@@ -35,11 +35,6 @@ const quillFormats = [
   'link'
 ];
 
-const quillStyles = {
-  height: '200px',
-  marginBottom: '50px',
-};
-
 export function ResearchSection({ 
   form, 
   backgroundResearch,
@@ -48,7 +43,7 @@ export function ResearchSection({
   setIsGeneratingResearch = () => {}
 }: ResearchSectionProps) {
 
-  // Helper function to get social links from the form
+  // Get social links from the form
   const getSocialLinks = () => {
     const socialLinks = {
       twitter: form.getValues('twitter'),
@@ -66,7 +61,7 @@ export function ResearchSection({
     );
   };
 
-  // Helper function to validate required fields
+  // Validate required fields
   const validateRequiredFields = () => {
     const name = form.getValues('name');
     const title = form.getValues('title');
@@ -76,6 +71,32 @@ export function ResearchSection({
       return false;
     }
     return true;
+  };
+
+  // Convert markdown to HTML for the editor
+  const convertMarkdownToHtml = (markdown: string): string => {
+    // Use the marked library to convert markdown to HTML
+    try {
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        pedantic: false
+      });
+      
+      // Synchronous parsing is okay here since we're doing this in a handler
+      return marked.parse(markdown) as string;
+    } catch (error) {
+      console.error("Error converting markdown to HTML:", error);
+      // Fallback to basic conversion
+      return markdown
+        .replace(/\n\n/g, '<p></p>')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+    }
   };
 
   const generateBackgroundResearch = async () => {
@@ -118,7 +139,7 @@ export function ResearchSection({
       if (data?.research) {
         console.log("Received research from API:", data.research.substring(0, 100) + "...");
         
-        // Set the content directly as markdown - it will be rendered as HTML when displayed
+        // Convert markdown to HTML and set it
         setBackgroundResearch(data.research);
         toast.success("Background research generated successfully");
       } else if (data?.error) {
@@ -130,11 +151,21 @@ export function ResearchSection({
       console.error("Error generating research:", error);
       toast.error(`Failed to generate research: ${error.message || "Unknown error"}`);
       
-      // Fallback to simple research generation if AI fails
       const name = form.getValues('name');
       const title = form.getValues('title');
       
-      const fallbackResearch = `## Research findings for ${name}
+      // Simplified fallback
+      const fallbackResearch = generateFallbackResearch(name, title);
+      setBackgroundResearch(fallbackResearch);
+      toast.info("Used fallback research generator");
+    } finally {
+      setIsGeneratingResearch(false);
+    }
+  };
+
+  // Generate fallback research content when API fails
+  const generateFallbackResearch = (name: string, title: string): string => {
+    return `## Research findings for ${name}
 
 ### Educational background
 Graduated with honors in relevant field.
@@ -164,12 +195,6 @@ Active on professional platforms with substantial following.
 * Their journey to becoming a ${title}
 * Their perspective on industry challenges and opportunities
 * Their vision for the future of their field`;
-      
-      setBackgroundResearch(fallbackResearch);
-      toast.info("Used fallback research generator");
-    } finally {
-      setIsGeneratingResearch(false);
-    }
   };
 
   return (
@@ -195,10 +220,12 @@ Active on professional platforms with substantial following.
           formats={quillFormats}
           placeholder="Research information about this guest"
           theme="snow"
-          className="bg-background resize-vertical"
-          style={quillStyles}
+          className="bg-background min-h-[200px]"
         />
       </div>
     </div>
   );
 }
+
+// Import marked here to avoid TypeScript errors with the import
+import { marked } from 'marked';

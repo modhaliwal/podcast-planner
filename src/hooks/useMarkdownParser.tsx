@@ -19,21 +19,16 @@ export function useMarkdownParser(markdown: string | undefined) {
         pedantic: false
       });
       
-      // Handle the parsing, which could be synchronous or asynchronous
-      const result = marked.parse(markdown);
-      
-      // If result is a promise, handle it properly
-      if (result instanceof Promise) {
-        result.then(html => {
-          setParsedHtml(html);
-        }).catch(error => {
-          console.error('Error parsing markdown asynchronously:', error);
+      // Convert markdown to HTML
+      marked.parse(markdown, (err, result) => {
+        if (err) {
+          console.error('Error parsing markdown:', err);
           useFallbackParser(markdown, setParsedHtml);
-        });
-      } else {
-        // If it's a regular string, set it directly
+          return;
+        }
+        
         setParsedHtml(result);
-      }
+      });
     } catch (error) {
       console.error('Error parsing markdown:', error);
       useFallbackParser(markdown, setParsedHtml);
