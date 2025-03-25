@@ -19,25 +19,40 @@ export function useMarkdownParser(markdown: string | undefined) {
         pedantic: false
       });
       
-      // Parse markdown to HTML
-      const html = marked.parse(markdown);
-      setParsedHtml(html);
+      // Handle the parsing, which could be synchronous or asynchronous
+      const result = marked.parse(markdown);
+      
+      // If result is a promise, handle it properly
+      if (result instanceof Promise) {
+        result.then(html => {
+          setParsedHtml(html);
+        }).catch(error => {
+          console.error('Error parsing markdown asynchronously:', error);
+          useFallbackParser(markdown, setParsedHtml);
+        });
+      } else {
+        // If it's a regular string, set it directly
+        setParsedHtml(result);
+      }
     } catch (error) {
       console.error('Error parsing markdown:', error);
-      
-      // Fallback basic parsing
-      const fallbackHtml = markdown
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
-        .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
-        .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
-      
-      setParsedHtml(`<p>${fallbackHtml}</p>`);
+      useFallbackParser(markdown, setParsedHtml);
     }
   }, [markdown]);
 
   return parsedHtml;
+}
+
+// Extracted fallback parser as a separate function for cleaner code
+function useFallbackParser(markdown: string, setParsedHtml: (html: string) => void) {
+  const fallbackHtml = markdown
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+  
+  setParsedHtml(`<p>${fallbackHtml}</p>`);
 }
