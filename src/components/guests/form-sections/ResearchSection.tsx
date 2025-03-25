@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { marked } from "marked";
 
 interface ResearchSectionProps {
   form: UseFormReturn<any>;
@@ -47,47 +47,47 @@ export function ResearchSection({
 
   // Effect to convert markdown to HTML when backgroundResearch changes
   useEffect(() => {
-    if (backgroundResearch) {
-      try {
-        import('marked').then(({ marked }) => {
-          marked.setOptions({
-            breaks: true,
-            gfm: true,
-            pedantic: false,
-          });
-          
-          // Create a version of the parser that returns promises
-          const parseMarkdown = async () => {
-            try {
-              const html = await marked.parse(backgroundResearch);
-              setEditorContent(html);
-            } catch (error) {
-              console.error('Error parsing markdown for editor:', error);
-              // Fallback to basic conversion
-              const fallbackHtml = basicMarkdownToHtml(backgroundResearch);
-              setEditorContent(fallbackHtml);
-            }
-          };
-          
-          parseMarkdown();
-        });
-      } catch (error) {
-        console.error('Error importing marked:', error);
-        // Fallback if marked import fails
-        const fallbackHtml = basicMarkdownToHtml(backgroundResearch);
-        setEditorContent(fallbackHtml);
-      }
-    } else {
+    if (!backgroundResearch) {
       setEditorContent('');
+      return;
     }
+
+    const convertMarkdownToHtml = async () => {
+      try {
+        // Configure marked with options for better list handling
+        marked.setOptions({
+          breaks: true,
+          gfm: true,
+          pedantic: false,
+          headerIds: true
+        });
+        
+        const html = await marked.parse(backgroundResearch);
+        
+        // Enhanced paragraph and list handling
+        let enhancedHtml = html
+          // Ensure proper paragraph structure
+          .replace(/<p><br><\/p>/g, '<p></p>')
+          // Fix consecutive breaks that should be paragraphs
+          .replace(/<br><br>/g, '</p><p>');
+        
+        setEditorContent(enhancedHtml);
+      } catch (error) {
+        console.error('Error parsing markdown for editor:', error);
+        // Fallback to basic conversion
+        setEditorContent(basicMarkdownToHtml(backgroundResearch));
+      }
+    };
+    
+    convertMarkdownToHtml();
   }, [backgroundResearch]);
 
   // Handle editor content change
   const handleEditorChange = (content: string) => {
     setEditorContent(content);
     
-    // Convert HTML back to markdown for storage
-    // This is simplified - in a real implementation, you might need a more robust HTML-to-markdown converter
+    // We keep the raw HTML for the editor
+    // but convert it to a more standardized format for storage
     setBackgroundResearch(content);
   };
 
@@ -123,14 +123,46 @@ export function ResearchSection({
   
   // Basic markdown to HTML converter as fallback
   const basicMarkdownToHtml = (markdown: string): string => {
-    return markdown
-      .replace(/\n\n/g, '<p></p>')
+    let html = markdown
+      // Handle paragraphs properly
+      .replace(/\n\n+/g, '</p><p>')
+      // Handle line breaks within paragraphs
       .replace(/\n/g, '<br>')
+      // Handle formatting
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Handle headings
       .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
       .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
       .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+    
+    // Handle numbered lists
+    const listPattern = /^(\d+)\.\s(.*)$/gm;
+    let match;
+    let listItems = [];
+    let inList = false;
+    let startNum = 1;
+    
+    while ((match = listPattern.exec(markdown)) !== null) {
+      if (!inList) {
+        startNum = parseInt(match[1], 10);
+        inList = true;
+      }
+      listItems.push(`<li>${match[2]}</li>`);
+    }
+    
+    if (listItems.length > 0) {
+      const listHtml = `<ol start="${startNum}">${listItems.join('')}</ol>`;
+      // Replace the list items in the HTML
+      html = html.replace(listPattern, '') + listHtml;
+    }
+    
+    // Wrap in paragraph tags if not already
+    if (!html.startsWith('<')) {
+      html = `<p>${html}</p>`;
+    }
+    
+    return html;
   };
 
   const generateBackgroundResearch = async () => {
