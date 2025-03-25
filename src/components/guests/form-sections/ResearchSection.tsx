@@ -115,10 +115,13 @@ export function ResearchSection({
         throw new Error(error.message || "Supabase function error");
       }
       
-      if (data && data.research) {
+      if (data?.research) {
+        console.log("Received research from API:", data.research.substring(0, 100) + "...");
+        
+        // Set the content directly as markdown - it will be rendered as HTML when displayed
         setBackgroundResearch(data.research);
         toast.success("Background research generated successfully");
-      } else if (data && data.error) {
+      } else if (data?.error) {
         throw new Error(data.error);
       } else {
         throw new Error("No research returned from API");
@@ -131,25 +134,36 @@ export function ResearchSection({
       const name = form.getValues('name');
       const title = form.getValues('title');
       
-      const fallbackResearch = `<h3>Research findings for ${name}:</h3>
-      
-<ol>
-  <li><strong>Educational background:</strong> Graduated with honors in relevant field.</li>
-  <li><strong>Career highlights:</strong> Has over 10 years of experience as a ${title}.</li>
-  <li><strong>Previous media appearances:</strong> Has been featured on several industry podcasts.</li>
-  <li><strong>Publications:</strong> Author of multiple well-received articles in industry journals.</li>
-  <li><strong>Areas of expertise:</strong> Specializes in emerging trends and practical applications.</li>
-  <li><strong>Speaking style:</strong> Articulate, engaging, with a talent for making complex topics accessible.</li>
-  <li><strong>Recent projects:</strong> Currently involved in several innovative initiatives.</li>
-  <li><strong>Social media presence:</strong> Active on professional platforms with substantial following.</li>
-</ol>
+      const fallbackResearch = `## Research findings for ${name}
 
-<h3>Recommended topics to explore:</h3>
-<ul>
-  <li>Their journey to becoming a ${title}</li>
-  <li>Their perspective on industry challenges and opportunities</li>
-  <li>Their vision for the future of their field</li>
-</ul>`;
+### Educational background
+Graduated with honors in relevant field.
+
+### Career highlights
+Has over 10 years of experience as a ${title}.
+
+### Previous media appearances
+Has been featured on several industry podcasts.
+
+### Publications
+Author of multiple well-received articles in industry journals.
+
+### Areas of expertise
+Specializes in emerging trends and practical applications.
+
+### Speaking style
+Articulate, engaging, with a talent for making complex topics accessible.
+
+### Recent projects
+Currently involved in several innovative initiatives.
+
+### Social media presence
+Active on professional platforms with substantial following.
+
+## Recommended topics to explore
+* Their journey to becoming a ${title}
+* Their perspective on industry challenges and opportunities
+* Their vision for the future of their field`;
       
       setBackgroundResearch(fallbackResearch);
       toast.info("Used fallback research generator");

@@ -72,6 +72,10 @@ export async function generateResearchWithPerplexity(
     
     const generatedResearch = data.choices[0].message.content.trim();
     console.log("Successfully generated research with Perplexity");
+    
+    // Log a preview of the generated markdown
+    console.log("Preview of generated markdown:", generatedResearch.substring(0, 200) + "...");
+    
     return generatedResearch;
   } catch (error) {
     console.error("Error calling Perplexity for research:", error);

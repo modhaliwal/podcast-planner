@@ -24,7 +24,7 @@ export function ContentSection({
   const [isGeneratingResearch, setIsGeneratingResearch] = useState(false);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <BioSection 
         form={form} 
         isGeneratingBio={isGeneratingBio}
