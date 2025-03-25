@@ -7,12 +7,10 @@ import { Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signIn, signUp } from "@/services/userService";
 
 const authSchema = z.object({
@@ -26,7 +24,7 @@ type AuthFormValues = z.infer<typeof authSchema>;
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [isNewUser, setIsNewUser] = useState(false);
   const location = useLocation();
   const from = location.state?.from || "/dashboard";
 
@@ -60,41 +58,32 @@ export default function Auth() {
     return <Navigate to={from} />;
   }
 
-  async function handleSignIn(values: AuthFormValues) {
+  async function handleAuth(values: AuthFormValues) {
     try {
       setLoading(true);
-      const { data, error } = await signIn(values.email, values.password);
       
-      if (error) {
-        throw error;
-      }
-      
-      if (data) {
-        toast.success("Signed in successfully");
-      }
-    } catch (error) {
-      console.error("Sign in error:", error);
-      toast.error(error.message || "Failed to sign in");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSignUp(values: AuthFormValues) {
-    try {
-      setLoading(true);
-      const { data, error } = await signUp(values.email, values.password, values.fullName);
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (data) {
-        toast.success("Account created successfully! Check your email for confirmation.");
+      if (isNewUser) {
+        // Handle sign up
+        const { data, error } = await signUp(values.email, values.password, values.fullName);
+        
+        if (error) throw error;
+        
+        if (data) {
+          toast.success("Account created successfully! Check your email for confirmation.");
+        }
+      } else {
+        // Handle sign in
+        const { data, error } = await signIn(values.email, values.password);
+        
+        if (error) throw error;
+        
+        if (data) {
+          toast.success("Signed in successfully");
+        }
       }
     } catch (error) {
-      console.error("Sign up error:", error);
-      toast.error(error.message || "Failed to sign up");
+      console.error(`Authentication error:`, error);
+      toast.error(error.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -120,14 +109,6 @@ export default function Auth() {
     }
   }
 
-  const onSubmit = (values: AuthFormValues) => {
-    if (activeTab === "signin") {
-      handleSignIn(values);
-    } else {
-      handleSignUp(values);
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
@@ -138,109 +119,75 @@ export default function Auth() {
           </div>
           <CardTitle className="text-2xl text-center">Welcome</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your account to manage your podcasts
+            {isNewUser ? "Create an account to manage your podcasts" : "Sign in to your account to manage your podcasts"}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-6 pt-4">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="signin" className="w-full">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="your@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="******" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button 
-                    type="submit" 
-                    className="w-full mt-6" 
-                    disabled={loading}
-                  >
-                    {loading ? "Signing in..." : "Sign In"}
-                  </Button>
-                </form>
-              </Form>
-            </TabsContent>
-            
-            <TabsContent value="signup" className="w-full">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="your@email.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="******" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button 
-                    type="submit" 
-                    className="w-full mt-6" 
-                    disabled={loading}
-                  >
-                    {loading ? "Signing up..." : "Sign Up"}
-                  </Button>
-                </form>
-              </Form>
-            </TabsContent>
-          </Tabs>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleAuth)} className="space-y-4 w-full">
+              {isNewUser && (
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="your@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="******" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button 
+                type="submit" 
+                className="w-full mt-6" 
+                disabled={loading}
+              >
+                {loading ? "Processing..." : isNewUser ? "Sign Up" : "Sign In"}
+              </Button>
+              
+              <div className="text-center mt-4">
+                <button 
+                  type="button"
+                  className="text-sm text-primary hover:underline"
+                  onClick={() => {
+                    setIsNewUser(!isNewUser);
+                    form.reset();
+                  }}
+                >
+                  {isNewUser ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+                </button>
+              </div>
+            </form>
+          </Form>
 
           <div className="relative w-full my-4">
             <div className="absolute inset-0 flex items-center">
