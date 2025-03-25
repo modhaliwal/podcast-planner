@@ -14,10 +14,12 @@ export default function Auth() {
   const from = location.state?.from || "/";
 
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -38,13 +40,16 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/auth`,
         },
       });
-      if (error) throw error;
+      
+      if (error) {
+        throw error;
+      }
     } catch (error) {
-      toast.error(error.message);
-    } finally {
+      console.error("Google sign in error:", error);
+      toast.error(error.message || "Failed to sign in with Google");
       setLoading(false);
     }
   }
