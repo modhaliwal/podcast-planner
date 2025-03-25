@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+// Check if we're in development mode
+const isDevelopment = import.meta.env.DEV;
+
 export function useAuthRedirect(redirectAuthenticatedTo?: string) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -12,7 +15,6 @@ export function useAuthRedirect(redirectAuthenticatedTo?: string) {
     if (loading) return;
 
     // Check for development mode user in localStorage if no actual user
-    const isDevelopment = import.meta.env.DEV;
     const hasDevUser = isDevelopment && 
       localStorage.getItem('supabase.auth.token') && 
       JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.currentSession?.user;
@@ -30,7 +32,6 @@ export function useAuthRedirect(redirectAuthenticatedTo?: string) {
   }, [user, loading, navigate, redirectAuthenticatedTo]);
 
   // Check for dev user in development mode
-  const isDevelopment = import.meta.env.DEV;
   const hasDevUser = isDevelopment && 
     localStorage.getItem('supabase.auth.token') && 
     JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.currentSession?.user;
