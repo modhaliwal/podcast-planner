@@ -17,8 +17,7 @@ export function useMarkdownParser(markdown: string | undefined) {
         breaks: true, // Convert \n to <br> in paragraphs
         gfm: true,    // GitHub Flavored Markdown
         pedantic: false,
-        mangle: false,
-        headerIds: true
+        headerIds: false // Changed from headerIds: true to fix TypeScript error
       });
       
       const parseMarkdown = async () => {
