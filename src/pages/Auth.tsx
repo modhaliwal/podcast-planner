@@ -49,33 +49,39 @@ export default function Auth() {
     try {
       setLoading(true);
       
-      // Create a fake session for development
-      const fakeSession = {
-        access_token: "fake-token-for-development",
-        refresh_token: "fake-refresh-token",
-        expires_in: 3600,
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
-        user: {
+      // Use this simpler approach for development mode
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'mo@skyrocket.is',
+        password: 'dev-mode-password'
+      });
+      
+      if (error) {
+        console.log("Falling back to manual session creation");
+        
+        // Create a simplified fake session
+        const fakeUser = {
           id: "00000000-0000-0000-0000-000000000000",
           email: "mo@skyrocket.is",
           user_metadata: {
             full_name: "Mo Dhaliwal",
             avatar_url: "https://via.placeholder.com/150"
           },
-          app_metadata: {},
           aud: "authenticated",
           created_at: new Date().toISOString()
+        };
+        
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: "fake-token",
+          refresh_token: "fake-refresh-token"
+        });
+        
+        if (sessionError) {
+          console.error("Error setting dev session:", sessionError);
+          toast.error("Development sign-in failed. Please try again.");
+          setLoading(false);
+        } else {
+          toast.success("Development mode: Signed in as mo@skyrocket.is");
         }
-      };
-      
-      // Manually trigger the auth state change
-      // This will be caught by the onAuthStateChange listener above
-      const { error } = await supabase.auth.setSession(fakeSession);
-      
-      if (error) {
-        console.error("Error setting dev session:", error);
-        toast.error("Development sign-in failed. Please try again.");
-        setLoading(false);
       } else {
         toast.success("Development mode: Signed in as mo@skyrocket.is");
       }
