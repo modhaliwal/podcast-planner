@@ -1,12 +1,32 @@
 
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Guest } from '@/lib/types';
+import { marked } from 'marked';
+import { useEffect, useState } from 'react';
 
 interface GuestAboutSectionProps {
   guest: Guest;
 }
 
 export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
+  const [parsedResearch, setParsedResearch] = useState<string>('');
+
+  // Parse the markdown when the component loads or when the research changes
+  useEffect(() => {
+    if (guest.backgroundResearch) {
+      // Check if the content is already HTML (contains HTML tags)
+      const hasHtmlTags = /<\/?[a-z][\s\S]*>/i.test(guest.backgroundResearch);
+      
+      if (hasHtmlTags) {
+        // If it already has HTML tags, use it directly
+        setParsedResearch(guest.backgroundResearch);
+      } else {
+        // If it's markdown, convert it to HTML
+        setParsedResearch(marked.parse(guest.backgroundResearch));
+      }
+    }
+  }, [guest.backgroundResearch]);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -35,7 +55,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
                 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-5
                 prose-li:my-1 prose-li:pl-1
                 prose-strong:font-semibold prose-em:italic"
-              dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
+              dangerouslySetInnerHTML={{ __html: parsedResearch }}
             />
           </CardContent>
         </Card>
