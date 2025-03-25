@@ -89,11 +89,16 @@ export function ContentSection({
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw new Error(error.message);
+      }
       
       if (data && data.bio) {
         form.setValue('bio', data.bio);
         toast.success("Bio generated successfully");
+      } else if (data && data.error) {
+        throw new Error(data.error);
       } else {
         throw new Error("No bio returned from API");
       }
@@ -104,8 +109,10 @@ export function ContentSection({
       // Fallback to simple bio generation if AI fails
       const name = form.getValues('name');
       const title = form.getValues('title');
+      const company = form.getValues('company');
       
-      const fallbackBio = `${name} is a distinguished ${title} with extensive experience in their field. Known for innovative approaches and thought leadership, they have contributed significantly to industry advancements. Their unique perspective and insights make them a valuable voice in current discussions and an engaging podcast guest.`;
+      const companyPhrase = company ? `at ${company}` : "in their field";
+      const fallbackBio = `${name} is a distinguished ${title} with extensive experience ${companyPhrase}. Known for innovative approaches and thought leadership, they have contributed significantly to industry advancements. Their unique perspective and insights make them a valuable voice in current discussions and an engaging podcast guest.`;
       
       form.setValue('bio', fallbackBio);
       toast.info("Used fallback bio generator");
