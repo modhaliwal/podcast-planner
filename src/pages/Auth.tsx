@@ -44,28 +44,35 @@ export default function Auth() {
 
   // Development mode sign in bypass
   async function handleDevSignIn() {
+    if (!isDevelopment) return;
+    
     try {
       setLoading(true);
       
-      // In development mode, we'll use magic link instead of password
-      // This is more reliable as it doesn't require the user to exist with a specific password
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth`,
-          // Add fake query parameter to bypass OAuth and force a dev login
-          // This will only work in development mode with certain Supabase setups
-          queryParams: {
-            dev_mode: "true"
-          }
-        },
-      });
+      // Create a fake session for development
+      const fakeSession = {
+        access_token: "fake-token-for-development",
+        refresh_token: "fake-refresh-token",
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        user: {
+          id: "00000000-0000-0000-0000-000000000000",
+          email: "mo@skyrocket.is",
+          user_metadata: {
+            full_name: "Mo Dhaliwal",
+            avatar_url: "https://via.placeholder.com/150"
+          },
+          app_metadata: {},
+          aud: "authenticated",
+          created_at: new Date().toISOString()
+        }
+      };
       
-      if (error) {
-        console.error("Dev mode sign in failed:", error.message);
-        toast.error("Development mode sign-in failed. Please try the Google sign-in instead.");
-        setLoading(false);
-      }
+      // Manually trigger the auth state change
+      // This will be caught by the onAuthStateChange listener above
+      await supabase.auth.setSession(fakeSession);
+      
+      toast.success("Development mode: Signed in as mo@skyrocket.is");
     } catch (error) {
       console.error("Dev mode sign in error:", error);
       toast.error("An unexpected error occurred during development sign-in");
