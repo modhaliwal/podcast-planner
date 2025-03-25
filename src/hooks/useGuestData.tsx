@@ -47,6 +47,7 @@ export function useGuestData(guestId: string | undefined) {
           imageUrl: imageUrl,
           socialLinks: data.social_links as SocialLinks,
           notes: data.notes || undefined,
+          backgroundResearch: data.background_research || undefined,
           status: (data.status as Guest['status']) || 'potential',
           createdAt: data.created_at,
           updatedAt: data.updated_at
@@ -99,6 +100,7 @@ export function useGuestData(guestId: string | undefined) {
           image_url: imageUrl,
           social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
+          background_research: updatedGuest.backgroundResearch, // Added this line to save backgroundResearch
           status: updatedGuest.status,
           updated_at: new Date().toISOString()
         })

@@ -22,7 +22,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Background Research</h4>
             <div 
-              className="text-sm text-muted-foreground"
+              className="text-sm text-muted-foreground prose prose-sm max-w-none"
               dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
             />
           </div>
