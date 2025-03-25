@@ -14,7 +14,7 @@ import { useEffect, useRef } from 'react';
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const { episodes, refreshGuests } = useAuth();
+  const { episodes, refreshGuests, refreshEpisodes } = useAuth();
   const hasRefreshedRef = useRef(false);
   
   const {
@@ -28,11 +28,12 @@ const GuestView = () => {
     handleDelete
   } = useGuestData(id);
   
-  // Refresh guests data only once when the page is loaded
+  // Refresh guests data and episodes when the page is loaded
   useEffect(() => {
     if (!hasRefreshedRef.current) {
-      console.log('Initial GuestView mount, refreshing guests data');
+      console.log('Initial GuestView mount, refreshing guests and episodes data');
       refreshGuests();
+      refreshEpisodes(); // Make sure we have the latest episodes data
       hasRefreshedRef.current = true;
     }
     
@@ -42,7 +43,7 @@ const GuestView = () => {
         hasRefreshedRef.current = false;
       }
     };
-  }, [id, location.pathname, refreshGuests]);
+  }, [id, location.pathname, refreshGuests, refreshEpisodes]);
   
   if (isLoading) {
     return <GuestViewLoading />;
@@ -74,7 +75,7 @@ const GuestView = () => {
             onCancel={() => setIsEditing(false)}
           />
         ) : (
-          <GuestDetail guest={guest} episodes={guestEpisodes} />
+          <GuestDetail guest={guest} episodes={episodes} />
         )}
 
         <DeleteGuestDialog 
