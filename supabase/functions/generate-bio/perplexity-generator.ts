@@ -27,13 +27,13 @@ export async function generateResearchWithPerplexity(
         messages: [
           {
             role: "system",
-            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews. Format your response in clean markdown using ## for section headings, bullet points with *, and proper markdown syntax for emphasis like **bold** and *italic*. Ensure your markdown is correctly formatted with proper spacing between sections."
+            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews. Format your response in clean markdown using ## for section headings, bullet points with *, and proper markdown syntax for emphasis like **bold** and *italic*. Ensure your markdown is correctly formatted with proper spacing between sections. Do not use HTML tags in your response, only pure markdown."
           },
           {
             role: "user",
             content: `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
             
-            Format the output as well-structured markdown with proper headings (##), lists (*, -), and sections.
+            Format the output as well-structured markdown with proper headings (##), lists (*, -), and sections. Do not use HTML tags, only clean markdown.
             
             Include the following sections:
             - Educational background and career journey
