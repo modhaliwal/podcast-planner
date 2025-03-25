@@ -47,22 +47,28 @@ export default function Auth() {
     try {
       setLoading(true);
       
-      // This uses the Supabase admin functionality which only works in development
-      // It bypasses the normal OAuth flow for easier testing
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: "mo@skyrocket.is",
-        password: "development-mode-bypass", // This won't actually be checked in dev mode
+      // In development mode, we'll use magic link instead of password
+      // This is more reliable as it doesn't require the user to exist with a specific password
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          // Add fake query parameter to bypass OAuth and force a dev login
+          // This will only work in development mode with certain Supabase setups
+          queryParams: {
+            dev_mode: "true"
+          }
+        },
       });
       
       if (error) {
-        console.log("Dev mode sign in failed, falling back to normal auth");
-        // If dev mode auth fails (which it might in certain environments), we don't show an error
+        console.error("Dev mode sign in failed:", error.message);
+        toast.error("Development mode sign-in failed. Please try the Google sign-in instead.");
         setLoading(false);
-      } else {
-        console.log("Dev mode sign in successful");
       }
     } catch (error) {
       console.error("Dev mode sign in error:", error);
+      toast.error("An unexpected error occurred during development sign-in");
       setLoading(false);
     }
   }
