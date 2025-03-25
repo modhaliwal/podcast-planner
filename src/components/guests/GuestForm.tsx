@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,6 @@ interface GuestFormProps {
 
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
-  const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [notes, setNotes] = useState(guest.notes || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | undefined>(undefined);
@@ -91,7 +91,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         phone: data.phone || undefined,
         bio: data.bio,
         notes: notes || undefined,
-        backgroundResearch: backgroundResearch || undefined,
         status: data.status,
         imageUrl: imageUrl as string | undefined,
         socialLinks: {
@@ -137,8 +136,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
 
           <ContentSection 
             form={form}
-            backgroundResearch={backgroundResearch}
-            setBackgroundResearch={setBackgroundResearch}
             notes={notes}
             setNotes={setNotes}
           />

@@ -6,16 +6,12 @@ import { NotesSection } from "./NotesSection";
 
 interface ContentSectionProps {
   form: UseFormReturn<any>;
-  backgroundResearch: string;
-  setBackgroundResearch: (value: string) => void;
   notes: string;
   setNotes: (value: string) => void;
 }
 
 export function ContentSection({ 
   form, 
-  backgroundResearch, 
-  setBackgroundResearch,
   notes,
   setNotes
 }: ContentSectionProps) {
