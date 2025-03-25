@@ -14,13 +14,11 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
   useEffect(() => {
     if (guest.backgroundResearch) {
       try {
-        // Use marked with minimal configuration for better compatibility
+        // Use marked with valid configuration options
         marked.setOptions({
           breaks: true,  // Convert line breaks to <br>
           gfm: true,     // GitHub flavored markdown
-          pedantic: false,
-          headerIds: true,
-          mangle: false
+          pedantic: false
         });
         
         // Parse the markdown
