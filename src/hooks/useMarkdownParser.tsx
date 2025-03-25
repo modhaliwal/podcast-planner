@@ -25,7 +25,7 @@ export function useMarkdownParser(markdown: string | undefined) {
           // Parse markdown to HTML
           const html = await marked.parse(markdown);
           
-          // Improve paragraph formatting (convert single <br> to proper paragraphs)
+          // Improve HTML formatting
           const improvedHtml = improveHtmlFormatting(html);
           
           setParsedHtml(improvedHtml);
@@ -48,77 +48,85 @@ export function useMarkdownParser(markdown: string | undefined) {
 
 // Helper function to improve HTML formatting
 function improveHtmlFormatting(html: string): string {
-  // Fix consecutive <br> tags that should be paragraphs
-  let improved = html
-    .replace(/<br><br>/g, '</p><p>')
-    .replace(/<p><br>/g, '<p>');
+  // Fix ordered lists - ensure proper ol/li structure
+  let improved = html;
   
-  // Ensure ordered lists are preserved correctly
-  improved = improved
-    .replace(/<p>(\d+)\.\s(.*?)<\/p>/g, '<ol start="$1"><li>$2</li></ol>')
-    // Fix consecutive list items
-    .replace(/<\/ol>\s*<ol start="\d+">/g, '');
+  // Check for numbered list items that aren't properly wrapped in <ol>
+  const numberedListPattern = /<p>(\d+)\.\s+(.*?)<\/p>/g;
+  if (numberedListPattern.test(html)) {
+    // First, collect all list items
+    const listItems: {num: string, content: string}[] = [];
+    let match;
+    const regex = new RegExp(numberedListPattern);
+    
+    // Find all list items
+    while ((match = regex.exec(html)) !== null) {
+      listItems.push({
+        num: match[1],
+        content: match[2]
+      });
+    }
+    
+    if (listItems.length > 0) {
+      // Replace the pattern with proper <ol><li> structure
+      let listHtml = `<ol>`;
+      listItems.forEach(item => {
+        listHtml += `<li>${item.content}</li>`;
+      });
+      listHtml += `</ol>`;
+      
+      // Replace the list items in the HTML
+      improved = html.replace(numberedListPattern, '');
+      improved += listHtml;
+    }
+  }
   
-  // Ensure content is wrapped in paragraphs if it's not in a block element
-  if (!improved.startsWith('<p>') && 
-      !improved.startsWith('<h') && 
-      !improved.startsWith('<ul') && 
-      !improved.startsWith('<ol')) {
+  // Ensure proper paragraph wrapping
+  if (!improved.startsWith('<')) {
     improved = `<p>${improved}</p>`;
   }
   
-  // Ensure the HTML doesn't end with an unclosed paragraph
-  if (improved.lastIndexOf('<p>') > improved.lastIndexOf('</p>')) {
-    improved += '</p>';
-  }
+  // Replace single <br> tags with proper paragraph breaks
+  improved = improved
+    .replace(/<br><br>/g, '</p><p>')
+    .replace(/<p><br>/g, '<p>')
+    .replace(/<br><\/p>/g, '</p>');
+  
+  // Fix bullet points
+  improved = improved
+    .replace(/<p>•\s+(.*?)<\/p>/g, '<ul><li>$1</li></ul>')
+    .replace(/<\/ul>\s*<ul>/g, '');
   
   return improved;
 }
 
-// Extracted fallback parser with improved list handling
+// Fallback parser with improved list handling
 function useFallbackParser(markdown: string, setParsedHtml: (html: string) => void) {
-  let fallbackHtml = markdown
-    // Handle paragraphs properly
-    .replace(/\n\n+/g, '</p><p>')
-    // Handle line breaks within paragraphs
-    .replace(/\n/g, '<br>')
-    // Handle formatting
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+  // Convert markdown to HTML with basic rules
+  let html = markdown
     // Handle headings
     .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
     .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+    .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+    // Handle basic formatting
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Handle paragraphs 
+    .replace(/\n\n+/g, '</p><p>')
+    // Handle bullet lists
+    .replace(/^[*-] (.*?)$/gm, '<ul><li>$1</li></ul>')
+    // Handle numbered lists
+    .replace(/^(\d+)\.\s+(.*?)$/gm, '<ol><li>$2</li></ol>');
   
-  // Handle numbered lists properly
-  const listRegex = /^(\d+)\.\s(.*)$/gm;
-  let match;
-  let listItems = [];
-  let lastIndex = 0;
-  let startNumber = 1;
-  let inList = false;
+  // Fix consecutive list elements
+  html = html
+    .replace(/<\/ul>\s*<ul>/g, '')
+    .replace(/<\/ol>\s*<ol>/g, '');
   
-  while ((match = listRegex.exec(markdown)) !== null) {
-    if (!inList) {
-      startNumber = parseInt(match[1], 10);
-      inList = true;
-      listItems.push(`<li>${match[2]}</li>`);
-    } else {
-      listItems.push(`<li>${match[2]}</li>`);
-    }
-    lastIndex = match.index + match[0].length;
+  // Wrap in paragraph tags if not already
+  if (!html.startsWith('<')) {
+    html = `<p>${html}</p>`;
   }
   
-  if (listItems.length > 0) {
-    fallbackHtml = fallbackHtml.replace(listRegex, '');
-    const olHtml = `<ol start="${startNumber}">${listItems.join('')}</ol>`;
-    fallbackHtml += olHtml;
-  }
-  
-  // Wrap in paragraph tags if not already wrapped
-  if (!fallbackHtml.startsWith('<')) {
-    fallbackHtml = `<p>${fallbackHtml}</p>`;
-  }
-  
-  setParsedHtml(fallbackHtml);
+  setParsedHtml(html);
 }

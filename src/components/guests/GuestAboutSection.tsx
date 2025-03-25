@@ -43,9 +43,10 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
                 prose-strong:font-semibold prose-em:italic"
               dangerouslySetInnerHTML={{ __html: parsedResearch }}
             />
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </div>
+        </CardContent>
+      </Card>
+    )}
+  </div>
   );
 }
