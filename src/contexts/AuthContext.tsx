@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const isDataLoading = isLoadingGuests || isLoadingEpisodes;
 
-  // Refresh user profile data from profiles table
   const refreshUserProfile = async () => {
     if (user) {
       const { user: profile } = await getCurrentUserProfile();
@@ -46,7 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
@@ -69,7 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -87,9 +83,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error(`Error signing out: ${error.message}`);
+    try {
+      setUser(null);
+      setSession(null);
+      setAppUser(null);
+      
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Error during sign out:", error);
+        toast.error(`Sign out error: ${error.message}`);
+      } else {
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Unexpected error during sign out:", error);
+      toast.error("An unexpected error occurred while signing out");
     }
   };
 
