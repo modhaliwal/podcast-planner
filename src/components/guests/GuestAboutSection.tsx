@@ -14,29 +14,49 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
   useEffect(() => {
     if (guest.backgroundResearch) {
       try {
-        // Configure marked with simpler options for better compatibility
+        // Use marked with minimal configuration for better compatibility
         marked.setOptions({
-          breaks: true,
-          gfm: true,
+          breaks: true,  // Convert line breaks to <br>
+          gfm: true,     // GitHub flavored markdown
+          pedantic: false,
+          headerIds: true,
+          mangle: false
         });
         
-        // Parse the markdown to HTML
-        const parsedHtml = marked.parse(guest.backgroundResearch);
+        // Parse the markdown
+        const htmlContent = marked.parse(guest.backgroundResearch);
         
-        // Ensure we're getting a string (not a Promise)
-        if (typeof parsedHtml === 'string') {
-          setParsedResearch(parsedHtml);
-          console.log('Parsed HTML excerpt:', parsedHtml.slice(0, 100) + '...');
+        if (typeof htmlContent === 'string') {
+          console.log('Successfully parsed markdown to HTML');
+          setParsedResearch(htmlContent);
         } else {
-          // Handle the case where marked returns a Promise
-          console.error('Marked returned a Promise instead of a string');
-          // Parse the raw markdown as plain text with simple line break conversion
-          setParsedResearch(guest.backgroundResearch.replace(/\n/g, '<br />'));
+          console.error('Marked returned unexpected type:', typeof htmlContent);
+          // Fallback handling if marked returns a Promise
+          const fallbackHtml = guest.backgroundResearch
+            .replace(/\n\n/g, '</p><p>') // Convert double line breaks to paragraph breaks
+            .replace(/\n/g, '<br>') // Convert single line breaks to <br>
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+            .replace(/^### (.*?)$/gm, '<h3>$1</h3>') // h3 headings
+            .replace(/^## (.*?)$/gm, '<h2>$1</h2>') // h2 headings
+            .replace(/^# (.*?)$/gm, '<h1>$1</h1>'); // h1 headings
+          
+          setParsedResearch(`<p>${fallbackHtml}</p>`);
         }
       } catch (error) {
         console.error('Error parsing markdown:', error);
-        // Fallback to raw content with line breaks if parsing fails
-        setParsedResearch(guest.backgroundResearch.replace(/\n/g, '<br />'));
+        
+        // More sophisticated fallback that handles the most common markdown
+        const fallbackHtml = guest.backgroundResearch
+          .replace(/\n\n/g, '</p><p>') // Convert double line breaks to paragraph breaks
+          .replace(/\n/g, '<br>') // Convert single line breaks to <br>
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+          .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+          .replace(/^### (.*?)$/gm, '<h3>$1</h3>') // h3 headings
+          .replace(/^## (.*?)$/gm, '<h2>$1</h2>') // h2 headings
+          .replace(/^# (.*?)$/gm, '<h1>$1</h1>'); // h1 headings
+        
+        setParsedResearch(`<p>${fallbackHtml}</p>`);
       }
     } else {
       setParsedResearch('');

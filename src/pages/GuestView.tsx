@@ -44,6 +44,23 @@ const GuestView = () => {
     };
   }, [id, location.pathname, refreshGuests]);
   
+  useEffect(() => {
+    // Log the guest background research for debugging
+    if (guest?.backgroundResearch) {
+      console.log('Guest background research format check:');
+      console.log('First 100 chars:', guest.backgroundResearch.slice(0, 100));
+      
+      // Check if it starts with markdown headers
+      if (guest.backgroundResearch.startsWith('#')) {
+        console.log('Content appears to be markdown (starts with #)');
+      } else if (guest.backgroundResearch.startsWith('<')) {
+        console.log('Content appears to be HTML (starts with <)');
+      } else {
+        console.log('Content format is indeterminate');
+      }
+    }
+  }, [guest]);
+  
   if (isLoading) {
     return <GuestViewLoading />;
   }
