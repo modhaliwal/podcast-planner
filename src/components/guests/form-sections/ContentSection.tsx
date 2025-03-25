@@ -50,33 +50,50 @@ export function ContentSection({
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [isGeneratingResearch, setIsGeneratingResearch] = useState(false);
 
+  // Helper function to get social links from the form
+  const getSocialLinks = () => {
+    const socialLinks = {
+      twitter: form.getValues('twitter'),
+      facebook: form.getValues('facebook'),
+      linkedin: form.getValues('linkedin'),
+      instagram: form.getValues('instagram'),
+      tiktok: form.getValues('tiktok'),
+      youtube: form.getValues('youtube'),
+      website: form.getValues('website'),
+    };
+
+    // Filter out empty social links
+    return Object.fromEntries(
+      Object.entries(socialLinks).filter(([_, url]) => url)
+    );
+  };
+
+  // Helper function to validate required fields
+  const validateRequiredFields = () => {
+    const name = form.getValues('name');
+    const title = form.getValues('title');
+    
+    if (!name || !title) {
+      toast.warning("Please provide at least a name and title to generate content");
+      return false;
+    }
+    return true;
+  };
+
   const generateBio = async () => {
     setIsGeneratingBio(true);
     try {
+      if (!validateRequiredFields()) {
+        setIsGeneratingBio(false);
+        return;
+      }
+      
       const name = form.getValues('name');
       const title = form.getValues('title');
       const company = form.getValues('company');
       
-      if (!name || !title) {
-        toast.warning("Please provide at least a name and title to generate a bio");
-        return;
-      }
-      
       // Get social links from the form
-      const socialLinks = {
-        twitter: form.getValues('twitter'),
-        facebook: form.getValues('facebook'),
-        linkedin: form.getValues('linkedin'),
-        instagram: form.getValues('instagram'),
-        tiktok: form.getValues('tiktok'),
-        youtube: form.getValues('youtube'),
-        website: form.getValues('website'),
-      };
-
-      // Filter out empty social links
-      const filteredSocialLinks = Object.fromEntries(
-        Object.entries(socialLinks).filter(([_, url]) => url)
-      );
+      const filteredSocialLinks = getSocialLinks();
 
       toast.info("Generating bio from online presence...");
       
@@ -87,6 +104,7 @@ export function ContentSection({
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-bio', {
         body: {
+          type: 'bio',
           name,
           title,
           company,
@@ -129,12 +147,57 @@ export function ContentSection({
   const generateBackgroundResearch = async () => {
     setIsGeneratingResearch(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!validateRequiredFields()) {
+        setIsGeneratingResearch(false);
+        return;
+      }
       
       const name = form.getValues('name');
       const title = form.getValues('title');
+      const company = form.getValues('company');
       
-      const generatedResearch = `<h3>Research findings for ${name}:</h3>
+      // Get social links from the form
+      const filteredSocialLinks = getSocialLinks();
+
+      toast.info("Generating research from online presence...");
+      
+      if (Object.keys(filteredSocialLinks).length === 0) {
+        toast.warning("No social links provided. Using basic information only.");
+      }
+      
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('generate-bio', {
+        body: {
+          type: 'research',
+          name,
+          title,
+          company,
+          socialLinks: filteredSocialLinks
+        }
+      });
+      
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw new Error(error.message || "Supabase function error");
+      }
+      
+      if (data && data.research) {
+        setBackgroundResearch(data.research);
+        toast.success("Background research generated successfully");
+      } else if (data && data.error) {
+        throw new Error(data.error);
+      } else {
+        throw new Error("No research returned from API");
+      }
+    } catch (error: any) {
+      console.error("Error generating research:", error);
+      toast.error(`Failed to generate research: ${error.message || "Unknown error"}`);
+      
+      // Fallback to simple research generation if AI fails
+      const name = form.getValues('name');
+      const title = form.getValues('title');
+      
+      const fallbackResearch = `<h3>Research findings for ${name}:</h3>
       
 <ol>
   <li><strong>Educational background:</strong> Graduated with honors in relevant field.</li>
@@ -154,11 +217,8 @@ export function ContentSection({
   <li>Their vision for the future of their field</li>
 </ul>`;
       
-      setBackgroundResearch(generatedResearch);
-      toast.success("Background research generated successfully");
-    } catch (error) {
-      toast.error("Failed to generate background research");
-      console.error(error);
+      setBackgroundResearch(fallbackResearch);
+      toast.info("Used fallback research generator");
     } finally {
       setIsGeneratingResearch(false);
     }
@@ -207,7 +267,7 @@ export function ContentSection({
           disabled={isGeneratingResearch}
         >
           <Sparkles className="h-4 w-4 mr-1" />
-          {isGeneratingResearch ? 'Generating...' : 'Generate Research'}
+          {isGeneratingResearch ? 'Generating from links...' : 'Generate Research'}
         </Button>
       </div>
       <div className="border rounded-md">

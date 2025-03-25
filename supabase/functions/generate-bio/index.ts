@@ -17,8 +17,10 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { name, title, company, socialLinks } = await req.json();
-    console.log(`Generating bio for ${name}, ${title} at ${company}`);
+    const requestData = await req.json();
+    const { type = 'bio', name, title, company, socialLinks } = requestData;
+    
+    console.log(`Processing ${type} request for ${name}, ${title} at ${company}`);
     console.log("Social links:", JSON.stringify(socialLinks));
 
     if (!openAIApiKey) {
@@ -32,20 +34,39 @@ serve(async (req) => {
       );
     }
 
+    if (!name || !title) {
+      console.error("Missing required fields: name and title");
+      return new Response(
+        JSON.stringify({ error: "Name and title are required" }), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+
     // Extract content from the provided links
     const extractedContent = await extractContentFromLinks(socialLinks);
-    console.log("Successfully extracted content from links");
+    console.log("Extracted content from links");
 
-    // Generate bio using OpenAI
-    const bio = await generateBioWithOpenAI(name, title, company, extractedContent);
-    
-    // Return the generated bio
-    return new Response(JSON.stringify({ bio }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    let result;
+    if (type === 'research') {
+      // Generate research using OpenAI
+      result = await generateResearchWithOpenAI(name, title, company, extractedContent);
+      return new Response(JSON.stringify({ research: result }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    } else {
+      // Default: Generate bio using OpenAI
+      result = await generateBioWithOpenAI(name, title, company, extractedContent);
+      return new Response(JSON.stringify({ bio: result }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
   } catch (error) {
-    console.error("Error generating bio:", error);
+    console.error("Error generating content:", error);
     return new Response(JSON.stringify({ error: error.message || "Unknown error occurred" }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
@@ -158,5 +179,79 @@ async function generateBioWithOpenAI(
   } catch (error) {
     console.error("Error calling OpenAI:", error);
     throw new Error(`Failed to generate bio with AI: ${error.message}`);
+  }
+}
+
+async function generateResearchWithOpenAI(
+  name: string, 
+  title: string, 
+  company: string | undefined,
+  extractedContent: string
+) {
+  if (!openAIApiKey) {
+    throw new Error("OpenAI API key is not configured.");
+  }
+
+  const companyInfo = company ? `at ${company}` : "";
+  
+  try {
+    console.log("Calling OpenAI API to generate research");
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${openAIApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // Using a smaller model to keep costs lower
+        messages: [
+          {
+            role: "system",
+            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews."
+          },
+          {
+            role: "user",
+            content: `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
+            
+            Format the output as HTML with proper headings (h3), lists (ul/ol), and structure.
+            
+            Include the following sections:
+            - Educational background and career journey
+            - Notable accomplishments and expertise areas
+            - Previous media appearances and speaking style
+            - Recent projects or publications
+            - Social media presence and online engagement
+            - Recommended topics to explore in the interview
+            
+            Here's information extracted from their online presence to help you:
+            
+            ${extractedContent}
+            
+            Create a comprehensive but scannable research document that will help the podcast host prepare for a great interview.`
+          }
+        ],
+        max_tokens: 800,
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error("OpenAI API error:", data.error);
+      throw new Error(`OpenAI API error: ${data.error.message || data.error}`);
+    }
+    
+    // Extract the generated research from the completion
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error("Unexpected response format from OpenAI:", data);
+      throw new Error("Unexpected response format from OpenAI");
+    }
+    
+    const generatedResearch = data.choices[0].message.content.trim();
+    console.log("Successfully generated research with OpenAI");
+    return generatedResearch;
+  } catch (error) {
+    console.error("Error calling OpenAI for research:", error);
+    throw new Error(`Failed to generate research with AI: ${error.message}`);
   }
 }
