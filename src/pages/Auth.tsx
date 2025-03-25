@@ -29,11 +29,6 @@ export default function Auth() {
       setSession(session);
     });
 
-    // Auto sign-in for development mode
-    if (isDevelopment && !session) {
-      handleDevSignIn();
-    }
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -49,45 +44,39 @@ export default function Auth() {
     try {
       setLoading(true);
       
-      // Use this simpler approach for development mode
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'mo@skyrocket.is',
-        password: 'dev-mode-password'
-      });
-      
-      if (error) {
-        console.log("Falling back to manual session creation");
-        
-        // Create a simplified fake session
-        const fakeUser = {
-          id: "00000000-0000-0000-0000-000000000000",
-          email: "mo@skyrocket.is",
-          user_metadata: {
-            full_name: "Mo Dhaliwal",
-            avatar_url: "https://via.placeholder.com/150"
-          },
-          aud: "authenticated",
-          created_at: new Date().toISOString()
+      // When in development, we'll bypass the normal authentication
+      // by directly creating a development session in localStorage
+      if (isDevelopment) {
+        // For development, we'll create a fake user and session
+        const fakeDevSession = {
+          // Create a minimal valid session structure
+          access_token: "fake-dev-token",
+          refresh_token: "fake-dev-refresh-token",
+          user: {
+            id: "dev-user-id",
+            email: "mo@skyrocket.is",
+            user_metadata: {
+              full_name: "Mo Dhaliwal",
+              avatar_url: "https://via.placeholder.com/150"
+            }
+          }
         };
         
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: "fake-token",
-          refresh_token: "fake-refresh-token"
-        });
+        // Store the fake session in localStorage directly
+        localStorage.setItem('supabase.auth.token', JSON.stringify({
+          currentSession: fakeDevSession
+        }));
         
-        if (sessionError) {
-          console.error("Error setting dev session:", sessionError);
-          toast.error("Development sign-in failed. Please try again.");
-          setLoading(false);
-        } else {
-          toast.success("Development mode: Signed in as mo@skyrocket.is");
-        }
-      } else {
+        // Force refresh the page to apply the new session
+        window.location.href = from;
+        
         toast.success("Development mode: Signed in as mo@skyrocket.is");
+        return;
       }
     } catch (error) {
       console.error("Dev mode sign in error:", error);
       toast.error("An unexpected error occurred during development sign-in");
+    } finally {
       setLoading(false);
     }
   }

@@ -11,7 +11,13 @@ export function useAuthRedirect(redirectAuthenticatedTo?: string) {
   useEffect(() => {
     if (loading) return;
 
-    if (!user) {
+    // Check for development mode user in localStorage if no actual user
+    const isDevelopment = import.meta.env.DEV;
+    const hasDevUser = isDevelopment && 
+      localStorage.getItem('supabase.auth.token') && 
+      JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.currentSession?.user;
+    
+    if (!user && !hasDevUser) {
       // If not authenticated and we need auth, redirect to login
       if (!redirectAuthenticatedTo) {
         toast.error("Please sign in to access this page");
@@ -23,5 +29,14 @@ export function useAuthRedirect(redirectAuthenticatedTo?: string) {
     }
   }, [user, loading, navigate, redirectAuthenticatedTo]);
 
-  return { isAuthenticated: !!user, isLoading: loading };
+  // Check for dev user in development mode
+  const isDevelopment = import.meta.env.DEV;
+  const hasDevUser = isDevelopment && 
+    localStorage.getItem('supabase.auth.token') && 
+    JSON.parse(localStorage.getItem('supabase.auth.token') || '{}')?.currentSession?.user;
+  
+  return { 
+    isAuthenticated: !!user || !!hasDevUser, 
+    isLoading: loading 
+  };
 }
