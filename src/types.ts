@@ -23,6 +23,7 @@ export interface Guest {
   imageUrl?: string;
   socialLinks: SocialLinks;
   notes?: string;
+  backgroundResearch?: string;  // Re-adding this field
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;
   updatedAt: string;

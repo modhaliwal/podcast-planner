@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ interface GuestFormProps {
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
   const [notes, setNotes] = useState(guest.notes || "");
+  const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +83,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         phone: data.phone || undefined,
         bio: data.bio,
         notes: notes || undefined,
+        backgroundResearch: backgroundResearch || undefined,
         status: data.status,
         imageUrl: imageUrl as string | undefined,
         socialLinks: {
@@ -130,6 +131,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
             form={form}
             notes={notes}
             setNotes={setNotes}
+            backgroundResearch={backgroundResearch}
+            setBackgroundResearch={setBackgroundResearch}
           />
 
           <div className="flex justify-end space-x-2 pt-4 border-t">
