@@ -57,6 +57,11 @@ export function ContentSection({
       const title = form.getValues('title');
       const company = form.getValues('company');
       
+      if (!name || !title) {
+        toast.warning("Please provide at least a name and title to generate a bio");
+        return;
+      }
+      
       // Get social links from the form
       const socialLinks = {
         twitter: form.getValues('twitter'),
@@ -91,7 +96,7 @@ export function ContentSection({
       
       if (error) {
         console.error("Supabase function error:", error);
-        throw new Error(error.message);
+        throw new Error(error.message || "Supabase function error");
       }
       
       if (data && data.bio) {

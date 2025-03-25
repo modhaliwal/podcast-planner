@@ -21,6 +21,17 @@ serve(async (req) => {
     console.log(`Generating bio for ${name}, ${title} at ${company}`);
     console.log("Social links:", JSON.stringify(socialLinks));
 
+    if (!openAIApiKey) {
+      console.error("OpenAI API key is not configured");
+      return new Response(
+        JSON.stringify({ error: "OpenAI API key is not configured" }), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+
     // Extract content from the provided links
     const extractedContent = await extractContentFromLinks(socialLinks);
     console.log("Successfully extracted content from links");
@@ -35,7 +46,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Error generating bio:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error.message || "Unknown error occurred" }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
@@ -57,8 +68,12 @@ async function extractContentFromLinks(socialLinks: Record<string, string>) {
     for (const link of linksToProcess) {
       try {
         // Fetch the content from the link
+        console.log(`Fetching content from ${link}`);
         const response = await fetch(link);
-        if (!response.ok) continue;
+        if (!response.ok) {
+          console.log(`Failed to fetch ${link}: ${response.status}`);
+          continue;
+        }
         
         const html = await response.text();
         
@@ -95,6 +110,7 @@ async function generateBioWithOpenAI(
   const companyInfo = company ? `at ${company}` : "";
   
   try {
+    console.log("Calling OpenAI API to generate bio");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -127,14 +143,20 @@ async function generateBioWithOpenAI(
     
     if (data.error) {
       console.error("OpenAI API error:", data.error);
-      throw new Error(`OpenAI API error: ${data.error.message}`);
+      throw new Error(`OpenAI API error: ${data.error.message || data.error}`);
     }
     
     // Extract the generated bio from the completion
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error("Unexpected response format from OpenAI:", data);
+      throw new Error("Unexpected response format from OpenAI");
+    }
+    
     const generatedBio = data.choices[0].message.content.trim();
+    console.log("Successfully generated bio with OpenAI");
     return generatedBio;
   } catch (error) {
     console.error("Error calling OpenAI:", error);
-    throw new Error("Failed to generate bio with AI.");
+    throw new Error(`Failed to generate bio with AI: ${error.message}`);
   }
 }
