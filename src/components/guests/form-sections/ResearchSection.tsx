@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
@@ -8,7 +8,6 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { marked } from "marked";
 
 interface ResearchSectionProps {
   form: UseFormReturn<any>;
@@ -43,6 +42,54 @@ export function ResearchSection({
   isGeneratingResearch = false,
   setIsGeneratingResearch = () => {}
 }: ResearchSectionProps) {
+  // State to store HTML content for ReactQuill
+  const [editorContent, setEditorContent] = useState('');
+
+  // Effect to convert markdown to HTML when backgroundResearch changes
+  useEffect(() => {
+    if (backgroundResearch) {
+      try {
+        import('marked').then(({ marked }) => {
+          marked.setOptions({
+            breaks: true,
+            gfm: true,
+            pedantic: false,
+          });
+          
+          // Create a version of the parser that returns promises
+          const parseMarkdown = async () => {
+            try {
+              const html = await marked.parse(backgroundResearch);
+              setEditorContent(html);
+            } catch (error) {
+              console.error('Error parsing markdown for editor:', error);
+              // Fallback to basic conversion
+              const fallbackHtml = basicMarkdownToHtml(backgroundResearch);
+              setEditorContent(fallbackHtml);
+            }
+          };
+          
+          parseMarkdown();
+        });
+      } catch (error) {
+        console.error('Error importing marked:', error);
+        // Fallback if marked import fails
+        const fallbackHtml = basicMarkdownToHtml(backgroundResearch);
+        setEditorContent(fallbackHtml);
+      }
+    } else {
+      setEditorContent('');
+    }
+  }, [backgroundResearch]);
+
+  // Handle editor content change
+  const handleEditorChange = (content: string) => {
+    setEditorContent(content);
+    
+    // Convert HTML back to markdown for storage
+    // This is simplified - in a real implementation, you might need a more robust HTML-to-markdown converter
+    setBackgroundResearch(content);
+  };
 
   // Get social links from the form
   const getSocialLinks = () => {
@@ -72,34 +119,6 @@ export function ResearchSection({
       return false;
     }
     return true;
-  };
-
-  // Convert markdown to HTML for the editor
-  const convertMarkdownToHtml = (markdown: string): string => {
-    // Use the marked library to convert markdown to HTML
-    try {
-      marked.setOptions({
-        breaks: true,
-        gfm: true,
-        pedantic: false
-      });
-      
-      // Get the result, which could be a string or Promise<string>
-      const result = marked.parse(markdown);
-      
-      // If it's a promise, we shouldn't be here (this function should be used in a sync context)
-      if (result instanceof Promise) {
-        console.warn("Unexpected Promise result in synchronous context");
-        // Return basic conversion as fallback
-        return basicMarkdownToHtml(markdown);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error("Error converting markdown to HTML:", error);
-      // Fallback to basic conversion
-      return basicMarkdownToHtml(markdown);
-    }
   };
   
   // Basic markdown to HTML converter as fallback
@@ -229,8 +248,8 @@ Active on professional platforms with substantial following.
       </div>
       <div className="border rounded-md">
         <ReactQuill 
-          value={backgroundResearch} 
-          onChange={setBackgroundResearch} 
+          value={editorContent} 
+          onChange={handleEditorChange} 
           modules={quillModules}
           formats={quillFormats}
           placeholder="Research information about this guest"
