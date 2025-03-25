@@ -70,9 +70,15 @@ export default function Auth() {
       
       // Manually trigger the auth state change
       // This will be caught by the onAuthStateChange listener above
-      await supabase.auth.setSession(fakeSession);
+      const { error } = await supabase.auth.setSession(fakeSession);
       
-      toast.success("Development mode: Signed in as mo@skyrocket.is");
+      if (error) {
+        console.error("Error setting dev session:", error);
+        toast.error("Development sign-in failed. Please try again.");
+        setLoading(false);
+      } else {
+        toast.success("Development mode: Signed in as mo@skyrocket.is");
+      }
     } catch (error) {
       console.error("Dev mode sign in error:", error);
       toast.error("An unexpected error occurred during development sign-in");
