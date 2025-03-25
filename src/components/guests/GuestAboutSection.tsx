@@ -22,7 +22,9 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
         setParsedResearch(guest.backgroundResearch);
       } else {
         // If it's markdown, convert it to HTML
-        setParsedResearch(marked.parse(guest.backgroundResearch));
+        // Use the synchronous version to avoid Promise issues
+        const parsedHtml = marked.parse(guest.backgroundResearch, { async: false }) as string;
+        setParsedResearch(parsedHtml);
       }
     }
   }, [guest.backgroundResearch]);
