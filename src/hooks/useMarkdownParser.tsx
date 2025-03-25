@@ -19,16 +19,22 @@ export function useMarkdownParser(markdown: string | undefined) {
         pedantic: false
       });
       
-      // Convert markdown to HTML
-      marked.parse(markdown, (err, result) => {
-        if (err) {
-          console.error('Error parsing markdown:', err);
-          useFallbackParser(markdown, setParsedHtml);
-          return;
-        }
-        
+      // Convert markdown to HTML (synchronous version)
+      const result = marked.parse(markdown);
+      
+      // Handle the result which might be a Promise or a string
+      if (result instanceof Promise) {
+        // If it's a Promise, handle it asynchronously
+        result
+          .then(html => setParsedHtml(html))
+          .catch(error => {
+            console.error('Error parsing markdown (async):', error);
+            useFallbackParser(markdown, setParsedHtml);
+          });
+      } else {
+        // If it's a string, set it directly
         setParsedHtml(result);
-      });
+      }
     } catch (error) {
       console.error('Error parsing markdown:', error);
       useFallbackParser(markdown, setParsedHtml);

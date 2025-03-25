@@ -8,6 +8,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { marked } from "marked";
 
 interface ResearchSectionProps {
   form: UseFormReturn<any>;
@@ -83,20 +84,34 @@ export function ResearchSection({
         pedantic: false
       });
       
-      // Synchronous parsing is okay here since we're doing this in a handler
-      return marked.parse(markdown) as string;
+      // Get the result, which could be a string or Promise<string>
+      const result = marked.parse(markdown);
+      
+      // If it's a promise, we shouldn't be here (this function should be used in a sync context)
+      if (result instanceof Promise) {
+        console.warn("Unexpected Promise result in synchronous context");
+        // Return basic conversion as fallback
+        return basicMarkdownToHtml(markdown);
+      }
+      
+      return result;
     } catch (error) {
       console.error("Error converting markdown to HTML:", error);
       // Fallback to basic conversion
-      return markdown
-        .replace(/\n\n/g, '<p></p>')
-        .replace(/\n/g, '<br>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
-        .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
-        .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+      return basicMarkdownToHtml(markdown);
     }
+  };
+  
+  // Basic markdown to HTML converter as fallback
+  const basicMarkdownToHtml = (markdown: string): string => {
+    return markdown
+      .replace(/\n\n/g, '<p></p>')
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.*?)$/gm, '<h1>$1</h1>');
   };
 
   const generateBackgroundResearch = async () => {
@@ -139,7 +154,7 @@ export function ResearchSection({
       if (data?.research) {
         console.log("Received research from API:", data.research.substring(0, 100) + "...");
         
-        // Convert markdown to HTML and set it
+        // Store the markdown directly
         setBackgroundResearch(data.research);
         toast.success("Background research generated successfully");
       } else if (data?.error) {
@@ -226,6 +241,3 @@ Active on professional platforms with substantial following.
     </div>
   );
 }
-
-// Import marked here to avoid TypeScript errors with the import
-import { marked } from 'marked';
