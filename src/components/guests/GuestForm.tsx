@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -53,7 +52,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       console.log("Setting image preview URL:", previewUrl);
       setImagePreviewUrl(previewUrl);
     } else if (file === null) {
-      // Image was explicitly removed
       setImagePreviewUrl(undefined);
     }
   };
@@ -62,18 +60,14 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Handle image URL logic
       let imageUrl = guest.imageUrl;
       
-      // Case 1: New image uploaded (File selected)
       if (imageFile) {
         toast.info("Uploading image...");
         
-        // Upload the image
         const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
         
         if (uploadedUrl) {
-          // If there was a previous image, try to delete it
           if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
             await deleteImage(imageUrl);
           }
@@ -84,15 +78,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           toast.error("Failed to upload image");
         }
       } 
-      // Case 2: Image removed (null set by removeImage)
       else if (isImageRemoved) {
-        imageUrl = null; // Use null to explicitly set NULL in database
-      }
-      // Case 3: No change to image
-      
-      // Clean up blob URLs
-      if (imagePreviewUrl && isBlobUrl(imagePreviewUrl)) {
-        URL.revokeObjectURL(imagePreviewUrl);
+        imageUrl = null;
       }
       
       const updatedGuest: Guest = {
