@@ -8,9 +8,6 @@ import { useEpisodesData } from "@/hooks/useEpisodesData";
 import { User as AppUser } from "@/lib/types";
 import { getCurrentUserProfile } from "@/services/userService";
 
-// Check if we're in development mode
-const isDevelopment = import.meta.env.DEV;
-
 type AuthContextType = {
   session: Session | null;
   user: User | null;
@@ -48,38 +45,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Check for dev mode session first
-    if (isDevelopment) {
-      const devSessionData = localStorage.getItem('supabase.auth.token');
-      if (devSessionData) {
-        try {
-          const parsedData = JSON.parse(devSessionData);
-          const devSession = parsedData?.currentSession;
-          
-          if (devSession?.user) {
-            console.log("Development mode: Using fake session");
-            setSession(devSession as Session);
-            setUser(devSession.user as User);
-            setAppUser({
-              id: devSession.user.id,
-              full_name: devSession.user.user_metadata?.full_name || "Dev User",
-              avatar_url: devSession.user.user_metadata?.avatar_url || "",
-              email: devSession.user.email,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
-            setLoading(false);
-            refreshGuests();
-            refreshEpisodes();
-            return;
-          }
-        } catch (error) {
-          console.error("Error parsing dev session:", error);
-        }
-      }
-    }
-
-    // Normal auth flow if no dev session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
@@ -123,11 +88,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       setAppUser(null);
-      
-      // If in dev mode with fake session, clear localStorage
-      if (isDevelopment && localStorage.getItem('supabase.auth.token')) {
-        localStorage.removeItem('supabase.auth.token');
-      }
       
       const { error } = await supabase.auth.signOut();
       
