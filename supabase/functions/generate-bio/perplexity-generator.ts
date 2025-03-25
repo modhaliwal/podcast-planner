@@ -51,7 +51,7 @@ export async function generateResearchWithPerplexity(
           }
         ],
         temperature: 0.2,
-        max_tokens: 1000,
+        max_tokens: 1500,
         return_images: false,
         return_related_questions: false,
       }),
