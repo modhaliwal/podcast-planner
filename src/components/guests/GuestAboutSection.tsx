@@ -15,14 +15,19 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
   useEffect(() => {
     if (guest.backgroundResearch) {
       try {
-        // Ensure the content is properly parsed
-        const parsedHtml = marked.parse(guest.backgroundResearch, { 
-          async: false,
-          breaks: true,
-          gfm: true
-        }) as string;
+        // Configure marked with proper rendering options
+        marked.setOptions({
+          breaks: true,      // Convert line breaks to <br>
+          gfm: true,         // Enable GitHub flavored markdown
+          headerIds: true,   // Enable header IDs for linking
+          mangle: false      // Don't mangle header IDs
+        });
         
-        setParsedResearch(parsedHtml);
+        // Parse the markdown to HTML
+        const parsedHtml = marked.parse(guest.backgroundResearch);
+        console.log('Parsed HTML:', parsedHtml.substring(0, 200) + '...'); // Debug log
+        
+        setParsedResearch(parsedHtml as string);
       } catch (error) {
         console.error('Error parsing markdown:', error);
         // Fallback to raw content if parsing fails
