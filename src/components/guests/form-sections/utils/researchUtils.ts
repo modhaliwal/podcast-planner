@@ -1,4 +1,3 @@
-
 import { marked } from "marked";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +12,7 @@ export const convertMarkdownToHtml = async (markdown: string): Promise<string> =
       breaks: true,
       gfm: true,
       pedantic: false,
-      headerIds: false
+      // Remove headerIds property as it doesn't exist in MarkedOptions type
     });
     
     const html = await marked.parse(markdown);
