@@ -1,7 +1,8 @@
 
 import { corsHeaders, validateRequestData } from "./utils.ts";
 import { extractContentFromLinks } from "./content-extraction.ts";
-import { generateBioWithOpenAI, generateResearchWithOpenAI } from "./openai-generator.ts";
+import { generateBioWithOpenAI } from "./openai-generator.ts";
+import { generateResearchWithPerplexity } from "./perplexity-generator.ts";
 
 export async function handleRequest(req: Request) {
   try {
@@ -18,8 +19,8 @@ export async function handleRequest(req: Request) {
 
     let result;
     if (type === 'research') {
-      // Generate research using OpenAI
-      result = await generateResearchWithOpenAI(name, title, company, extractedContent);
+      // Generate research using Perplexity
+      result = await generateResearchWithPerplexity(name, title, company, extractedContent);
       return new Response(JSON.stringify({ research: result }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

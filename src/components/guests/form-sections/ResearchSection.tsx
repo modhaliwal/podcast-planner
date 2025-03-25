@@ -93,7 +93,7 @@ export function ResearchSection({
       // Get social links from the form
       const filteredSocialLinks = getSocialLinks();
 
-      toast.info("Generating research from online presence...");
+      toast.info("Generating research with Perplexity AI...");
       
       if (Object.keys(filteredSocialLinks).length === 0) {
         toast.warning("No social links provided. Using basic information only.");
@@ -170,7 +170,7 @@ export function ResearchSection({
           disabled={isGeneratingResearch}
         >
           <Sparkles className="h-4 w-4 mr-1" />
-          {isGeneratingResearch ? 'Generating from links...' : 'Generate Research'}
+          {isGeneratingResearch ? 'Generating with Perplexity...' : 'Generate Research'}
         </Button>
       </div>
       <div className="border rounded-md">

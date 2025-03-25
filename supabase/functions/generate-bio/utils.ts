@@ -14,6 +14,15 @@ export function validateApiKey() {
   return openAIApiKey;
 }
 
+// Validate that Perplexity API key is set
+export function validatePerplexityApiKey() {
+  const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+  if (!perplexityApiKey) {
+    throw new Error("Perplexity API key is not configured");
+  }
+  return perplexityApiKey;
+}
+
 // Validate request data contains required fields
 export function validateRequestData(data: any) {
   const { type = 'bio', name, title } = data;
