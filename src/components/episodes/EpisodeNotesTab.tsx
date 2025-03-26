@@ -1,18 +1,19 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { BookText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Episode, ContentVersion } from '@/lib/types';
-import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
+import { Episode } from '@/lib/types';
 import { NotesVersionsProvider, useNotesVersions } from '@/contexts/NotesVersionsContext';
+import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
 
 interface EpisodeNotesContentProps {
   notes: string;
 }
 
 function EpisodeNotesContent({ notes }: EpisodeNotesContentProps) {
-  const { versions, versionSelectorProps } = useNotesVersions();
+  const { versionSelectorProps } = useNotesVersions();
+  const { versions } = versionSelectorProps;
   
   return (
     <Card className="shadow-sm border-slate-200 dark:border-slate-700">
@@ -52,24 +53,17 @@ interface EpisodeNotesTabProps {
 }
 
 export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
-  const [notes, setNotes] = useState<string>(episode.notes || '');
-  
-  // Create a mock form for the content versions hook
+  // Create a form-like object to work with NotesVersionsProvider
   const mockForm = {
     getValues: (field: string) => {
-      if (field === 'notes') return notes;
+      if (field === 'notes') return episode.notes || '';
       if (field === 'notesVersions') return episode.notesVersions || [];
       return null;
     },
-    setValue: (field: string, value: any) => {
-      if (field === 'notes') setNotes(value);
+    setValue: () => {
+      // No-op as this is read-only view
     }
   };
-  
-  // Update notes if episode changes
-  useEffect(() => {
-    setNotes(episode.notes || '');
-  }, [episode]);
   
   return (
     <NotesVersionsProvider
@@ -77,7 +71,7 @@ export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
       fieldName="notes"
       versionsFieldName="notesVersions"
     >
-      <EpisodeNotesContent notes={notes} />
+      <EpisodeNotesContent notes={episode.notes || ''} />
     </NotesVersionsProvider>
   );
 }
