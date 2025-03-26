@@ -2,25 +2,34 @@
 import { useState, useEffect } from "react";
 import { Editor } from "@/components/editor/Editor";
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useFormContext } from "react-hook-form";
-import { ContentVersion } from "@/lib/types";
+import { useFormContext, UseFormReturn } from "react-hook-form";
+import { ContentVersion, Guest } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { EpisodeFormValues } from "../../EpisodeFormSchema";
+
+interface NotesFieldProps {
+  editMode?: boolean;
+  label?: string;
+  placeholder?: string;
+  form?: UseFormReturn<EpisodeFormValues>;
+  guests?: Guest[];
+}
 
 export function NotesField({
   editMode = true,
   label = "Episode Notes",
   placeholder = "Add episode notes here...",
-}: {
-  editMode?: boolean;
-  label?: string;
-  placeholder?: string;
-}) {
-  const form = useFormContext();
+  form: formProp,
+  guests = [],
+}: NotesFieldProps) {
+  const formContext = useFormContext();
+  const form = formProp || formContext;
+  
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   const [versions, setVersions] = useState<ContentVersion[]>([]);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
@@ -128,7 +137,8 @@ export function NotesField({
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
         body: {
-          episode: episodeData
+          episode: episodeData,
+          guests: guests
         }
       });
       
