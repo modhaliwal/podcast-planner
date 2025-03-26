@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
-import { VersionSelector } from "../VersionSelector";
 
 interface VersionManagerProps {
   content: string;
@@ -30,23 +29,35 @@ export function VersionManager({
   const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
   const [versionCreatedSinceFormOpen, setVersionCreatedSinceFormOpen] = useState<boolean>(false);
 
-  // Ensure all versions have version numbers
+  // Ensure all versions have version numbers and active flag
   useEffect(() => {
-    if (versions.length > 0 && versions.some(v => v.versionNumber === undefined)) {
-      // Add sequential version numbers to versions that don't have them
-      const versionsWithNumbers = [...versions].sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      ).map((v, index) => ({
-        ...v,
-        versionNumber: v.versionNumber || (index + 1)
-      }));
+    if (versions.length > 0) {
+      const needsUpdate = versions.some(v => 
+        v.versionNumber === undefined || v.active === undefined
+      );
       
-      onVersionsChange(versionsWithNumbers);
+      if (needsUpdate) {
+        // Sort versions by timestamp (oldest first)
+        const sortedVersions = [...versions].sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+        
+        // Add sequential version numbers and ensure active flag exists
+        const versionsWithUpdates = sortedVersions.map((v, index) => ({
+          ...v,
+          versionNumber: v.versionNumber || (index + 1),
+          active: v.active || false
+        }));
+        
+        onVersionsChange(versionsWithUpdates);
+      }
     }
   }, [versions, onVersionsChange]);
 
+  // Initialize the active version and content
   useEffect(() => {
     if (versions.length === 0 && content) {
+      // Create initial version if none exists
       const initialVersion: ContentVersion = {
         id: uuidv4(),
         content: content,
@@ -73,7 +84,7 @@ export function VersionManager({
         );
         
         // Update all versions to set the first one as active
-        const updatedVersions = versions.map((v, i) => ({
+        const updatedVersions = versions.map(v => ({
           ...v,
           active: v.id === sortedVersions[0].id
         }));
@@ -86,12 +97,14 @@ export function VersionManager({
     }
   }, [versions, content, onVersionsChange, activeVersionId, onContentChange]);
 
+  // Track content changes
   useEffect(() => {
     if (content !== previousContent) {
       setHasChangedSinceLastSave(true);
     }
   }, [content, previousContent]);
 
+  // Function to select a specific version
   const selectVersion = (version: ContentVersion) => {
     // Update all versions to set the selected one as active
     const updatedVersions = versions.map(v => ({
@@ -106,6 +119,7 @@ export function VersionManager({
     setHasChangedSinceLastSave(false);
   };
 
+  // Function to clear all versions and create a new one with current content
   const handleClearAllVersions = () => {
     // Create a single active version with current content
     const newVersion: ContentVersion = {
@@ -126,6 +140,7 @@ export function VersionManager({
     setVersionCreatedSinceFormOpen(false);
   };
 
+  // Function to save the current content as a new version
   const saveCurrentVersion = () => {
     if (!content.trim()) return;
     if (content === previousContent) return;
@@ -160,12 +175,14 @@ export function VersionManager({
     return newVersion;
   };
 
+  // Function to handle editor blur event
   const handleEditorBlur = () => {
     if (hasChangedSinceLastSave && content !== previousContent && content.trim() && !versionCreatedSinceFormOpen) {
       saveCurrentVersion();
     }
   };
 
+  // Function to add an AI-generated version
   const addAIVersion = (newContent: string) => {
     // Calculate next version number
     const nextVersionNumber = findHighestVersionNumber(versions) + 1;

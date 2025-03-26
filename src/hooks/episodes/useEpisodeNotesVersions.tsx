@@ -37,6 +37,7 @@ export function useEpisodeNotesVersions({
           content: currentContent,
           timestamp: new Date().toISOString(),
           source: 'manual',
+          active: true,
           versionNumber: 1
         };
         
@@ -47,20 +48,30 @@ export function useEpisodeNotesVersions({
         // Ensure all versions have version numbers
         const versionsWithNumbers = versions.map((version, index) => ({
           ...version,
-          versionNumber: version.versionNumber || index + 1
+          versionNumber: version.versionNumber || index + 1,
+          active: version.active || false
         }));
         
         // Set to the most recent version
         const sortedVersions = [...versionsWithNumbers].sort(
           (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
-        setVersions(sortedVersions);
-        setActiveVersionId(sortedVersions[0].id);
         
-        // If we updated versions with numbers, update the form value
-        if (JSON.stringify(versions) !== JSON.stringify(versionsWithNumbers)) {
-          form.setValue('notesVersions', versionsWithNumbers, { shouldDirty: false });
-        }
+        // Find the active version or use the most recent one
+        const activeVersion = versionsWithNumbers.find(v => v.active === true) || sortedVersions[0];
+        
+        // Update all versions to set the active one
+        const updatedVersions = versionsWithNumbers.map(v => ({
+          ...v,
+          active: v.id === activeVersion.id
+        }));
+        
+        setVersions(updatedVersions);
+        setActiveVersionId(activeVersion.id);
+        
+        // Update form with current content and versions
+        form.setValue('notes', activeVersion.content, { shouldDirty: false });
+        form.setValue('notesVersions', updatedVersions, { shouldDirty: false });
       }
       
       setHasInitialized(true);
@@ -83,21 +94,38 @@ export function useEpisodeNotesVersions({
           content: currentContent,
           timestamp: new Date().toISOString(),
           source: 'manual',
+          active: true,
           versionNumber: nextVersionNumber
         };
         
-        const updatedVersions = [...versions, newVersion];
-        setVersions(updatedVersions);
-        form.setValue('notesVersions', updatedVersions, { shouldDirty: true });
+        // Remove active flag from other versions
+        const updatedVersions = versions.map(v => ({
+          ...v,
+          active: false
+        }));
+        
+        const finalVersions = [...updatedVersions, newVersion];
+        setVersions(finalVersions);
+        form.setValue('notesVersions', finalVersions, { shouldDirty: true });
         setActiveVersionId(newVersion.id);
       }
     }
   }, [activeVersionId, versions, form]);
 
   const selectVersion = useCallback((version: ContentVersion) => {
+    // Update form with selected version content
     form.setValue('notes', version.content, { shouldDirty: false });
+    
+    // Update all versions to mark the selected one as active
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: v.id === version.id
+    }));
+    
+    setVersions(updatedVersions);
+    form.setValue('notesVersions', updatedVersions, { shouldDirty: true });
     setActiveVersionId(version.id);
-  }, [form]);
+  }, [form, versions]);
 
   const clearAllVersions = useCallback(() => {
     const currentContent = form.getValues('notes') || '';
@@ -108,6 +136,7 @@ export function useEpisodeNotesVersions({
       content: typeof currentContent === 'string' ? currentContent : '',
       timestamp: new Date().toISOString(),
       source: 'manual',
+      active: true,
       versionNumber: 1
     };
     
@@ -125,12 +154,20 @@ export function useEpisodeNotesVersions({
       content,
       timestamp: new Date().toISOString(),
       source,
+      active: true,
       versionNumber: nextVersionNumber
     };
     
-    const updatedVersions = [...versions, newVersion];
-    setVersions(updatedVersions);
-    form.setValue('notesVersions', updatedVersions, { shouldDirty: true });
+    // Remove active flag from other versions
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    const finalVersions = [...updatedVersions, newVersion];
+    setVersions(finalVersions);
+    form.setValue('notesVersions', finalVersions, { shouldDirty: true });
+    form.setValue('notes', content, { shouldDirty: true });
     setActiveVersionId(newVersion.id);
     
     return newVersion;

@@ -114,7 +114,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
             content: v.content || "",
             timestamp: v.timestamp || new Date().toISOString(),
             source: v.source || "manual",
-            active: v.active,
+            active: v.active === undefined ? false : v.active,
             versionNumber: v.versionNumber || 0
           };
           return version;
