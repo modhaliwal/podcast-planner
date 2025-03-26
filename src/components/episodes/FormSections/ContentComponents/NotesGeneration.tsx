@@ -22,7 +22,7 @@ export function NotesGeneration({ guests, onNotesGenerated, form }: NotesGenerat
       config={{
         fieldName: "notes",
         promptKey: "episode_notes",
-        buttonLabel: "Generate Notes with AI",
+        buttonLabel: "Generate Notes",
         loadingLabel: "Generating notes...",
         onContentGenerated: onNotesGenerated,
         guests: selectedGuests,
