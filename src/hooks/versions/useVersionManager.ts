@@ -67,7 +67,7 @@ export function useVersionManager({
     handleContentChange,
     selectVersion,
     addNewVersion,
-    addAIVersion,
+    addAIVersion,  // Make sure this is included
     clearAllVersions,
     versionSelectorProps
   };

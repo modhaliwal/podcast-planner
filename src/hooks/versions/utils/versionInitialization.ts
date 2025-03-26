@@ -14,8 +14,8 @@ export const initializeVersions = <T extends Record<string, any>>(
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
 ): void => {
-  const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
-  const existingVersions = form.getValues(versionsFieldName as unknown as Path<T>) || [];
+  const currentContent = form.getValues(fieldName as Path<T>) || "";
+  const existingVersions = form.getValues(versionsFieldName as Path<T>) || [];
 
   if (Array.isArray(existingVersions) && existingVersions.length === 0 && currentContent) {
     const initialVersion: ContentVersion = {
@@ -30,7 +30,7 @@ export const initializeVersions = <T extends Record<string, any>>(
     // Update both the local state and the form value
     setVersions([initialVersion]);
     form.setValue(
-      versionsFieldName as unknown as Path<T>, 
+      versionsFieldName as Path<T>, 
       [initialVersion] as unknown as PathValue<T, Path<T>>
     );
     setActiveVersionId(initialVersion.id);
@@ -61,14 +61,14 @@ export const processExistingVersions = <T extends Record<string, any>>(
     setVersions(versionsWithNumbers);
     setActiveVersionId(activeVersion.id);
     form.setValue(
-      fieldName as unknown as Path<T>,
+      fieldName as Path<T>,
       activeVersion.content as unknown as PathValue<T, Path<T>>
     );
     
     // Update form with versions that have version numbers
     if (JSON.stringify(existingVersions) !== JSON.stringify(versionsWithNumbers)) {
       form.setValue(
-        versionsFieldName as unknown as Path<T>,
+        versionsFieldName as Path<T>,
         versionsWithNumbers as unknown as PathValue<T, Path<T>>
       );
     }
@@ -88,11 +88,11 @@ export const processExistingVersions = <T extends Record<string, any>>(
       setVersions(updatedVersions);
       setActiveVersionId(sortedVersions[0].id);
       form.setValue(
-        versionsFieldName as unknown as Path<T>,
+        versionsFieldName as Path<T>,
         updatedVersions as unknown as PathValue<T, Path<T>>
       );
       form.setValue(
-        fieldName as unknown as Path<T>,
+        fieldName as Path<T>,
         sortedVersions[0].content as unknown as PathValue<T, Path<T>>
       );
     }

@@ -25,7 +25,7 @@ export function useVersionState<T extends Record<string, any>>({
   // Initialize versions if they don't exist - with a proper useEffect to prevent loops
   useEffect(() => {
     if (!hasInitialized) {
-      const existingVersions = form.getValues(versionsFieldName as unknown as Path<T>) || [];
+      const existingVersions = form.getValues(versionsFieldName as Path<T>) || [];
       
       if (Array.isArray(existingVersions) && existingVersions.length === 0) {
         // Initialize with current content if no versions exist

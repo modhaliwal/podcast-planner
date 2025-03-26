@@ -38,9 +38,20 @@ export function NotesVersionsProvider<T extends Record<string, any>>({
     fieldName,
     versionsFieldName
   });
+  
+  // Ensure we're matching the NotesVersionsContextType interface
+  const contextValue: NotesVersionsContextType = {
+    activeVersionId: versionManager.activeVersionId,
+    versions: versionManager.versions,
+    handleContentChange: versionManager.handleContentChange,
+    selectVersion: versionManager.selectVersion,
+    clearAllVersions: versionManager.clearAllVersions,
+    addNewVersion: versionManager.addNewVersion,
+    versionSelectorProps: versionManager.versionSelectorProps
+  };
 
   return (
-    <NotesVersionsContext.Provider value={versionManager}>
+    <NotesVersionsContext.Provider value={contextValue}>
       {children}
     </NotesVersionsContext.Provider>
   );
