@@ -2,7 +2,7 @@
 import { corsHeaders, validateRequestData } from "../shared/utils.ts";
 import { extractContentFromLinks } from "../shared/content/extraction.ts";
 import { generateBioWithOpenAI, generateResearchWithOpenAI } from "../shared/generators/openai.ts";
-import { generateResearchWithPerplexity } from "../shared/generators/perplexity.ts";
+import { generateResearchWithPerplexity } from "../shared/generators/perplexity/index.ts";
 
 export async function handleRequest(req: Request) {
   try {
