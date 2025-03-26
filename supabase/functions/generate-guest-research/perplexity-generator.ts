@@ -53,7 +53,7 @@ export async function generateResearchWithPerplexity(
           }
         ],
         temperature: 0.2,
-        max_tokens: 2000,
+        max_tokens: 4000, // Increased from 2000 to 4000 to prevent truncation
         return_images: true,
         return_related_questions: false,
         response_format: {
@@ -149,23 +149,26 @@ export async function generateResearchWithPerplexity(
         throw new Error("Unexpected content format");
       }
       
-      // Process images - embed directly in the markdown at the appropriate sections
+      // Process images - embed directly in the markdown
       console.log(`Found ${images.length} images to embed`);
-      for (let i = 0; i < images.length; i++) {
-        const imageUrl = images[i];
-        const imageMarkdown = `\n\n![Image ${i+1}](${imageUrl})\n\n`;
-        
-        // For simplicity, we'll add the images before the reference section
-        // In a more advanced version, we could parse the markdown and insert at appropriate points
-        if (!bodyContent.includes(imageMarkdown)) {
-          if (bodyContent.includes("## References") || bodyContent.includes("# References")) {
-            // Insert before references section
-            bodyContent = bodyContent.replace(/(#{1,2} References)/g, `${imageMarkdown}$1`);
-          } else {
-            // Add at the end if no references section
-            bodyContent += imageMarkdown;
-          }
-        }
+      
+      // Instead of trying to insert images in specific sections, we'll add them right before the references section
+      // This is more reliable than trying to parse sections and insert at appropriate points
+      let imageMarkdown = "";
+      if (images.length > 0) {
+        imageMarkdown += "\n\n## Visual References\n\n";
+        images.forEach((imageUrl, index) => {
+          imageMarkdown += `![Image ${index+1}](${imageUrl})\n\n`;
+        });
+      }
+      
+      // Check if there's a References section already and add images before it
+      if (bodyContent.includes("## References") || bodyContent.includes("# References")) {
+        // Insert images before references section
+        bodyContent = bodyContent.replace(/(#{1,2} References)/g, `${imageMarkdown}$1`);
+      } else {
+        // Add images at the end if no references section
+        bodyContent += imageMarkdown;
       }
       
       // Add references as a table if they don't already exist in the content
@@ -183,6 +186,15 @@ export async function generateResearchWithPerplexity(
       }
       
       generatedResearch = bodyContent;
+      
+      // Log the final markdown structure to help with debugging
+      console.log("Final markdown structure:", 
+        generatedResearch.split("\n").slice(0, 10).join("\n") + "...");
+      
+      // Log total word count to help determine if truncation might be an issue
+      const wordCount = generatedResearch.split(/\s+/).length;
+      console.log(`Total word count: ${wordCount}`);
+      
     } catch (error) {
       console.error("Error parsing Perplexity response content:", error);
       throw new Error(`Failed to parse Perplexity response: ${error.message}`);
