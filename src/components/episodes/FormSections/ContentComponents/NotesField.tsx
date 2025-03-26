@@ -27,7 +27,7 @@ export function NotesField({
   form: formProp,
   guests = [],
 }: NotesFieldProps) {
-  const formContext = useFormContext();
+  const formContext = useFormContext<EpisodeFormValues>();
   const form = formProp || formContext;
   
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export function NotesField({
   // Initialize versions if they don't exist
   useEffect(() => {
     if (!hasInitialized) {
-      const currentNotes = form.getValues(fieldName);
+      const currentNotes = form.getValues(fieldName) || "";
       const existingVersions = form.getValues(versionsFieldName) || [];
 
       if (existingVersions.length === 0 && currentNotes) {
@@ -73,10 +73,10 @@ export function NotesField({
   };
 
   const handleEditorBlur = () => {
-    const currentContent = form.getValues(fieldName);
+    const currentContent = form.getValues(fieldName) || "";
     
     // Check if content is not empty and if we have an active version to compare with
-    if (currentContent?.trim() && activeVersionId) {
+    if (currentContent.trim() && activeVersionId) {
       const activeVersion = versions.find(v => v.id === activeVersionId);
       
       // Only create a new version if content has changed
@@ -102,12 +102,12 @@ export function NotesField({
   };
 
   const handleClearAllVersions = () => {
-    const currentContent = form.getValues(fieldName);
+    const currentContent = form.getValues(fieldName) || "";
     
     // Create a single version with current content
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: currentContent || "",
+      content: currentContent,
       timestamp: new Date().toISOString(),
       source: "manual"
     };
@@ -124,8 +124,8 @@ export function NotesField({
       
       // Get necessary data for generating notes
       const episodeData = {
-        title: form.getValues("title"),
-        topic: form.getValues("topic"),
+        title: form.getValues("title") || "",
+        topic: form.getValues("topic") || "",
         guestIds: form.getValues("guestIds") || []
       };
       
