@@ -57,7 +57,7 @@ export function useEpisodeForm(
     setIsSubmitting(true);
     
     try {
-      // Ensure all required fields are present
+      // Ensure all required fields are present for notesVersions
       const notesVersions: ContentVersion[] = (data.notesVersions || []).map(version => ({
         id: version.id || uuidv4(),
         content: version.content || '',
@@ -66,13 +66,15 @@ export function useEpisodeForm(
       }));
       
       // Ensure required fields for recording links
-      const recordingLinks = data.recordingLinks || {};
-      if (recordingLinks.other) {
-        recordingLinks.other = recordingLinks.other.map(item => ({
+      const recordingLinks = {
+        audio: data.recordingLinks?.audio,
+        video: data.recordingLinks?.video,
+        transcript: data.recordingLinks?.transcript,
+        other: (data.recordingLinks?.other || []).map(item => ({
           label: item.label || '',
           url: item.url || ''
-        }));
-      }
+        }))
+      };
       
       // Ensure required fields for resources
       const resources = (data.resources || []).map(resource => ({
