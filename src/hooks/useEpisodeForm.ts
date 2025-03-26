@@ -36,20 +36,12 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   
   console.log("useEpisodeForm hook initialized with episode:", episode.id);
   
-  // Initialize form first, before adding watchers
+  // Initialize form
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
     defaultValues,
-    mode: 'onChange', // This helps validate as the user types
+    mode: 'onChange',
   });
-  
-  // For debugging - log the current form values
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      console.log("Current form values:", value);
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {

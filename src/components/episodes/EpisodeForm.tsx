@@ -24,21 +24,9 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   
   console.log("Rendering EpisodeForm with submit handler:", !!onSubmit);
   
-  // Create a direct form submission handler
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted via native submit event");
-    
-    // Manually trigger form validation and submission
-    form.handleSubmit(data => {
-      console.log("Form data passed to onSubmit:", data);
-      return onSubmit(data);
-    })();
-  };
-  
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 gap-6">
           <CombinedBasicInfoSection form={form} />
           
