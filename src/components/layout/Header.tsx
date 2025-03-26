@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { Calendar, Headphones, Home, Menu, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 import { NavItem } from './types';
 import { Navigation } from './Navigation';
 import { UserDropdown } from './UserDropdown';
