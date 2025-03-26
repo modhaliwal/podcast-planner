@@ -23,7 +23,7 @@ export async function generateResearchWithPerplexity(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar-deep-research',
+        model: 'sonar',
         messages: [
           {
             role: "system",
