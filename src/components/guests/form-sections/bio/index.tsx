@@ -4,10 +4,10 @@ import { FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { ContentVersion } from "@/lib/types";
 import { VersionSelector } from "../VersionSelector";
-import { VersionHistory } from "../VersionHistory";
 import { BioGeneration } from "./BioGeneration";
 import { BioEditor } from "./BioEditor";
 import { useVersionManager } from "@/hooks/versions";
+import { Button } from "@/components/ui/button";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;
@@ -16,8 +16,6 @@ interface BioSectionProps {
 }
 
 export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSectionProps) {
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
-  
   // Get the current bio content from the form
   const [bio, setBio] = useState<string>(form.getValues('bio') || '');
   
@@ -62,24 +60,13 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     addAIVersion(content);
   };
 
-  const toggleVersionHistory = () => {
-    setShowVersionHistory(!showVersionHistory);
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <FormLabel>Bio</FormLabel>
         <div className="flex space-x-2">
           {bioVersions.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={toggleVersionHistory}
-              className="flex items-center gap-1"
-            >
-              Version History
-            </Button>
+            <VersionSelector {...versionSelectorProps} />
           )}
           <BioGeneration 
             form={form}
@@ -90,15 +77,6 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
           />
         </div>
       </div>
-      
-      {showVersionHistory && bioVersions.length > 0 && (
-        <VersionHistory 
-          versions={bioVersions}
-          onSelectVersion={selectVersion}
-          activeVersionId={activeVersionId || undefined}
-          onClearAllVersions={clearAllVersions}
-        />
-      )}
       
       <BioEditor 
         form={form} 
