@@ -1,7 +1,7 @@
 
 import { Guest } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
 
 export async function generateBackgroundResearch(
@@ -19,12 +19,18 @@ export async function generateBackgroundResearch(
     const { name, title, company, socialLinks } = guest;
     
     if (!name || !title) {
-      toast.warning("Guest name and title are required to generate research");
+      toast({
+        title: "Warning",
+        description: "Guest name and title are required to generate research"
+      });
       setIsLoading(false);
       return;
     }
     
-    toast.info("Generating background research for guest...");
+    toast({
+      title: "Info",
+      description: "Generating background research for guest..."
+    });
     
     // Get the prompt template and additional fields
     const promptData = getPromptByKey('guest_research_generator');
@@ -78,7 +84,10 @@ export async function generateBackgroundResearch(
       // Set the markdown for conversion - this will trigger the useEffect
       // in the parent component to create a new AI version
       setMarkdownToConvert(data.research);
-      toast.success("Background research generated successfully");
+      toast({
+        title: "Success",
+        description: "Background research generated successfully"
+      });
     } else if (data && data.error) {
       throw new Error(data.error);
     } else {
@@ -86,7 +95,11 @@ export async function generateBackgroundResearch(
     }
   } catch (error: any) {
     console.error("Research generation error:", error);
-    toast.error(`Failed to generate research: ${error.message || "Unknown error"}`);
+    toast({
+      title: "Error",
+      description: `Failed to generate research: ${error.message || "Unknown error"}`,
+      variant: "destructive"
+    });
   } finally {
     setIsLoading(false);
   }
