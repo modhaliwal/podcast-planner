@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Episode, ContentVersion } from '@/lib/types';
 import { EpisodeStatus } from '@/lib/enums';
@@ -42,7 +41,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
     },
     resources: []
   };
-  
+
   // Initialize form with values from the episode, or default values if episode is null/undefined
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
