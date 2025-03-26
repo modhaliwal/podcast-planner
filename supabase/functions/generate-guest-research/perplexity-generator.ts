@@ -57,7 +57,7 @@ export async function generateResearchWithPerplexity(
         web_search_options: {
           search_context_size: "high"
         },
-        response_format: { type: "json_object" },
+        response_format: { type: "text" },
       }),
     });
 
@@ -80,37 +80,7 @@ export async function generateResearchWithPerplexity(
       throw new Error("Unexpected response format from Perplexity");
     }
     
-    // Parse the JSON content if it's in JSON format
-    let generatedResearch = "";
-    const content = data.choices[0].message.content.trim();
-    
-    try {
-      // Try to parse as JSON
-      const jsonContent = JSON.parse(content);
-      
-      // Look for the research content in common JSON structures
-      if (jsonContent.research) {
-        generatedResearch = jsonContent.research;
-      } else if (jsonContent.content) {
-        generatedResearch = jsonContent.content;
-      } else if (jsonContent.markdown) {
-        generatedResearch = jsonContent.markdown;
-      } else if (jsonContent.text) {
-        generatedResearch = jsonContent.text;
-      } else {
-        // If we can't find a standard field, use the first string property we find
-        for (const key in jsonContent) {
-          if (typeof jsonContent[key] === 'string' && jsonContent[key].length > 100) {
-            generatedResearch = jsonContent[key];
-            break;
-          }
-        }
-      }
-    } catch (e) {
-      // If JSON parsing fails, use the content directly
-      console.log("Not valid JSON format, using text directly");
-      generatedResearch = content;
-    }
+    const generatedResearch = data.choices[0].message.content.trim();
     
     console.log("Successfully generated research with Perplexity");
     
