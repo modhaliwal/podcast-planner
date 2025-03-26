@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { generateResearchWithPerplexity } from "../shared/generators/perplexity/index.ts";
-import { corsHeaders, validateApiKey } from "../shared/utils.ts";
+import { corsHeaders } from "../shared/utils.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -11,9 +11,6 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = req.headers.get('apikey');
-    validateApiKey(apiKey);
-
     // Parse request body
     const requestData = await req.json();
     const { 

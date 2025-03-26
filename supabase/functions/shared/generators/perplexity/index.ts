@@ -1,5 +1,4 @@
 
-import { validatePerplexityApiKey } from "../../utils.ts";
 import { DEFAULT_CONFIG, createSystemPrompt, createUserPrompt } from "./config.ts";
 import { callPerplexityAPI } from "./api.ts";
 import { processApiResponse } from "./responseParser.ts";
@@ -14,8 +13,11 @@ export async function generateResearchWithPerplexity(
   extractedContent: string,
   customSystemPrompt?: string
 ) {
-  // Validate API key
-  const perplexityApiKey = validatePerplexityApiKey();
+  // Get API key directly from environment
+  const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+  if (!perplexityApiKey) {
+    throw new Error("Perplexity API key is required but not provided");
+  }
   
   // Format company information
   const companyInfo = company ? `at ${company}` : "";

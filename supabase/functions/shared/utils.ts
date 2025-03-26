@@ -1,4 +1,5 @@
 
+
 // CORS headers for all Edge Functions
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
