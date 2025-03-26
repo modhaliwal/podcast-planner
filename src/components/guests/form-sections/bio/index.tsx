@@ -82,27 +82,34 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
   };
 
   const handleClearAllVersions = () => {
-    // Clear the versions but keep the current content
+    // Keep only the active version
     const currentBio = form.getValues('bio');
-    onVersionsChange([]);
-    // Reset state
-    setActiveVersionId(undefined);
-    setPreviousContent("");
+    
+    // Find the active version
+    const activeVersion = bioVersions.find(v => v.id === activeVersionId);
+    
+    if (activeVersion) {
+      // Keep only the active version
+      onVersionsChange([activeVersion]);
+    } else {
+      // If no active version found, create a new version with current content
+      onVersionsChange([]);
+      if (currentBio.trim()) {
+        const initialVersion: ContentVersion = {
+          id: uuidv4(),
+          content: currentBio,
+          timestamp: new Date().toISOString(),
+          source: 'manual'
+        };
+        onVersionsChange([initialVersion]);
+        setActiveVersionId(initialVersion.id);
+        setPreviousContent(currentBio);
+      }
+    }
+    
+    // Reset states
     setHasChangedSinceLastSave(false);
     setVersionCreatedSinceFormOpen(false);
-    
-    // Optionally create a new initial version with current content
-    if (currentBio.trim()) {
-      const initialVersion: ContentVersion = {
-        id: uuidv4(),
-        content: currentBio,
-        timestamp: new Date().toISOString(),
-        source: 'manual'
-      };
-      onVersionsChange([initialVersion]);
-      setActiveVersionId(initialVersion.id);
-      setPreviousContent(currentBio);
-    }
   };
 
   // Track when content changes in the form

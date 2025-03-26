@@ -94,24 +94,33 @@ export function BackgroundResearchSection({
   };
 
   const handleClearAllVersions = () => {
-    // Clear the versions array
-    onVersionsChange([]);
-    // Reset state
-    setActiveVersionId(undefined);
-    setPreviousContent("");
+    // Keep only the active version
+    const activeVersion = backgroundResearchVersions.find(v => v.id === activeVersionId);
     
-    // Optionally create a new initial version if there's content
-    if (backgroundResearch.trim()) {
-      const initialVersion: ContentVersion = {
-        id: uuidv4(),
-        content: backgroundResearch,
-        timestamp: new Date().toISOString(),
-        source: 'manual'
-      };
-      onVersionsChange([initialVersion]);
-      setActiveVersionId(initialVersion.id);
-      setPreviousContent(backgroundResearch);
+    if (activeVersion) {
+      // Keep only the active version
+      onVersionsChange([activeVersion]);
+    } else {
+      // If no active version found, create a new version with current content
+      onVersionsChange([]);
+      
+      // Create a new initial version if there's content
+      if (backgroundResearch.trim()) {
+        const initialVersion: ContentVersion = {
+          id: uuidv4(),
+          content: backgroundResearch,
+          timestamp: new Date().toISOString(),
+          source: 'manual'
+        };
+        onVersionsChange([initialVersion]);
+        setActiveVersionId(initialVersion.id);
+        setPreviousContent(backgroundResearch);
+      }
     }
+    
+    // Reset states
+    setHasChangedSinceLastSave(false);
+    setVersionCreatedSinceFormOpen(false);
   };
 
   const saveCurrentVersion = () => {

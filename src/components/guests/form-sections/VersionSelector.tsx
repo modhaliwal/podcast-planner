@@ -1,4 +1,3 @@
-
 import { ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Clock, Check, Trash } from "lucide-react";
@@ -58,7 +57,23 @@ export function VersionSelector({
     event.stopPropagation();
     
     if (isConfirmingClear) {
-      onClearAllVersions?.();
+      // If we have an active version, preserve it
+      if (activeVersionId && onClearAllVersions) {
+        // Find the active version object
+        const activeVersion = versions.find(v => v.id === activeVersionId);
+        
+        if (activeVersion) {
+          // Pass a function that will keep only the active version
+          onClearAllVersions();
+        } else {
+          // If somehow activeVersionId doesn't match any version, clear all
+          onClearAllVersions();
+        }
+      } else {
+        // No active version, just clear all
+        onClearAllVersions?.();
+      }
+      
       setIsConfirmingClear(false);
       // Close the dropdown after confirmation
       setDropdownOpen(false);
