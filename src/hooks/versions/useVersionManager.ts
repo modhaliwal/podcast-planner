@@ -1,5 +1,5 @@
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { ContentVersion } from "@/lib/types";
 import { useVersionInitialization } from "./hooks/useVersionInitialization";
 import { useVersionActions } from "./hooks/useVersionActions";
@@ -7,7 +7,7 @@ import { useSelectorProps } from "./hooks/useSelectorProps";
 
 interface UseVersionManagerProps {
   content: string;
-  versions?: ContentVersion[];
+  versions?: ContentVersion[] | null;
   onVersionsChange: (versions: ContentVersion[]) => void;
   onContentChange: (content: string) => void;
   source?: "manual" | "ai" | "import";
@@ -24,6 +24,9 @@ export function useVersionManager({
   onContentChange,
   source = "manual"
 }: UseVersionManagerProps) {
+  // Ensure versions is always an array
+  const safeVersions = Array.isArray(versions) ? versions : [];
+  
   // For backward compatibility
   const [internalContent, setInternalContent] = useState(content);
   
@@ -34,7 +37,12 @@ export function useVersionManager({
     previousContent,
     setPreviousContent,
     hasInitialized
-  } = useVersionInitialization(content, versions, onVersionsChange, onContentChange);
+  } = useVersionInitialization(content, safeVersions, onVersionsChange, onContentChange);
+
+  // Use memo to avoid unnecessary rerenders
+  const activeVersion = useCallback(() => {
+    return safeVersions.find(v => v.id === activeVersionId) || null;
+  }, [safeVersions, activeVersionId]);
 
   // Version actions (create, select, clear)
   const {
@@ -46,7 +54,7 @@ export function useVersionManager({
     clearAllVersions
   } = useVersionActions(
     content,
-    versions,
+    safeVersions,
     activeVersionId,
     previousContent,
     setPreviousContent,
@@ -57,25 +65,22 @@ export function useVersionManager({
 
   // Prepare props for VersionSelector component
   const versionSelectorProps = useSelectorProps(
-    versions,
+    safeVersions,
     activeVersionId,
     selectVersion,
     clearAllVersions
   );
   
-  // Find the active version for convenience
-  const activeVersion = versions.find(v => v.id === activeVersionId) || null;
-  
   // Check if the active version is the latest version
   const isLatestVersionActive = useCallback(() => {
-    if (!versions.length || !activeVersionId) return true;
+    if (!safeVersions.length || !activeVersionId) return true;
     
-    const sortedVersions = [...versions].sort(
+    const sortedVersions = [...safeVersions].sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
-    return sortedVersions[0].id === activeVersionId;
-  }, [versions, activeVersionId]);
+    return sortedVersions[0]?.id === activeVersionId;
+  }, [safeVersions, activeVersionId]);
   
   // Function to set content and update state
   const setContent = useCallback((newContent: string) => {
@@ -86,23 +91,34 @@ export function useVersionManager({
   // Function to add version that returns the new versions array
   const addVersion = useCallback((newContent: string): ContentVersion[] => {
     const result = addNewVersion(newContent);
-    return [...versions.filter(v => !v.active), result];
-  }, [addNewVersion, versions]);
+    return [...safeVersions.filter(v => !v.active), result];
+  }, [addNewVersion, safeVersions]);
   
   // Revert to a specific version
   const revertToVersion = useCallback((versionId: string): ContentVersion[] => {
-    const version = versions.find(v => v.id === versionId);
-    if (!version) return versions;
+    const version = safeVersions.find(v => v.id === versionId);
+    if (!version) return safeVersions;
     
     // Create a new version based on the reverted content
     const newVersions = addVersion(version.content);
     return newVersions;
-  }, [versions, addVersion]);
+  }, [safeVersions, addVersion]);
+
+  // Log props for debugging
+  useEffect(() => {
+    console.log("VersionManager:", {
+      content,
+      versionsCount: safeVersions.length,
+      activeVersionId,
+      activeVersion: activeVersion(),
+      hasInitialized
+    });
+  }, [content, safeVersions, activeVersionId, activeVersion, hasInitialized]);
 
   return {
     activeVersionId,
-    activeVersion,
-    versions,
+    activeVersion: activeVersion(),
+    versions: safeVersions,
     handleEditorBlur,
     handleContentChange,
     selectVersion,

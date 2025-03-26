@@ -7,19 +7,35 @@ import { ContentVersion } from '@/lib/types';
  * @returns Array with version numbers added where missing
  */
 export function ensureVersionNumbers(versions: ContentVersion[]): ContentVersion[] {
-  if (!versions || versions.length === 0) return [];
+  if (!versions || !Array.isArray(versions) || versions.length === 0) return [];
   
-  // Sort versions by timestamp to ensure consistent numbering
-  const sortedVersions = [...versions].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  );
+  // Log incoming versions to check structure
+  console.log("ensureVersionNumbers input:", JSON.stringify(versions));
   
-  // Assign version numbers based on timestamp order if missing
-  return sortedVersions.map((version, index) => ({
-    ...version,
-    versionNumber: version.versionNumber || (index + 1),
-    active: typeof version.active === 'boolean' ? version.active : false
-  }));
+  try {
+    // Sort versions by timestamp to ensure consistent numbering
+    const sortedVersions = [...versions].sort(
+      (a, b) => {
+        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return aTime - bTime;
+      }
+    );
+    
+    // Assign version numbers based on timestamp order if missing
+    return sortedVersions.map((version, index) => ({
+      ...version,
+      id: version.id || `generated-${Date.now()}-${index}`,
+      versionNumber: version.versionNumber || (index + 1),
+      active: typeof version.active === 'boolean' ? version.active : false,
+      content: version.content || '',
+      timestamp: version.timestamp || new Date().toISOString(),
+      source: version.source || 'manual'
+    }));
+  } catch (error) {
+    console.error("Error in ensureVersionNumbers:", error);
+    return [];
+  }
 }
 
 /**
@@ -28,24 +44,29 @@ export function ensureVersionNumbers(versions: ContentVersion[]): ContentVersion
  * @returns Array with at least one active version
  */
 export function ensureActiveVersion(versions: ContentVersion[]): ContentVersion[] {
-  if (!versions || versions.length === 0) return [];
+  if (!versions || !Array.isArray(versions) || versions.length === 0) return [];
   
-  // Check if any version is already active
-  const hasActiveVersion = versions.some(v => v.active === true);
-  
-  if (hasActiveVersion) {
+  try {
+    // Check if any version is already active
+    const hasActiveVersion = versions.some(v => v.active === true);
+    
+    if (hasActiveVersion) {
+      return versions;
+    }
+    
+    // If no active version, use the latest one
+    const sortedVersions = [...versions].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    
+    return versions.map(v => ({
+      ...v,
+      active: v.id === sortedVersions[0].id
+    }));
+  } catch (error) {
+    console.error("Error in ensureActiveVersion:", error);
     return versions;
   }
-  
-  // If no active version, use the latest one
-  const sortedVersions = [...versions].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
-  
-  return versions.map(v => ({
-    ...v,
-    active: v.id === sortedVersions[0].id
-  }));
 }
 
 /**
@@ -53,13 +74,44 @@ export function ensureActiveVersion(versions: ContentVersion[]): ContentVersion[
  * @param versions Array of ContentVersion objects
  * @returns Processed versions with numbers and active flag
  */
-export function processVersions(versions: ContentVersion[]): ContentVersion[] {
-  if (!versions || versions.length === 0) return [];
+export function processVersions(versions: any[]): ContentVersion[] {
+  if (!versions || !Array.isArray(versions) || versions.length === 0) {
+    console.log("processVersions: empty or invalid input", versions);
+    return [];
+  }
   
-  const withNumbers = ensureVersionNumbers(versions);
-  const withActive = ensureActiveVersion(withNumbers);
-  
-  return withActive;
+  try {
+    // If input is a string (possibly JSON), try to parse it
+    if (versions.length === 1 && typeof versions[0] === 'string') {
+      try {
+        const parsed = JSON.parse(versions[0]);
+        if (Array.isArray(parsed)) {
+          versions = parsed;
+        }
+      } catch (e) {
+        console.error("Failed to parse version string:", e);
+      }
+    }
+    
+    // Ensure each version has required properties
+    const validVersions = versions.filter(v => 
+      v && typeof v === 'object' && (v.content !== undefined || v.id !== undefined)
+    );
+    
+    if (validVersions.length === 0) {
+      console.log("No valid versions found after filtering");
+      return [];
+    }
+    
+    const withNumbers = ensureVersionNumbers(validVersions as ContentVersion[]);
+    const withActive = ensureActiveVersion(withNumbers);
+    
+    console.log("processVersions result:", withActive);
+    return withActive;
+  } catch (error) {
+    console.error("Error in processVersions:", error);
+    return [];
+  }
 }
 
 /**
@@ -76,8 +128,19 @@ export function migrateContentVersions<T extends Record<string, any>>(
   
   // Process each field that might contain content versions
   versionFields.forEach(field => {
-    if (result[field as keyof T] && Array.isArray(result[field as keyof T])) {
-      result[field as keyof T] = processVersions(result[field as keyof T] as unknown as ContentVersion[]) as any;
+    if (result[field as keyof T]) {
+      // Handle case where versions might be a string (JSON)
+      if (typeof result[field as keyof T] === 'string') {
+        try {
+          const parsed = JSON.parse(result[field as keyof T] as string);
+          result[field as keyof T] = processVersions(Array.isArray(parsed) ? parsed : [parsed]) as any;
+        } catch (e) {
+          console.error(`Error parsing ${field} as JSON:`, e);
+          result[field as keyof T] = [] as any;
+        }
+      } else if (Array.isArray(result[field as keyof T])) {
+        result[field as keyof T] = processVersions(result[field as keyof T] as unknown as ContentVersion[]) as any;
+      }
     }
   });
   

@@ -2,9 +2,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { mapEpisodeFromDB } from '@/services/episodeService';
-import { Episode } from '@/lib/types';
+import { Episode, ContentVersion } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/toast';
+import { processVersions } from '@/lib/versionUtils';
 
 export function useEpisodeLoader(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
@@ -63,11 +64,34 @@ export function useEpisodeLoader(episodeId: string | undefined) {
         parsedResources = [];
       }
       
+      // Handle notes_versions which might be stringified JSON
+      let notesVersions: ContentVersion[] = [];
+      if (episodeData.notes_versions) {
+        try {
+          // If it's a string, parse it
+          if (typeof episodeData.notes_versions === 'string') {
+            notesVersions = JSON.parse(episodeData.notes_versions);
+          } else {
+            // If it's already an object/array, use it directly
+            notesVersions = episodeData.notes_versions;
+          }
+          
+          // Ensure we have valid versions with required properties
+          notesVersions = processVersions(Array.isArray(notesVersions) ? notesVersions : []);
+          
+          console.log("Processed notes versions:", notesVersions);
+        } catch (e) {
+          console.error('Error processing notes_versions:', e);
+          notesVersions = [];
+        }
+      }
+      
       // Map the database result to our Episode type
       const mappedEpisode = mapEpisodeFromDB({ 
         ...episodeData, 
         guestIds,
-        resources: parsedResources
+        resources: parsedResources,
+        notes_versions: notesVersions
       });
       
       console.log('Loaded episode:', mappedEpisode);
@@ -75,11 +99,7 @@ export function useEpisodeLoader(episodeId: string | undefined) {
       return mappedEpisode;
     } catch (error: any) {
       console.error('Error loading episode:', error);
-      toast({
-        title: "Error loading episode",
-        description: error.message || "Could not load episode data",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Could not load episode data");
       return null;
     } finally {
       setIsLoading(false);

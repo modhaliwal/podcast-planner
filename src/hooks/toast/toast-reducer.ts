@@ -1,85 +1,97 @@
 
-import { ToasterToast, State, Action, actionTypes } from "./types";
+import { ToasterToast, State, Action, actionTypes } from "./types"
 
-// Initial state
-export const memoryState: State = { toasts: [] };
+// In-memory state that stores toasts between re-renders
+export const memoryState: State = { toasts: [] }
 
-// A list of states to update
-export const listeners: ((state: State) => void)[] = [];
+// Listeners that update component state when store changes
+export const listeners: Array<(state: State) => void> = []
 
-// Dispatch function to update state
-export const dispatch = (action: Action) => {
-  memoryState.toasts = reducer(memoryState.toasts, action);
-  listeners.forEach((listener) => {
-    listener({ ...memoryState });
-  });
-};
+// Toast ID generator
+export const genId = () => Math.random().toString(36).substring(2, 9)
 
-// Generate a unique ID for each toast
-export const genId = () => {
-  return Math.random().toString(36).substring(2, 9);
-};
+// Track auto-dismiss timeouts
+let dismissTimeouts: Map<string, NodeJS.Timeout> = new Map()
 
-// Add to auto-dismiss queue
-export const addToAutoDismissQueue = (toast: ToasterToast) => {
-  if (toast.duration) {
-    setTimeout(() => {
-      dispatch({
-        type: 'DISMISS_TOAST',
-        toastId: toast.id,
-      });
-    }, toast.duration);
+// Add toast to auto-dismiss queue
+export function addToAutoDismissQueue(toast: ToasterToast) {
+  if (!toast.id) return
+  
+  // Clear any existing timeout
+  if (dismissTimeouts.has(toast.id)) {
+    clearTimeout(dismissTimeouts.get(toast.id))
   }
-};
+  
+  // Set default duration if not specified
+  const duration = toast.duration || 5000
+  
+  // Set timeout to auto-dismiss
+  const timeout = setTimeout(() => {
+    dispatch({ type: actionTypes.DISMISS_TOAST, toastId: toast.id })
+  }, duration)
+  
+  // Store timeout reference
+  dismissTimeouts.set(toast.id, timeout)
+}
 
-// Reducer
-export const reducer = (state: ToasterToast[], action: Action): ToasterToast[] => {
+// Update all listeners with new state
+function updateListeners(newState: State) {
+  memoryState.toasts = newState.toasts
+  listeners.forEach(listener => {
+    listener(newState)
+  })
+}
+
+// Dispatch actions to update state
+export function dispatch(action: Action) {
   switch (action.type) {
     case actionTypes.ADD_TOAST:
-      return [action.toast, ...state];
-
+      updateListeners({
+        toasts: [action.toast, ...memoryState.toasts]
+      })
+      break
+      
     case actionTypes.UPDATE_TOAST:
-      return state.map((t) =>
-        t.id === action.toast.id ? { ...t, ...action.toast } : t
-      );
-
+      updateListeners({
+        toasts: memoryState.toasts.map(t => 
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        )
+      })
+      break
+      
     case actionTypes.DISMISS_TOAST: {
-      const { toastId } = action;
-
-      // If no id, dismiss all
-      if (toastId === undefined) {
-        return state.map((t) => ({
-          ...t,
-          open: false,
-        }));
+      // Remove any dismiss timeout
+      if (action.toastId && dismissTimeouts.has(action.toastId)) {
+        clearTimeout(dismissTimeouts.get(action.toastId))
+        dismissTimeouts.delete(action.toastId)
       }
-
-      // Find the toast to dismiss
-      return state.map((t) =>
-        t.id === toastId ? { ...t, open: false } : t
-      );
+      
+      // If no ID, dismiss all
+      const toastId = action.toastId
+      
+      updateListeners({
+        toasts: memoryState.toasts.map(t => 
+          t.id === toastId || toastId === undefined
+            ? { ...t, open: false }
+            : t
+        )
+      })
+      break
     }
-
-    case actionTypes.REMOVE_TOAST: {
-      const { toastId } = action;
-
-      // If no id, remove all closed toasts
-      if (toastId === undefined) {
-        return state.filter((t) => t.open !== false);
+      
+    case actionTypes.REMOVE_TOAST:
+      // If no ID, remove all closed toasts
+      if (action.toastId === undefined) {
+        updateListeners({
+          toasts: memoryState.toasts.filter(t => t.open)
+        })
+        return
       }
-
-      // Remove specific toast
-      return state.filter((t) => t.id !== toastId);
-    }
+      
+      // Remove toast by ID
+      updateListeners({
+        toasts: memoryState.toasts.filter(t => t.id !== action.toastId)
+      })
+      break
   }
-};
-
-// Auto-dismiss removed toasts after animation
-// This allows for exit animations to complete
-export const autoRemoveToast = () => {
-  setTimeout(() => {
-    dispatch({
-      type: 'REMOVE_TOAST',
-    });
-  }, 1000);
-};
+}

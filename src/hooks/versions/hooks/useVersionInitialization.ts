@@ -20,8 +20,17 @@ export function useVersionInitialization(
 
   // Initialize versions on component mount or when versions/content change
   useEffect(() => {
-    // Process versions to ensure they're valid
-    const processedVersions = processVersions(versions);
+    if (hasInitialized) return;
+
+    // Ensure we have valid array of versions with consistent structure
+    let processedVersions = Array.isArray(versions) ? processVersions(versions) : [];
+    
+    // Log for debugging
+    console.log("Initializing versions:", { 
+      content, 
+      versionsInput: versions, 
+      processedVersions 
+    });
     
     if (processedVersions.length === 0 && content && !hasInitialized) {
       // Create initial version if none exists
@@ -38,6 +47,8 @@ export function useVersionInitialization(
       setActiveVersionId(initialVersion.id);
       setPreviousContent(content);
       setHasInitialized(true);
+      
+      console.log("Created initial version:", initialVersion);
     } else if (processedVersions.length > 0) {
       // Find the active version
       const activeVersion = processedVersions.find(v => v.active);
@@ -48,6 +59,7 @@ export function useVersionInitialization(
         // Only update content if it's different to avoid render loops
         if (content !== activeVersion.content && !hasInitialized) {
           onContentChange(activeVersion.content);
+          console.log("Updating content to match active version:", activeVersion.content);
         }
         setPreviousContent(activeVersion.content);
       } else {
@@ -67,6 +79,7 @@ export function useVersionInitialization(
           setPreviousContent(sortedVersions[0].content);
           if (content !== sortedVersions[0].content && !hasInitialized) {
             onContentChange(sortedVersions[0].content);
+            console.log("Updating content to match newest version:", sortedVersions[0].content);
           }
         }
       }
@@ -74,11 +87,10 @@ export function useVersionInitialization(
       // If the versions array was updated by processing, update it
       if (JSON.stringify(processedVersions) !== JSON.stringify(versions) && !hasInitialized) {
         onVersionsChange(processedVersions);
+        console.log("Updated processed versions:", processedVersions);
       }
       
-      if (!hasInitialized) {
-        setHasInitialized(true);
-      }
+      setHasInitialized(true);
     }
   }, [versions, content, onVersionsChange, onContentChange, hasInitialized]);
 
