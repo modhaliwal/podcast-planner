@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
@@ -21,6 +22,7 @@ const EditEpisode = () => {
     const loadData = async () => {
       setIsLoading(true);
       try {
+        console.log("Loading data for episode edit page...");
         // Load data in parallel
         await Promise.all([refreshGuests(), refreshEpisodes()]);
         
@@ -43,6 +45,11 @@ const EditEpisode = () => {
         if (id) {
           const episode = episodes.find(e => e.id === id);
           console.log("Episode data from context:", episode);
+          
+          if (!episode) {
+            console.error("Episode not found in context after refresh. Available episodes:", episodes);
+          }
+          
           setEpisodeData(episode || null);
           setGuestsData(guests || []);
         }
@@ -94,6 +101,8 @@ const EditEpisode = () => {
       </Shell>
     );
   }
+  
+  console.log("Rendering episode form with data:", episodeData);
   
   return (
     <Shell>

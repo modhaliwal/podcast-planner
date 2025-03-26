@@ -50,6 +50,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
+    console.log("onSubmit called with data:", data);
     setIsSubmitting(true);
     
     try {

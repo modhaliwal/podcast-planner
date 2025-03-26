@@ -44,8 +44,10 @@ export function NotesGeneration({
       
       // Filter guests to only include those selected for this episode
       const selectedGuests = guests.filter(guest => 
-        episodeData.guestIds.includes(guest.id)
+        episodeData.guestIds && episodeData.guestIds.includes(guest.id)
       );
+      
+      console.log("Selected guests for notes generation:", selectedGuests);
       
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
@@ -64,6 +66,7 @@ export function NotesGeneration({
       }
       
       if (data && data.notes) {
+        console.log("Notes generated successfully:", data.notes.substring(0, 100) + "...");
         // Call the callback with generated notes
         onNotesGenerated(data.notes);
         form.setValue("notes", data.notes);
