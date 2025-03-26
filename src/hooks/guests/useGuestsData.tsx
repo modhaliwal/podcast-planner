@@ -10,7 +10,7 @@ export function useGuestsData(userId: string | undefined) {
   const isInitialMountRef = useRef(true);
   const lastFetchTimeRef = useRef<number>(0);
 
-  // Load guests on initial mount only
+  // Load guests on initial mount
   useEffect(() => {
     const loadGuests = async () => {
       if (isInitialMountRef.current) {
@@ -32,10 +32,10 @@ export function useGuestsData(userId: string | undefined) {
   }, [fetchGuestData]);
 
   // Create a function that wraps refreshGuests and updates the guests state
-  const refreshGuests = useCallback(async () => {
+  const refreshGuests = useCallback(async (force = false) => {
     // Throttle refreshes to prevent too many calls
     const now = Date.now();
-    if (now - lastFetchTimeRef.current < 2000) {
+    if (!force && now - lastFetchTimeRef.current < 2000) {
       console.log("Skipping refresh, too soon since last refresh");
       return guests;
     }
@@ -58,6 +58,10 @@ export function useGuestsData(userId: string | undefined) {
   return {
     guests,
     isLoadingGuests,
-    refreshGuests
+    refreshGuests,
+    isInitialMount: isInitialMountRef.current,
+    setIsInitialMount: (value: boolean) => {
+      isInitialMountRef.current = value;
+    }
   };
 }

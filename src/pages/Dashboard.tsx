@@ -7,12 +7,18 @@ import { useEffect } from 'react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Dashboard = () => {
-  const { guests, episodes, isDataLoading, refreshEpisodes } = useAuth();
+  const { guests, episodes, isDataLoading, refreshEpisodes, refreshGuests } = useAuth();
   
-  // Ensure episodes are loaded when the component mounts
+  // Ensure both episodes and guests are loaded when the component mounts
   useEffect(() => {
-    refreshEpisodes(true);
-  }, [refreshEpisodes]);
+    const loadData = async () => {
+      // Refresh both datasets
+      await refreshGuests();
+      await refreshEpisodes(true);
+    };
+    
+    loadData();
+  }, [refreshEpisodes, refreshGuests]);
   
   // Calculate statistics
   const totalGuests = guests.length;
@@ -32,7 +38,7 @@ const Dashboard = () => {
         
         {isDataLoading ? (
           <div className="flex justify-center items-center h-64">
-            <LoadingIndicator />
+            <LoadingIndicator message="Loading dashboard data..." />
           </div>
         ) : (
           <>

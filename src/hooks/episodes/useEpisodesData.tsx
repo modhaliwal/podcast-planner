@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Episode, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
 import { EpisodeStatus } from "@/lib/enums";
 
-export function useEpisodesData(userId: string | undefined) {
+function useEpisodesData(userId: string | undefined) {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
   const refreshTimerRef = useRef<number>(0);
@@ -132,3 +132,5 @@ export function useEpisodesData(userId: string | undefined) {
     }
   };
 }
+
+export default useEpisodesData;

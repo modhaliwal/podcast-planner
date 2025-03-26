@@ -3,8 +3,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useGuestsData } from "@/hooks/guests/useGuestsData";
-import { useEpisodesData } from "@/hooks/useEpisodesData";
+import { useGuestsData } from "@/hooks/guests";
+import { default as useEpisodesData } from "@/hooks/episodes/useEpisodesData";
 import { User as AppUser } from "@/lib/types";
 import { getCurrentUserProfile } from "@/services/userService";
 
@@ -20,6 +20,7 @@ type AuthContextType = {
   refreshEpisodes: ReturnType<typeof useEpisodesData>['refreshEpisodes'];
   refreshUserProfile: () => Promise<void>;
   isDataLoading: boolean;
+  refreshAllData: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +36,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { episodes, isLoadingEpisodes, refreshEpisodes } = useEpisodesData(user?.id);
   
   const isDataLoading = isLoadingGuests || isLoadingEpisodes;
+
+  // Unified data refresh function
+  const refreshAllData = async () => {
+    if (!user?.id) return;
+    
+    try {
+      await Promise.all([
+        refreshGuests(true),
+        refreshEpisodes(true)
+      ]);
+    } catch (error) {
+      console.error("Error refreshing all data:", error);
+    }
+  };
 
   const refreshUserProfile = async () => {
     if (user) {
@@ -54,8 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN' && session) {
           await refreshUserProfile();
-          refreshGuests();
-          refreshEpisodes();
+          // Let the hooks handle the initial data loading
           toast({
             title: "Success",
             description: "Signed in successfully"
@@ -80,8 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (session?.user) {
         await refreshUserProfile();
-        refreshGuests();
-        refreshEpisodes();
+        // Let the hooks handle the initial data loading
       }
       
       setLoading(false);
@@ -129,7 +142,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshGuests,
     refreshEpisodes,
     refreshUserProfile,
-    isDataLoading
+    isDataLoading,
+    refreshAllData
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
