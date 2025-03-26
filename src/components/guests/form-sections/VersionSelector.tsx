@@ -31,6 +31,10 @@ export const VersionSelector = memo(function VersionSelector({
 
   // Reset confirmation state when dropdown closes
   useEffect(() => {
+    if (!dropdownOpen) {
+      setIsConfirmingClear(false);
+    }
+    
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsConfirmingClear(false);
@@ -41,7 +45,7 @@ export const VersionSelector = memo(function VersionSelector({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [dropdownOpen]);
 
   if (!versions || versions.length === 0) {
     return null;
@@ -68,9 +72,6 @@ export const VersionSelector = memo(function VersionSelector({
     }
   };
 
-  // Get the currently active version
-  const activeVersion = versions.find(v => v.id === activeVersionId || v.active);
-
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
@@ -90,7 +91,7 @@ export const VersionSelector = memo(function VersionSelector({
           <DropdownMenuItem
             key={version.id}
             onClick={() => onSelectVersion(version)}
-            className={`flex items-center justify-between ${version.active || activeVersionId === version.id ? 'bg-muted/50' : ''}`}
+            className={`flex items-center justify-between ${(version.active || activeVersionId === version.id) ? 'bg-muted/50' : ''}`}
           >
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
