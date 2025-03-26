@@ -20,11 +20,11 @@ export function GuestCard({ guest, className }: GuestCardProps) {
     .toUpperCase();
   
   return (
-    <Link to={`/guests/${guest.id}`}>
-      <Card className={cn(
-        "overflow-hidden hover-scale cursor-pointer group",
-        className
-      )}>
+    <Card className={cn(
+      "overflow-hidden hover-scale cursor-pointer group",
+      className
+    )}>
+      <Link to={`/guests/${guest.id}`}>
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
             <Avatar className="h-14 w-14 border">
@@ -81,7 +81,7 @@ export function GuestCard({ guest, className }: GuestCardProps) {
             <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </div>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 }

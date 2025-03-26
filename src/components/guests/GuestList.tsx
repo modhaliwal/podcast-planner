@@ -60,10 +60,9 @@ export function GuestList({ guests }: GuestListProps) {
               <TableRow 
                 key={guest.id} 
                 className="group cursor-pointer" 
-                onClick={() => window.location.href = `/guests/${guest.id}`}
               >
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-3">
+                  <Link to={`/guests/${guest.id}`} className="flex items-center gap-3">
                     <Avatar className="h-9 w-9 border">
                       <AvatarImage src={guest.imageUrl} alt={guest.name} />
                       <AvatarFallback>{initials}</AvatarFallback>
@@ -72,7 +71,7 @@ export function GuestList({ guests }: GuestListProps) {
                       <div className="font-medium">{guest.name}</div>
                       <div className="text-sm text-muted-foreground">{guest.title}</div>
                     </div>
-                  </div>
+                  </Link>
                 </TableCell>
                 <TableCell>
                   {renderStatusBadge(guest.status)}
@@ -120,10 +119,10 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="inline-flex items-center text-sm font-medium text-primary">
+                  <Link to={`/guests/${guest.id}`} className="inline-flex items-center text-sm font-medium text-primary">
                     View
                     <ChevronRight className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </span>
+                  </Link>
                 </TableCell>
               </TableRow>
             );

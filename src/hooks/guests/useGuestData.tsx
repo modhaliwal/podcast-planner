@@ -26,7 +26,13 @@ export function useGuestData(guestId: string | undefined) {
   };
 
   const handleDelete = async () => {
-    return await deleteGuest(guestId, guest?.imageUrl);
+    const result = await deleteGuest(guestId, guest?.imageUrl);
+    
+    if (result.success) {
+      setIsDeleteDialogOpen(false);
+    }
+    
+    return result;
   };
 
   return {
