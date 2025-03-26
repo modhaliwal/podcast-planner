@@ -26,6 +26,7 @@ export function VersionSelector({
   onClearAllVersions
 }: VersionSelectorProps) {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Reset confirmation state when dropdown closes
@@ -51,7 +52,11 @@ export function VersionSelector({
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const handleClearClick = () => {
+  const handleClearClick = (event: React.MouseEvent) => {
+    // Prevent the dropdown from closing when clicking the clear button
+    event.preventDefault();
+    event.stopPropagation();
+    
     if (isConfirmingClear) {
       onClearAllVersions?.();
       setIsConfirmingClear(false);
@@ -61,7 +66,7 @@ export function VersionSelector({
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1">
           <Clock className="h-3.5 w-3.5" />
@@ -95,6 +100,10 @@ export function VersionSelector({
             <DropdownMenuItem
               onClick={handleClearClick}
               className="text-destructive focus:text-destructive flex items-center"
+              onSelect={(e) => {
+                // Prevent the dropdown from closing when selecting this item
+                e.preventDefault();
+              }}
             >
               <Trash className="h-4 w-4 mr-2" />
               {isConfirmingClear ? "Are you sure?" : "Clear All Versions"}
