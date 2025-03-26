@@ -10,8 +10,8 @@ export async function extractContentFromLinks(socialLinks: Record<string, string
   }
 
   try {
-    // We'll limit to 3 links for performance and cost reasons
-    const linksToProcess = validLinks.slice(0, 3);
+    // We'll limit to 10 links for performance and cost reasons
+    const linksToProcess = validLinks.slice(0, 10);
     
     for (const link of linksToProcess) {
       try {
