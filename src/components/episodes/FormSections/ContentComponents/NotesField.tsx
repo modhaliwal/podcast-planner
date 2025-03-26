@@ -21,7 +21,7 @@ export function NotesField({ form, guests }: NotesFieldProps) {
   
   // Make sure versions are properly formatted with required properties
   const initialVersions = form.watch('notesVersions') || [];
-  const formattedVersions = ensureVersionNumbers(initialVersions);
+  const formattedVersions = ensureVersionNumbers(initialVersions) as ContentVersion[];
   
   // Initialize versions manager
   const { 
@@ -45,7 +45,7 @@ export function NotesField({ form, guests }: NotesFieldProps) {
   // Update form values when content changes
   const handleChange = (value: string) => {
     setContent(value);
-    handleContentChange(value);
+    handleContentChange();
   };
   
   // Handle saving content (which also creates a new version)
