@@ -4,7 +4,7 @@ import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { GuestForm } from '@/components/guests/GuestForm';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGuestData } from '@/hooks/useGuestData';
+import { useGuestData } from '@/hooks/guest/useGuestData';
 import { GuestViewHeader } from '@/components/guests/GuestViewHeader';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
