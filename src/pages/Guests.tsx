@@ -21,12 +21,16 @@ const Guests = () => {
   
   // Load guests data once on component mount
   useEffect(() => {
-    if (!hasInitializedRef.current && user?.id) {
-      console.log("Initial Guests page mount, refreshing guest data");
-      refreshGuests();
-      hasInitializedRef.current = true;
-    }
-  }, [refreshGuests, user?.id]);
+    const loadData = async () => {
+      if (!hasInitializedRef.current && user?.id) {
+        console.log("Initial Guests page mount, refreshing guest data");
+        await refreshGuests();
+        hasInitializedRef.current = true;
+      }
+    };
+    
+    loadData();
+  }, [refreshGuests, user]);
 
   // Filter guests based on search query and status filter
   const filteredGuests = guests.filter(guest => {

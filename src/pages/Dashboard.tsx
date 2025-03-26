@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Dashboard = () => {
@@ -15,6 +15,7 @@ const Dashboard = () => {
     user 
   } = useAuth();
   const hasInitializedRef = useRef(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   // Debug guests data
   console.log("Dashboard rendering with guests:", guests.length, "episodes:", episodes.length);
@@ -23,10 +24,19 @@ const Dashboard = () => {
   useEffect(() => {
     if (!hasInitializedRef.current && user?.id) {
       console.log("Dashboard component mounted with user, refreshing data");
-      refreshAllData();
-      hasInitializedRef.current = true;
+      
+      const loadData = async () => {
+        await refreshAllData();
+        hasInitializedRef.current = true;
+        setIsLoaded(true);
+      };
+      
+      loadData();
+    } else if (guests.length > 0 && !isLoaded) {
+      // If we already have guests data but haven't marked as loaded
+      setIsLoaded(true);
     }
-  }, [refreshAllData, user]);
+  }, [refreshAllData, user, guests.length, isLoaded]);
   
   // Calculate statistics
   const totalGuests = guests.length;
@@ -44,7 +54,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {isDataLoading ? (
+        {isDataLoading && !isLoaded ? (
           <div className="flex justify-center items-center h-64">
             <LoadingIndicator message="Loading dashboard data..." />
           </div>

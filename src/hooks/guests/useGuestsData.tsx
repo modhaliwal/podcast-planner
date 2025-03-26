@@ -10,8 +10,23 @@ export function useGuestsData(userId: string | undefined) {
   const hasLoadedInitialDataRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
   const isInitialMountRef = useRef(true);
+  const userIdRef = useRef<string | undefined>(undefined);
 
-  // Load guests on initial mount, but only if not already loaded and userId is available
+  // Track changes to userId
+  useEffect(() => {
+    if (userId && userId !== userIdRef.current) {
+      console.log("User ID changed or became available:", userId);
+      userIdRef.current = userId;
+      
+      // If we have a new userId but haven't loaded data yet, trigger a refresh
+      if (!hasLoadedInitialDataRef.current && userId) {
+        console.log("User ID became available, triggering initial guest data load");
+        refreshGuests(true);
+      }
+    }
+  }, [userId]);
+  
+  // Load guests on initial mount, but only if userId is available
   useEffect(() => {
     const loadGuests = async () => {
       if (userId && !hasLoadedInitialDataRef.current) {
