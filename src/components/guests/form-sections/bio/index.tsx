@@ -64,8 +64,13 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
             </div>
           )}
           <BioGeneration 
-            form={form} 
-            onNewVersionCreated={handleNewVersionCreated}
+            bio={bio}
+            setBio={(newBio) => {
+              form.setValue('bio', newBio);
+              setBio(newBio);
+            }}
+            versions={bioVersions}
+            onVersionsChange={onVersionsChange}
           />
         </div>
       </div>

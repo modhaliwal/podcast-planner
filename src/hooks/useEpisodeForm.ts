@@ -22,7 +22,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
     introduction: '',
     notes: '',
     notesVersions: [],
-    status: EpisodeStatus.Scheduled,
+    status: EpisodeStatus.SCHEDULED, // Fixed enum casing
     scheduled: new Date(),
     publishDate: null,
     guestIds: [],
@@ -53,7 +53,10 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
       introduction: episode.introduction,
       notes: episode.notes,
       notesVersions: Array.isArray(episode.notesVersions) ? 
-        episode.notesVersions.map(v => ({...v, versionNumber: v.versionNumber})) : 
+        episode.notesVersions.map(v => ({
+          ...v, 
+          versionNumber: v.versionNumber
+        })) : 
         [],
       status: episode.status,
       scheduled: new Date(episode.scheduled),
@@ -100,15 +103,36 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
         topic: data.topic,
         introduction: data.introduction,
         notes: data.notes,
-        notesVersions: data.notesVersions,
+        notesVersions: data.notesVersions.map(v => ({
+          id: v.id,
+          content: v.content,
+          timestamp: v.timestamp,
+          source: v.source,
+          active: v.active,
+          versionNumber: v.versionNumber
+        })),
         status: data.status,
         scheduled: data.scheduled.toISOString(),
         publishDate: data.publishDate?.toISOString() || null,
         guestIds: data.guestIds,
         coverArt: data.coverArt,
-        recordingLinks: data.recordingLinks,
+        recordingLinks: {
+          audio: data.recordingLinks.audio,
+          video: data.recordingLinks.video,
+          transcript: data.recordingLinks.transcript,
+          other: Array.isArray(data.recordingLinks.other) ? 
+            data.recordingLinks.other.map(item => ({
+              label: item.label || '',
+              url: item.url || ''
+            })) : []
+        },
         podcastUrls: data.podcastUrls,
-        resources: data.resources,
+        resources: Array.isArray(data.resources) ?
+          data.resources.map(r => ({
+            label: r.label || '',
+            url: r.url || '',
+            description: r.description || ''
+          })) : [],
         updatedAt: new Date().toISOString()
       };
       
