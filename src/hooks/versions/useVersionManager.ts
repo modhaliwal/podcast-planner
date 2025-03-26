@@ -1,5 +1,5 @@
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { ContentVersion } from "@/lib/types";
 import { useVersionInitialization } from "./hooks/useVersionInitialization";
 import { useVersionActions } from "./hooks/useVersionActions";
@@ -7,7 +7,7 @@ import { useSelectorProps } from "./hooks/useSelectorProps";
 
 interface UseVersionManagerProps {
   content: string;
-  versions: ContentVersion[];
+  versions?: ContentVersion[];
   onVersionsChange: (versions: ContentVersion[]) => void;
   onContentChange: (content: string) => void;
   source?: "manual" | "ai" | "import";
@@ -24,6 +24,9 @@ export function useVersionManager({
   onContentChange,
   source = "manual"
 }: UseVersionManagerProps) {
+  // For backward compatibility
+  const [internalContent, setInternalContent] = useState(content);
+  
   // Initialize version state
   const {
     activeVersionId,
@@ -59,17 +62,58 @@ export function useVersionManager({
     selectVersion,
     clearAllVersions
   );
+  
+  // Find the active version for convenience
+  const activeVersion = versions.find(v => v.id === activeVersionId) || null;
+  
+  // Check if the active version is the latest version
+  const isLatestVersionActive = useCallback(() => {
+    if (!versions.length || !activeVersionId) return true;
+    
+    const sortedVersions = [...versions].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    
+    return sortedVersions[0].id === activeVersionId;
+  }, [versions, activeVersionId]);
+  
+  // Function to set content and update state
+  const setContent = useCallback((newContent: string) => {
+    setInternalContent(newContent);
+    onContentChange(newContent);
+  }, [onContentChange]);
+  
+  // Function to add version that returns the new versions array
+  const addVersion = useCallback((newContent: string): ContentVersion[] => {
+    const result = addNewVersion(newContent);
+    return [...versions.filter(v => !v.active), result];
+  }, [addNewVersion, versions]);
+  
+  // Revert to a specific version
+  const revertToVersion = useCallback((versionId: string): ContentVersion[] => {
+    const version = versions.find(v => v.id === versionId);
+    if (!version) return versions;
+    
+    // Create a new version based on the reverted content
+    const newVersions = addVersion(version.content);
+    return newVersions;
+  }, [versions, addVersion]);
 
   return {
     activeVersionId,
+    activeVersion,
     versions,
     handleEditorBlur,
     handleContentChange,
     selectVersion,
     addNewVersion,
+    addVersion,
     addAIVersion,
     clearAllVersions,
+    revertToVersion,
+    setContent,
     versionSelectorProps,
-    hasInitialized
+    hasInitialized,
+    isLatestVersionActive: isLatestVersionActive()
   };
 }

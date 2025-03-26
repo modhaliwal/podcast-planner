@@ -20,23 +20,20 @@ export function useEpisodeSave(episodeId: string | undefined, onSuccess?: () => 
           .from('episodes')
           .update({
             title: updatedEpisode.title,
-            number: updatedEpisode.number,
+            episode_number: updatedEpisode.episodeNumber,
             status: updatedEpisode.status,
-            type: updatedEpisode.type,
-            season: updatedEpisode.season,
             scheduled: updatedEpisode.scheduled,
-            recorded: updatedEpisode.recorded,
-            published: updatedEpisode.published,
+            publish_date: updatedEpisode.publishDate,
             topic: updatedEpisode.topic,
-            summary: updatedEpisode.summary,
             introduction: updatedEpisode.introduction,
             notes: updatedEpisode.notes,
             resources: updatedEpisode.resources,
-            podcast_url: updatedEpisode.podcastUrl,
-            youtube_url: updatedEpisode.youtubeUrl,
-            spotify_url: updatedEpisode.spotifyUrl,
-            apple_url: updatedEpisode.appleUrl,
-            google_url: updatedEpisode.googleUrl,
+            podcast_urls: {
+              spotify: updatedEpisode.podcastUrls?.spotify,
+              youtube: updatedEpisode.podcastUrls?.youtube,
+              applePodcasts: updatedEpisode.podcastUrls?.applePodcasts,
+              amazonPodcasts: updatedEpisode.podcastUrls?.amazonPodcasts
+            },
             cover_art: updatedEpisode.coverArt,
             notes_versions: updatedEpisode.notesVersions ? 
               (updatedEpisode.notesVersions as any) : null

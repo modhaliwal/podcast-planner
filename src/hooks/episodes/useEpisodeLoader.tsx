@@ -55,29 +55,6 @@ export function useEpisodeLoader(episodeId: string | undefined) {
         guestIds 
       });
       
-      // Process the versions
-      if (mappedEpisode.notesVersions) {
-        // Ensure each version has the required fields
-        mappedEpisode.notesVersions = mappedEpisode.notesVersions.map(version => {
-          // If the version is missing any required fields, add them with default values
-          if (!version.id) version.id = crypto.randomUUID();
-          if (!version.timestamp) version.timestamp = new Date().toISOString();
-          if (!version.source) version.source = "manual";
-          if (!version.versionNumber) version.versionNumber = 1;
-          if (version.active === undefined) version.active = false;
-          return version;
-        });
-        
-        // Ensure at least one version is active
-        const hasActiveVersion = mappedEpisode.notesVersions.some(v => v.active);
-        if (!hasActiveVersion && mappedEpisode.notesVersions.length > 0) {
-          const latestVersion = [...mappedEpisode.notesVersions].sort(
-            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          )[0];
-          latestVersion.active = true;
-        }
-      }
-      
       console.log('Loaded episode:', mappedEpisode);
       setEpisode(mappedEpisode);
       return mappedEpisode;
@@ -106,6 +83,7 @@ export function useEpisodeLoader(episodeId: string | undefined) {
   return {
     isLoading,
     episode,
+    setEpisode,
     refreshEpisode
   };
 }

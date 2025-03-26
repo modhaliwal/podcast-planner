@@ -28,7 +28,16 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
     isLatestVersionActive
   } = useVersionManager({
     content,
-    initialVersions: (episode.notesVersions || []) as ContentVersion[],
+    versions: (episode.notesVersions || []) as ContentVersion[],
+    onVersionsChange: async (updatedVersions) => {
+      try {
+        if (onVersionChange) {
+          await onVersionChange(updatedVersions);
+        }
+      } catch (error) {
+        console.error("Error saving versions:", error);
+      }
+    },
     onContentChange: setContent,
   });
   
@@ -78,7 +87,10 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
     async (versionId: string) => {
       try {
         setIsLoading(true);
-        const updatedVersions = selectVersion(versionId);
+        const version = versions.find(v => v.id === versionId);
+        if (!version) return;
+        
+        const updatedVersions = selectVersion(version);
         
         if (onVersionChange) {
           await onVersionChange(updatedVersions as ContentVersion[]);
@@ -89,7 +101,7 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
         setIsLoading(false);
       }
     },
-    [selectVersion, onVersionChange]
+    [selectVersion, versions, onVersionChange]
   );
   
   // Handle reverting to a previous version

@@ -1,9 +1,84 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EpisodeStatus } from "@/lib/enums";
-import { User as AppUser } from "@/lib/types";
+import { User as AppUser, Episode, ContentVersion } from "@/lib/types";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { EpisodeFormData } from "@/components/episodes/CreateEpisodeForm/types";
+import { processVersions } from "@/lib/versionUtils";
+
+interface DBEpisode {
+  id: string;
+  title: string;
+  episode_number: number;
+  scheduled: string;
+  publish_date?: string;
+  status: string;
+  introduction: string;
+  notes?: string;
+  notes_versions?: ContentVersion[];
+  cover_art?: string;
+  topic?: string;
+  podcast_urls?: {
+    spotify?: string;
+    applePodcasts?: string;
+    amazonPodcasts?: string;
+    youtube?: string;
+  };
+  resources?: Array<{
+    label: string;
+    url: string;
+    description?: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+  // These fields exist in the DB but should be mapped
+  podcast_url?: string;
+  youtube_url?: string;
+  spotify_url?: string;
+  apple_url?: string;
+  google_url?: string;
+}
+
+// Map from database structure to application structure
+export function mapEpisodeFromDB(dbEpisode: any): Episode {
+  // Process notes versions if they exist
+  const notesVersions = dbEpisode.notes_versions
+    ? processVersions(dbEpisode.notes_versions as ContentVersion[])
+    : undefined;
+
+  // Map podcast URLs from legacy fields if needed
+  let podcastUrls = dbEpisode.podcast_urls || {};
+  
+  // Handle legacy URL fields if present
+  if (dbEpisode.podcast_url || dbEpisode.youtube_url || dbEpisode.spotify_url || 
+      dbEpisode.apple_url || dbEpisode.google_url) {
+    podcastUrls = {
+      ...podcastUrls,
+      spotify: dbEpisode.spotify_url || podcastUrls.spotify,
+      youtube: dbEpisode.youtube_url || podcastUrls.youtube,
+      applePodcasts: dbEpisode.apple_url || podcastUrls.applePodcasts,
+      amazonPodcasts: dbEpisode.google_url || podcastUrls.amazonPodcasts
+    };
+  }
+
+  return {
+    id: dbEpisode.id,
+    title: dbEpisode.title || '',
+    episodeNumber: dbEpisode.episode_number,
+    scheduled: dbEpisode.scheduled || '',
+    publishDate: dbEpisode.publish_date,
+    status: dbEpisode.status as EpisodeStatus || EpisodeStatus.SCHEDULED,
+    introduction: dbEpisode.introduction || '',
+    notes: dbEpisode.notes || '',
+    notesVersions: notesVersions,
+    topic: dbEpisode.topic,
+    guestIds: dbEpisode.guestIds || [],
+    coverArt: dbEpisode.cover_art,
+    podcastUrls: podcastUrls,
+    resources: dbEpisode.resources || [],
+    createdAt: dbEpisode.created_at,
+    updatedAt: dbEpisode.updated_at
+  };
+}
 
 // Create a type that accepts either User type
 type UserParam = AppUser | SupabaseUser;

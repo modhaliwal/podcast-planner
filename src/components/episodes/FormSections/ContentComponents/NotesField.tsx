@@ -1,5 +1,6 @@
+
 import { useVersionManager } from "@/hooks/versions";
-import { ContentVersion } from "@/lib/types";
+import { ContentVersion, Guest } from "@/lib/types";
 import { Editor } from "@/components/editor/Editor";
 import { UseFormReturn } from "react-hook-form";
 import { useEffect, useState } from "react";
@@ -8,10 +9,11 @@ import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
+  guests?: Guest[];
   showLabel?: boolean;
 }
 
-export function NotesField({ form, showLabel = true }: NotesFieldProps) {
+export function NotesField({ form, guests = [], showLabel = true }: NotesFieldProps) {
   const { getValues, setValue, watch } = form;
   const [initialContent] = useState(getValues("notes") || "");
   const watchedNotes = watch("notes") || "";
@@ -32,10 +34,13 @@ export function NotesField({ form, showLabel = true }: NotesFieldProps) {
   const { 
     versions, 
     addVersion, 
-    setContent 
+    setContent
   } = useVersionManager({
     content: watchedNotes,
-    initialVersions: typedVersions,
+    versions: typedVersions,
+    onVersionsChange: (newVersions) => {
+      setValue("notesVersions", newVersions as any, { shouldDirty: true });
+    },
     onContentChange: (content) => {
       setValue("notes", content, { shouldDirty: true });
     },
