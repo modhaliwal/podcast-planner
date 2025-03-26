@@ -5,28 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { EpisodeStatus } from "@/lib/enums";
 import { ensureVersionNumbers } from "./versions/utils/versionNumberUtils";
-
-// Define the form values type
-export interface EpisodeFormValues {
-  title: string;
-  episodeNumber: number;
-  topic: string;
-  scheduled: Date | string;
-  publishDate: Date | string | null;
-  status: EpisodeStatus;
-  guestIds: string[];
-  introduction: string;
-  notes: string;
-  notesVersions: ContentVersion[];
-  resources: Resource[];
-  coverArt: string;
-  podcastUrls: {
-    spotify?: string;
-    applePodcasts?: string;
-    amazonPodcasts?: string;
-    youtube?: string;
-  };
-}
+import { EpisodeFormValues } from "@/components/episodes/EpisodeFormSchema";
 
 interface UseEpisodeFormProps {
   episode: Episode;
@@ -41,7 +20,7 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
     defaultValues: {
       title: episode.title || "",
       episodeNumber: episode.episodeNumber || 0,
-      topic: episode.topic || "",
+      topic: episode.topic || null,
       scheduled: episode.scheduled || "",
       publishDate: episode.publishDate || null,
       status: episode.status || EpisodeStatus.SCHEDULED,
@@ -82,10 +61,10 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
         resources: data.resources || [],
         coverArt: data.coverArt || undefined,
         podcastUrls: {
-          spotify: data.podcastUrls.spotify || undefined,
-          applePodcasts: data.podcastUrls.applePodcasts || undefined,
-          amazonPodcasts: data.podcastUrls.amazonPodcasts || undefined,
-          youtube: data.podcastUrls.youtube || undefined,
+          spotify: data.podcastUrls?.spotify || undefined,
+          applePodcasts: data.podcastUrls?.applePodcasts || undefined,
+          amazonPodcasts: data.podcastUrls?.amazonPodcasts || undefined,
+          youtube: data.podcastUrls?.youtube || undefined,
         },
         updatedAt: new Date().toISOString(),
       };

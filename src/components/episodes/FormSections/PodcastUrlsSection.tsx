@@ -1,10 +1,10 @@
 
 import { UseFormReturn } from 'react-hook-form';
-import { EpisodeFormValues } from '@/hooks/useEpisodeForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Link, Music, Youtube } from 'lucide-react';
+import { EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 
 interface PodcastUrlsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
