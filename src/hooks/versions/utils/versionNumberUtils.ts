@@ -1,5 +1,6 @@
 
 import { ContentVersion } from "@/lib/types";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Find the highest version number in an array of content versions
@@ -17,24 +18,29 @@ export const findHighestVersionNumber = (versions: ContentVersion[]): number => 
 };
 
 /**
- * Ensures all versions in an array have version numbers
- * @param versions Array of ContentVersion objects
- * @returns Array with version numbers added where missing
+ * Ensures all versions in an array have version numbers and required properties
+ * @param versions Array of ContentVersion objects or partial version objects
+ * @returns Array with all required properties added where missing
  */
-export function ensureVersionNumbers(versions: ContentVersion[]): ContentVersion[] {
+export function ensureVersionNumbers(versions: any[]): ContentVersion[] {
   if (!versions || versions.length === 0) return [];
   
   // Sort versions by timestamp to ensure consistent numbering
-  const sortedVersions = [...versions].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  );
+  const sortedVersions = [...versions].sort((a, b) => {
+    const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+    const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+    return aTime - bTime;
+  });
   
-  // Assign version numbers based on timestamp order if missing
+  // Assign version numbers based on timestamp order and ensure all required properties
   return sortedVersions.map((version, index) => ({
-    ...version,
-    versionNumber: version.versionNumber || (index + 1),
-    active: typeof version.active === 'boolean' ? version.active : false
-  }));
+    id: version.id || uuidv4(), // Ensure id is never undefined
+    content: version.content || '',
+    timestamp: version.timestamp || new Date().toISOString(),
+    source: version.source || 'manual',
+    active: typeof version.active === 'boolean' ? version.active : false,
+    versionNumber: version.versionNumber || (index + 1)
+  })) as ContentVersion[];
 }
 
 /**

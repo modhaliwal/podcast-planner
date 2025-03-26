@@ -10,6 +10,7 @@ import { useVersionManager } from '@/hooks/versions';
 import { NotesGeneration } from './NotesGeneration';
 import { toast } from '@/hooks/toast';
 import { ensureVersionNumbers } from '@/hooks/versions';
+import { v4 as uuidv4 } from 'uuid';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -21,7 +22,17 @@ export function NotesField({ form, guests }: NotesFieldProps) {
   
   // Make sure versions are properly formatted with required properties
   const initialVersions = form.watch('notesVersions') || [];
-  const formattedVersions = ensureVersionNumbers(initialVersions) as ContentVersion[];
+  
+  // Ensure all versions have required properties before passing to useVersionManager
+  // Create formatted versions with all required fields explicitly set
+  const formattedVersions = initialVersions.map((version: any) => ({
+    id: version.id || uuidv4(), // Ensure id is always present
+    content: version.content || '',
+    timestamp: version.timestamp || new Date().toISOString(),
+    source: version.source || 'manual',
+    active: version.active || false,
+    versionNumber: version.versionNumber || 1
+  })) as ContentVersion[];
   
   // Initialize versions manager
   const { 
