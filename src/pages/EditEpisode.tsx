@@ -6,16 +6,18 @@ import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
 import { useGuestsData } from '@/hooks/guests';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Use the episode data hook with the ID from URL params
   const { isLoading: isEpisodeLoading, episode, handleSave } = useEpisodeData(id);
   
-  // Use guests data hook to fetch guests 
-  const { guests, isLoadingGuests } = useGuestsData(undefined);
+  // Use guests data hook to fetch guests with the user ID
+  const { guests, isLoadingGuests } = useGuestsData(user?.id);
   
   // If loading, show loading indicator
   const isLoading = isEpisodeLoading || isLoadingGuests;

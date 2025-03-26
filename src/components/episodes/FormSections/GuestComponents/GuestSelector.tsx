@@ -15,6 +15,8 @@ interface GuestSelectorProps {
 export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
   const guestIds = form.getValues('guestIds') || [];
   
+  console.log("GuestSelector rendering with:", { availableGuests, guestIds });
+  
   const handleValueChange = (value: string) => {
     if (value === "all") {
       form.setValue('guestIds', availableGuests.map(guest => guest.id), { shouldValidate: true });
@@ -74,7 +76,9 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
               </div>
             </SelectItem>
           ))}
-          <SelectItem value="all">Select All Guests</SelectItem>
+          {availableGuests.length > 0 && (
+            <SelectItem value="all">Select All Guests</SelectItem>
+          )}
         </SelectContent>
       </Select>
       <FormMessage />

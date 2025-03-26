@@ -63,6 +63,8 @@ export const GuestsSection = memo(function GuestsSection({ form, guests }: Guest
     );
   }
 
+  console.log("Rendering GuestsSection with guests:", guests);
+
   return (
     <Card>
       <CardHeader>
