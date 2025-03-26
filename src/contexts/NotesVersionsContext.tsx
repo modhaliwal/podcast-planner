@@ -1,20 +1,36 @@
 
-import { useState, useEffect } from "react";
-import { ContentVersion } from "@/lib/types";
-import { v4 as uuidv4 } from "uuid";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { UseFormReturn } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
+import { ContentVersion } from "@/lib/types";
 
-interface UseContentVersionsProps<T> {
-  form: UseFormReturn<T>;
-  fieldName: keyof T;
-  versionsFieldName: keyof T;
+// Define the context value type
+interface NotesVersionsContextValue {
+  activeVersionId: string | null;
+  versions: ContentVersion[];
+  handleContentChange: () => void;
+  selectVersion: (version: ContentVersion) => void;
+  clearAllVersions: () => void;
+  addNewVersion: (content: string, source?: "manual" | "ai" | "import") => ContentVersion;
 }
 
-export function useContentVersions<T>({
+// Create the context with a default undefined value
+const NotesVersionsContext = createContext<NotesVersionsContextValue | undefined>(undefined);
+
+// Define props for the provider
+interface NotesVersionsProviderProps {
+  children: ReactNode;
+  form: UseFormReturn<any>;
+  fieldName: string;
+  versionsFieldName: string;
+}
+
+export function NotesVersionsProvider({
+  children,
   form,
   fieldName,
-  versionsFieldName
-}: UseContentVersionsProps<T>) {
+  versionsFieldName,
+}: NotesVersionsProviderProps) {
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   const [versions, setVersions] = useState<ContentVersion[]>([]);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
@@ -22,22 +38,22 @@ export function useContentVersions<T>({
   // Initialize versions if they don't exist
   useEffect(() => {
     if (!hasInitialized) {
-      const currentContent = form.getValues(fieldName as string) || "";
-      const existingVersions = form.getValues(versionsFieldName as string) || [];
+      const currentContent = form.getValues(fieldName) || "";
+      const existingVersions = form.getValues(versionsFieldName) || [];
 
-      if (Array.isArray(existingVersions) && existingVersions.length === 0 && currentContent) {
+      if (existingVersions.length === 0 && currentContent) {
         const initialVersion: ContentVersion = {
           id: uuidv4(),
-          content: String(currentContent),
+          content: currentContent,
           timestamp: new Date().toISOString(),
           source: "manual",
         };
         
         // Update both the local state and the form value
         setVersions([initialVersion]);
-        form.setValue(versionsFieldName as any, [initialVersion]);
+        form.setValue(versionsFieldName, [initialVersion]);
         setActiveVersionId(initialVersion.id);
-      } else if (Array.isArray(existingVersions) && existingVersions.length > 0) {
+      } else if (existingVersions.length > 0) {
         // Set to the most recent version
         const sortedVersions = [...existingVersions].sort(
           (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -51,7 +67,7 @@ export function useContentVersions<T>({
   }, [form, fieldName, versionsFieldName, hasInitialized]);
 
   const handleContentChange = () => {
-    const currentContent = form.getValues(fieldName as string) || "";
+    const currentContent = form.getValues(fieldName) || "";
     
     // Check if content is not empty and if we have an active version to compare with
     if (typeof currentContent === 'string' && currentContent.trim() && activeVersionId) {
@@ -68,30 +84,30 @@ export function useContentVersions<T>({
         
         const updatedVersions = [...versions, newVersion];
         setVersions(updatedVersions);
-        form.setValue(versionsFieldName as any, updatedVersions);
+        form.setValue(versionsFieldName, updatedVersions);
         setActiveVersionId(newVersion.id);
       }
     }
   };
 
   const selectVersion = (version: ContentVersion) => {
-    form.setValue(fieldName as any, version.content);
+    form.setValue(fieldName, version.content);
     setActiveVersionId(version.id);
   };
 
   const clearAllVersions = () => {
-    const currentContent = form.getValues(fieldName as string) || "";
+    const currentContent = form.getValues(fieldName) || "";
     
     // Create a single version with current content
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: typeof currentContent === 'string' ? currentContent : String(currentContent),
+      content: typeof currentContent === 'string' ? currentContent : '',
       timestamp: new Date().toISOString(),
       source: "manual"
     };
     
     setVersions([newVersion]);
-    form.setValue(versionsFieldName as any, [newVersion]);
+    form.setValue(versionsFieldName, [newVersion]);
     setActiveVersionId(newVersion.id);
   };
 
@@ -105,27 +121,33 @@ export function useContentVersions<T>({
     
     const updatedVersions = [...versions, newVersion];
     setVersions(updatedVersions);
-    form.setValue(versionsFieldName as any, updatedVersions);
+    form.setValue(versionsFieldName, updatedVersions);
     setActiveVersionId(newVersion.id);
     
     return newVersion;
   };
 
-  // For version selector dropdown
-  const versionSelectorProps = {
-    versions,
-    onSelectVersion: selectVersion,
-    activeVersionId,
-    onClearAllVersions: clearAllVersions
-  };
-
-  return {
+  const contextValue: NotesVersionsContextValue = {
     activeVersionId,
     versions,
     handleContentChange,
     selectVersion,
     clearAllVersions,
-    addNewVersion,
-    versionSelectorProps
+    addNewVersion
   };
+
+  return (
+    <NotesVersionsContext.Provider value={contextValue}>
+      {children}
+    </NotesVersionsContext.Provider>
+  );
+}
+
+// Custom hook for consuming the context
+export function useNotesVersions() {
+  const context = useContext(NotesVersionsContext);
+  if (context === undefined) {
+    throw new Error("useNotesVersions must be used within a NotesVersionsProvider");
+  }
+  return context;
 }

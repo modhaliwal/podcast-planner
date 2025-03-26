@@ -4,22 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { Guest } from "@/lib/types";
 
 interface NotesGenerationProps {
-  form: UseFormReturn<EpisodeFormValues>;
   guests: Guest[];
   onNotesGenerated: (notes: string) => void;
 }
 
 export function NotesGeneration({ 
-  form, 
   guests,
   onNotesGenerated 
 }: NotesGenerationProps) {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const form = useFormContext<EpisodeFormValues>();
 
   const generateNotes = async () => {
     try {
@@ -51,8 +50,7 @@ export function NotesGeneration({
       }
       
       if (data && data.notes) {
-        // Update form and call the callback
-        form.setValue("notes", data.notes);
+        // Call the callback with generated notes
         onNotesGenerated(data.notes);
         
         toast.success("Notes generated successfully!");

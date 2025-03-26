@@ -4,10 +4,71 @@ import { useFormContext, UseFormReturn } from "react-hook-form";
 import { Guest } from "@/lib/types";
 import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
-import { useNotesVersionManager } from "@/hooks/useNotesVersionManager";
 import { NotesGeneration } from "./NotesGeneration";
 import { NotesEditor } from "./NotesEditor";
+import { NotesVersionsProvider, useNotesVersions } from "@/contexts/NotesVersionsContext";
 
+// Inner component that uses the context
+function NotesFieldContent({
+  editMode = true,
+  label = "Episode Notes",
+  placeholder = "Add episode notes here...",
+  guests = [],
+}: {
+  editMode?: boolean;
+  label?: string;
+  placeholder?: string;
+  guests?: Guest[];
+}) {
+  const {
+    activeVersionId,
+    versions,
+    handleContentChange,
+    selectVersion,
+    clearAllVersions,
+    addNewVersion
+  } = useNotesVersions();
+
+  const handleNotesGenerated = (notes: string) => {
+    // Create new version with AI-generated notes
+    addNewVersion(notes, "ai");
+  };
+
+  return (
+    <FormItem>
+      <div className="flex items-center justify-between mb-2">
+        <FormLabel>{label}</FormLabel>
+        <div className="flex items-center space-x-2">
+          {versions.length > 0 && (
+            <VersionSelector
+              versions={versions}
+              onSelectVersion={selectVersion}
+              activeVersionId={activeVersionId || undefined}
+              onClearAllVersions={clearAllVersions}
+            />
+          )}
+          
+          {editMode && (
+            <NotesGeneration 
+              onNotesGenerated={handleNotesGenerated}
+              guests={guests}
+            />
+          )}
+        </div>
+      </div>
+      
+      <NotesEditor
+        onBlur={handleContentChange}
+        placeholder={placeholder}
+        readOnly={!editMode}
+      />
+      
+      <FormMessage />
+    </FormItem>
+  );
+}
+
+// Wrapper component that provides the context
 interface NotesFieldProps {
   editMode?: boolean;
   label?: string;
@@ -29,58 +90,18 @@ export function NotesField({
   const fieldName = "notes";
   const versionsFieldName = "notesVersions";
   
-  // Use our custom hook for version management
-  const {
-    activeVersionId,
-    versions,
-    handleEditorBlur,
-    selectVersion,
-    handleClearAllVersions,
-    addNewVersion
-  } = useNotesVersionManager({
-    form,
-    fieldName,
-    versionsFieldName
-  });
-
-  const handleNotesGenerated = (notes: string) => {
-    // Create new version with AI-generated notes
-    addNewVersion(notes, "ai");
-  };
-
   return (
-    <FormItem>
-      <div className="flex items-center justify-between mb-2">
-        <FormLabel>{label}</FormLabel>
-        <div className="flex items-center space-x-2">
-          {versions.length > 0 && (
-            <VersionSelector
-              versions={versions}
-              onSelectVersion={selectVersion}
-              activeVersionId={activeVersionId || undefined}
-              onClearAllVersions={handleClearAllVersions}
-            />
-          )}
-          
-          {editMode && (
-            <NotesGeneration 
-              form={form}
-              guests={guests}
-              onNotesGenerated={handleNotesGenerated}
-            />
-          )}
-        </div>
-      </div>
-      
-      <NotesEditor
-        form={form}
-        fieldName={fieldName}
-        onBlur={handleEditorBlur}
+    <NotesVersionsProvider 
+      form={form} 
+      fieldName={fieldName} 
+      versionsFieldName={versionsFieldName}
+    >
+      <NotesFieldContent 
+        editMode={editMode}
+        label={label}
         placeholder={placeholder}
-        readOnly={!editMode}
+        guests={guests}
       />
-      
-      <FormMessage />
-    </FormItem>
+    </NotesVersionsProvider>
   );
 }

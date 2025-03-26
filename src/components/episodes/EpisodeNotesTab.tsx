@@ -5,41 +5,14 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Episode, ContentVersion } from '@/lib/types';
 import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
-import { useContentVersions } from '@/hooks/useContentVersions';
+import { NotesVersionsProvider, useNotesVersions } from '@/contexts/NotesVersionsContext';
 
-interface EpisodeNotesTabProps {
-  episode: Episode;
+interface EpisodeNotesContentProps {
+  notes: string;
 }
 
-export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
-  const [notes, setNotes] = useState<string>(episode.notes || '');
-  const [notesVersions, setNotesVersions] = useState<ContentVersion[]>(episode.notesVersions || []);
-  
-  // Create a mock form for the content versions hook
-  const mockForm = {
-    getValues: (field: string) => field === 'notes' ? notes : notesVersions,
-    setValue: (field: string, value: any) => {
-      if (field === 'notes') setNotes(value);
-      else if (field === 'notesVersions') setNotesVersions(value);
-    }
-  };
-  
-  // Use our generic hook with the mock form
-  const { 
-    activeVersionId,
-    selectVersion, 
-    versionSelectorProps 
-  } = useContentVersions({
-    form: mockForm as any,
-    fieldName: 'notes' as any,
-    versionsFieldName: 'notesVersions' as any
-  });
-  
-  // Update notes if episode changes
-  useEffect(() => {
-    setNotes(episode.notes || '');
-    setNotesVersions(episode.notesVersions || []);
-  }, [episode]);
+function EpisodeNotesContent({ notes }: EpisodeNotesContentProps) {
+  const { versions, activeVersionId, selectVersion, versionSelectorProps } = useNotesVersions();
   
   return (
     <Card className="shadow-sm border-slate-200 dark:border-slate-700">
@@ -50,7 +23,7 @@ export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
             Episode Notes
           </CardTitle>
           
-          {notesVersions.length > 0 && (
+          {versions.length > 0 && (
             <div className="flex items-center">
               <VersionSelector {...versionSelectorProps} />
             </div>
@@ -71,5 +44,40 @@ export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
         </ScrollArea>
       </CardContent>
     </Card>
+  );
+}
+
+interface EpisodeNotesTabProps {
+  episode: Episode;
+}
+
+export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
+  const [notes, setNotes] = useState<string>(episode.notes || '');
+  
+  // Create a mock form for the content versions hook
+  const mockForm = {
+    getValues: (field: string) => {
+      if (field === 'notes') return notes;
+      if (field === 'notesVersions') return episode.notesVersions || [];
+      return null;
+    },
+    setValue: (field: string, value: any) => {
+      if (field === 'notes') setNotes(value);
+    }
+  };
+  
+  // Update notes if episode changes
+  useEffect(() => {
+    setNotes(episode.notes || '');
+  }, [episode]);
+  
+  return (
+    <NotesVersionsProvider
+      form={mockForm as any}
+      fieldName="notes"
+      versionsFieldName="notesVersions"
+    >
+      <EpisodeNotesContent notes={notes} />
+    </NotesVersionsProvider>
   );
 }
