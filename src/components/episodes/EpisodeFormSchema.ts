@@ -1,5 +1,14 @@
 
 import { z } from "zod";
+import { EpisodeStatus } from "@/lib/enums";
+
+// Define the ContentVersion schema
+const contentVersionSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  timestamp: z.string(),
+  source: z.enum(['manual', 'ai', 'import'])
+});
 
 // Define the shape of the episode form
 export const episodeFormSchema = z.object({
@@ -8,15 +17,8 @@ export const episodeFormSchema = z.object({
   topic: z.string().nullable().optional(),
   introduction: z.string().optional(),
   notes: z.string().optional().default(''),
-  notesVersions: z.array(
-    z.object({
-      id: z.string(),
-      content: z.string(),
-      timestamp: z.string(),
-      source: z.enum(['manual', 'ai', 'import'])
-    })
-  ).optional().default([]),
-  status: z.enum(["draft", "scheduled", "published", "archived"]),
+  notesVersions: z.array(contentVersionSchema).optional().default([]),
+  status: z.nativeEnum(EpisodeStatus),
   scheduled: z.date(),
   publishDate: z.date().nullable().optional(),
   guestIds: z.array(z.string()),
