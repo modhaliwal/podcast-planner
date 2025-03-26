@@ -2,7 +2,7 @@
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "./versionNumberUtils";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, Path } from "react-hook-form";
 
 /**
  * Creates a new version based on the current content if it has changed
@@ -16,8 +16,8 @@ export function createVersionFromContent<T extends Record<string, any>>(
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
 ) {
-  // Get current content from form
-  const currentContent = form.getValues(fieldName as string) as string;
+  // Get current content from form - use proper Path<T> typing
+  const currentContent = form.getValues(fieldName as Path<T>) as string;
   
   if (!currentContent?.trim()) return;
   
@@ -50,8 +50,8 @@ export function createVersionFromContent<T extends Record<string, any>>(
     setVersions(newVersions);
     setActiveVersionId(newVersion.id);
     
-    // Update form values
-    form.setValue(versionsFieldName as string, newVersions as any, { shouldDirty: true });
+    // Update form values - use proper Path<T> typing
+    form.setValue(versionsFieldName as Path<T>, newVersions as any, { shouldDirty: true });
   }
 }
 
@@ -93,9 +93,9 @@ export function addNewVersionUtil<T extends Record<string, any>>(
   setVersions(newVersions);
   setActiveVersionId(newVersion.id);
   
-  // Update form values
-  form.setValue(fieldName as string, content as any, { shouldDirty: true });
-  form.setValue(versionsFieldName as string, newVersions as any, { shouldDirty: true });
+  // Update form values - fix both setValue calls with proper Path<T> typing
+  form.setValue(fieldName as Path<T>, content as any, { shouldDirty: true });
+  form.setValue(versionsFieldName as Path<T>, newVersions as any, { shouldDirty: true });
   
   return newVersion;
 }
@@ -110,8 +110,8 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
 ) {
-  // Get current content
-  const currentContent = form.getValues(fieldName as string) as string;
+  // Get current content - use proper Path<T> typing
+  const currentContent = form.getValues(fieldName as Path<T>) as string;
   
   // Create new version
   const newVersion: ContentVersion = {
@@ -127,6 +127,7 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
   setVersions([newVersion]);
   setActiveVersionId(newVersion.id);
   
-  // Update form
-  form.setValue(versionsFieldName as string, [newVersion] as any, { shouldDirty: true });
+  // Update form - use proper Path<T> typing
+  form.setValue(versionsFieldName as Path<T>, [newVersion] as any, { shouldDirty: true });
 }
+
