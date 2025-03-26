@@ -10,7 +10,7 @@ import { VersionManager } from '@/components/guests/form-sections/VersionManager
 import { NotesGeneration } from './NotesGeneration';
 import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
 import { toast } from '@/hooks/toast';
-import { ensureVersionNumbers } from '@/hooks/versions';
+import { processVersions } from '@/lib/versionUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -25,17 +25,9 @@ export function NotesField({ form, guests }: NotesFieldProps) {
   // Make sure versions are properly formatted with required properties
   const initialVersions = form.watch('notesVersions') || [];
   
-  // Ensure all versions have required properties before passing to useVersionManager
-  // Create formatted versions with all required fields explicitly set
-  const formattedVersions = initialVersions.map((version: any) => ({
-    id: version.id || uuidv4(), // Ensure id is always present
-    content: version.content || '',
-    timestamp: version.timestamp || new Date().toISOString(),
-    source: version.source || 'manual',
-    active: version.active || false,
-    versionNumber: version.versionNumber || 1
-  })) as ContentVersion[];
-
+  // Process versions to ensure they have all required properties and proper formatting
+  const formattedVersions = processVersions(initialVersions as ContentVersion[]);
+  
   // Update form when content changes outside the VersionManager
   const handleContentUpdate = (newContent: string) => {
     setContent(newContent);

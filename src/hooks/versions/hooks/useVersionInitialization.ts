@@ -20,12 +20,10 @@ export function useVersionInitialization(
 
   // Initialize versions on component mount or when versions/content change
   useEffect(() => {
-    if (hasInitialized) return;
-    
     // Process versions to ensure they're valid
     const processedVersions = processVersions(versions);
     
-    if (processedVersions.length === 0 && content) {
+    if (processedVersions.length === 0 && content && !hasInitialized) {
       // Create initial version if none exists
       const initialVersion: ContentVersion = {
         id: uuidv4(),
@@ -39,6 +37,7 @@ export function useVersionInitialization(
       onVersionsChange([initialVersion]);
       setActiveVersionId(initialVersion.id);
       setPreviousContent(content);
+      setHasInitialized(true);
     } else if (processedVersions.length > 0) {
       // Find the active version
       const activeVersion = processedVersions.find(v => v.active);
@@ -47,7 +46,7 @@ export function useVersionInitialization(
         setActiveVersionId(activeVersion.id);
         
         // Only update content if it's different to avoid render loops
-        if (content !== activeVersion.content) {
+        if (content !== activeVersion.content && !hasInitialized) {
           onContentChange(activeVersion.content);
         }
         setPreviousContent(activeVersion.content);
@@ -66,20 +65,22 @@ export function useVersionInitialization(
           onVersionsChange(updatedVersions);
           setActiveVersionId(sortedVersions[0].id);
           setPreviousContent(sortedVersions[0].content);
-          if (content !== sortedVersions[0].content) {
+          if (content !== sortedVersions[0].content && !hasInitialized) {
             onContentChange(sortedVersions[0].content);
           }
         }
       }
       
       // If the versions array was updated by processing, update it
-      if (JSON.stringify(processedVersions) !== JSON.stringify(versions)) {
+      if (JSON.stringify(processedVersions) !== JSON.stringify(versions) && !hasInitialized) {
         onVersionsChange(processedVersions);
       }
+      
+      if (!hasInitialized) {
+        setHasInitialized(true);
+      }
     }
-    
-    setHasInitialized(true);
-  }, [hasInitialized, versions, content, onVersionsChange, onContentChange]);
+  }, [versions, content, onVersionsChange, onContentChange, hasInitialized]);
 
   return {
     activeVersionId,

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
 import { useGuestsData } from '@/hooks/guests';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
 
 const EditEpisode = () => {
@@ -35,6 +35,13 @@ const EditEpisode = () => {
       navigate('/episodes');
     }
   }, [isEpisodeLoading, episode, navigate]);
+  
+  // Create a stable key that includes both ID and version information
+  const episodeKey = useMemo(() => {
+    if (!episode) return '';
+    const versionsCount = episode.notesVersions?.length || 0;
+    return `episode-${episode.id}-versions-${versionsCount}`;
+  }, [episode]);
   
   if (isLoading) {
     return (
@@ -68,9 +75,6 @@ const EditEpisode = () => {
       navigate(`/episodes/${id}`);
     }
   };
-  
-  // Stable key for the episode form that includes both ID and version count
-  const episodeKey = `episode-${episode.id}-versions-${episode.notesVersions?.length || 0}`;
   
   return (
     <Shell>

@@ -50,9 +50,7 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
     
     try {
       // Process versions to ensure they have version numbers and active flags
-      const processedVersions = data.notesVersions 
-        ? processVersions(data.notesVersions as ContentVersion[])
-        : [];
+      const processedVersions = processVersions(data.notesVersions as ContentVersion[] || []);
       
       // Prepare the episode data
       const updatedEpisode: Episode = {
