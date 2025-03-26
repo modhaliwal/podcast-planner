@@ -23,7 +23,7 @@ export async function generateResearchWithPerplexity(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-deep-research',
         messages: [
           {
             role: "system",
@@ -31,7 +31,7 @@ export async function generateResearchWithPerplexity(
           },
           {
             role: "user",
-            content: `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
+            content: `Create detailed background research on ${name}, who is a ${title} at ${companyInfo}, for a podcast interview.
             
             Format the output as well-structured markdown with proper headings (##), lists (*, -), and sections.
             
