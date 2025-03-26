@@ -28,12 +28,3 @@ export function validateRequestData(data: any) {
   
   return data;
 }
-
-// Helper for checking if OpenAI API key is set
-export function validateOpenAIApiKey() {
-  const apiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!apiKey) {
-    throw new Error("OpenAI API key is required but not provided");
-  }
-  return apiKey;
-}

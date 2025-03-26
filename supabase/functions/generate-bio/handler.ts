@@ -1,8 +1,32 @@
 
-import { corsHeaders, validateRequestData } from "../shared/utils.ts";
+import { corsHeaders } from "../shared/utils.ts";
 import { extractContentFromLinks } from "../shared/content/extraction.ts";
 import { generateBioWithOpenAI, generateResearchWithOpenAI } from "../shared/generators/openai.ts";
 import { generateResearchWithPerplexity } from "../shared/generators/perplexity/index.ts";
+
+// Simple validation function defined directly in this file
+function validateRequestData(data: any) {
+  const { 
+    type, 
+    name, 
+    title, 
+    socialLinks,
+  } = data;
+
+  if (!type) {
+    throw new Error("Type is required ('bio' or 'research')");
+  }
+  
+  if (!name) {
+    throw new Error("Name is required");
+  }
+  
+  if (!title) {
+    throw new Error("Title is required");
+  }
+  
+  return data;
+}
 
 export async function handleRequest(req: Request) {
   try {
