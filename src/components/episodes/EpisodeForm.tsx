@@ -11,6 +11,7 @@ import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
 import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 import { EpisodeFormValues } from './EpisodeFormSchema';
+import { useMemo } from 'react';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -34,9 +35,14 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
     }
   });
   
+  // Generate stable key for the form based on episode ID and version count
+  const formKey = useMemo(() => {
+    return `episode-form-${episode.id}-${episode.notesVersions?.length || 0}`;
+  }, [episode.id, episode.notesVersions?.length]);
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 gap-6">
           <CombinedBasicInfoSection form={form} />
           

@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import { useCoverArtHandler } from '../useCoverArtHandler';
 import { useEpisodeGuests } from '../useEpisodeGuests';
 import { useAuth } from '@/contexts/AuthContext';
-import { ensureVersionNumbers } from '@/hooks/versions';
+import { processVersions } from '@/lib/versionUtils';
 
 export function useEpisodeSave(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,34 +44,8 @@ export function useEpisodeSave(episodeId: string | undefined) {
           description: resource.description,
         })) : null;
       
-      // CRITICAL FIX: Properly process version numbers and active flags
-      const notesVersions = updatedEpisode.notesVersions || [];
-      const processedVersions = ensureVersionNumbers(notesVersions);
-      
-      // Make sure at least one version is active
-      const hasActiveVersion = processedVersions.some(v => v.active);
-      
-      let finalVersions = processedVersions;
-      if (!hasActiveVersion && processedVersions.length > 0) {
-        // Mark the latest version as active
-        const sortedVersions = [...processedVersions].sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        
-        finalVersions = processedVersions.map(v => ({
-          ...v,
-          active: v.id === sortedVersions[0].id
-        }));
-      }
-      
-      const notesVersionsJson = finalVersions.map(version => ({
-        id: version.id,
-        content: version.content,
-        timestamp: version.timestamp,
-        source: version.source,
-        active: version.active,
-        versionNumber: version.versionNumber
-      }));
+      // Process version numbers and active flags
+      const notesVersionsJson = processVersions(updatedEpisode.notesVersions || []);
       
       const { error: updateError } = await supabase
         .from('episodes')

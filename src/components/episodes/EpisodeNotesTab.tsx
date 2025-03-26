@@ -6,20 +6,26 @@ import { Episode, ContentVersion } from '@/lib/types';
 import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
 import { VersionManager } from '@/components/guests/form-sections/VersionManager';
 import { v4 as uuidv4 } from 'uuid';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NotesGeneration } from './FormSections/ContentComponents/NotesGeneration';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { EpisodeFormValues } from './EpisodeFormSchema';
+import { processVersions } from '@/lib/versionUtils';
 
 interface EpisodeNotesContentProps {
   episode: Episode;
 }
 
 function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
+  // Process versions to ensure they have proper structure
+  const initialVersions = useMemo(() => {
+    return processVersions(episode.notesVersions || []);
+  }, [episode.notesVersions]);
+  
   const [notes, setNotes] = useState(episode.notes || '');
-  const [versions, setVersions] = useState<ContentVersion[]>([]);
+  const [versions, setVersions] = useState<ContentVersion[]>(initialVersions);
   
   const form = useForm<EpisodeFormValues>({
     defaultValues: {
@@ -27,7 +33,7 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
       topic: episode.topic || null,
       guestIds: episode.guestIds || [],
       notes: episode.notes || '',
-      notesVersions: episode.notesVersions || [],
+      notesVersions: initialVersions,
       introduction: episode.introduction || '',
       episodeNumber: episode.episodeNumber || 0,
       scheduled: episode.scheduled || '',
@@ -46,14 +52,14 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
   
   useEffect(() => {
     setNotes(episode.notes || '');
-    setVersions(getCurrentVersions());
+    setVersions(processVersions(episode.notesVersions || []));
     
     form.reset({
       title: episode.title || '',
       topic: episode.topic || null,
       guestIds: episode.guestIds || [],
       notes: episode.notes || '',
-      notesVersions: episode.notesVersions || [],
+      notesVersions: processVersions(episode.notesVersions || []),
       introduction: episode.introduction || '',
       episodeNumber: episode.episodeNumber || 0,
       scheduled: episode.scheduled || '',
@@ -68,20 +74,7 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
         youtube: episode.podcastUrls?.youtube || '',
       },
     });
-  }, [episode]);
-  
-  const getCurrentVersions = (): ContentVersion[] => {
-    const episodeVersions = episode.notesVersions || [];
-    
-    return episodeVersions.map(version => ({
-      id: version.id || uuidv4(),
-      content: version.content || "",
-      timestamp: version.timestamp || new Date().toISOString(),
-      source: version.source || "manual",
-      active: version.active || false,
-      versionNumber: version.versionNumber || 1
-    }));
-  };
+  }, [episode, form]);
   
   const handleSaveChanges = async (newNotes: string, newVersions: ContentVersion[]) => {
     try {
@@ -92,8 +85,8 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
         .from('episodes')
         .update({
           notes: newNotes,
-          notesVersions: newVersions,
-          updatedAt: new Date().toISOString()
+          notes_versions: newVersions,
+          updated_at: new Date().toISOString()
         })
         .eq('id', episode.id);
         
@@ -151,7 +144,7 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
             handleSaveChanges(newContent, versions);
           }}
         >
-          {({ versionSelectorProps, addAIVersion }) => (
+          {({ versionSelectorProps, addNewVersion, hasInitialized }) => (
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-xl">
                 <BookText className="h-5 w-5 text-primary" />
@@ -159,15 +152,17 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
               </CardTitle>
               
               <div className="flex items-center gap-2">
-                {versionSelectorProps.versions.length > 0 && (
+                {hasInitialized && versionSelectorProps.versions.length > 0 && (
                   <VersionSelector {...versionSelectorProps} />
                 )}
                 
-                <NotesGeneration 
-                  guests={[]} // We'll fetch guests in real-time
-                  onNotesGenerated={handleNotesGenerated}
-                  form={form}
-                />
+                {hasInitialized && (
+                  <NotesGeneration 
+                    guests={[]} // We'll fetch guests in real-time
+                    onNotesGenerated={handleNotesGenerated}
+                    form={form}
+                  />
+                )}
               </div>
             </div>
           )}

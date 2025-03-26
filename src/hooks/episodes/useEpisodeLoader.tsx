@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Episode, ContentVersion } from '@/lib/types';
 import { EpisodeStatus } from '@/lib/enums';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { ensureVersionNumbers } from '@/lib/versionUtils';
 

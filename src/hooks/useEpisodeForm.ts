@@ -1,10 +1,9 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Episode, ContentVersion } from "@/lib/types";
 import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
 import { EpisodeStatus } from "@/lib/enums";
-import { ensureVersionNumbers } from "./versions/utils/versionNumberUtils";
 import { processVersions } from "@/lib/versionUtils";
 import { EpisodeFormValues } from "@/components/episodes/EpisodeFormSchema";
 
@@ -17,7 +16,9 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Process versions to ensure they have proper structure
-  const processedNotesVersions = processVersions(episode.notesVersions || []);
+  const processedNotesVersions = useMemo(() => {
+    return processVersions(episode.notesVersions || []);
+  }, [episode.notesVersions]);
   
   // Initialize the form with episode data
   const form = useForm<EpisodeFormValues>({

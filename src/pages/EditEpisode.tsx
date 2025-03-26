@@ -21,7 +21,7 @@ const EditEpisode = () => {
   // Use guests data hook to fetch guests with the user ID
   const { guests, isLoadingGuests } = useGuestsData(user?.id);
   
-  // If loading, show loading indicator
+  // Combine loading states
   const isLoading = isEpisodeLoading || isLoadingGuests;
   
   // Show an error and navigate back if episode is null after loading
@@ -69,6 +69,9 @@ const EditEpisode = () => {
     }
   };
   
+  // Stable key for the episode form that includes both ID and version count
+  const episodeKey = `episode-${episode.id}-versions-${episode.notesVersions?.length || 0}`;
+  
   return (
     <Shell>
       <div className="page-container">
@@ -78,7 +81,7 @@ const EditEpisode = () => {
         </div>
         
         <EpisodeForm
-          key={`episode-form-${episode.id}-${new Date().getTime()}`}
+          key={episodeKey}
           episode={episode}
           guests={guests || []}
           onSave={onSave}
