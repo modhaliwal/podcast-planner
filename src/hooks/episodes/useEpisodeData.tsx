@@ -1,7 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Episode, EpisodeStatus, ContentVersion } from '@/lib/types';
+import { Episode, ContentVersion } from '@/lib/types';
+import { EpisodeStatus } from '@/lib/enums';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCoverArtHandler } from '../useCoverArtHandler';

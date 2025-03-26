@@ -12,7 +12,7 @@ interface EpisodeNotesContentProps {
 }
 
 function EpisodeNotesContent({ notes }: EpisodeNotesContentProps) {
-  const { versions, activeVersionId, selectVersion, versionSelectorProps } = useNotesVersions();
+  const { versions, versionSelectorProps } = useNotesVersions();
   
   return (
     <Card className="shadow-sm border-slate-200 dark:border-slate-700">

@@ -7,7 +7,7 @@ import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { NotesGeneration } from "./NotesGeneration";
 import { NotesEditor } from "./NotesEditor";
 import { NotesVersionsProvider, useNotesVersions } from "@/contexts/NotesVersionsContext";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 
 // Inner component that uses the context
 const NotesFieldContent = memo(function NotesFieldContent({
@@ -30,7 +30,7 @@ const NotesFieldContent = memo(function NotesFieldContent({
     addNewVersion,
     versionSelectorProps
   } = useNotesVersions();
-
+  
   const handleNotesGenerated = (notes: string) => {
     // Create new version with AI-generated notes
     addNewVersion(notes, "ai");
