@@ -54,7 +54,11 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
       notes: episode.notes,
       notesVersions: Array.isArray(episode.notesVersions) ? 
         episode.notesVersions.map(v => ({
-          ...v, 
+          id: v.id,
+          content: v.content,
+          timestamp: v.timestamp,
+          source: v.source,
+          active: v.active,
           versionNumber: v.versionNumber || 0
         })) : 
         [],
@@ -103,14 +107,18 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
         topic: data.topic,
         introduction: data.introduction,
         notes: data.notes,
-        notesVersions: data.notesVersions.map(v => ({
-          id: v.id,
-          content: v.content,
-          timestamp: v.timestamp,
-          source: v.source,
-          active: v.active,
-          versionNumber: v.versionNumber || 0  // Provide default value if missing
-        })),
+        notesVersions: data.notesVersions.map(v => {
+          // Explicitly create a complete ContentVersion object
+          const version: ContentVersion = {
+            id: v.id || uuidv4(),
+            content: v.content || "",
+            timestamp: v.timestamp || new Date().toISOString(),
+            source: v.source || "manual",
+            active: v.active,
+            versionNumber: v.versionNumber || 0
+          };
+          return version;
+        }),
         status: data.status,
         scheduled: data.scheduled.toISOString(),
         publishDate: data.publishDate?.toISOString() || null,
