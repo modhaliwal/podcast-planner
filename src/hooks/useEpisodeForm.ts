@@ -22,7 +22,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
     introduction: '',
     notes: '',
     notesVersions: [],
-    status: EpisodeStatus.SCHEDULED, // Fixed enum casing
+    status: EpisodeStatus.SCHEDULED,
     scheduled: new Date(),
     publishDate: null,
     guestIds: [],
@@ -109,7 +109,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
           timestamp: v.timestamp,
           source: v.source,
           active: v.active,
-          versionNumber: v.versionNumber
+          versionNumber: v.versionNumber  // Make sure versionNumber is included here
         })),
         status: data.status,
         scheduled: data.scheduled.toISOString(),
