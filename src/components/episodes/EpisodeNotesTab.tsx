@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Episode, ContentVersion } from "@/lib/types";
 import { FileText } from "lucide-react";
 import { useVersionManager } from "@/hooks/versions";
 import { Editor } from "@/components/editor/Editor";
 import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
 import { Button } from "@/components/ui/button";
+import { processVersions } from "@/lib/versionUtils";
 
 interface EpisodeNotesTabProps {
   episode: Episode;
@@ -14,6 +15,9 @@ interface EpisodeNotesTabProps {
 
 export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabProps) {
   const [content, setContent] = useState(episode.notes || "");
+  
+  // Process versions to ensure proper structure
+  const initialVersions = processVersions(episode.notesVersions || []);
   
   // Use version manager hook for handling versions
   const { 
@@ -27,7 +31,7 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
     versionSelectorProps
   } = useVersionManager({
     content,
-    versions: (episode.notesVersions || []) as ContentVersion[],
+    versions: initialVersions,
     onVersionsChange: async (updatedVersions) => {
       try {
         if (onVersionChange) {
@@ -48,9 +52,11 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
           <span className="font-medium">Episode Notes</span>
         </div>
         
-        {versions.length > 0 && (
-          <VersionSelector {...versionSelectorProps} />
-        )}
+        <div className="flex items-center gap-2">
+          {versions.length > 0 && (
+            <VersionSelector {...versionSelectorProps} />
+          )}
+        </div>
       </div>
       
       <Editor

@@ -37,6 +37,17 @@ export function NotesField({ form, guests }: NotesFieldProps) {
     form.setValue('notesVersions', newVersions, { shouldDirty: true });
   };
   
+  // Sync content when form value changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'notes') {
+        setContent(value.notes || '');
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+  
   return (
     <FormField
       control={form.control}
