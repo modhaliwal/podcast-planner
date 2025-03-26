@@ -75,7 +75,13 @@ export function VersionSelector({
           <span>Versions ({versions.length})</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[200px]" ref={dropdownRef}>
+      <DropdownMenuContent
+        align="end"
+        className="w-[200px]"
+        ref={dropdownRef}
+        // Remove the Portal behavior to allow page scrolling when dropdown is open
+        portalled={false}
+      >
         {sortedVersions.map((version) => (
           <DropdownMenuItem
             key={version.id}
