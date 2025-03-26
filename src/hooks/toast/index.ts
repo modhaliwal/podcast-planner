@@ -1,3 +1,5 @@
 
-export { useToast, toast } from "./use-toast"
-export type { ToasterToast } from "./types"
+import { useToast } from './use-toast';
+import { toast } from './use-toast';
+
+export { useToast, toast };

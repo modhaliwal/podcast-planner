@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -69,7 +69,10 @@ export default function Auth() {
         if (error) throw error;
         
         if (data) {
-          toast.success("Account created successfully! Check your email for confirmation.");
+          toast({
+            title: "Success",
+            description: "Account created successfully! Check your email for confirmation."
+          });
         }
       } else {
         // Handle sign in
@@ -78,12 +81,19 @@ export default function Auth() {
         if (error) throw error;
         
         if (data) {
-          toast.success("Signed in successfully");
+          toast({
+            title: "Success",
+            description: "Signed in successfully"
+          });
         }
       }
     } catch (error) {
       console.error(`Authentication error:`, error);
-      toast.error(error.message || "Authentication failed");
+      toast({
+        title: "Error",
+        description: error.message || "Authentication failed",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -104,7 +114,11 @@ export default function Auth() {
       }
     } catch (error) {
       console.error("Google sign in error:", error);
-      toast.error(error.message || "Failed to sign in with Google");
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in with Google",
+        variant: "destructive"
+      });
       setLoading(false);
     }
   }

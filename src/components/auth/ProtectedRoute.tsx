@@ -1,5 +1,5 @@
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
@@ -13,6 +13,17 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Use an effect to show toast after render to avoid state updates during render
+  useEffect(() => {
+    if (!loading && !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to continue",
+        variant: "destructive"
+      });
+    }
+  }, [loading, user]);
+
   if (loading) {
     return <LoadingIndicator fullPage />;
   }
@@ -20,11 +31,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   if (!user) {
     // If user is not logged in, redirect to login page
     // and pass the location they were trying to access
-    toast({
-      title: "Authentication Required",
-      description: "Please sign in to continue",
-      variant: "destructive"
-    });
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
