@@ -32,7 +32,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const defaultValues = useMemo(() => ({
     title: episode.title,
     episodeNumber: episode.episodeNumber,
-    topic: episode.topic || '',
+    topic: episode.topic || null,
     introduction: episode.introduction,
     notes: episode.notes,
     status: episode.status,
@@ -53,6 +53,14 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   useEffect(() => {
     setOriginalCoverArt(episode.coverArt);
   }, [episode.coverArt]);
+  
+  // For debugging - log the current form values
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      console.log("Current form values:", value);
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
   
   const handleCoverArtUpload = useCallback(async (coverArt: string | undefined): Promise<string | null | undefined> => {
     if (coverArt === originalCoverArt) {
@@ -111,11 +119,14 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       console.log("Form values being submitted:", data);
       const processedCoverArt = await handleCoverArtUpload(data.coverArt);
       
+      // Ensure topic is properly handled (null if empty)
+      const topicValue = data.topic === '' ? null : data.topic;
+      
       // Log the data being sent to Supabase for debugging
       console.log("Updating episode with data:", {
         title: data.title,
         episode_number: data.episodeNumber,
-        topic: data.topic,
+        topic: topicValue,
         introduction: data.introduction,
         notes: data.notes,
         status: data.status,
@@ -127,12 +138,12 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
         resources: data.resources,
       });
       
-      const { error: updateError } = await supabase
+      const { data: updateResult, error: updateError } = await supabase
         .from('episodes')
         .update({
           title: data.title,
           episode_number: data.episodeNumber,
-          topic: data.topic || null, // Ensure empty string is saved as null
+          topic: topicValue,
           introduction: data.introduction,
           notes: data.notes,
           status: data.status,
@@ -144,7 +155,10 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           resources: data.resources,
           updated_at: new Date().toISOString()
         })
-        .eq('id', episode.id);
+        .eq('id', episode.id)
+        .select();
+      
+      console.log("Update response:", updateResult, updateError);
       
       if (updateError) throw updateError;
       

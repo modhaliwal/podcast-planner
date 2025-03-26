@@ -27,8 +27,9 @@ export function TopicField({ form }: TopicFieldProps) {
               {...field} 
               value={field.value || ''}
               onChange={(e) => {
-                console.log("Topic field changed:", e.target.value);
-                field.onChange(e.target.value);
+                const value = e.target.value.trim() === '' ? null : e.target.value;
+                console.log("Topic field changed:", e.target.value, "Processed value:", value);
+                field.onChange(value);
               }}
             />
           </FormControl>

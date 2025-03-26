@@ -5,7 +5,7 @@ import { EpisodeStatus } from '@/lib/enums';
 export const episodeFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   episodeNumber: z.coerce.number().int().positive("Episode number must be positive"),
-  topic: z.string().optional(),
+  topic: z.string().nullable().optional(),
   introduction: z.string().min(1, "Introduction is required"),
   notes: z.string().optional(),
   status: z.nativeEnum(EpisodeStatus),
