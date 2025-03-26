@@ -62,8 +62,23 @@ export function useEpisodeForm(
         id: version.id || uuidv4(),
         content: version.content || '',
         timestamp: version.timestamp || new Date().toISOString(),
-        source: version.source || 'manual'
+        source: version.source || 'manual',
+        active: version.active || false // Preserve active flag
       }));
+      
+      // Ensure at least one version is active
+      if (notesVersions.length > 0 && !notesVersions.some(v => v.active)) {
+        // If no version is active, mark the most recent one as active
+        const sortedVersions = [...notesVersions].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        if (sortedVersions.length > 0) {
+          notesVersions.forEach(v => {
+            v.active = v.id === sortedVersions[0].id;
+          });
+        }
+      }
       
       // Ensure required fields for recording links
       const recordingLinks = {

@@ -1,6 +1,6 @@
 
-import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
+import { ContentVersion } from "@/lib/types";
 import { UseFormReturn, Path, PathValue } from "react-hook-form";
 
 interface UseVersionActionsProps<T extends Record<string, any>> {
@@ -14,7 +14,7 @@ interface UseVersionActionsProps<T extends Record<string, any>> {
 }
 
 /**
- * Hook to manage version actions (select, create, clear)
+ * Hook to provide actions for interacting with content versions
  */
 export function useVersionActions<T extends Record<string, any>>({
   form,
@@ -25,107 +25,137 @@ export function useVersionActions<T extends Record<string, any>>({
   setVersions,
   setActiveVersionId
 }: UseVersionActionsProps<T>) {
-  
+  /**
+   * Creates a new version based on the current content
+   */
   const handleContentChange = () => {
     const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
     
-    // Check if content is not empty and if we have an active version to compare with
-    if (typeof currentContent === 'string' && currentContent.trim() && activeVersionId) {
+    if (typeof currentContent === "string" && currentContent.trim() && activeVersionId) {
       const activeVersion = versions.find(v => v.id === activeVersionId);
       
-      // Only create a new version if content has changed
+      // Only create a new version if content has changed from the active version
       if (activeVersion && currentContent !== activeVersion.content) {
-        // Set all versions as inactive
-        const updatedVersions = versions.map(v => ({
-          ...v,
-          active: false
-        }));
-        
-        // Create new active version
         const newVersion: ContentVersion = {
           id: uuidv4(),
           content: currentContent,
           timestamp: new Date().toISOString(),
           source: "manual",
-          active: true
+          active: true // Mark the new version as active
         };
         
-        const finalVersions = [...updatedVersions, newVersion];
-        setVersions(finalVersions);
+        // Remove active flag from other versions
+        const updatedVersions = versions.map(v => ({
+          ...v,
+          active: false // Remove active flag from all existing versions
+        }));
+        
+        // Add the new version to the collection
+        const newVersions = [...updatedVersions, newVersion];
+        
+        // Update state and form values
+        setVersions(newVersions);
+        setActiveVersionId(newVersion.id);
         form.setValue(
           versionsFieldName as unknown as Path<T>, 
-          finalVersions as unknown as PathValue<T, Path<T>>
+          newVersions as unknown as PathValue<T, Path<T>>,
+          { shouldDirty: true }
         );
-        setActiveVersionId(newVersion.id);
       }
     }
   };
 
+  /**
+   * Selects a specific version as active
+   */
   const selectVersion = (version: ContentVersion) => {
-    // Update form content to match selected version
+    if (!versions.length) return;
+    
+    // Update form with the selected version content
     form.setValue(
       fieldName as unknown as Path<T>, 
-      version.content as unknown as PathValue<T, Path<T>>
+      version.content as unknown as PathValue<T, Path<T>>,
+      { shouldDirty: true }
     );
     
-    // Update active status in all versions
+    // Update the active version ID in state
+    setActiveVersionId(version.id);
+    
+    // Update active flags in the versions array
     const updatedVersions = versions.map(v => ({
       ...v,
       active: v.id === version.id
     }));
     
-    // Update form and state
+    // Update state and form values
     setVersions(updatedVersions);
     form.setValue(
       versionsFieldName as unknown as Path<T>, 
-      updatedVersions as unknown as PathValue<T, Path<T>>
+      updatedVersions as unknown as PathValue<T, Path<T>>,
+      { shouldDirty: true }
     );
-    setActiveVersionId(version.id);
   };
 
+  /**
+   * Removes all versions except for a new one based on the current content
+   */
   const clearAllVersions = () => {
     const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
     
-    // Create a single version with current content
+    // Create a single new version with the current content
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: typeof currentContent === 'string' ? currentContent : String(currentContent),
+      content: typeof currentContent === "string" ? currentContent : "",
       timestamp: new Date().toISOString(),
       source: "manual",
-      active: true
+      active: true // Mark as active
     };
     
+    // Update state and form values
     setVersions([newVersion]);
-    form.setValue(
-      versionsFieldName as unknown as Path<T>, 
-      [newVersion] as unknown as PathValue<T, Path<T>>
-    );
     setActiveVersionId(newVersion.id);
+    form.setValue(
+      versionsFieldName as unknown as Path<T>,
+      [newVersion] as unknown as PathValue<T, Path<T>>,
+      { shouldDirty: true }
+    );
   };
 
+  /**
+   * Adds a new version with specified content and optionally marks it as active
+   */
   const addNewVersion = (content: string, source: "manual" | "ai" | "import" = "manual") => {
-    // Set all versions as inactive
-    const updatedVersions = versions.map(v => ({
-      ...v,
-      active: false
-    }));
-    
-    // Create new active version
+    // Create a new version
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content,
       timestamp: new Date().toISOString(),
       source,
-      active: true
+      active: true // Mark as active
     };
     
-    const finalVersions = [...updatedVersions, newVersion];
-    setVersions(finalVersions);
+    // Remove active flag from other versions
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Add the new version
+    const newVersions = [...updatedVersions, newVersion];
+    
+    // Update state and form values
+    setVersions(newVersions);
+    setActiveVersionId(newVersion.id);
+    form.setValue(
+      fieldName as unknown as Path<T>, 
+      content as unknown as PathValue<T, Path<T>>,
+      { shouldDirty: true }
+    );
     form.setValue(
       versionsFieldName as unknown as Path<T>, 
-      finalVersions as unknown as PathValue<T, Path<T>>
+      newVersions as unknown as PathValue<T, Path<T>>,
+      { shouldDirty: true }
     );
-    setActiveVersionId(newVersion.id);
     
     return newVersion;
   };

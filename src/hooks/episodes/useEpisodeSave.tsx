@@ -43,12 +43,14 @@ export function useEpisodeSave(episodeId: string | undefined) {
           description: resource.description,
         })) : null;
       
+      // FIX: Preserve the active property when mapping versions to JSON
       const notesVersionsJson = updatedEpisode.notesVersions ? 
         updatedEpisode.notesVersions.map(version => ({
           id: version.id,
           content: version.content,
           timestamp: version.timestamp,
           source: version.source,
+          active: version.active, // Include the active flag
         })) : null;
       
       const { error: updateError } = await supabase

@@ -7,7 +7,8 @@ const contentVersionSchema = z.object({
   id: z.string(),
   content: z.string(),
   timestamp: z.string(),
-  source: z.enum(['manual', 'ai', 'import'])
+  source: z.enum(['manual', 'ai', 'import']),
+  active: z.boolean().optional() // Add active flag to schema
 });
 
 // Define the shape of the episode form

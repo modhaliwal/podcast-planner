@@ -49,6 +49,7 @@ export function useVersionState<T extends Record<string, any>>({
         const activeVersion = existingVersions.find(v => v.active === true);
         
         if (activeVersion) {
+          // If we found a version marked as active, use it
           setVersions(existingVersions);
           setActiveVersionId(activeVersion.id);
           form.setValue(

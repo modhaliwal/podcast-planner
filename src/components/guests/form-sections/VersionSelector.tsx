@@ -1,16 +1,36 @@
 
-import { ContentVersion } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Clock, Check, Trash } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import React from 'react';
+import { ContentVersion } from '@/lib/types';
+import {
+  DropdownMenu,
   DropdownMenuTrigger,
-  DropdownMenuSeparator 
-} from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
-import { useState, useRef, useEffect, memo } from "react";
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { HistoryIcon, CheckIcon, TrashIcon } from 'lucide-react';
+import { format } from 'date-fns';
+
+// Format a timestamp for display
+const formatTimestamp = (timestamp: string) => {
+  try {
+    return format(new Date(timestamp), 'MMM d, yyyy h:mm a');
+  } catch (e) {
+    return timestamp;
+  }
+};
+
+// Get a source label for display
+const getSourceLabel = (source: string) => {
+  switch (source) {
+    case 'manual': return 'Manual Edit';
+    case 'ai': return 'AI Generated';
+    case 'import': return 'Imported';
+    default: return source;
+  }
+};
 
 interface VersionSelectorProps {
   versions: ContentVersion[];
@@ -19,118 +39,94 @@ interface VersionSelectorProps {
   onClearAllVersions?: () => void;
 }
 
-export const VersionSelector = memo(function VersionSelector({ 
-  versions, 
-  onSelectVersion, 
+export function VersionSelector({
+  versions,
+  onSelectVersion,
   activeVersionId,
   onClearAllVersions
 }: VersionSelectorProps) {
-  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Reset confirmation state when dropdown closes
-  useEffect(() => {
-    if (!dropdownOpen) {
-      setIsConfirmingClear(false);
-    }
-    
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsConfirmingClear(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownOpen]);
-
-  if (!versions || versions.length === 0) {
-    return null;
-  }
-
-  // Sort versions by timestamp, newest first
+  // Sort versions by timestamp descending (newest first)
   const sortedVersions = [...versions].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
-
-  const handleClearClick = (event: React.MouseEvent) => {
-    // Prevent the dropdown from closing when clicking the clear button the first time
-    event.preventDefault();
-    event.stopPropagation();
-    
-    if (isConfirmingClear) {
-      // If we're confirming, call the clear function
-      onClearAllVersions?.();
-      setIsConfirmingClear(false);
-      // Close the dropdown after confirmation
-      setDropdownOpen(false);
-    } else {
-      setIsConfirmingClear(true);
-    }
-  };
-
+  
+  // Find current active version
+  const activeVersion = sortedVersions.find(v => v.id === activeVersionId) || sortedVersions[0];
+  
+  // Count for each source type
+  const sourceCount = sortedVersions.reduce((acc, v) => {
+    acc[v.source] = (acc[v.source] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
   return (
-    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1">
-          <Clock className="h-3.5 w-3.5" />
-          <span>Versions ({versions.length})</span>
+        <Button variant="outline" size="sm" className="flex items-center gap-1">
+          <HistoryIcon className="h-4 w-4 mr-1" />
+          Versions ({versions.length})
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="w-[240px] max-h-[300px] overflow-auto"
-        ref={dropdownRef}
-        // Use forceMount to ensure content is rendered in DOM
-        forceMount
-      >
-        {sortedVersions.map((version, index) => (
-          <DropdownMenuItem
-            key={version.id}
-            onClick={() => onSelectVersion(version)}
-            className={`flex items-center justify-between ${(version.active || activeVersionId === version.id) ? 'bg-muted/50' : ''}`}
-          >
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium px-1.5 py-0.5 bg-muted rounded-sm">
-                  v{versions.length - index}
+      
+      <DropdownMenuContent align="end" className="w-[300px]">
+        <DropdownMenuLabel>
+          <div className="flex justify-between items-center">
+            <span>Version History</span>
+            <span className="text-xs text-muted-foreground">
+              {Object.entries(sourceCount).map(([source, count]) => (
+                <span key={source} className="ml-2">
+                  {getSourceLabel(source)}: {count}
                 </span>
-                <span className="text-sm">
-                  {format(new Date(version.timestamp), "MMM d, yyyy h:mm a")}
-                </span>
+              ))}
+            </span>
+          </div>
+        </DropdownMenuLabel>
+        
+        <DropdownMenuSeparator />
+        
+        <div className="max-h-[250px] overflow-y-auto">
+          {sortedVersions.map(version => (
+            <DropdownMenuItem key={version.id} className="py-2 px-4 cursor-pointer">
+              <div 
+                className="w-full"
+                onClick={() => onSelectVersion(version)}
+              >
+                <div className="flex justify-between items-center">
+                  <span 
+                    className={`font-medium ${version.id === activeVersionId ? 'text-primary' : ''}`}
+                  >
+                    {version.id === activeVersionId && (
+                      <CheckIcon className="inline h-4 w-4 mr-1 text-primary" />
+                    )}
+                    {getSourceLabel(version.source)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatTimestamp(version.timestamp)}
+                  </span>
+                </div>
+                
+                <div className="text-xs mt-1 text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+                  {version.content.substring(0, 100)}
+                  {version.content.length > 100 ? '...' : ''}
+                </div>
               </div>
-              <span className="text-xs text-muted-foreground capitalize">
-                {version.source}
-              </span>
-            </div>
-            {(version.active || activeVersionId === version.id) && (
-              <Check className="h-4 w-4 text-primary" />
-            )}
-          </DropdownMenuItem>
-        ))}
-
+            </DropdownMenuItem>
+          ))}
+        </div>
+        
         {onClearAllVersions && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleClearClick}
-              className="text-destructive focus:text-destructive flex items-center"
-              onSelect={(e) => {
-                // Only prevent the dropdown from closing on the first click
-                if (!isConfirmingClear) {
-                  e.preventDefault();
-                }
-              }}
+            <DropdownMenuItem 
+              className="text-destructive cursor-pointer"
+              onClick={onClearAllVersions}
             >
-              <Trash className="h-4 w-4 mr-2" />
-              {isConfirmingClear ? "Are you sure?" : "Clear All Versions"}
+              <TrashIcon className="h-4 w-4 mr-2" />
+              Clear All Versions
             </DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}
