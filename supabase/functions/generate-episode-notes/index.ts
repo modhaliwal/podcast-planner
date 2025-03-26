@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../shared/utils.ts"
-import { generateResearchWithPerplexity } from "../shared/generators/perplexity.ts"
+import { generateResearchWithPerplexity } from "../shared/generators/perplexity/index.ts"
 
 serve(async (req) => {
   // Handle CORS preflight requests
