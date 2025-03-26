@@ -27,13 +27,6 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
             />
           </div>
         )}
-
-        {guest.notes && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">Notes</h4>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{guest.notes}</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
