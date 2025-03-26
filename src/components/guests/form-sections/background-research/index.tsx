@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { Guest, ContentVersion } from "@/lib/types";
 import { useMarkdownParser } from "@/hooks/useMarkdownParser";
 import { v4 as uuidv4 } from "uuid";
 import { BackgroundResearchEditor } from "./BackgroundResearchEditor";
-import { BackgroundResearchControls } from "./BackgroundResearchControls";
 import { generateBackgroundResearch } from "./BackgroundResearchGenerator";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
 import { VersionSelector } from "../VersionSelector";

@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
+import { useState, useRef, useEffect } from "react";
 
 interface VersionSelectorProps {
   versions: ContentVersion[];
@@ -24,6 +25,23 @@ export function VersionSelector({
   activeVersionId,
   onClearAllVersions
 }: VersionSelectorProps) {
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Reset confirmation state when dropdown closes
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsConfirmingClear(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   if (!versions || versions.length === 0) {
     return null;
   }
@@ -33,6 +51,15 @@ export function VersionSelector({
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
+  const handleClearClick = () => {
+    if (isConfirmingClear) {
+      onClearAllVersions?.();
+      setIsConfirmingClear(false);
+    } else {
+      setIsConfirmingClear(true);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -41,7 +68,7 @@ export function VersionSelector({
           <span>Versions ({versions.length})</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[200px]">
+      <DropdownMenuContent align="end" className="w-[200px]" ref={dropdownRef}>
         {sortedVersions.map((version) => (
           <DropdownMenuItem
             key={version.id}
@@ -66,11 +93,11 @@ export function VersionSelector({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={onClearAllVersions}
+              onClick={handleClearClick}
               className="text-destructive focus:text-destructive flex items-center"
             >
               <Trash className="h-4 w-4 mr-2" />
-              Clear All Versions
+              {isConfirmingClear ? "Are you sure?" : "Clear All Versions"}
             </DropdownMenuItem>
           </>
         )}
