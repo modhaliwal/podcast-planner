@@ -1,8 +1,8 @@
 
-import { corsHeaders, validateRequestData } from "./utils.ts";
-import { extractContentFromLinks } from "./content-extraction.ts";
-import { generateBioWithOpenAI } from "./openai-generator.ts";
-import { generateResearchWithPerplexity } from "./perplexity-generator.ts";
+import { corsHeaders, validateRequestData } from "../shared/utils.ts";
+import { extractContentFromLinks } from "../shared/content/extraction.ts";
+import { generateBioWithOpenAI, generateResearchWithOpenAI } from "../shared/generators/openai.ts";
+import { generateResearchWithPerplexity } from "../shared/generators/perplexity.ts";
 
 export async function handleRequest(req: Request) {
   try {

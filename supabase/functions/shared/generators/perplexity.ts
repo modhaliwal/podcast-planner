@@ -1,6 +1,7 @@
 
-import { validateApiKey } from "../generate-bio/utils.ts";
-
+/**
+ * Generates research content using Perplexity API
+ */
 export async function generateResearchWithPerplexity(
   name: string, 
   title: string, 
