@@ -1,5 +1,4 @@
 
-
 // CORS headers for all Edge Functions
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +11,6 @@ export function validateRequestData(data: any) {
     type, 
     name, 
     title, 
-    socialLinks,
   } = data;
 
   if (!type) {
