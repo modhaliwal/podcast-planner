@@ -2,7 +2,7 @@
 import { validatePerplexityApiKey } from "../../utils.ts";
 import { DEFAULT_CONFIG, createSystemPrompt, createUserPrompt } from "./config.ts";
 import { callPerplexityAPI } from "./api.ts";
-import { processApiResponse } from "./formatter.ts";
+import { processApiResponse } from "./responseParser.ts";
 
 /**
  * Generates research content using Perplexity API
@@ -42,3 +42,7 @@ export async function generateResearchWithPerplexity(
     throw new Error(`Failed to generate research with Perplexity: ${error.message}`);
   }
 }
+
+// Export functions from the new modules for convenience
+export { processApiResponse } from "./responseParser.ts";
+export { formatMarkdownWithMedia } from "./markdownFormatter.ts";
