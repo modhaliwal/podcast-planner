@@ -102,7 +102,9 @@ export type Database = {
       guests: {
         Row: {
           background_research: string | null
+          background_research_versions: Json | null
           bio: string
+          bio_versions: Json | null
           company: string | null
           created_at: string
           email: string | null
@@ -120,7 +122,9 @@ export type Database = {
         }
         Insert: {
           background_research?: string | null
+          background_research_versions?: Json | null
           bio: string
+          bio_versions?: Json | null
           company?: string | null
           created_at?: string
           email?: string | null
@@ -138,7 +142,9 @@ export type Database = {
         }
         Update: {
           background_research?: string | null
+          background_research_versions?: Json | null
           bio?: string
+          bio_versions?: Json | null
           company?: string | null
           created_at?: string
           email?: string | null
