@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,12 +7,12 @@ import { Episode } from '@/lib/types';
 import { toast } from 'sonner';
 import { episodeFormSchema, EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 import { supabase } from '@/integrations/supabase/client';
-import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
+import { useCoverArtHandler } from './useCoverArtHandler';
 
 export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<void>) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(episode.coverArt);
+  const { handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
   
   // Create form with default values
   const defaultValues = useMemo(() => ({
@@ -35,11 +36,6 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     defaultValues,
   });
   
-  // Keep original cover art reference up to date
-  useEffect(() => {
-    setOriginalCoverArt(episode.coverArt);
-  }, [episode.coverArt]);
-  
   // For debugging - log the current form values
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -48,56 +44,30 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     return () => subscription.unsubscribe();
   }, [form]);
   
-  // Handle cover art upload process
-  const handleCoverArtUpload = useCallback(async (coverArt: string | undefined): Promise<string | null | undefined> => {
-    if (coverArt === originalCoverArt) {
-      return coverArt;
-    }
+  // Helper function to update episode-guest relationships
+  const updateEpisodeGuests = async (guestIds: string[], episodeId: string) => {
+    // Delete existing relationships
+    const { error: deleteError } = await supabase
+      .from('episode_guests')
+      .delete()
+      .eq('episode_id', episodeId);
     
-    if (coverArt && isBlobUrl(coverArt)) {
-      console.log("Detected blob URL for cover art, uploading to storage");
+    if (deleteError) throw deleteError;
+    
+    // If there are new guest IDs, insert them
+    if (guestIds.length > 0) {
+      const episodeGuestsToInsert = guestIds.map(guestId => ({
+        episode_id: episodeId,
+        guest_id: guestId
+      }));
       
-      try {
-        const response = await fetch(coverArt);
-        const blob = await response.blob();
-        const fileName = 'cover-art.jpg';
-        const file = new File([blob], fileName, { type: blob.type });
-        
-        toast.info("Uploading cover art...");
-        const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
-        
-        if (uploadedUrl) {
-          console.log("Cover art uploaded successfully:", uploadedUrl);
-          
-          if (originalCoverArt && !isBlobUrl(originalCoverArt)) {
-            console.log("Deleting old cover art:", originalCoverArt);
-            await deleteImage(originalCoverArt);
-          }
-          
-          toast.success("Cover art uploaded successfully");
-          return uploadedUrl;
-        } else {
-          toast.error("Failed to upload cover art");
-          return undefined;
-        }
-      } catch (error) {
-        console.error("Error uploading cover art:", error);
-        toast.error("Error uploading cover art");
-        return undefined;
-      } finally {
-        if (coverArt) {
-          URL.revokeObjectURL(coverArt);
-        }
-      }
-    } else if (coverArt === undefined && originalCoverArt) {
-      console.log("Deleting old cover art on removal:", originalCoverArt);
-      await deleteImage(originalCoverArt);
-      toast.success("Cover art removed successfully");
-      return null;
+      const { error: insertError } = await supabase
+        .from('episode_guests')
+        .insert(episodeGuestsToInsert);
+      
+      if (insertError) throw insertError;
     }
-    
-    return coverArt;
-  }, [originalCoverArt]);
+  };
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
@@ -161,31 +131,6 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
       console.error("Error updating episode:", error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-  
-  // Helper function to update episode-guest relationships
-  const updateEpisodeGuests = async (guestIds: string[], episodeId: string) => {
-    // Delete existing relationships
-    const { error: deleteError } = await supabase
-      .from('episode_guests')
-      .delete()
-      .eq('episode_id', episodeId);
-    
-    if (deleteError) throw deleteError;
-    
-    // If there are new guest IDs, insert them
-    if (guestIds.length > 0) {
-      const episodeGuestsToInsert = guestIds.map(guestId => ({
-        episode_id: episodeId,
-        guest_id: guestId
-      }));
-      
-      const { error: insertError } = await supabase
-        .from('episode_guests')
-        .insert(episodeGuestsToInsert);
-      
-      if (insertError) throw insertError;
     }
   };
   
