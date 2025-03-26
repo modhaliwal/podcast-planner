@@ -69,13 +69,26 @@ export function ContentGenerator({
       
       console.log(`Generating content for ${fieldName} using ${edgeFunctionName}`);
       
+      // Prepare social links properly (ensuring it's an object, not undefined)
+      const socialLinks = formValues.socialLinks || 
+                         additionalContext?.guest?.socialLinks || 
+                         {
+                           twitter: formValues.twitter || '',
+                           facebook: formValues.facebook || '',
+                           linkedin: formValues.linkedin || '',
+                           instagram: formValues.instagram || '',
+                           website: formValues.website || '',
+                           youtube: formValues.youtube || '',
+                           tiktok: formValues.tiktok || ''
+                         };
+      
       // Prepare the request body - make sure to include required fields
       const requestBody: any = {
         type: generationType,  // Always include type (required by the edge function)
         name: formValues.name || additionalContext?.guest?.name,  // Include name from form or guest
         title: formValues.title || additionalContext?.guest?.title,  // Include title
         company: formValues.company || additionalContext?.guest?.company,
-        socialLinks: formValues.socialLinks || additionalContext?.guest?.socialLinks,
+        socialLinks: socialLinks,
         prompt: prompt?.prompt_text,
         systemPrompt: prompt?.system_prompt,
         contextInstructions: prompt?.context_instructions,

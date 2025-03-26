@@ -9,8 +9,7 @@ function validateRequestData(data: any) {
   const { 
     type, 
     name, 
-    title, 
-    socialLinks,
+    title
   } = data;
 
   if (!type) {

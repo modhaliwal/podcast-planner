@@ -4,10 +4,14 @@ import { corsHeaders } from "../utils.ts";
 /**
  * Extracts content from a list of social media links
  */
-export async function extractContentFromLinks(socialLinks: Record<string, string>) {
+export async function extractContentFromLinks(socialLinks: Record<string, string> | null | undefined) {
+  // If socialLinks is undefined or null, return an empty message
+  if (!socialLinks) {
+    return "No social links provided for content extraction.";
+  }
+  
   const validLinks = Object.values(socialLinks).filter(link => link && link.startsWith('http'));
-  let extractedContent = '';
-
+  
   if (validLinks.length === 0) {
     return "No valid links provided for content extraction.";
   }
@@ -15,6 +19,7 @@ export async function extractContentFromLinks(socialLinks: Record<string, string
   try {
     // We'll limit to 10 links for performance and cost reasons
     const linksToProcess = validLinks.slice(0, 10);
+    let extractedContent = '';
     
     for (const link of linksToProcess) {
       try {
