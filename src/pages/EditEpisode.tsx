@@ -5,23 +5,38 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useEpisodeData } from '@/hooks/episodes';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
+import { Episode } from '@/lib/types';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { episodes, guests, refreshEpisodes } = useAuth();
-  const { isLoading, episode, handleSave } = useEpisodeData(id, episodes, refreshEpisodes);
+  const { isLoading, handleSave } = useEpisodeData(id, episodes, refreshEpisodes);
+  const [episode, setEpisode] = useState<Episode | null>(null);
   
-  // Refresh data on initial mount
+  // Get episode data only once on component mount
   useEffect(() => {
-    refreshEpisodes();
-  }, [refreshEpisodes]);
+    const currentEpisode = episodes.find(e => e.id === id) || null;
+    setEpisode(currentEpisode);
+  }, [id, episodes]);
   
   const handleBack = () => {
     navigate(`/episodes/${id}`);
   };
+  
+  // Show loading indicator while fetching episode data
+  if (isLoading) {
+    return (
+      <Shell>
+        <div className="page-container">
+          <LoadingIndicator message="Loading episode information..." fullPage />
+        </div>
+      </Shell>
+    );
+  }
   
   // If episode not found after loading
   if (!episode) {
@@ -40,7 +55,7 @@ const EditEpisode = () => {
     );
   }
   
-  const onSave = async (updatedEpisode: any) => {
+  const onSave = async (updatedEpisode: Episode) => {
     const result = await handleSave(updatedEpisode);
     if (result.success) {
       navigate(`/episodes/${id}`);
