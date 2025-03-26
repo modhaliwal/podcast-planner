@@ -1,7 +1,7 @@
 
 import { ReactNode } from "react";
 import { ContentVersion } from "@/lib/types";
-import { useVersionManager } from "@/hooks/versions";
+import { useVersionManager } from "@/hooks/versions/useVersionManager";
 
 interface VersionManagerProps {
   content: string;
@@ -23,6 +23,7 @@ interface VersionManagerProps {
       activeVersionId?: string;
       onClearAllVersions?: () => void;
     };
+    hasInitialized: boolean;
   }) => ReactNode;
 }
 

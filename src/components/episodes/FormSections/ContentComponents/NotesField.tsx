@@ -7,7 +7,7 @@ import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { NotesGeneration } from "./NotesGeneration";
 import { NotesEditor } from "./NotesEditor";
 import { NotesVersionsProvider, useNotesVersions } from "@/contexts/NotesVersionsContext";
-import { memo, useEffect } from "react";
+import { memo } from "react";
 
 // Inner component that uses the context
 const NotesFieldContent = memo(function NotesFieldContent({
@@ -84,9 +84,6 @@ export function NotesField({
   const formContext = useFormContext<EpisodeFormValues>();
   const form = formProp || formContext;
   
-  const fieldName = "notes";
-  const versionsFieldName = "notesVersions";
-  
   if (!form) {
     console.error("NotesField: No form context or prop provided");
     return null;
@@ -95,8 +92,8 @@ export function NotesField({
   return (
     <NotesVersionsProvider 
       form={form} 
-      fieldName={fieldName} 
-      versionsFieldName={versionsFieldName}
+      fieldName="notes" 
+      versionsFieldName="notesVersions"
     >
       <NotesFieldContent 
         editMode={editMode}

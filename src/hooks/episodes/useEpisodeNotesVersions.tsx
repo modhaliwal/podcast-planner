@@ -39,7 +39,7 @@ export function useEpisodeNotesVersions({
       if (formVersions.length > 0) {
         // Find the active version
         const activeVersion = formVersions.find(v => v.active);
-        if (activeVersion) {
+        if (activeVersion && activeVersion.id) {
           // Select the active version to ensure we're using the right content
           versionManager.selectVersion(activeVersion);
         }

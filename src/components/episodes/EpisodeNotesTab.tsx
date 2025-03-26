@@ -1,5 +1,4 @@
 
-import { useEffect } from 'react';
 import { BookText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,7 +61,8 @@ export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
     },
     setValue: () => {
       // No-op as this is read-only view
-    }
+    },
+    watch: () => ({ unsubscribe: () => {} })
   };
   
   return (
