@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -29,7 +28,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(episode.coverArt);
   
-  // Use useMemo to prevent recreating default values on each render
   const defaultValues = useMemo(() => ({
     title: episode.title,
     episodeNumber: episode.episodeNumber,
@@ -51,18 +49,15 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     defaultValues,
   });
   
-  // Only update originalCoverArt when episode.coverArt changes, not on every render
   useEffect(() => {
     setOriginalCoverArt(episode.coverArt);
   }, [episode.coverArt]);
   
   const handleCoverArtUpload = useCallback(async (coverArt: string | undefined): Promise<string | null | undefined> => {
-    // If no change to cover art, return original value
     if (coverArt === originalCoverArt) {
       return coverArt;
     }
     
-    // Case 1: New image uploaded (blob URL)
     if (coverArt && isBlobUrl(coverArt)) {
       console.log("Detected blob URL for cover art, uploading to storage");
       
@@ -98,16 +93,13 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           URL.revokeObjectURL(coverArt);
         }
       }
-    }
-    // Case 2: Image removed (undefined) but there was an original image
-    else if (coverArt === undefined && originalCoverArt) {
+    } else if (coverArt === undefined && originalCoverArt) {
       console.log("Deleting old cover art on removal:", originalCoverArt);
       await deleteImage(originalCoverArt);
       toast.success("Cover art removed successfully");
-      return null; // Use null to explicitly set NULL in database
+      return null;
     }
     
-    // Case 3: No change or other cases
     return coverArt;
   }, [originalCoverArt]);
   
@@ -115,10 +107,8 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Handle cover art upload/removal
       const processedCoverArt = await handleCoverArtUpload(data.coverArt);
       
-      // Update episode in database
       const { error: updateError } = await supabase
         .from('episodes')
         .update({
@@ -140,7 +130,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (updateError) throw updateError;
       
-      // Update episode-guest relationships
       const { error: deleteError } = await supabase
         .from('episode_guests')
         .delete()
@@ -148,7 +137,6 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
       
       if (deleteError) throw deleteError;
       
-      // Insert new episode-guest relationships
       if (data.guestIds.length > 0) {
         const episodeGuestsToInsert = data.guestIds.map(guestId => ({
           episode_id: episode.id,
@@ -185,7 +173,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
             <GuestsSection form={form} guests={guests} />
           </div>
           
-          <ContentSection form={form} />
+          <ContentSection form={form} guests={guests} />
           
           <ResourcesSection form={form} />
           
