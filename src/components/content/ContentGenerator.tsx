@@ -69,21 +69,21 @@ export function ContentGenerator({
       
       console.log(`Generating content for ${fieldName} using ${edgeFunctionName}`);
       
-      // Prepare the request body
+      // Prepare the request body - make sure to include required fields
       const requestBody: any = {
-        formData: formValues,
-        guests,
+        type: generationType,  // Always include type (required by the edge function)
+        name: formValues.name || additionalContext?.guest?.name,  // Include name from form or guest
+        title: formValues.title || additionalContext?.guest?.title,  // Include title
+        company: formValues.company || additionalContext?.guest?.company,
+        socialLinks: formValues.socialLinks || additionalContext?.guest?.socialLinks,
         prompt: prompt?.prompt_text,
         systemPrompt: prompt?.system_prompt,
         contextInstructions: prompt?.context_instructions,
         exampleOutput: prompt?.example_output,
-        additionalContext
+        ...additionalContext  // Add all other context
       };
       
-      // Add generationType if provided (for edge functions that handle multiple types)
-      if (generationType) {
-        requestBody.type = generationType;
-      }
+      console.log("Request body:", JSON.stringify(requestBody, null, 2));
       
       // Call the edge function
       const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
