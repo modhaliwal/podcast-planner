@@ -21,16 +21,10 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
   
   const handleGenerateNotes = async () => {
     const topic = form.getValues('topic');
-    const guestIds = form.getValues('guestIds');
     
-    // Validation checks
+    // Validation check for topic only
     if (!topic) {
       toast.warning("Please add a topic before generating notes");
-      return;
-    }
-    
-    if (guestIds.length === 0) {
-      toast.warning("Please select at least one guest before generating notes");
       return;
     }
     
@@ -38,24 +32,10 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
       setIsGeneratingNotes(true);
       toast.info("Generating episode notes. This may take a minute...");
       
-      // Find selected guests
-      const selectedGuests = guests.filter(guest => guestIds.includes(guest.id));
-      
-      if (selectedGuests.length === 0) {
-        throw new Error("Selected guests not found");
-      }
-      
-      // Prepare guest bios for the request
-      const guestBios = selectedGuests.map(guest => ({
-        name: guest.name,
-        bio: guest.bio
-      }));
-      
       // Call the Supabase function to generate notes
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
         body: {
-          topic,
-          guestBios
+          topic
         }
       });
       

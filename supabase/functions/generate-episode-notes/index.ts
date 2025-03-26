@@ -10,32 +10,20 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, guestBios } = await req.json();
+    const { topic } = await req.json();
     
     if (!topic) {
       throw new Error("Topic is required");
     }
     
-    if (!guestBios || !guestBios.length) {
-      throw new Error("At least one guest bio is required");
-    }
-    
-    // Prepare the prompt for Perplexity
-    const combinedGuestInfo = guestBios.map((g: { name: string, bio: string }) => 
-      `${g.name}: ${g.bio}`
-    ).join('\n\n');
-    
     console.log(`Generating episode notes for topic: ${topic}`);
-    console.log(`Number of guests: ${guestBios.length}`);
     
-    // Use the name and title of the first guest for the API call
-    // but include all guest information in the extracted content
-    const firstGuest = guestBios[0];
+    // Generate research based solely on the topic
     const generatedNotes = await generateResearchWithPerplexity(
-      firstGuest.name,
-      "Podcast Guest",
+      "Topic Research",
+      "Episode Research",
       undefined,
-      `Topic for this episode: ${topic}\n\nGuest Information:\n${combinedGuestInfo}`
+      `Generate comprehensive research notes about "${topic}". Include recent trends, unique facts, and interesting statistics related to this topic. Structure the information to help podcast hosts prepare engaging content for their episode.`
     );
 
     return new Response(
