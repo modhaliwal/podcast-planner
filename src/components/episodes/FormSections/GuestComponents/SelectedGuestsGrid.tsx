@@ -14,14 +14,17 @@ export const SelectedGuestsGrid = memo(function SelectedGuestsGrid({
   availableGuests, 
   onRemoveGuest 
 }: SelectedGuestsGridProps) {
+  // Early return if there are no selected guests
   if (!selectedGuestIds || selectedGuestIds.length === 0) {
     return null;
   }
   
+  // Filter available guests to only include those that are selected
   const validGuests = selectedGuestIds
     .map(guestId => availableGuests.find(g => g.id === guestId))
     .filter((guest): guest is Guest => guest !== undefined);
 
+  // Early return if no valid guests were found (prevents rendering empty grid)
   if (validGuests.length === 0) {
     return null;
   }
