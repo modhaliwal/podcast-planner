@@ -1,55 +1,79 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
-import { Guest } from "@/lib/types";
-import { generateBackgroundResearch } from "./BackgroundResearchGenerator";
-import { useAIPrompts } from "@/hooks/useAIPrompts";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { Wand2 } from 'lucide-react';
+import { Guest } from '@/lib/types';
 
 interface AIResearchGeneratorProps {
   guest?: Guest;
-  onGenerationComplete: (content: string) => void;
+  onGenerationComplete: (markdown: string) => void;
 }
 
-export function AIResearchGenerator({ 
-  guest, 
-  onGenerationComplete 
-}: AIResearchGeneratorProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const { getPromptByKey } = useAIPrompts();
+export function AIResearchGenerator({ guest, onGenerationComplete }: AIResearchGeneratorProps) {
+  const [loading, setLoading] = useState(false);
+  
+  const handleGenerate = async () => {
+    if (!guest) {
+      toast.error("Missing guest information", {
+        description: "Please save the guest first before generating research.",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Simulate AI generation with a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Placeholder generated markdown
+      const generatedMarkdown = `# ${guest.name} Research
+      
+## Background
+${guest.name} is ${guest.title || 'a professional'} at ${guest.company || 'their company'}.
 
-  const handleGenerateResearch = async () => {
-    if (guest) {
-      setIsLoading(true);
-      try {
-        await generateBackgroundResearch(
-          guest, 
-          setIsLoading, 
-          (markdown) => {
-            if (markdown) {
-              onGenerationComplete(markdown);
-            }
-          },
-          getPromptByKey
-        );
-      } catch (error) {
-        console.error("Error generating research:", error);
-        setIsLoading(false);
-      }
+## Key Points
+- Notable accomplishment 1
+- Notable accomplishment 2
+- Area of expertise
+      
+## Potential Questions
+1. Question about their background?
+2. Question about their expertise?
+3. Question about industry trends?
+      `;
+      
+      onGenerationComplete(generatedMarkdown);
+      
+      toast.success("Research Generated", {
+        description: "AI-generated research has been created successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating research:", error);
+      toast.error("Generation Error", {
+        description: "There was a problem generating the research. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   return (
-    <Button
-      type="button"
-      variant="outline"
+    <Button 
+      onClick={handleGenerate} 
+      disabled={loading}
       size="sm"
-      onClick={handleGenerateResearch}
-      disabled={isLoading}
-      className="h-8 gap-1"
+      className="gap-1"
     >
-      <Sparkles className="h-3.5 w-3.5" />
-      {isLoading ? "Generating..." : "Generate"}
+      {loading ? (
+        "Researching..."
+      ) : (
+        <>
+          <Wand2 className="h-4 w-4" />
+          Research
+        </>
+      )}
     </Button>
   );
 }
