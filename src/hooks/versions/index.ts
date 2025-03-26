@@ -32,16 +32,18 @@ export function useContentVersions<T extends Record<string, any>>({
   const versions = form.getValues(versionsFieldName as any) || [];
   
   // Use the consolidated version manager
-  return useVersionManager({
+  const versionManager = useVersionManager({
     content,
     versions,
     onVersionsChange: (newVersions) => {
-      form.setValue(versionsFieldName as any, newVersions, { shouldDirty: true });
+      form.setValue(versionsFieldName as any, newVersions as any, { shouldDirty: true });
     },
     onContentChange: (newContent) => {
-      form.setValue(fieldName as any, newContent, { shouldDirty: true });
+      form.setValue(fieldName as any, newContent as any, { shouldDirty: true });
     }
   });
+  
+  return versionManager;
 }
 
 export * from "./useVersionState";
