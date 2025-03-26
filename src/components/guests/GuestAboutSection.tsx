@@ -86,7 +86,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
               )}
             </div>
             <div 
-              className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-table:table-auto prose-img:rounded-md prose-img:max-w-full prose-img:h-auto"
+              className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:mt-4 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-table:w-full prose-th:p-2 prose-th:bg-muted prose-th:border prose-td:p-2 prose-td:border prose-img:my-4 prose-img:rounded-md"
               dangerouslySetInnerHTML={{ __html: parsedBackgroundResearch }}
             />
           </div>

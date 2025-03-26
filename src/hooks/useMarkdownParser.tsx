@@ -24,7 +24,7 @@ export function useMarkdownParser(markdown: string | undefined) {
           console.log("Parsing markdown:", markdown.substring(0, 100) + "...");
           // Parse markdown to HTML
           const html = await marked.parse(markdown);
-          console.log("Parsed HTML result:", html.substring(0, 100) + "...");
+          console.log("Parsed HTML result length:", html.length);
           
           // Make all links open in a new tab with security attributes
           const safeHtml = html.replace(
@@ -100,6 +100,6 @@ function useFallbackParser(markdown: string, setParsedHtml: (html: string) => vo
     html = `<p>${html}</p>`;
   }
   
-  console.log("Fallback parser result:", html.substring(0, 100) + "...");
+  console.log("Fallback parser result length:", html.length);
   setParsedHtml(html);
 }
