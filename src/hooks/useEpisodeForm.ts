@@ -33,11 +33,6 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     resources: episode.resources || []
   }), [episode]);
   
-  const form = useForm<EpisodeFormValues>({
-    resolver: zodResolver(episodeFormSchema),
-    defaultValues,
-  });
-  
   // For debugging - log the current form values
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -45,6 +40,11 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     });
     return () => subscription.unsubscribe();
   }, [form]);
+  
+  const form = useForm<EpisodeFormValues>({
+    resolver: zodResolver(episodeFormSchema),
+    defaultValues,
+  });
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
@@ -54,10 +54,13 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
       console.log("Form values being submitted:", data);
       const processedCoverArt = await handleCoverArtUpload(data.coverArt);
       
-      // Ensure topic is properly handled - fix for topic not saving
-      // Using optional chaining and nullish coalescing to handle cases where topic is undefined or empty string
-      const topicValue = data.topic === '' || data.topic === undefined ? null : data.topic;
-      console.log("Processed topic value:", topicValue);
+      // Handle topic properly - ensuring empty strings become null
+      let topicValue = data.topic;
+      if (topicValue === undefined || topicValue === '' || (typeof topicValue === 'string' && topicValue.trim() === '')) {
+        topicValue = null;
+      }
+      
+      console.log("Processed topic value for database:", topicValue);
       
       // Log the data being sent to Supabase for debugging
       console.log("Updating episode with data:", {
@@ -80,7 +83,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
         .update({
           title: data.title,
           episode_number: data.episodeNumber,
-          topic: topicValue, // Using the processed topic value
+          topic: topicValue,
           introduction: data.introduction,
           notes: data.notes,
           status: data.status,
