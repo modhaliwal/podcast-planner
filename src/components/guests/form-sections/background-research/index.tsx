@@ -51,30 +51,39 @@ export function BackgroundResearchSection({
   // Update background research when parsedHtml changes
   useEffect(() => {
     if (parsedHtml) {
-      // Save current version
-      saveCurrentVersion('manual');
-      
-      // Update content
+      // Update content with the AI-generated HTML
       setBackgroundResearch(parsedHtml);
       
       // Save as new AI version
-      saveCurrentVersion('ai');
+      const newVersion: ContentVersion = {
+        id: uuidv4(),
+        content: parsedHtml,
+        timestamp: new Date().toISOString(),
+        source: 'ai'
+      };
+      
+      // Add the new version and update the active version
+      const updatedVersions = [...backgroundResearchVersions, newVersion];
+      onVersionsChange(updatedVersions);
+      setActiveVersionId(newVersion.id);
       
       setMarkdownToConvert(undefined); // Reset after conversion
     }
   }, [parsedHtml]);
 
   const handleChange = (content: string) => {
-    console.log("Background research changed:", content);
     setBackgroundResearch(content);
   };
 
   const selectVersion = (version: ContentVersion) => {
-    setBackgroundResearch(version.content);
+    // Update the active version ID first
     setActiveVersionId(version.id);
+    
+    // Then update the content to match the selected version
+    setBackgroundResearch(version.content);
   };
 
-  const saveCurrentVersion = (source: ContentVersion['source'] = 'manual') => {
+  const saveCurrentVersion = () => {
     // Don't save empty content
     if (!backgroundResearch.trim()) return;
     
@@ -82,7 +91,7 @@ export function BackgroundResearchSection({
       id: uuidv4(),
       content: backgroundResearch,
       timestamp: new Date().toISOString(),
-      source
+      source: 'manual'
     };
     
     // Add the new version and update the active version
@@ -98,15 +107,19 @@ export function BackgroundResearchSection({
     const activeVersion = backgroundResearchVersions.find(v => v.id === activeVersionId);
     
     if (activeVersion && activeVersion.content !== backgroundResearch) {
-      saveCurrentVersion('manual');
+      saveCurrentVersion();
     }
   };
 
   const handleGenerateResearch = async () => {
     if (guest) {
+      // Only save the current version if it's different from the last one
+      const lastVersion = backgroundResearchVersions[backgroundResearchVersions.length - 1];
+      if (!lastVersion || lastVersion.content !== backgroundResearch) {
+        saveCurrentVersion();
+      }
+      
       await generateBackgroundResearch(guest, setIsLoading, setMarkdownToConvert);
-      // Save the current version before updating
-      saveCurrentVersion('manual');
     }
   };
 
