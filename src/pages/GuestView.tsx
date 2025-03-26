@@ -54,6 +54,12 @@ const GuestView = () => {
     episode.guestIds.includes(guest.id)
   );
   
+  // Create a wrapper for handleDelete that returns void
+  const handleDeleteWrapper = async () => {
+    await handleDelete();
+    // This function returns void
+  };
+  
   return (
     <Shell>
       <div className="page-container">
@@ -68,7 +74,7 @@ const GuestView = () => {
           guest={guest}
           isOpen={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
-          onConfirmDelete={handleDelete}
+          onConfirmDelete={handleDeleteWrapper}
         />
       </div>
     </Shell>
