@@ -10,20 +10,20 @@ function useEpisodesData(userId: string | undefined) {
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
   const refreshTimerRef = useRef<number>(0);
   const isInitialMountRef = useRef(true);
+  const hasLoadedInitialDataRef = useRef(false);
 
   // Load episodes on initial mount
   useEffect(() => {
     const loadEpisodes = async () => {
-      if (isInitialMountRef.current && userId) {
-        console.log("Initial useEpisodesData mount, loading episodes");
+      if (userId && isInitialMountRef.current && !hasLoadedInitialDataRef.current) {
+        console.log("Initial useEpisodesData mount, loading episodes for user:", userId);
         await refreshEpisodes(true);
         isInitialMountRef.current = false;
+        hasLoadedInitialDataRef.current = true;
       }
     };
     
-    if (userId) {
-      loadEpisodes();
-    }
+    loadEpisodes();
   }, [userId]);
 
   const refreshEpisodes = useCallback(async (force = false) => {
@@ -43,7 +43,7 @@ function useEpisodesData(userId: string | undefined) {
     refreshTimerRef.current = now;
     
     try {
-      console.log("Fetching episodes from database...");
+      console.log("Fetching episodes from database for user:", userId);
       
       // Fetch episodes - no user_id filter
       const { data: episodesData, error: episodesError } = await supabase

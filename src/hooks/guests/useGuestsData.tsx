@@ -9,16 +9,19 @@ export function useGuestsData(userId: string | undefined) {
   const { refreshGuests: fetchGuestData } = useGuestsRefresh(userId);
   const isInitialMountRef = useRef(true);
   const lastFetchTimeRef = useRef<number>(0);
+  const hasLoadedInitialDataRef = useRef(false);
 
-  // Load guests on initial mount
+  // Load guests on initial mount, but only if not already loaded and userId is available
   useEffect(() => {
     const loadGuests = async () => {
-      if (isInitialMountRef.current) {
+      if (userId && isInitialMountRef.current && !hasLoadedInitialDataRef.current) {
+        console.log("Initial useGuestsData mount, refreshing guests for user:", userId);
         setIsLoadingGuests(true);
-        console.log("Initial useGuestsData mount, refreshing guests");
+        
         try {
           const fetchedGuests = await fetchGuestData();
           setGuests(fetchedGuests);
+          hasLoadedInitialDataRef.current = true;
         } catch (error) {
           console.error("Error loading guests:", error);
         } finally {
@@ -28,9 +31,7 @@ export function useGuestsData(userId: string | undefined) {
       }
     };
     
-    if (userId) {
-      loadGuests();
-    }
+    loadGuests();
   }, [fetchGuestData, userId]);
 
   // Create a function that wraps refreshGuests and updates the guests state
@@ -46,6 +47,7 @@ export function useGuestsData(userId: string | undefined) {
     lastFetchTimeRef.current = now;
     
     try {
+      console.log("Refreshing guests for user:", userId);
       const fetchedGuests = await fetchGuestData();
       setGuests(fetchedGuests);
       return fetchedGuests;
@@ -55,7 +57,7 @@ export function useGuestsData(userId: string | undefined) {
     } finally {
       setIsLoadingGuests(false);
     }
-  }, [fetchGuestData, guests]);
+  }, [fetchGuestData, guests, userId]);
 
   return {
     guests,

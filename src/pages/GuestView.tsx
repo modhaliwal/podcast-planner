@@ -24,13 +24,21 @@ const GuestView = () => {
     handleDelete
   } = useGuestData(id);
   
-  // Refresh guests data and episodes when the page is loaded
+  // Refresh guests data and episodes when the page is loaded, but only once
   useEffect(() => {
     if (!hasRefreshedRef.current) {
       console.log('Initial GuestView mount, refreshing guests and episodes data');
-      refreshGuests();
-      refreshEpisodes(); // Make sure we have the latest episodes data
-      hasRefreshedRef.current = true;
+      
+      // Small delay to avoid potential race conditions
+      setTimeout(() => {
+        refreshGuests();
+        
+        // Another small delay before loading episodes
+        setTimeout(() => {
+          refreshEpisodes();
+          hasRefreshedRef.current = true;
+        }, 100);
+      }, 0);
     }
     
     // Reset the refresh flag when the path changes

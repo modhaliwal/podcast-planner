@@ -3,16 +3,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Dashboard = () => {
   const { guests, episodes, isDataLoading, refreshAllData } = useAuth();
+  const hasInitializedRef = useRef(false);
   
   // Load data only once when the component mounts
   useEffect(() => {
-    // Only refresh data when dashboard first loads
-    refreshAllData();
+    if (!hasInitializedRef.current) {
+      console.log("Dashboard component mounted, refreshing data");
+      refreshAllData();
+      hasInitializedRef.current = true;
+    }
     // Intentionally not including refreshAllData in dependencies
     // to prevent refresh loops
     // eslint-disable-next-line react-hooks/exhaustive-deps

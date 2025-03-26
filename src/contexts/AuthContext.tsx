@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Pass the user ID directly without using useAuth
+  // Pass the user ID directly without using useAuth to avoid circular dependencies
   const { guests, isLoadingGuests, refreshGuests } = useGuestsData(user?.id);
   const { episodes, isLoadingEpisodes, refreshEpisodes } = useEpisodesData(user?.id);
   
@@ -39,12 +39,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Unified data refresh function
   const refreshAllData = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log("Cannot refresh data: No user ID available");
+      return;
+    }
+    
+    console.log("Refreshing all data for user:", user.id);
     
     try {
-      // Set a small delay between calls to avoid potential race conditions
+      // First refresh guests, then episodes
       await refreshGuests(true);
-      await refreshEpisodes(true);
+      
+      // Small delay to ensure guest data is fully loaded
+      setTimeout(async () => {
+        await refreshEpisodes(true);
+      }, 100);
     } catch (error) {
       console.error("Error refreshing all data:", error);
     }
@@ -68,7 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN' && session) {
           await refreshUserProfile();
-          // Let the hooks handle the initial data loading
+          // Data loading will be triggered by the useGuestsData and useEpisodesData hooks
+          // when they detect the user ID is available
           toast({
             title: "Success",
             description: "Signed in successfully"
@@ -87,13 +97,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
+    // Get the initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         await refreshUserProfile();
-        // Let the hooks handle the initial data loading
+        // Data loading will be triggered by the useGuestsData and useEpisodesData hooks
       }
       
       setLoading(false);
