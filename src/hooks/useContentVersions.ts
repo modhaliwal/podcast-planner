@@ -22,8 +22,8 @@ export function useContentVersions<T>({
   // Initialize versions if they don't exist
   useEffect(() => {
     if (!hasInitialized) {
-      const currentContent = form.getValues(fieldName as string) || "";
-      const existingVersions = form.getValues(versionsFieldName as string) || [];
+      const currentContent = form.getValues(fieldName as any) || "";
+      const existingVersions = form.getValues(versionsFieldName as any) || [];
 
       if (Array.isArray(existingVersions) && existingVersions.length === 0 && currentContent) {
         const initialVersion: ContentVersion = {
@@ -51,7 +51,7 @@ export function useContentVersions<T>({
   }, [form, fieldName, versionsFieldName, hasInitialized]);
 
   const handleContentChange = () => {
-    const currentContent = form.getValues(fieldName as string) || "";
+    const currentContent = form.getValues(fieldName as any) || "";
     
     // Check if content is not empty and if we have an active version to compare with
     if (typeof currentContent === 'string' && currentContent.trim() && activeVersionId) {
@@ -80,7 +80,7 @@ export function useContentVersions<T>({
   };
 
   const clearAllVersions = () => {
-    const currentContent = form.getValues(fieldName as string) || "";
+    const currentContent = form.getValues(fieldName as any) || "";
     
     // Create a single version with current content
     const newVersion: ContentVersion = {

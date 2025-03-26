@@ -26,7 +26,8 @@ function NotesFieldContent({
     handleContentChange,
     selectVersion,
     clearAllVersions,
-    addNewVersion
+    addNewVersion,
+    versionSelectorProps
   } = useNotesVersions();
 
   const handleNotesGenerated = (notes: string) => {
@@ -40,12 +41,7 @@ function NotesFieldContent({
         <FormLabel>{label}</FormLabel>
         <div className="flex items-center space-x-2">
           {versions.length > 0 && (
-            <VersionSelector
-              versions={versions}
-              onSelectVersion={selectVersion}
-              activeVersionId={activeVersionId || undefined}
-              onClearAllVersions={clearAllVersions}
-            />
+            <VersionSelector {...versionSelectorProps} />
           )}
           
           {editMode && (

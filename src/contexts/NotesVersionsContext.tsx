@@ -12,6 +12,12 @@ interface NotesVersionsContextValue {
   selectVersion: (version: ContentVersion) => void;
   clearAllVersions: () => void;
   addNewVersion: (content: string, source?: "manual" | "ai" | "import") => ContentVersion;
+  versionSelectorProps: {
+    versions: ContentVersion[];
+    onSelectVersion: (version: ContentVersion) => void;
+    activeVersionId: string | undefined;
+    onClearAllVersions: () => void;
+  };
 }
 
 // Create the context with a default undefined value
@@ -127,13 +133,22 @@ export function NotesVersionsProvider({
     return newVersion;
   };
 
+  // For version selector dropdown
+  const versionSelectorProps = {
+    versions,
+    onSelectVersion: selectVersion,
+    activeVersionId: activeVersionId || undefined,
+    onClearAllVersions: clearAllVersions
+  };
+
   const contextValue: NotesVersionsContextValue = {
     activeVersionId,
     versions,
     handleContentChange,
     selectVersion,
     clearAllVersions,
-    addNewVersion
+    addNewVersion,
+    versionSelectorProps
   };
 
   return (
