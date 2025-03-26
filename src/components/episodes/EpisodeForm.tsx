@@ -28,9 +28,14 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     formState: form.formState
   });
   
+  const handleFormSubmit = form.handleSubmit((data) => {
+    console.log("Form submission handler executed with data:", data);
+    return onSubmit(data);
+  });
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={handleFormSubmit} className="space-y-8">
         <div className="grid grid-cols-1 gap-6">
           <CombinedBasicInfoSection form={form} />
           
