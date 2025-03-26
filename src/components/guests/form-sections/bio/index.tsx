@@ -16,6 +16,7 @@ interface BioSectionProps {
 
 export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSectionProps) {
   const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
+  const [previousContent, setPreviousContent] = useState<string>("");
 
   // Initialize with the current bio as the first version if no versions exist
   useEffect(() => {
@@ -30,6 +31,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
         };
         onVersionsChange([initialVersion]);
         setActiveVersionId(initialVersion.id);
+        setPreviousContent(currentBio);
       }
     } else if (!activeVersionId) {
       // Set the most recent version as active
@@ -37,12 +39,14 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       setActiveVersionId(sortedVersions[0].id);
+      setPreviousContent(sortedVersions[0].content);
     }
   }, [bioVersions, form, onVersionsChange, activeVersionId]);
 
   const selectVersion = (version: ContentVersion) => {
     form.setValue('bio', version.content);
     setActiveVersionId(version.id);
+    setPreviousContent(version.content);
   };
 
   const saveCurrentVersion = (source: ContentVersion['source'] = 'manual') => {
@@ -62,17 +66,18 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     const updatedVersions = [...bioVersions, newVersion];
     onVersionsChange(updatedVersions);
     setActiveVersionId(newVersion.id);
+    setPreviousContent(currentBio);
     
     return newVersion;
   };
 
   // Handle bio change from text area to create a version
   const handleBioChange = (event: React.FocusEvent<HTMLTextAreaElement>) => {
-    // When the textarea loses focus, save the current version if it's different from the active version
+    // When the textarea loses focus, save the current version if it's different from the saved version
     const currentBio = event.target.value;
-    const activeVersion = bioVersions.find(v => v.id === activeVersionId);
     
-    if (activeVersion && activeVersion.content !== currentBio) {
+    // Only create a new version if the content has actually changed
+    if (currentBio !== previousContent && currentBio.trim()) {
       saveCurrentVersion('manual');
     }
   };
@@ -81,6 +86,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     const updatedVersions = [...bioVersions, version];
     onVersionsChange(updatedVersions);
     setActiveVersionId(version.id);
+    setPreviousContent(version.content);
   };
 
   return (

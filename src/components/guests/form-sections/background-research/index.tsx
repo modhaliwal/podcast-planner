@@ -26,6 +26,7 @@ export function BackgroundResearchSection({
   const [isLoading, setIsLoading] = useState(false);
   const [markdownToConvert, setMarkdownToConvert] = useState<string | undefined>();
   const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
+  const [previousContent, setPreviousContent] = useState<string>("");
   const parsedHtml = useMarkdownParser(markdownToConvert);
 
   // Initialize with the current research as the first version if no versions exist
@@ -39,12 +40,14 @@ export function BackgroundResearchSection({
       };
       onVersionsChange([initialVersion]);
       setActiveVersionId(initialVersion.id);
+      setPreviousContent(backgroundResearch);
     } else if (!activeVersionId && backgroundResearchVersions.length > 0) {
       // Set the most recent version as active
       const sortedVersions = [...backgroundResearchVersions].sort(
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       setActiveVersionId(sortedVersions[0].id);
+      setPreviousContent(sortedVersions[0].content);
     }
   }, [backgroundResearchVersions, backgroundResearch, onVersionsChange, activeVersionId]);
 
@@ -66,6 +69,7 @@ export function BackgroundResearchSection({
       const updatedVersions = [...backgroundResearchVersions, newVersion];
       onVersionsChange(updatedVersions);
       setActiveVersionId(newVersion.id);
+      setPreviousContent(parsedHtml);
       
       setMarkdownToConvert(undefined); // Reset after conversion
     }
@@ -81,6 +85,7 @@ export function BackgroundResearchSection({
     
     // Then update the content to match the selected version
     setBackgroundResearch(version.content);
+    setPreviousContent(version.content);
   };
 
   const saveCurrentVersion = () => {
@@ -98,15 +103,15 @@ export function BackgroundResearchSection({
     const updatedVersions = [...backgroundResearchVersions, newVersion];
     onVersionsChange(updatedVersions);
     setActiveVersionId(newVersion.id);
+    setPreviousContent(backgroundResearch);
     
     return newVersion;
   };
 
   // Handle editor blur to create a version if content has changed
   const handleEditorBlur = () => {
-    const activeVersion = backgroundResearchVersions.find(v => v.id === activeVersionId);
-    
-    if (activeVersion && activeVersion.content !== backgroundResearch) {
+    // Only create a new version if the content has actually changed from the previous version
+    if (backgroundResearch !== previousContent && backgroundResearch.trim()) {
       saveCurrentVersion();
     }
   };
