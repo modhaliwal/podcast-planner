@@ -13,6 +13,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Guests = lazy(() => import('./pages/Guests'));
 const GuestView = lazy(() => import('./pages/GuestView'));
 const AddGuest = lazy(() => import('./pages/AddGuest'));
+const EditGuest = lazy(() => import('./pages/EditGuest')); // New import
 const Episodes = lazy(() => import('./pages/Episodes'));
 const CreateEpisode = lazy(() => import('./pages/CreateEpisode'));
 const EpisodeView = lazy(() => import('./pages/EpisodeView'));
@@ -48,6 +49,11 @@ function App() {
           <Route path="/guests/:id" element={
             <ProtectedRoute>
               <GuestView />
+            </ProtectedRoute>
+          } />
+          <Route path="/guests/:id/edit" element={
+            <ProtectedRoute>
+              <EditGuest />
             </ProtectedRoute>
           } />
           <Route path="/episodes" element={

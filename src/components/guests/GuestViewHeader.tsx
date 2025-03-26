@@ -1,19 +1,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Guest } from '@/lib/types';
 
 interface GuestViewHeaderProps {
   guest: Guest;
-  isEditing: boolean;
-  onToggleEdit: () => void;
   onDeleteClick: () => void;
 }
 
 export function GuestViewHeader({ 
   guest, 
-  isEditing, 
-  onToggleEdit, 
   onDeleteClick 
 }: GuestViewHeaderProps) {
   return (
@@ -27,10 +24,12 @@ export function GuestViewHeader({
         <Button 
           variant="outline" 
           size="sm"
-          onClick={onToggleEdit}
+          asChild
         >
-          <Edit className="h-4 w-4 mr-2" />
-          {isEditing ? "Cancel Edit" : "Edit"}
+          <Link to={`/guests/${guest.id}/edit`}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </Link>
         </Button>
         <Button 
           variant="outline" 
