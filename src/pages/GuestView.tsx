@@ -4,12 +4,13 @@ import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { GuestForm } from '@/components/guests/GuestForm';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGuestData } from '@/hooks/guest/useGuestData';
 import { GuestViewHeader } from '@/components/guests/GuestViewHeader';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
 import { useEffect, useRef } from 'react';
+// Fix: Import from the correct location - updated from guest to guests folder
+import { useGuestData } from '@/hooks/guests';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
