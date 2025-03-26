@@ -13,7 +13,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // Use an effect to show toast after render to avoid state updates during render
   useEffect(() => {
     if (!loading && !user) {
       toast({
@@ -29,8 +28,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    // If user is not logged in, redirect to login page
-    // and pass the location they were trying to access
+    // Redirect to auth page, preserving the intended destination
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 

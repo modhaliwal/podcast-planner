@@ -9,9 +9,6 @@ import { ContentVersion } from '@/lib/types';
 export function ensureVersionNumbers(versions: ContentVersion[]): ContentVersion[] {
   if (!versions || !Array.isArray(versions) || versions.length === 0) return [];
   
-  // Log incoming versions to check structure
-  console.log("ensureVersionNumbers input:", JSON.stringify(versions));
-  
   try {
     // Sort versions by timestamp to ensure consistent numbering
     const sortedVersions = [...versions].sort(
@@ -71,7 +68,7 @@ export function ensureActiveVersion(versions: ContentVersion[]): ContentVersion[
 
 /**
  * Fully process versions to ensure validity
- * @param versions Array of ContentVersion objects
+ * @param versions Any array that should be converted to ContentVersion[] 
  * @returns Processed versions with numbers and active flag
  */
 export function processVersions(versions: any[]): ContentVersion[] {
@@ -81,47 +78,50 @@ export function processVersions(versions: any[]): ContentVersion[] {
   }
   
   try {
-    // If input is a string (possibly JSON), try to parse it
-    if (versions.length === 1 && typeof versions[0] === 'string') {
-      try {
-        const parsed = JSON.parse(versions[0]);
-        if (Array.isArray(parsed)) {
-          versions = parsed;
-        }
-      } catch (e) {
-        console.error("Failed to parse version string:", e);
+    // Sanitize and normalize each item to match ContentVersion structure
+    const normalizedVersions = versions.map(v => {
+      // Skip non-objects
+      if (!v || typeof v !== 'object' || Array.isArray(v)) {
+        return createDefaultVersion();
       }
-    }
-    
-    // Filter out invalid entries (non-objects, primitives)
-    const validVersions = versions.filter(v => 
-      v && typeof v === 'object' && !Array.isArray(v) && (v.content !== undefined || v.id !== undefined)
-    );
-    
-    if (validVersions.length === 0) {
-      console.log("No valid versions found after filtering");
-      return [];
-    }
-    
-    // Convert each version to proper ContentVersion format
-    const normalizedVersions = validVersions.map(v => ({
-      id: v.id || `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      content: v.content || '',
-      timestamp: v.timestamp || new Date().toISOString(),
-      source: v.source || 'manual',
-      active: Boolean(v.active),
-      versionNumber: Number(v.versionNumber) || 0
-    }));
+      
+      // For primitive values that got into the array, create a default version
+      if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') {
+        return createDefaultVersion();
+      }
+      
+      return {
+        id: v.id || `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        content: typeof v.content === 'string' ? v.content : '',
+        timestamp: v.timestamp || new Date().toISOString(),
+        source: v.source || 'manual',
+        active: Boolean(v.active),
+        versionNumber: Number(v.versionNumber) || 0
+      };
+    });
     
     const withNumbers = ensureVersionNumbers(normalizedVersions);
     const withActive = ensureActiveVersion(withNumbers);
     
-    console.log("processVersions result:", withActive);
     return withActive;
   } catch (error) {
     console.error("Error in processVersions:", error);
     return [];
   }
+}
+
+/**
+ * Create a default version object for error cases
+ */
+function createDefaultVersion(): ContentVersion {
+  return {
+    id: `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    content: '',
+    timestamp: new Date().toISOString(),
+    source: 'manual',
+    active: false,
+    versionNumber: 0
+  };
 }
 
 /**

@@ -64,25 +64,24 @@ export function useEpisodeLoader(episodeId: string | undefined) {
         parsedResources = [];
       }
       
-      // Handle notes_versions which might be stringified JSON
+      // Process notes_versions into correct ContentVersion[] format
       let notesVersions: ContentVersion[] = [];
       if (episodeData.notes_versions) {
         try {
-          // If it's a string, parse it
+          // Handle different data types
           if (typeof episodeData.notes_versions === 'string') {
+            // If it's a string, parse it
             const parsed = JSON.parse(episodeData.notes_versions);
-            // Ensure we have a proper array to work with
-            notesVersions = Array.isArray(parsed) ? parsed : [];
+            // Ensure we have an array to work with
+            const versionArray = Array.isArray(parsed) ? parsed : [parsed];
+            notesVersions = processVersions(versionArray);
           } else if (Array.isArray(episodeData.notes_versions)) {
-            // If it's already an array, use it directly
-            notesVersions = episodeData.notes_versions;
+            // If already an array, process it
+            notesVersions = processVersions(episodeData.notes_versions);
           } else {
-            // If it's an object but not an array, wrap it in an array
-            notesVersions = [episodeData.notes_versions];
+            // If it's an object but not an array, wrap it
+            notesVersions = processVersions([episodeData.notes_versions]);
           }
-          
-          // Ensure we have valid versions with required properties
-          notesVersions = processVersions(notesVersions);
           
           console.log("Processed notes versions:", notesVersions);
         } catch (e) {

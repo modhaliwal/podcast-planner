@@ -1,6 +1,5 @@
-
-import { useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Headphones } from "lucide-react";
@@ -12,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { signIn, signUp } from "@/services/userService";
+import { useAuth } from "@/contexts/AuthContext";
 
 const authSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -23,9 +23,11 @@ type AuthFormValues = z.infer<typeof authSchema>;
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState(null);
   const [isNewUser, setIsNewUser] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const from = location.state?.from || "/dashboard";
 
   const form = useForm<AuthFormValues>({
@@ -37,33 +39,17 @@ export default function Auth() {
     },
   });
 
-  useState(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  });
-
-  // Redirect if session exists
-  if (session) {
-    return <Navigate to={from} />;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
 
   async function handleAuth(values: AuthFormValues) {
     try {
       setLoading(true);
       
       if (isNewUser) {
-        // Handle sign up
         const { data, error } = await signUp(values.email, values.password, values.fullName);
         
         if (error) throw error;
@@ -75,7 +61,6 @@ export default function Auth() {
           });
         }
       } else {
-        // Handle sign in
         const { data, error } = await signIn(values.email, values.password);
         
         if (error) throw error;
@@ -85,6 +70,7 @@ export default function Auth() {
             title: "Success",
             description: "Signed in successfully"
           });
+          navigate(from, { replace: true });
         }
       }
     } catch (error) {
