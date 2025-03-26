@@ -95,7 +95,7 @@ export function BioSection({ form }: BioSectionProps) {
       const company = form.getValues('company');
       
       const companyPhrase = company ? `at ${company}` : "in their field";
-      const fallbackBio = `${name} is a distinguished ${title} with extensive experience ${companyPhrase}. Known for innovative approaches and thought leadership, they have contributed significantly to industry advancements. Their unique perspective and insights make them a valuable voice in current discussions and an engaging podcast guest.`;
+      const fallbackBio = `Couldn't generate a bio for ${name}.`;
       
       form.setValue('bio', fallbackBio);
       toast.info("Used fallback bio generator");
