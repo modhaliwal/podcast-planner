@@ -31,12 +31,12 @@ export function migrateContentVersions<T extends Record<string, any>>(
 ): T {
   if (!obj) return obj;
   
-  const result = { ...obj };
+  const result = { ...obj } as T;
   
   // Process each field that might contain content versions
   versionFields.forEach(field => {
-    if (result[field] && Array.isArray(result[field])) {
-      result[field] = ensureVersionNumbers(result[field]);
+    if (result[field as keyof T] && Array.isArray(result[field as keyof T])) {
+      result[field as keyof T] = ensureVersionNumbers(result[field as keyof T] as unknown as ContentVersion[]) as any;
     }
   });
   

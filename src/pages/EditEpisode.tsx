@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
 import { useGuestsData } from '@/hooks/guests';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +23,14 @@ const EditEpisode = () => {
   
   // If loading, show loading indicator
   const isLoading = isEpisodeLoading || isLoadingGuests;
+  
+  // Show an error and navigate back if episode is null after loading
+  useEffect(() => {
+    if (!isEpisodeLoading && !episode) {
+      toast.error("Episode not found");
+      navigate('/episodes');
+    }
+  }, [isEpisodeLoading, episode, navigate]);
   
   if (isLoading) {
     return (

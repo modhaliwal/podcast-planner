@@ -22,16 +22,16 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
   const { refreshEpisodes } = useAuth();
   
   // Use our custom hook for form handling
-  const { form, isSubmitting, onSubmit } = useEpisodeForm(
+  const { form, isSubmitting, onSubmit } = useEpisodeForm({
     episode, 
-    async (updatedEpisode) => {
+    onSubmit: async (updatedEpisode) => {
       if (onSave) {
         await onSave(updatedEpisode);
       } else {
         await refreshEpisodes();
       }
     }
-  );
+  });
   
   return (
     <Form {...form}>
@@ -52,7 +52,7 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
         </div>
         
         <FormActions 
-          episodeId={episode.id} 
+          episodeId={episode?.id} 
           isSubmitting={isSubmitting}
           onCancel={onCancel}
         />
