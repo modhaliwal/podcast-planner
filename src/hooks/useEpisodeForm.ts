@@ -58,7 +58,12 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
         introduction: data.introduction || undefined,
         notes: data.notes || undefined,
         notesVersions: data.notesVersions && ensureVersionNumbers(data.notesVersions as ContentVersion[]),
-        resources: data.resources || [],
+        // Make sure all resources have required fields
+        resources: data.resources ? data.resources.map(resource => ({
+          label: resource.label || '',  // Ensure label is never undefined
+          url: resource.url || '',      // Ensure url is never undefined
+          description: resource.description
+        })) : [],
         coverArt: data.coverArt || undefined,
         podcastUrls: {
           spotify: data.podcastUrls?.spotify || undefined,

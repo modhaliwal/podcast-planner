@@ -7,8 +7,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
-import { EpisodeFormValues } from '@/hooks/useEpisodeForm';
 import { cn } from '@/lib/utils';
+import { EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 
 interface ScheduleSectionProps {
   form: UseFormReturn<EpisodeFormValues>;

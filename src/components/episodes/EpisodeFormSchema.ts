@@ -12,6 +12,13 @@ const contentVersionSchema = z.object({
   versionNumber: z.number().optional() // Add version number
 });
 
+// Define the Resource schema to ensure it has required fields
+const resourceSchema = z.object({
+  label: z.string().min(1, { message: "Resource title is required" }),
+  url: z.string().min(1, { message: "URL is required" }),
+  description: z.string().optional()
+});
+
 // Define the shape of the episode form
 export const episodeFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -42,13 +49,7 @@ export const episodeFormSchema = z.object({
     amazonPodcasts: z.string().optional(),
     youtube: z.string().optional()
   }).optional(),
-  resources: z.array(
-    z.object({
-      label: z.string(),
-      url: z.string(),
-      description: z.string().optional()
-    })
-  ).optional()
+  resources: z.array(resourceSchema).optional()
 });
 
 // Typescript type for the episode form

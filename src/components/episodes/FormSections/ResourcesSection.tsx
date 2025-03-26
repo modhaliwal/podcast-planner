@@ -1,6 +1,5 @@
 
 import { UseFormReturn } from 'react-hook-form';
-import { EpisodeFormValues } from '@/hooks/useEpisodeForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { File, Link, Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
+import { EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 
 interface ResourcesSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
