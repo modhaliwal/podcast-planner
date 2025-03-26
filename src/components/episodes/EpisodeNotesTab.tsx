@@ -5,6 +5,8 @@ import { FileText } from "lucide-react";
 import { useVersionManager } from "@/hooks/versions";
 import { Editor } from "@/components/editor/Editor";
 import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
+import { VersionHistory } from "@/components/guests/form-sections/VersionHistory";
+import { Button } from "@/components/ui/button";
 
 interface EpisodeNotesTabProps {
   episode: Episode;
@@ -13,13 +15,16 @@ interface EpisodeNotesTabProps {
 
 export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabProps) {
   const [content, setContent] = useState(episode.notes || "");
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   
   // Use version manager hook for handling versions
   const { 
     versions, 
     activeVersion, 
+    activeVersionId,
     addVersion, 
-    selectVersion, 
+    selectVersion,
+    clearAllVersions,
     handleEditorBlur,
     versionSelectorProps
   } = useVersionManager({
@@ -36,6 +41,10 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
     },
     onContentChange: setContent,
   });
+
+  const toggleVersionHistory = () => {
+    setShowVersionHistory(!showVersionHistory);
+  };
   
   return (
     <div className="space-y-6">
@@ -46,11 +55,25 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
         </div>
         
         {versions.length > 0 && (
-          <div className="flex items-center">
-            <VersionSelector {...versionSelectorProps} />
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleVersionHistory}
+            className="flex items-center gap-1"
+          >
+            Version History
+          </Button>
         )}
       </div>
+      
+      {showVersionHistory && versions.length > 0 && (
+        <VersionHistory 
+          versions={versions}
+          onSelectVersion={selectVersion}
+          activeVersionId={activeVersionId || undefined}
+          onClearAllVersions={clearAllVersions}
+        />
+      )}
       
       <Editor
         value={content}

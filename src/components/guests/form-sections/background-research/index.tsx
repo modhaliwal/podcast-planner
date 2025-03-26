@@ -5,9 +5,11 @@ import { Guest, ContentVersion } from "@/lib/types";
 import { useMarkdownParser } from "@/hooks/useMarkdownParser";
 import { BackgroundResearchEditor } from "./BackgroundResearchEditor";
 import { VersionSelector } from "../VersionSelector";
+import { VersionHistory } from "../VersionHistory";
 import { AIResearchGenerator } from "./AIResearchGenerator";
 import { useVersionManager } from "@/hooks/versions";
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 
 interface BackgroundResearchSectionProps {
   backgroundResearch: string;
@@ -24,6 +26,7 @@ export function BackgroundResearchSection({
   onVersionsChange,
   guest
 }: BackgroundResearchSectionProps) {
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [markdownToConvert, setMarkdownToConvert] = useState<string | undefined>();
   const parsedHtml = useMarkdownParser(markdownToConvert);
   
@@ -42,6 +45,8 @@ export function BackgroundResearchSection({
     activeVersionId,
     handleEditorBlur,
     addAIVersion,
+    selectVersion,
+    clearAllVersions,
     versionSelectorProps
   } = useVersionManager({
     content: backgroundResearch,
@@ -67,19 +72,42 @@ export function BackgroundResearchSection({
     setMarkdownToConvert(markdown);
   };
 
+  const toggleVersionHistory = () => {
+    setShowVersionHistory(!showVersionHistory);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <FormLabel>Background Research</FormLabel>
         <div className="flex space-x-2">
-          <VersionSelector {...versionSelectorProps} />
+          {backgroundResearchVersions.length > 0 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleVersionHistory}
+              className="flex items-center gap-1"
+            >
+              Version History
+            </Button>
+          )}
           <AIResearchGenerator 
             guest={guest} 
             onGenerationComplete={handleGenerationComplete}
-            form={form} // Pass the form to the generator
+            form={form}
           />
         </div>
       </div>
+      
+      {showVersionHistory && backgroundResearchVersions.length > 0 && (
+        <VersionHistory 
+          versions={backgroundResearchVersions}
+          onSelectVersion={selectVersion}
+          activeVersionId={activeVersionId || undefined}
+          onClearAllVersions={clearAllVersions}
+        />
+      )}
+      
       <BackgroundResearchEditor 
         backgroundResearch={backgroundResearch}
         onChangeBackgroundResearch={handleChange}
