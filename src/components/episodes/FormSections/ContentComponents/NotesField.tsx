@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Guest } from '@/lib/types';
 import { useVersionManager } from '@/hooks/versions';
 import { NotesGeneration } from './NotesGeneration';
+import { toast } from '@/hooks/use-toast';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -25,8 +26,8 @@ export function NotesField({ form, guests }: NotesFieldProps) {
     isLatestVersionActive,
     activeVersion
   } = useVersionManager({
-    initialContent: content,
-    initialVersions: form.watch('notesVersions') || [],
+    content: content,
+    versions: form.watch('notesVersions') || [],
     onContentChange: (newContent) => {
       setContent(newContent);
       form.setValue('notes', newContent);
@@ -46,6 +47,10 @@ export function NotesField({ form, guests }: NotesFieldProps) {
   const handleSave = (content: string) => {
     form.setValue('notes', content);
     form.setValue('notesVersions', versions);
+    toast({
+      title: "Success",
+      description: "Notes saved successfully",
+    });
   };
 
   return (
@@ -72,7 +77,13 @@ export function NotesField({ form, guests }: NotesFieldProps) {
           <div className="mt-4">
             <NotesGeneration 
               guests={guests}
-              onNotesGenerated={handleChange}
+              onNotesGenerated={(generatedNotes) => {
+                handleChange(generatedNotes);
+                toast({
+                  title: "Success",
+                  description: "AI-generated notes added",
+                });
+              }}
               form={form}
             />
           </div>

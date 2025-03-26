@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Guest, ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { ensureVersionNumbers } from "@/hooks/versions";
 
 interface GuestFormSubmitHandlerProps {
@@ -43,7 +43,10 @@ export function GuestFormSubmitHandler({
       let imageUrl = guest.imageUrl;
       
       if (imageFile) {
-        toast.info("Uploading image...");
+        toast({
+          title: "Info",
+          description: "Uploading image..."
+        });
         
         const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
         
@@ -53,9 +56,16 @@ export function GuestFormSubmitHandler({
           }
           
           imageUrl = uploadedUrl;
-          toast.success("Image uploaded successfully");
+          toast({
+            title: "Success",
+            description: "Image uploaded successfully"
+          });
         } else {
-          toast.error("Failed to upload image");
+          toast({
+            title: "Error",
+            description: "Failed to upload image",
+            variant: "destructive"
+          });
         }
       } 
       else if (isImageRemoved) {
@@ -95,7 +105,11 @@ export function GuestFormSubmitHandler({
       onSave(updatedGuest);
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Failed to save guest information");
+      toast({
+        title: "Error",
+        description: "Failed to save guest information",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }

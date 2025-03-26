@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
 import { deleteImage, isBlobUrl } from '@/lib/imageUpload';
@@ -68,11 +68,18 @@ export function useGuestActions() {
       // Refresh the guests list
       await refreshGuests();
       
-      toast.success("Guest updated successfully");
+      toast({
+        title: "Success",
+        description: "Guest updated successfully"
+      });
       
       return { success: true, guest: savedGuest };
     } catch (error: any) {
-      toast.error(`Failed to update guest: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to update guest: ${error.message}`,
+        variant: "destructive"
+      });
       console.error("Error updating guest:", error);
       return { success: false, error };
     }
@@ -96,7 +103,10 @@ export function useGuestActions() {
       
       if (error) throw error;
       
-      toast.success("Guest deleted successfully");
+      toast({
+        title: "Success",
+        description: "Guest deleted successfully"
+      });
       
       await refreshGuests();
       
@@ -104,7 +114,11 @@ export function useGuestActions() {
       
       return { success: true };
     } catch (error: any) {
-      toast.error(`Failed to delete guest: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to delete guest: ${error.message}`,
+        variant: "destructive"
+      });
       console.error("Error deleting guest:", error);
       return { success: false, error };
     }
