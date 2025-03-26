@@ -18,12 +18,21 @@ serve(async (req) => {
     
     console.log(`Generating episode notes for topic: ${topic}`);
     
-    // Generate research based solely on the topic
+    // Generate research based solely on the topic with a specialized prompt
     const generatedNotes = await generateResearchWithPerplexity(
       "Topic Research",
       "Episode Research",
       undefined,
-      `Generate comprehensive research notes about "${topic}". Include recent trends, unique facts, and interesting statistics related to this topic. Structure the information to help podcast hosts prepare engaging content for their episode.`
+      `Generate comprehensive research notes about "${topic}" for a podcast episode. 
+      
+      Focus on:
+      - Recent trends and developments in this area
+      - Unique facts and surprising statistics 
+      - Historical context and future outlook
+      - Common misconceptions or debates
+      - Notable experts or voices in this field
+      
+      Structure the information in well-organized sections with clear headings. Include specific data points and quotable facts that would make engaging talking points for podcast hosts.`
     );
 
     return new Response(

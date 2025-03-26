@@ -30,7 +30,7 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
     
     try {
       setIsGeneratingNotes(true);
-      toast.info("Generating episode notes. This may take a minute...");
+      toast.info("Generating episode notes with research about this topic. This may take a minute...");
       
       // Call the Supabase function to generate notes
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
@@ -79,7 +79,7 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
               className="flex items-center gap-1"
             >
               <Sparkles className="h-4 w-4" />
-              {isGeneratingNotes ? "Generating..." : "Generate Notes"}
+              {isGeneratingNotes ? "Researching..." : "Research Topic"}
             </Button>
           </div>
           <FormControl>
