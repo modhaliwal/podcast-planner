@@ -5,6 +5,7 @@ import { EpisodeStatus } from '@/lib/enums';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { ensureVersionNumbers } from '@/lib/versionUtils';
 
 export function useEpisodeLoader(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
@@ -66,12 +67,20 @@ export function useEpisodeLoader(episodeId: string | undefined) {
               : (Array.isArray(data.resources) ? data.resources : [])
           ) : [];
           
-          // Parse the new notes_versions field
-          const notesVersions = data.notes_versions ? (
-            typeof data.notes_versions === 'string'
-              ? JSON.parse(data.notes_versions)
-              : (Array.isArray(data.notes_versions) ? data.notes_versions : [])
-          ) : [];
+          // Parse the notes_versions field and ensure version numbers
+          let notesVersions: ContentVersion[] = [];
+          try {
+            notesVersions = data.notes_versions ? (
+              typeof data.notes_versions === 'string'
+                ? JSON.parse(data.notes_versions)
+                : (Array.isArray(data.notes_versions) ? data.notes_versions : [])
+            ) : [];
+            
+            // Ensure all versions have version numbers
+            notesVersions = ensureVersionNumbers(notesVersions);
+          } catch (e) {
+            console.error("Error parsing notes versions for episode", data.id, e);
+          }
           
           // Create properly typed Episode object
           const formattedEpisode: Episode = {
@@ -81,7 +90,7 @@ export function useEpisodeLoader(episodeId: string | undefined) {
             topic: data.topic,
             introduction: data.introduction || '',
             notes: data.notes || '',
-            notesVersions: notesVersions as ContentVersion[],
+            notesVersions: notesVersions,
             status: statusValue as EpisodeStatus,
             scheduled: data.scheduled,
             publishDate: data.publish_date,

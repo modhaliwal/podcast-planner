@@ -39,7 +39,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         id: uuidv4(),
         content: guest.bio,
         timestamp: guest.updatedAt || new Date().toISOString(),
-        source: 'import'
+        source: 'import',
+        versionNumber: 1
       };
       setBioVersions([initialVersion]);
     }
@@ -49,7 +50,8 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         id: uuidv4(),
         content: guest.backgroundResearch,
         timestamp: guest.updatedAt || new Date().toISOString(),
-        source: 'import'
+        source: 'import',
+        versionNumber: 1
       };
       setBackgroundResearchVersions([initialVersion]);
     }
