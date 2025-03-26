@@ -7,6 +7,7 @@ import { BackgroundResearchEditor } from "./BackgroundResearchEditor";
 import { VersionSelector } from "../VersionSelector";
 import { AIResearchGenerator } from "./AIResearchGenerator";
 import { useVersionManager } from "@/hooks/versions";
+import { useForm } from "react-hook-form";
 
 interface BackgroundResearchSectionProps {
   backgroundResearch: string;
@@ -25,6 +26,16 @@ export function BackgroundResearchSection({
 }: BackgroundResearchSectionProps) {
   const [markdownToConvert, setMarkdownToConvert] = useState<string | undefined>();
   const parsedHtml = useMarkdownParser(markdownToConvert);
+  
+  // Create a form instance for the research generator
+  const form = useForm({
+    defaultValues: {
+      backgroundResearch: backgroundResearch || "",
+      name: guest?.name || "",
+      title: guest?.title || "",
+      company: guest?.company || ""
+    }
+  });
   
   // Use the version manager to handle version control
   const {
@@ -64,7 +75,8 @@ export function BackgroundResearchSection({
           <VersionSelector {...versionSelectorProps} />
           <AIResearchGenerator 
             guest={guest} 
-            onGenerationComplete={handleGenerationComplete} 
+            onGenerationComplete={handleGenerationComplete}
+            form={form} // Pass the form to the generator
           />
         </div>
       </div>

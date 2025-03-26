@@ -11,6 +11,7 @@ import { NotesGeneration } from './FormSections/ContentComponents/NotesGeneratio
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { EpisodeFormValues } from './EpisodeFormSchema';
 
 interface EpisodeNotesContentProps {
   episode: Episode;
@@ -21,12 +22,27 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
   const [versions, setVersions] = useState<ContentVersion[]>([]);
   
   // Create a form instance for the NotesGeneration component
-  const form = useForm({
+  // Fix: Use EpisodeFormValues type to match expected types
+  const form = useForm<EpisodeFormValues>({
     defaultValues: {
-      notes: episode.notes || '',
       title: episode.title || '',
-      topic: episode.topic || '',
-      guestIds: episode.guestIds || []
+      topic: episode.topic || null,
+      guestIds: episode.guestIds || [],
+      notes: episode.notes || '',
+      notesVersions: episode.notesVersions || [],
+      introduction: episode.introduction || '',
+      episodeNumber: episode.episodeNumber || 0,
+      scheduled: episode.scheduled || '',
+      publishDate: episode.publishDate || null,
+      status: episode.status || 'scheduled',
+      resources: episode.resources || [],
+      coverArt: episode.coverArt || '',
+      podcastUrls: {
+        spotify: episode.podcastUrls?.spotify || '',
+        applePodcasts: episode.podcastUrls?.applePodcasts || '',
+        amazonPodcasts: episode.podcastUrls?.amazonPodcasts || '',
+        youtube: episode.podcastUrls?.youtube || '',
+      },
     }
   });
   
@@ -37,10 +53,24 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
     
     // Update form values when episode changes
     form.reset({
-      notes: episode.notes || '',
       title: episode.title || '',
-      topic: episode.topic || '',
-      guestIds: episode.guestIds || []
+      topic: episode.topic || null,
+      guestIds: episode.guestIds || [],
+      notes: episode.notes || '',
+      notesVersions: episode.notesVersions || [],
+      introduction: episode.introduction || '',
+      episodeNumber: episode.episodeNumber || 0,
+      scheduled: episode.scheduled || '',
+      publishDate: episode.publishDate || null,
+      status: episode.status || 'scheduled',
+      resources: episode.resources || [],
+      coverArt: episode.coverArt || '',
+      podcastUrls: {
+        spotify: episode.podcastUrls?.spotify || '',
+        applePodcasts: episode.podcastUrls?.applePodcasts || '',
+        amazonPodcasts: episode.podcastUrls?.amazonPodcasts || '',
+        youtube: episode.podcastUrls?.youtube || '',
+      },
     });
   }, [episode]);
   
