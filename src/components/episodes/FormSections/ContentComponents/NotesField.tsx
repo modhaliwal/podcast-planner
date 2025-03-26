@@ -1,283 +1,208 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { UseFormReturn } from 'react-hook-form';
-import { EpisodeFormValues } from '../../EpisodeFormSchema';
-import { BookText, Sparkles } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
-import { Guest, ContentVersion } from '@/lib/types';
-import { supabase } from '@/integrations/supabase/client';
-import { useAIPrompts } from '@/hooks/useAIPrompts';
-import { useMarkdownParser } from '@/hooks/useMarkdownParser';
-import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect } from "react";
+import { Editor } from "@/components/editor/Editor";
+import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useFormContext } from "react-hook-form";
+import { ContentVersion } from "@/lib/types";
+import { v4 as uuidv4 } from "uuid";
+import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-interface NotesFieldProps {
-  form: UseFormReturn<EpisodeFormValues>;
-  guests?: Guest[];
-}
+export function NotesField({
+  editMode = true,
+  label = "Episode Notes",
+  placeholder = "Add episode notes here...",
+}: {
+  editMode?: boolean;
+  label?: string;
+  placeholder?: string;
+}) {
+  const form = useFormContext();
+  const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
+  const [versions, setVersions] = useState<ContentVersion[]>([]);
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const fieldName = "notes";
+  const versionsFieldName = "notesVersions";
 
-export function NotesField({ form, guests = [] }: NotesFieldProps) {
-  const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
-  const [markdownToConvert, setMarkdownToConvert] = useState<string | undefined>();
-  const { getPromptByKey } = useAIPrompts();
-  const parsedHtml = useMarkdownParser(markdownToConvert);
-  
-  const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
-  const [previousContent, setPreviousContent] = useState<string>("");
-  const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
-  const [versionCreatedSinceFormOpen, setVersionCreatedSinceFormOpen] = useState<boolean>(false);
-  
-  const notesVersions = form.watch('notesVersions') || [];
-  
+  // Initialize versions if they don't exist
   useEffect(() => {
-    if (notesVersions.length === 0) {
-      const currentNotes = form.getValues('notes');
-      if (currentNotes && currentNotes.trim() !== '') {
+    if (!hasInitialized) {
+      const currentNotes = form.getValues(fieldName);
+      const existingVersions = form.getValues(versionsFieldName) || [];
+
+      if (existingVersions.length === 0 && currentNotes) {
         const initialVersion: ContentVersion = {
           id: uuidv4(),
           content: currentNotes,
           timestamp: new Date().toISOString(),
-          source: 'import'
+          source: "manual",
         };
-        form.setValue('notesVersions', [initialVersion], { shouldValidate: true });
+        
+        // Update both the local state and the form value
+        setVersions([initialVersion]);
+        form.setValue(versionsFieldName, [initialVersion]);
         setActiveVersionId(initialVersion.id);
-        setPreviousContent(currentNotes);
+      } else if (existingVersions.length > 0) {
+        // Set to the most recent version
+        const sortedVersions = [...existingVersions].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        setVersions(sortedVersions);
+        setActiveVersionId(sortedVersions[0].id);
       }
-    } else if (!activeVersionId) {
-      const sortedVersions = [...notesVersions].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      setActiveVersionId(sortedVersions[0].id);
-      setPreviousContent(sortedVersions[0].content);
+      
+      setHasInitialized(true);
     }
-  }, [notesVersions, form, activeVersionId]);
-  
-  useEffect(() => {
-    if (parsedHtml && markdownToConvert) {
-      const newVersion: ContentVersion = {
-        id: uuidv4(),
-        content: parsedHtml,
-        timestamp: new Date().toISOString(),
-        source: 'ai'
-      };
-      
-      const updatedVersions = [...notesVersions, newVersion];
-      
-      form.setValue('notes', parsedHtml, { shouldValidate: true });
-      form.setValue('notesVersions', updatedVersions, { shouldValidate: true });
-      
-      setActiveVersionId(newVersion.id);
-      setPreviousContent(parsedHtml);
-      setHasChangedSinceLastSave(false);
-      setVersionCreatedSinceFormOpen(true);
-      setMarkdownToConvert(undefined);
-      
-      setIsGeneratingNotes(false);
-      toast.success("Episode notes generated successfully");
-    }
-  }, [parsedHtml, markdownToConvert, form, notesVersions]);
-  
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'notes') {
-        const currentValue = value.notes as string;
-        if (currentValue !== previousContent) {
-          setHasChangedSinceLastSave(true);
-        }
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form, previousContent]);
-  
-  const selectVersion = (version: ContentVersion) => {
-    form.setValue('notes', version.content, { shouldValidate: true });
-    setActiveVersionId(version.id);
-    setPreviousContent(version.content);
-    setHasChangedSinceLastSave(false);
+  }, [form, fieldName, versionsFieldName, hasInitialized]);
+
+  const handleContentChange = (value: string) => {
+    form.setValue(fieldName, value);
   };
-  
-  const saveCurrentVersion = (source: ContentVersion['source'] = 'manual') => {
-    const currentNotes = form.getValues('notes');
+
+  const handleEditorBlur = () => {
+    const currentContent = form.getValues(fieldName);
     
-    if (!currentNotes || !currentNotes.trim()) return;
+    // Check if content is not empty and if we have an active version to compare with
+    if (currentContent?.trim() && activeVersionId) {
+      const activeVersion = versions.find(v => v.id === activeVersionId);
+      
+      // Only create a new version if content has changed
+      if (activeVersion && currentContent !== activeVersion.content) {
+        const newVersion: ContentVersion = {
+          id: uuidv4(),
+          content: currentContent,
+          timestamp: new Date().toISOString(),
+          source: "manual"
+        };
+        
+        const updatedVersions = [...versions, newVersion];
+        setVersions(updatedVersions);
+        form.setValue(versionsFieldName, updatedVersions);
+        setActiveVersionId(newVersion.id);
+      }
+    }
+  };
+
+  const selectVersion = (version: ContentVersion) => {
+    form.setValue(fieldName, version.content);
+    setActiveVersionId(version.id);
+  };
+
+  const handleClearAllVersions = () => {
+    const currentContent = form.getValues(fieldName);
     
-    if (currentNotes === previousContent) return;
-    
-    if (versionCreatedSinceFormOpen && source === 'manual') return;
-    
+    // Create a single version with current content
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: currentNotes,
+      content: currentContent || "",
       timestamp: new Date().toISOString(),
-      source
+      source: "manual"
     };
     
-    const updatedVersions = [...notesVersions, newVersion];
-    form.setValue('notesVersions', updatedVersions, { shouldValidate: true });
+    setVersions([newVersion]);
+    form.setValue(versionsFieldName, [newVersion]);
     setActiveVersionId(newVersion.id);
-    setPreviousContent(currentNotes);
-    setHasChangedSinceLastSave(false);
-    
-    if (source === 'manual') {
-      setVersionCreatedSinceFormOpen(true);
-    }
-    
-    return newVersion;
   };
-  
-  const handleClearAllVersions = () => {
-    const activeVersion = notesVersions.find(v => v.id === activeVersionId);
-    
-    if (activeVersion) {
-      form.setValue('notesVersions', [activeVersion], { shouldValidate: true });
-    } else {
-      const currentNotes = form.getValues('notes');
-      form.setValue('notesVersions', [], { shouldValidate: true });
-      
-      if (currentNotes && currentNotes.trim()) {
-        const initialVersion: ContentVersion = {
-          id: uuidv4(),
-          content: currentNotes,
-          timestamp: new Date().toISOString(),
-          source: 'manual'
-        };
-        form.setValue('notesVersions', [initialVersion], { shouldValidate: true });
-        setActiveVersionId(initialVersion.id);
-        setPreviousContent(currentNotes);
-      }
-    }
-    
-    setHasChangedSinceLastSave(false);
-    setVersionCreatedSinceFormOpen(false);
-  };
-  
-  const handleEditorBlur = () => {
-    if (hasChangedSinceLastSave) {
-      const currentNotes = form.getValues('notes');
-      
-      if (currentNotes !== previousContent && currentNotes.trim() && !versionCreatedSinceFormOpen) {
-        saveCurrentVersion('manual');
-      }
-    }
-  };
-  
-  const handleGenerateNotes = async () => {
-    const topic = form.getValues('topic');
-    
-    if (!topic) {
-      toast.warning("Please add a topic before generating notes");
-      return;
-    }
-    
+
+  const generateNotes = async () => {
     try {
-      setIsGeneratingNotes(true);
-      toast.info("Generating episode notes with research about this topic. This may take a minute...");
+      setIsGenerating(true);
+      toast.info("Generating episode notes...");
       
-      const promptData = getPromptByKey('episode_notes_generator');
-      
-      if (!promptData) {
-        throw new Error("Episode notes generator prompt not found");
-      }
-      
-      console.log("Retrieved prompt data:", promptData);
-      
-      const prompt = promptData.prompt_text.replace('${topic}', topic);
-      
-      console.log("Calling generate-episode-notes function with topic:", topic);
-      console.log("Using prompt:", prompt);
-      
-      const requestBody: any = {
-        topic,
-        prompt
+      // Get necessary data for generating notes
+      const episodeData = {
+        title: form.getValues("title"),
+        topic: form.getValues("topic"),
+        guestIds: form.getValues("guestIds") || []
       };
       
-      if (promptData.system_prompt) {
-        requestBody.systemPrompt = promptData.system_prompt;
+      if (!episodeData.title) {
+        toast.warning("Please provide an episode title before generating notes");
+        return;
       }
       
-      if (promptData.context_instructions) {
-        requestBody.contextInstructions = promptData.context_instructions;
-      }
-      
-      if (promptData.example_output) {
-        requestBody.exampleOutput = promptData.example_output;
-      }
-      
+      // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
-        body: requestBody
+        body: {
+          episode: episodeData
+        }
       });
       
-      console.log("Function response:", data, error);
-      
       if (error) {
-        throw new Error(error.message || "Failed to generate notes");
+        throw new Error(error.message);
       }
       
-      if (!data?.notes) {
-        throw new Error("No notes were generated");
+      if (data && data.notes) {
+        // Create new version with AI-generated notes
+        const newVersion: ContentVersion = {
+          id: uuidv4(),
+          content: data.notes,
+          timestamp: new Date().toISOString(),
+          source: "ai"
+        };
+        
+        // Update form and state
+        form.setValue(fieldName, data.notes);
+        
+        const updatedVersions = [...versions, newVersion];
+        setVersions(updatedVersions);
+        form.setValue(versionsFieldName, updatedVersions);
+        setActiveVersionId(newVersion.id);
+        
+        toast.success("Notes generated successfully!");
+      } else {
+        throw new Error("No notes generated");
       }
-      
-      setMarkdownToConvert(data.notes);
-      
     } catch (error: any) {
       console.error("Error generating notes:", error);
-      toast.error(`Failed to generate notes: ${error.message || "Unknown error"}`);
-      setIsGeneratingNotes(false);
+      toast.error(`Failed to generate notes: ${error.message}`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   return (
-    <FormField
-      control={form.control}
-      name="notes"
-      render={({ field }) => (
-        <FormItem className="mb-12">
-          <div className="flex items-center justify-between mb-2">
-            <FormLabel className="flex items-center gap-2 mb-0">
-              <BookText className="h-4 w-4 text-muted-foreground" />
-              Episode Notes
-            </FormLabel>
-            <div className="flex space-x-2">
-              <VersionSelector 
-                versions={notesVersions}
-                onSelectVersion={selectVersion}
-                activeVersionId={activeVersionId}
-                onClearAllVersions={handleClearAllVersions}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateNotes}
-                disabled={isGeneratingNotes}
-                className="h-8 gap-1"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                {isGeneratingNotes ? "Researching..." : "Research Topic"}
-              </Button>
-            </div>
-          </div>
-          <FormControl>
-            <div className="min-h-[300px] relative mb-24">
-              <ReactQuill 
-                theme="snow" 
-                value={field.value || ''} 
-                onChange={field.onChange}
-                onBlur={handleEditorBlur}
-                placeholder="Enter episode notes"
-                className="h-[300px]"
-                style={{ height: '300px' }}
-              />
-            </div>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <FormItem>
+      <div className="flex items-center justify-between mb-2">
+        <FormLabel>{label}</FormLabel>
+        <div className="flex items-center space-x-2">
+          {versions.length > 0 && (
+            <VersionSelector
+              versions={versions}
+              onSelectVersion={selectVersion}
+              activeVersionId={activeVersionId || undefined}
+              onClearAllVersions={handleClearAllVersions}
+            />
+          )}
+          
+          {editMode && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={generateNotes}
+              disabled={isGenerating}
+            >
+              <Sparkles className="h-4 w-4 mr-1" />
+              {isGenerating ? "Generating..." : "Generate Notes"}
+            </Button>
+          )}
+        </div>
+      </div>
+      <FormControl>
+        <Editor
+          value={form.getValues(fieldName) || ""}
+          onChange={handleContentChange}
+          onBlur={handleEditorBlur}
+          placeholder={placeholder}
+          readOnly={!editMode}
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
   );
 }
