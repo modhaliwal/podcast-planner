@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { ContentVersion } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
+import { useAIPrompts } from "@/hooks/useAIPrompts";
 
 interface BioGenerationProps {
   form: UseFormReturn<any>;
@@ -15,6 +16,7 @@ interface BioGenerationProps {
 
 export function BioGeneration({ form, onNewVersionCreated }: BioGenerationProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { getPromptByKey } = useAIPrompts();
 
   // Helper function to get social links from the form
   const getSocialLinks = () => {
@@ -82,15 +84,46 @@ export function BioGeneration({ form, onNewVersionCreated }: BioGenerationProps)
         toast.warning("No social links provided. Using basic information only.");
       }
       
+      // Get the prompt from the database
+      const promptData = getPromptByKey('guest_bio_generator');
+      
+      // Prepare request body with all available prompt components
+      const requestBody: any = {
+        type: 'bio',
+        name,
+        title,
+        company,
+        socialLinks: filteredSocialLinks
+      };
+      
+      // Add optional fields if prompt data exists and contains these fields
+      if (promptData) {
+        if (promptData.prompt_text) {
+          // Replace variables in the prompt template
+          const processedPrompt = promptData.prompt_text
+            .replace('${name}', name)
+            .replace('${title}', title)
+            .replace('${company}', company ? `at ${company}` : '');
+          
+          requestBody.prompt = processedPrompt;
+        }
+        
+        if (promptData.system_prompt) {
+          requestBody.systemPrompt = promptData.system_prompt;
+        }
+        
+        if (promptData.context_instructions) {
+          requestBody.contextInstructions = promptData.context_instructions;
+        }
+        
+        if (promptData.example_output) {
+          requestBody.exampleOutput = promptData.example_output;
+        }
+      }
+      
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-bio', {
-        body: {
-          type: 'bio',
-          name,
-          title,
-          company,
-          socialLinks: filteredSocialLinks
-        }
+        body: requestBody
       });
       
       if (error) {
@@ -156,7 +189,7 @@ export function BioGeneration({ form, onNewVersionCreated }: BioGenerationProps)
       disabled={isLoading}
     >
       <Sparkles className="h-4 w-4 mr-1" />
-      {isLoading ? "Generating with OpenAI..." : "Generate Bio"}
+      {isLoading ? "Generating with AI..." : "Generate Bio"}
     </Button>
   );
 }

@@ -11,29 +11,38 @@ export type Database = {
     Tables: {
       ai_prompts: {
         Row: {
+          context_instructions: string | null
           created_at: string
           description: string | null
+          example_output: string | null
           id: string
           key: string
           prompt_text: string
+          system_prompt: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          context_instructions?: string | null
           created_at?: string
           description?: string | null
+          example_output?: string | null
           id?: string
           key: string
           prompt_text: string
+          system_prompt?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          context_instructions?: string | null
           created_at?: string
           description?: string | null
+          example_output?: string | null
           id?: string
           key?: string
           prompt_text?: string
+          system_prompt?: string | null
           title?: string
           updated_at?: string
         }

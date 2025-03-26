@@ -1,140 +1,116 @@
 
-import { validateApiKey } from "../utils.ts";
+import { validateOpenAIApiKey } from "../utils.ts";
 
-/**
- * Generates a professional bio using OpenAI API
- */
 export async function generateBioWithOpenAI(
-  name: string, 
-  title: string, 
+  name: string,
+  title: string,
   company: string | undefined,
-  extractedContent: string
+  extractedContent: string,
+  customPrompt?: string,
+  customSystemPrompt?: string
 ) {
-  const openAIApiKey = validateApiKey();
-  const companyInfo = company ? `at ${company}` : "";
-  
+  // Validate API Key
+  const apiKey = validateOpenAIApiKey();
+
   try {
-    console.log("Calling OpenAI API to generate bio");
+    // Format the company information
+    const companyInfo = company ? `at ${company}` : "";
+
+    // Create default or use custom system prompt
+    const systemPrompt = customSystemPrompt || 
+      "You are an AI assistant tasked with writing professional biographies. Create concise, professional bios that highlight expertise and experience.";
+
+    // Create default or use custom user prompt
+    const userPrompt = customPrompt || 
+      `Create a professional bio for ${name}, who works as ${title} ${companyInfo}. Use the following extracted content from their online profiles to create a comprehensive bio: \n\n${extractedContent}`;
+
+    // Make the API request to OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${openAIApiKey}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini", // Using a smaller model to keep costs lower
+        model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "You are a professional bio writer for podcast guests. Create concise, engaging bios based on provided information."
+            content: systemPrompt,
           },
           {
             role: "user",
-            content: `Write a professional bio for ${name}, who is a ${title} ${companyInfo}. 
-            Keep it under 150 words, professional in tone, and highlighting their expertise.
-            Here's some additional information extracted from their online presence:
-            
-            ${extractedContent}
-            
-            Focus on their professional accomplishments, expertise areas, and what makes them a valuable podcast guest.`
-          }
+            content: userPrompt,
+          },
         ],
-        max_tokens: 350,
+        temperature: 0.7,
+        max_tokens: 500,
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`OpenAI API error: ${error.error?.message || JSON.stringify(error)}`);
+    }
+
     const data = await response.json();
-    
-    if (data.error) {
-      console.error("OpenAI API error:", data.error);
-      throw new Error(`OpenAI API error: ${data.error.message || data.error}`);
-    }
-    
-    // Extract the generated bio from the completion
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Unexpected response format from OpenAI:", data);
-      throw new Error("Unexpected response format from OpenAI");
-    }
-    
-    const generatedBio = data.choices[0].message.content.trim();
-    console.log("Successfully generated bio with OpenAI");
-    return generatedBio;
+    return data.choices[0].message.content.trim();
   } catch (error) {
-    console.error("Error calling OpenAI:", error);
-    throw new Error(`Failed to generate bio with AI: ${error.message}`);
+    console.error("Error generating bio with OpenAI:", error);
+    throw error;
   }
 }
 
-/**
- * Generates research content using OpenAI API
- */
 export async function generateResearchWithOpenAI(
-  name: string, 
-  title: string, 
+  name: string,
+  title: string,
   company: string | undefined,
   extractedContent: string
 ) {
-  const openAIApiKey = validateApiKey();
-  const companyInfo = company ? `at ${company}` : "";
-  
+  // Validate API Key
+  const apiKey = validateOpenAIApiKey();
+
   try {
-    console.log("Calling OpenAI API to generate research");
+    // Format the company information
+    const companyInfo = company ? `at ${company}` : "";
+
+    // Create the prompts
+    const systemPrompt = "You are an AI research assistant tasked with preparing background information on podcast guests. Create detailed, well-organized research notes that will help the podcast host prepare for an interview.";
+    const userPrompt = `Prepare comprehensive background research on ${name}, who works as ${title} ${companyInfo}. Use the following extracted content from their online profiles to create detailed research notes: \n\n${extractedContent}`;
+
+    // Make the API request to OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${openAIApiKey}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini", // Using a smaller model to keep costs lower
+        model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews."
+            content: systemPrompt,
           },
           {
             role: "user",
-            content: `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
-            
-            Format the output as HTML with proper headings (h3), lists (ul/ol), and structure.
-            
-            Include the following sections:
-            - Educational background and career journey
-            - Notable accomplishments and expertise areas
-            - Previous media appearances and speaking style
-            - Recent projects or publications
-            - Social media presence and online engagement
-            - Recommended topics to explore in the interview
-            
-            Here's information extracted from their online presence to help you:
-            
-            ${extractedContent}
-            
-            Create a comprehensive but scannable research document that will help the podcast host prepare for a great interview.`
-          }
+            content: userPrompt,
+          },
         ],
-        max_tokens: 800,
+        temperature: 0.7,
+        max_tokens: 1200,
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`OpenAI API error: ${error.error?.message || JSON.stringify(error)}`);
+    }
+
     const data = await response.json();
-    
-    if (data.error) {
-      console.error("OpenAI API error:", data.error);
-      throw new Error(`OpenAI API error: ${data.error.message || data.error}`);
-    }
-    
-    // Extract the generated research from the completion
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Unexpected response format from OpenAI:", data);
-      throw new Error("Unexpected response format from OpenAI");
-    }
-    
-    const generatedResearch = data.choices[0].message.content.trim();
-    console.log("Successfully generated research with OpenAI");
-    return generatedResearch;
+    return data.choices[0].message.content.trim();
   } catch (error) {
-    console.error("Error calling OpenAI for research:", error);
-    throw new Error(`Failed to generate research with AI: ${error.message}`);
+    console.error("Error generating research with OpenAI:", error);
+    throw error;
   }
 }

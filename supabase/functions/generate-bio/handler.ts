@@ -8,7 +8,17 @@ export async function handleRequest(req: Request) {
   try {
     // Parse the request body
     const requestData = await req.json();
-    const { type, name, title, company, socialLinks } = validateRequestData(requestData);
+    const { 
+      type, 
+      name, 
+      title, 
+      company, 
+      socialLinks,
+      prompt,
+      systemPrompt,
+      contextInstructions,
+      exampleOutput
+    } = validateRequestData(requestData);
     
     console.log(`Processing ${type} request for ${name}, ${title} at ${company}`);
     console.log("Social links:", JSON.stringify(socialLinks));
@@ -20,14 +30,41 @@ export async function handleRequest(req: Request) {
     let result;
     if (type === 'research') {
       // Generate research using Perplexity
-      result = await generateResearchWithPerplexity(name, title, company, extractedContent);
+      result = await generateResearchWithPerplexity(
+        name, 
+        title, 
+        company, 
+        extractedContent,
+        systemPrompt
+      );
       return new Response(JSON.stringify({ research: result }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     } else {
-      // Default: Generate bio using OpenAI
-      result = await generateBioWithOpenAI(name, title, company, extractedContent);
+      // Build the full prompt with context and examples if provided
+      let fullPrompt = prompt || `Create a professional bio for ${name}, who works as ${title} ${company ? 'at ' + company : ''}.`;
+      
+      // Add context if provided
+      if (contextInstructions) {
+        fullPrompt += `\n\nContext: ${contextInstructions}`;
+      }
+      
+      // Add example if provided
+      if (exampleOutput) {
+        fullPrompt += `\n\nPlease format your response similar to this example:\n${exampleOutput}`;
+      }
+      
+      // Generate bio using OpenAI with the custom prompt and system prompt if provided
+      result = await generateBioWithOpenAI(
+        name, 
+        title, 
+        company, 
+        extractedContent, 
+        fullPrompt,
+        systemPrompt
+      );
+      
       return new Response(JSON.stringify({ bio: result }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
