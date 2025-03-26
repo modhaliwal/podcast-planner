@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   
+  // Pass the user ID directly without using useAuth
   const { guests, isLoadingGuests, refreshGuests } = useGuestsData(user?.id);
   const { episodes, isLoadingEpisodes, refreshEpisodes } = useEpisodesData(user?.id);
   

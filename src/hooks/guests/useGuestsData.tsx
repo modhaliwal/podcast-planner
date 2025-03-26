@@ -2,14 +2,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Guest } from "@/lib/types";
 import { useGuestsRefresh } from "./useGuestsRefresh";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function useGuestsData(userId: string | undefined) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoadingGuests, setIsLoadingGuests] = useState(true);
-  const { user } = useAuth();
-  const effectiveUserId = userId || user?.id;
-  const { refreshGuests: fetchGuestData } = useGuestsRefresh(effectiveUserId);
+  const { refreshGuests: fetchGuestData } = useGuestsRefresh(userId);
   const isInitialMountRef = useRef(true);
   const lastFetchTimeRef = useRef<number>(0);
 
