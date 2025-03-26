@@ -22,9 +22,11 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   // Use our custom hook for form handling
   const { form, isSubmitting, onSubmit } = useEpisodeForm(episode, refreshEpisodes);
   
+  const handleSubmit = form.handleSubmit(onSubmit);
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 gap-6">
           <CombinedBasicInfoSection form={form} />
           
@@ -40,7 +42,10 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
           <PodcastUrlsSection form={form} />
         </div>
         
-        <FormActions episodeId={episode.id} isSubmitting={isSubmitting} />
+        <FormActions 
+          episodeId={episode.id} 
+          isSubmitting={isSubmitting} 
+        />
       </form>
     </Form>
   );

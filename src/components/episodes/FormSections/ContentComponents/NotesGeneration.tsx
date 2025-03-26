@@ -42,11 +42,16 @@ export function NotesGeneration({
       // Get the episode notes prompt from AI prompts
       const notesPrompt = getPromptByKey("episode_notes");
       
+      // Filter guests to only include those selected for this episode
+      const selectedGuests = guests.filter(guest => 
+        episodeData.guestIds.includes(guest.id)
+      );
+      
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
         body: {
           episode: episodeData,
-          guests: guests,
+          guests: selectedGuests,
           prompt: notesPrompt?.prompt_text,
           systemPrompt: notesPrompt?.system_prompt,
           contextInstructions: notesPrompt?.context_instructions,

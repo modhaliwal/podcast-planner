@@ -6,9 +6,14 @@ import { SaveIcon, X } from "lucide-react";
 interface FormActionsProps {
   episodeId: string;
   isSubmitting?: boolean;
+  onSave?: () => void;
 }
 
-export function FormActions({ episodeId, isSubmitting = false }: FormActionsProps) {
+export function FormActions({ 
+  episodeId, 
+  isSubmitting = false,
+  onSave
+}: FormActionsProps) {
   return (
     <div className="flex justify-end gap-4 mt-8">
       <Button variant="outline" type="button" asChild>
@@ -18,7 +23,11 @@ export function FormActions({ episodeId, isSubmitting = false }: FormActionsProp
         </Link>
       </Button>
       
-      <Button type="submit" disabled={isSubmitting}>
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
+        onClick={onSave}
+      >
         <SaveIcon className="h-4 w-4 mr-2" />
         {isSubmitting ? "Saving..." : "Save Changes"}
       </Button>
