@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { Guest, ContentVersion } from "@/lib/types";
 import { useMarkdownParser } from "@/hooks/useMarkdownParser";
@@ -102,7 +102,7 @@ export function BackgroundResearchSection({
     return newVersion;
   };
 
-  // Handle editor blur to create a version
+  // Handle editor blur to create a version if content has changed
   const handleEditorBlur = () => {
     const activeVersion = backgroundResearchVersions.find(v => v.id === activeVersionId);
     
@@ -113,13 +113,13 @@ export function BackgroundResearchSection({
 
   const handleGenerateResearch = async () => {
     if (guest) {
-      // Only save the current version if it's different from the last one
-      const lastVersion = backgroundResearchVersions[backgroundResearchVersions.length - 1];
-      if (!lastVersion || lastVersion.content !== backgroundResearch) {
-        saveCurrentVersion();
+      setIsLoading(true);
+      try {
+        await generateBackgroundResearch(guest, setIsLoading, setMarkdownToConvert);
+      } catch (error) {
+        console.error("Error generating research:", error);
+        setIsLoading(false);
       }
-      
-      await generateBackgroundResearch(guest, setIsLoading, setMarkdownToConvert);
     }
   };
 
