@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../../EpisodeFormSchema';
@@ -64,8 +65,10 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
         source: 'ai'
       };
       
+      const updatedVersions = [...notesVersions, newVersion];
+      
       form.setValue('notes', parsedHtml, { shouldValidate: true });
-      form.setValue('notesVersions', [...notesVersions, newVersion], { shouldValidate: true });
+      form.setValue('notesVersions', updatedVersions, { shouldValidate: true });
       
       setActiveVersionId(newVersion.id);
       setPreviousContent(parsedHtml);
