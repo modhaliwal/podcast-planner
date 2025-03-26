@@ -30,16 +30,16 @@ export function BioGeneration({ bio, setBio, versions, onVersionsChange }: BioGe
       
       setBio(generatedBio);
       
-      toast({
-        title: "Bio Generated",
+      // Show success toast using sonner's API
+      toast("Bio Generated", {
         description: "AI-generated bio content has been added.",
       });
     } catch (error) {
       console.error("Error generating bio:", error);
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
+      // Show error toast using sonner's API
+      toast("Generation Error", {
         description: "There was a problem generating the bio. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
