@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { Episode, ContentVersion, Resource } from "@/lib/types";
+import { Episode, ContentVersion } from "@/lib/types";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { EpisodeStatus } from "@/lib/enums";
 import { ensureVersionNumbers } from "./versions/utils/versionNumberUtils";
+import { processVersions } from "@/lib/versionUtils";
 import { EpisodeFormValues } from "@/components/episodes/EpisodeFormSchema";
 
 interface UseEpisodeFormProps {
@@ -14,6 +15,9 @@ interface UseEpisodeFormProps {
 
 export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Process versions to ensure they have proper structure
+  const processedNotesVersions = processVersions(episode.notesVersions || []);
   
   // Initialize the form with episode data
   const form = useForm<EpisodeFormValues>({
@@ -27,7 +31,7 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
       guestIds: episode.guestIds || [],
       introduction: episode.introduction || "",
       notes: episode.notes || "",
-      notesVersions: episode.notesVersions || [],
+      notesVersions: processedNotesVersions,
       resources: episode.resources || [],
       coverArt: episode.coverArt || "",
       podcastUrls: {
@@ -46,24 +50,8 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
     try {
       // Process versions to ensure they have version numbers and active flags
       const processedVersions = data.notesVersions 
-        ? ensureVersionNumbers(data.notesVersions as ContentVersion[])
+        ? processVersions(data.notesVersions as ContentVersion[])
         : [];
-      
-      // Make sure at least one version is active
-      let finalVersions = [...processedVersions];
-      const hasActiveVersion = finalVersions.some(v => v.active);
-      
-      if (!hasActiveVersion && finalVersions.length > 0) {
-        // Mark the latest version as active
-        const sortedVersions = [...finalVersions].sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        
-        finalVersions = finalVersions.map(v => ({
-          ...v,
-          active: v.id === sortedVersions[0].id
-        }));
-      }
       
       // Prepare the episode data
       const updatedEpisode: Episode = {
@@ -78,7 +66,7 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
         guestIds: data.guestIds,
         introduction: data.introduction || undefined,
         notes: data.notes || undefined,
-        notesVersions: finalVersions,
+        notesVersions: processedVersions,
         // Make sure all resources have required fields
         resources: data.resources ? data.resources.map(resource => ({
           label: resource.label || '',  // Ensure label is never undefined

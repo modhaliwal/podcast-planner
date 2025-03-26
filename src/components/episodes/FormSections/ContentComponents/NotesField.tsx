@@ -70,6 +70,7 @@ const NotesFieldContent = memo(function NotesFieldContent({
                 <NotesGeneration 
                   onNotesGenerated={(notes) => addNewVersion(notes, "ai")}
                   guests={guests}
+                  form={form}
                 />
               )}
             </div>

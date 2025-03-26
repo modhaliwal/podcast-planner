@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, UseFormReturn } from "react-hook-form";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { Guest } from "@/lib/types";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
@@ -12,14 +12,17 @@ import { useAIPrompts } from "@/hooks/useAIPrompts";
 interface NotesGenerationProps {
   guests: Guest[];
   onNotesGenerated: (notes: string) => void;
+  form?: UseFormReturn<EpisodeFormValues>;
 }
 
 export function NotesGeneration({ 
   guests,
-  onNotesGenerated 
+  onNotesGenerated,
+  form: formProp
 }: NotesGenerationProps) {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const form = useFormContext<EpisodeFormValues>();
+  const formContext = useFormContext<EpisodeFormValues>();
+  const form = formProp || formContext;
   const { getPromptByKey } = useAIPrompts();
 
   const generateNotes = async () => {
@@ -69,7 +72,6 @@ export function NotesGeneration({
         console.log("Notes generated successfully:", data.notes.substring(0, 100) + "...");
         // Call the callback with generated notes
         onNotesGenerated(data.notes);
-        form.setValue("notes", data.notes);
         
         toast.success("Notes generated successfully!");
       } else {
