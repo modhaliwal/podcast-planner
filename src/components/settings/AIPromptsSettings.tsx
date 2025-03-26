@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAIPrompts, AIPrompt } from "@/hooks/useAIPrompts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { PromptsList } from "./ai-prompts/PromptsList";
 import { PromptEditor } from "./ai-prompts/PromptEditor";
 
@@ -47,7 +47,10 @@ export function AIPromptsSettings() {
     
     setIsSaving(false);
     if (success) {
-      toast.success("AI prompt updated successfully");
+      toast({
+        title: "Success",
+        description: "AI prompt updated successfully"
+      });
     }
   };
 
@@ -57,7 +60,10 @@ export function AIPromptsSettings() {
     const originalPrompt = prompts.find(p => p.id === activePromptId);
     if (originalPrompt) {
       setEditedPrompt(originalPrompt);
-      toast.info("Changes discarded");
+      toast({
+        title: "Info",
+        description: "Changes discarded"
+      });
     }
   };
 
