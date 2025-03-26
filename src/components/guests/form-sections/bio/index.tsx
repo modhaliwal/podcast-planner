@@ -18,6 +18,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
   const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
   const [previousContent, setPreviousContent] = useState<string>("");
   const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
+  const [versionCreatedSinceFormOpen, setVersionCreatedSinceFormOpen] = useState<boolean>(false);
 
   // Initialize with the current bio as the first version if no versions exist
   useEffect(() => {
@@ -60,6 +61,9 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     // Only save if content has actually changed from the previous version
     if (currentBio === previousContent) return;
     
+    // Only create one version per edit session
+    if (versionCreatedSinceFormOpen) return;
+    
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content: currentBio,
@@ -73,6 +77,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     setActiveVersionId(newVersion.id);
     setPreviousContent(currentBio);
     setHasChangedSinceLastSave(false);
+    setVersionCreatedSinceFormOpen(true);
     
     return newVersion;
   };
@@ -99,7 +104,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
       const currentBio = event.target.value;
       
       // Only create a new version if the content has actually changed
-      if (currentBio !== previousContent && currentBio.trim()) {
+      if (currentBio !== previousContent && currentBio.trim() && !versionCreatedSinceFormOpen) {
         saveCurrentVersion('manual');
       }
     }
@@ -111,6 +116,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     setActiveVersionId(version.id);
     setPreviousContent(version.content);
     setHasChangedSinceLastSave(false);
+    setVersionCreatedSinceFormOpen(true);
   };
 
   return (

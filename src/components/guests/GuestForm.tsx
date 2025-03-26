@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Guest, ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";

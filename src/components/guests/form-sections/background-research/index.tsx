@@ -28,6 +28,7 @@ export function BackgroundResearchSection({
   const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
   const [previousContent, setPreviousContent] = useState<string>("");
   const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
+  const [versionCreatedSinceFormOpen, setVersionCreatedSinceFormOpen] = useState<boolean>(false);
   const parsedHtml = useMarkdownParser(markdownToConvert);
 
   // Initialize with the current research as the first version if no versions exist
@@ -72,6 +73,7 @@ export function BackgroundResearchSection({
       setActiveVersionId(newVersion.id);
       setPreviousContent(parsedHtml);
       setHasChangedSinceLastSave(false);
+      setVersionCreatedSinceFormOpen(true);
       
       setMarkdownToConvert(undefined); // Reset after conversion
     }
@@ -105,6 +107,9 @@ export function BackgroundResearchSection({
     // Don't save if content hasn't changed
     if (backgroundResearch === previousContent) return;
     
+    // Don't create multiple versions in one editing session
+    if (versionCreatedSinceFormOpen) return;
+    
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content: backgroundResearch,
@@ -118,6 +123,7 @@ export function BackgroundResearchSection({
     setActiveVersionId(newVersion.id);
     setPreviousContent(backgroundResearch);
     setHasChangedSinceLastSave(false);
+    setVersionCreatedSinceFormOpen(true);
     
     return newVersion;
   };
@@ -126,7 +132,7 @@ export function BackgroundResearchSection({
   const handleEditorBlur = () => {
     // Only create a new version if the content has actually changed from the previous version
     // and we haven't already saved this change
-    if (hasChangedSinceLastSave && backgroundResearch !== previousContent && backgroundResearch.trim()) {
+    if (hasChangedSinceLastSave && backgroundResearch !== previousContent && backgroundResearch.trim() && !versionCreatedSinceFormOpen) {
       saveCurrentVersion();
     }
   };
