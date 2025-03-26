@@ -44,7 +44,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
         
         <FormActions 
           episodeId={episode.id} 
-          isSubmitting={isSubmitting} 
+          isSubmitting={isSubmitting}
         />
       </form>
     </Form>
