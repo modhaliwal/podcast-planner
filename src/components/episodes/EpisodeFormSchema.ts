@@ -1,18 +1,26 @@
 
-import { z } from 'zod';
-import { EpisodeStatus } from '@/lib/enums';
+import { z } from "zod";
 
+// Define the shape of the episode form
 export const episodeFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  episodeNumber: z.coerce.number().int().positive("Episode number must be positive"),
+  title: z.string().min(1, { message: "Title is required" }),
+  episodeNumber: z.number().int().positive(),
   topic: z.string().nullable().optional(),
-  introduction: z.string().min(1, "Introduction is required"),
-  notes: z.string().optional(),
-  status: z.nativeEnum(EpisodeStatus),
+  introduction: z.string().optional(),
+  notes: z.string().optional().default(''),
+  notesVersions: z.array(
+    z.object({
+      id: z.string(),
+      content: z.string(),
+      timestamp: z.string(),
+      source: z.enum(['manual', 'ai', 'import'])
+    })
+  ).optional().default([]),
+  status: z.enum(["draft", "scheduled", "published", "archived"]),
   scheduled: z.date(),
-  publishDate: z.date().optional().nullable(),
-  guestIds: z.array(z.string()).optional().default([]),
-  coverArt: z.string().optional(),
+  publishDate: z.date().nullable().optional(),
+  guestIds: z.array(z.string()),
+  coverArt: z.any().optional(),
   recordingLinks: z.object({
     audio: z.string().optional(),
     video: z.string().optional(),
@@ -23,20 +31,21 @@ export const episodeFormSchema = z.object({
         url: z.string()
       })
     ).optional()
-  }).optional().default({}),
+  }).optional(),
   podcastUrls: z.object({
     spotify: z.string().optional(),
     applePodcasts: z.string().optional(),
     amazonPodcasts: z.string().optional(),
     youtube: z.string().optional()
-  }).optional().default({}),
+  }).optional(),
   resources: z.array(
     z.object({
-      label: z.string().min(1, "Label is required"),
-      url: z.string().url("Please enter a valid URL"),
+      label: z.string(),
+      url: z.string(),
       description: z.string().optional()
     })
-  ).optional().default([])
+  ).optional()
 });
 
+// Typescript type for the episode form
 export type EpisodeFormValues = z.infer<typeof episodeFormSchema>;
