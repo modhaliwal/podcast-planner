@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Guest, ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -11,6 +11,7 @@ import { ContentSection } from "./form-sections/ContentSection";
 import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { ensureVersionNumbers } from "@/hooks/versions";
 
 interface GuestFormProps {
   guest: Guest;
@@ -27,35 +28,43 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Version state
-  const [bioVersions, setBioVersions] = useState<ContentVersion[]>(guest.bioVersions || []);
+  const [bioVersions, setBioVersions] = useState<ContentVersion[]>(
+    ensureVersionNumbers(guest.bioVersions || [])
+  );
   const [backgroundResearchVersions, setBackgroundResearchVersions] = useState<ContentVersion[]>(
-    guest.backgroundResearchVersions || []
+    ensureVersionNumbers(guest.backgroundResearchVersions || [])
   );
 
   // Initialize versions if they don't exist
   useEffect(() => {
-    if (bioVersions.length === 0 && guest.bio) {
-      const initialVersion: ContentVersion = {
-        id: uuidv4(),
-        content: guest.bio,
-        timestamp: guest.updatedAt || new Date().toISOString(),
-        source: 'import',
-        versionNumber: 1
-      };
-      setBioVersions([initialVersion]);
-    }
+    const initializeVersions = () => {
+      if (bioVersions.length === 0 && guest.bio) {
+        const initialVersion: ContentVersion = {
+          id: uuidv4(),
+          content: guest.bio,
+          timestamp: guest.updatedAt || new Date().toISOString(),
+          source: 'import',
+          active: true,
+          versionNumber: 1
+        };
+        setBioVersions([initialVersion]);
+      }
+  
+      if (backgroundResearchVersions.length === 0 && guest.backgroundResearch) {
+        const initialVersion: ContentVersion = {
+          id: uuidv4(),
+          content: guest.backgroundResearch,
+          timestamp: guest.updatedAt || new Date().toISOString(),
+          source: 'import',
+          active: true,
+          versionNumber: 1
+        };
+        setBackgroundResearchVersions([initialVersion]);
+      }
+    };
 
-    if (backgroundResearchVersions.length === 0 && guest.backgroundResearch) {
-      const initialVersion: ContentVersion = {
-        id: uuidv4(),
-        content: guest.backgroundResearch,
-        timestamp: guest.updatedAt || new Date().toISOString(),
-        source: 'import',
-        versionNumber: 1
-      };
-      setBackgroundResearchVersions([initialVersion]);
-    }
-  }, [guest, bioVersions, backgroundResearchVersions]);
+    initializeVersions();
+  }, [guest, bioVersions.length, backgroundResearchVersions.length]);
 
   const form = useForm({
     defaultValues: {
@@ -107,6 +116,10 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         imageUrl = null;
       }
       
+      // Ensure versions have active flag and version numbers
+      const processedBioVersions = ensureVersionNumbers(bioVersions);
+      const processedBackgroundVersions = ensureVersionNumbers(backgroundResearchVersions);
+      
       const updatedGuest: Guest = {
         ...guest,
         name: data.name,
@@ -115,10 +128,10 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         email: data.email || undefined,
         phone: data.phone || undefined,
         bio: data.bio,
-        bioVersions: bioVersions,
+        bioVersions: processedBioVersions,
         notes: notes || undefined,
         backgroundResearch: backgroundResearch || undefined,
-        backgroundResearchVersions: backgroundResearchVersions,
+        backgroundResearchVersions: processedBackgroundVersions,
         status: data.status,
         imageUrl: imageUrl as string | undefined,
         socialLinks: {

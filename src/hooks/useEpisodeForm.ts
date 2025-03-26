@@ -44,6 +44,27 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
     setIsSubmitting(true);
     
     try {
+      // Process versions to ensure they have version numbers and active flags
+      const processedVersions = data.notesVersions 
+        ? ensureVersionNumbers(data.notesVersions as ContentVersion[])
+        : [];
+      
+      // Make sure at least one version is active
+      let finalVersions = [...processedVersions];
+      const hasActiveVersion = finalVersions.some(v => v.active);
+      
+      if (!hasActiveVersion && finalVersions.length > 0) {
+        // Mark the latest version as active
+        const sortedVersions = [...finalVersions].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        finalVersions = finalVersions.map(v => ({
+          ...v,
+          active: v.id === sortedVersions[0].id
+        }));
+      }
+      
       // Prepare the episode data
       const updatedEpisode: Episode = {
         ...episode,
@@ -57,7 +78,7 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
         guestIds: data.guestIds,
         introduction: data.introduction || undefined,
         notes: data.notes || undefined,
-        notesVersions: data.notesVersions && ensureVersionNumbers(data.notesVersions as ContentVersion[]),
+        notesVersions: finalVersions,
         // Make sure all resources have required fields
         resources: data.resources ? data.resources.map(resource => ({
           label: resource.label || '',  // Ensure label is never undefined

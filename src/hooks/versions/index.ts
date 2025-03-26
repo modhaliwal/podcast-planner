@@ -4,6 +4,7 @@ import { useVersionActions } from "./useVersionActions";
 import { useSelectorProps } from "./useSelectorProps";
 import { UseFormReturn } from "react-hook-form";
 import { ContentVersion } from "@/lib/types";
+import { useVersionManager } from "./useVersionManager";
 
 // Export utility functions
 export * from "./utils/versionNumberUtils";
@@ -19,59 +20,31 @@ interface UseContentVersionsProps<T extends Record<string, any>> {
 
 /**
  * Hook to manage content versions for form fields
+ * This hook uses the consolidated version manager
  */
 export function useContentVersions<T extends Record<string, any>>({
   form,
   fieldName,
   versionsFieldName
 }: UseContentVersionsProps<T>) {
-  // Manage version state
-  const {
-    activeVersionId,
+  // Get current values
+  const content = form.getValues(fieldName as string) || '';
+  const versions = form.getValues(versionsFieldName as string) || [];
+  
+  // Use the consolidated version manager
+  return useVersionManager({
+    content,
     versions,
-    setVersions,
-    setActiveVersionId
-  } = useVersionState({
-    form,
-    fieldName,
-    versionsFieldName
+    onVersionsChange: (newVersions) => {
+      form.setValue(versionsFieldName as any, newVersions, { shouldDirty: true });
+    },
+    onContentChange: (newContent) => {
+      form.setValue(fieldName as any, newContent, { shouldDirty: true });
+    }
   });
-
-  // Get version actions
-  const {
-    handleContentChange,
-    selectVersion,
-    clearAllVersions,
-    addNewVersion
-  } = useVersionActions({
-    form,
-    fieldName,
-    versionsFieldName,
-    activeVersionId,
-    versions,
-    setVersions,
-    setActiveVersionId
-  });
-
-  // Get props for VersionSelector component
-  const { versionSelectorProps } = useSelectorProps({
-    versions,
-    activeVersionId,
-    selectVersion,
-    clearAllVersions
-  });
-
-  return {
-    activeVersionId,
-    versions,
-    handleContentChange,
-    selectVersion,
-    clearAllVersions,
-    addNewVersion,
-    versionSelectorProps
-  };
 }
 
 export * from "./useVersionState";
 export * from "./useVersionActions";
 export * from "./useSelectorProps";
+export * from "./useVersionManager";

@@ -1,8 +1,8 @@
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { ContentVersion } from '@/lib/types';
-import { useContentVersions } from '@/hooks/versions';
+import { createContext, useContext, ReactNode } from "react";
+import { ContentVersion } from "@/lib/types";
+import { UseFormReturn } from "react-hook-form";
+import { useContentVersions } from "@/hooks/versions";
 
 interface NotesVersionsContextType {
   activeVersionId: string | null;
@@ -21,45 +21,26 @@ interface NotesVersionsContextType {
 
 const NotesVersionsContext = createContext<NotesVersionsContextType | undefined>(undefined);
 
-interface NotesVersionsProviderProps {
-  form: UseFormReturn<any>;
-  fieldName: string;
-  versionsFieldName: string;
-  children: ReactNode;
-}
-
-export function NotesVersionsProvider({
+export function NotesVersionsProvider<T extends Record<string, any>>({
+  children,
   form,
   fieldName,
-  versionsFieldName,
-  children,
-}: NotesVersionsProviderProps) {
-  const {
-    activeVersionId,
-    versions,
-    handleContentChange,
-    selectVersion,
-    clearAllVersions,
-    addNewVersion,
-    versionSelectorProps
-  } = useContentVersions({
+  versionsFieldName
+}: {
+  children: ReactNode;
+  form: UseFormReturn<T>;
+  fieldName: keyof T;
+  versionsFieldName: keyof T;
+}) {
+  // Use our consolidated version management hook
+  const versionManager = useContentVersions({
     form,
     fieldName,
-    versionsFieldName,
+    versionsFieldName
   });
 
   return (
-    <NotesVersionsContext.Provider
-      value={{
-        activeVersionId,
-        versions,
-        handleContentChange,
-        selectVersion,
-        clearAllVersions,
-        addNewVersion,
-        versionSelectorProps,
-      }}
-    >
+    <NotesVersionsContext.Provider value={versionManager}>
       {children}
     </NotesVersionsContext.Provider>
   );
@@ -67,7 +48,7 @@ export function NotesVersionsProvider({
 
 export function useNotesVersions() {
   const context = useContext(NotesVersionsContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useNotesVersions must be used within a NotesVersionsProvider");
   }
   return context;

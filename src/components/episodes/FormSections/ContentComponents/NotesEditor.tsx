@@ -2,7 +2,7 @@
 import { Editor } from "@/components/editor/Editor";
 import { FormControl } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 
 interface NotesEditorProps {
@@ -18,15 +18,30 @@ export const NotesEditor = memo(function NotesEditor({
 }: NotesEditorProps) {
   const form = useFormContext<EpisodeFormValues>();
   const fieldName = "notes";
+  const contentRef = useRef<string>(form.getValues(fieldName) || "");
+  
+  // Track content changes to prevent unnecessary re-renders
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === fieldName && value[fieldName] !== contentRef.current) {
+        contentRef.current = value[fieldName] || "";
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
   
   const handleContentChange = useCallback((value: string) => {
-    form.setValue(fieldName, value, { shouldDirty: true });
+    if (value !== contentRef.current) {
+      contentRef.current = value;
+      form.setValue(fieldName, value, { shouldDirty: true });
+    }
   }, [form]);
 
   return (
     <FormControl>
       <Editor
-        value={form.getValues(fieldName) || ""}
+        value={contentRef.current}
         onChange={handleContentChange}
         onBlur={onBlur}
         placeholder={placeholder}
