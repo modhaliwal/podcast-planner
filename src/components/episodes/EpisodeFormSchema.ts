@@ -8,7 +8,8 @@ const contentVersionSchema = z.object({
   content: z.string(),
   timestamp: z.string(),
   source: z.enum(['manual', 'ai', 'import']),
-  active: z.boolean().optional() // Add active flag to schema
+  active: z.boolean().optional(), // Add active flag to schema
+  versionNumber: z.number().optional() // Add version number
 });
 
 // Define the shape of the episode form
@@ -20,8 +21,8 @@ export const episodeFormSchema = z.object({
   notes: z.string().optional().default(''),
   notesVersions: z.array(contentVersionSchema).optional().default([]),
   status: z.nativeEnum(EpisodeStatus),
-  scheduled: z.date(),
-  publishDate: z.date().nullable().optional(),
+  scheduled: z.union([z.date(), z.string()]),
+  publishDate: z.union([z.date(), z.string()]).nullable().optional(),
   guestIds: z.array(z.string()),
   coverArt: z.any().optional(),
   recordingLinks: z.object({

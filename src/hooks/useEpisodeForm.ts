@@ -1,9 +1,9 @@
 
 import { useState } from "react";
-import { Episode, ContentVersion } from "@/lib/types";
+import { Episode, ContentVersion, Resource } from "@/lib/types";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
+import { EpisodeStatus } from "@/lib/enums";
 import { ensureVersionNumbers } from "./versions/utils/versionNumberUtils";
 
 // Define the form values type
@@ -12,23 +12,19 @@ export interface EpisodeFormValues {
   episodeNumber: number;
   topic: string;
   scheduled: Date | string;
-  publishDate: Date | string;
-  status: string;
+  publishDate: Date | string | null;
+  status: EpisodeStatus;
   guestIds: string[];
   introduction: string;
   notes: string;
   notesVersions: ContentVersion[];
-  resources: {
-    title: string;
-    url: string;
-  }[];
+  resources: Resource[];
   coverArt: string;
   podcastUrls: {
-    apple?: string;
     spotify?: string;
-    google?: string;
+    applePodcasts?: string;
+    amazonPodcasts?: string;
     youtube?: string;
-    other?: string;
   };
 }
 
@@ -47,8 +43,8 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
       episodeNumber: episode.episodeNumber || 0,
       topic: episode.topic || "",
       scheduled: episode.scheduled || "",
-      publishDate: episode.publishDate || "",
-      status: episode.status || "planning",
+      publishDate: episode.publishDate || null,
+      status: episode.status || EpisodeStatus.SCHEDULED,
       guestIds: episode.guestIds || [],
       introduction: episode.introduction || "",
       notes: episode.notes || "",
@@ -56,11 +52,10 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
       resources: episode.resources || [],
       coverArt: episode.coverArt || "",
       podcastUrls: {
-        apple: episode.podcastUrls?.apple || "",
         spotify: episode.podcastUrls?.spotify || "",
-        google: episode.podcastUrls?.google || "",
+        applePodcasts: episode.podcastUrls?.applePodcasts || "",
+        amazonPodcasts: episode.podcastUrls?.amazonPodcasts || "",
         youtube: episode.podcastUrls?.youtube || "",
-        other: episode.podcastUrls?.other || "",
       },
     },
   });
@@ -76,8 +71,9 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
         title: data.title,
         episodeNumber: Number(data.episodeNumber),
         topic: data.topic || undefined,
-        scheduled: data.scheduled || undefined,
-        publishDate: data.publishDate || undefined,
+        // Convert dates to ISO strings for storage
+        scheduled: data.scheduled instanceof Date ? data.scheduled.toISOString() : data.scheduled,
+        publishDate: data.publishDate instanceof Date ? data.publishDate.toISOString() : data.publishDate,
         status: data.status,
         guestIds: data.guestIds,
         introduction: data.introduction || undefined,
@@ -86,11 +82,10 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
         resources: data.resources || [],
         coverArt: data.coverArt || undefined,
         podcastUrls: {
-          apple: data.podcastUrls.apple || undefined,
           spotify: data.podcastUrls.spotify || undefined,
-          google: data.podcastUrls.google || undefined,
+          applePodcasts: data.podcastUrls.applePodcasts || undefined,
+          amazonPodcasts: data.podcastUrls.amazonPodcasts || undefined,
           youtube: data.podcastUrls.youtube || undefined,
-          other: data.podcastUrls.other || undefined,
         },
         updatedAt: new Date().toISOString(),
       };

@@ -7,7 +7,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
-import { EpisodeFormValues } from '../EpisodeFormSchema';
+import { EpisodeFormValues } from '@/hooks/useEpisodeForm';
 import { cn } from '@/lib/utils';
 
 interface ScheduleSectionProps {
@@ -15,6 +15,21 @@ interface ScheduleSectionProps {
 }
 
 export function ScheduleSection({ form }: ScheduleSectionProps) {
+  // Helper function to format dates for display
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return null;
+    
+    try {
+      if (typeof date === 'string') {
+        return format(new Date(date), "PPP");
+      }
+      return format(date, "PPP");
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return null;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -38,7 +53,7 @@ export function ScheduleSection({ form }: ScheduleSectionProps) {
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        formatDate(field.value) || <span>Invalid date</span>
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -49,7 +64,7 @@ export function ScheduleSection({ form }: ScheduleSectionProps) {
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value}
+                    selected={field.value instanceof Date ? field.value : field.value ? new Date(field.value) : undefined}
                     onSelect={field.onChange}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
@@ -78,7 +93,7 @@ export function ScheduleSection({ form }: ScheduleSectionProps) {
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        formatDate(field.value) || <span>Invalid date</span>
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -89,7 +104,7 @@ export function ScheduleSection({ form }: ScheduleSectionProps) {
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value || undefined}
+                    selected={field.value instanceof Date ? field.value : field.value ? new Date(field.value) : undefined}
                     onSelect={field.onChange}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
