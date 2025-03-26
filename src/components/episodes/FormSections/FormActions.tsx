@@ -26,7 +26,6 @@ export function FormActions({
       <Button 
         type="submit" 
         disabled={isSubmitting}
-        onClick={onSave}
       >
         <SaveIcon className="h-4 w-4 mr-2" />
         {isSubmitting ? "Saving..." : "Save Changes"}

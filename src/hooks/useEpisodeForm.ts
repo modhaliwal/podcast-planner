@@ -50,7 +50,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
-    console.log("onSubmit called with data:", data);
+    console.log("Form submission initiated with data:", data);
     setIsSubmitting(true);
     
     try {
@@ -105,7 +105,10 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
       
       console.log("Update response:", updateResult, updateError);
       
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Error updating episode:", updateError);
+        throw updateError;
+      }
       
       // Use the extracted guest relationship management function
       await updateEpisodeGuests(data.guestIds, episode.id);
