@@ -2,14 +2,10 @@
 import { useState } from "react";
 import { useAIPrompts, AIPrompt } from "@/hooks/useAIPrompts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { PromptsList } from "./ai-prompts/PromptsList";
+import { PromptEditor } from "./ai-prompts/PromptEditor";
 
 export function AIPromptsSettings() {
   const { prompts, isLoading, updatePrompt } = useAIPrompts();
@@ -81,142 +77,23 @@ export function AIPromptsSettings() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1">
-            <h3 className="text-sm font-medium mb-3">Available Prompts</h3>
-            <Separator className="mb-3" />
-            <ScrollArea className="h-[500px]">
-              <div className="space-y-2">
-                {prompts.map((prompt) => (
-                  <Button
-                    key={prompt.id}
-                    variant={activePromptId === prompt.id ? "default" : "outline"}
-                    className="w-full justify-start text-left"
-                    onClick={() => handleSelectPrompt(prompt.id)}
-                  >
-                    <div className="truncate">
-                      {prompt.title}
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
+          <PromptsList 
+            prompts={prompts} 
+            activePromptId={activePromptId} 
+            onSelectPrompt={handleSelectPrompt} 
+          />
           
           <div className="col-span-1 md:col-span-2">
-            {editedPrompt ? (
-              <ScrollArea className="h-[500px] pr-4">
-                <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      value={editedPrompt.title || ''}
-                      onChange={handleInputChange}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
-                      name="description"
-                      value={editedPrompt.description || ''}
-                      onChange={handleInputChange}
-                      className="mt-1"
-                    />
-                    <p className="text-muted-foreground text-xs mt-1">
-                      Brief explanation of where this prompt is used
-                    </p>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <Label htmlFor="prompt_text" className="text-base font-semibold">Main Prompt Text</Label>
-                    <Textarea
-                      id="prompt_text"
-                      name="prompt_text"
-                      value={editedPrompt.prompt_text || ''}
-                      onChange={handleInputChange}
-                      className="mt-1 min-h-[150px] font-mono text-sm"
-                    />
-                    <p className="text-muted-foreground text-xs mt-1">
-                      Use ${'{variable}'} for dynamic values that will be replaced at runtime
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="system_prompt" className="text-base font-semibold">System Instructions</Label>
-                    <Textarea
-                      id="system_prompt"
-                      name="system_prompt"
-                      value={editedPrompt.system_prompt || ''}
-                      onChange={handleInputChange}
-                      className="mt-1 min-h-[150px] font-mono text-sm"
-                    />
-                    <p className="text-muted-foreground text-xs mt-1">
-                      Instructions that set the AI's behavior, tone, and constraints
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="context_instructions" className="text-base font-semibold">Context Instructions</Label>
-                    <Textarea
-                      id="context_instructions"
-                      name="context_instructions"
-                      value={editedPrompt.context_instructions || ''}
-                      onChange={handleInputChange}
-                      className="mt-1 min-h-[150px] font-mono text-sm"
-                    />
-                    <p className="text-muted-foreground text-xs mt-1">
-                      Additional context that helps the AI understand how to process the prompt
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="example_output" className="text-base font-semibold">Example Output</Label>
-                    <Textarea
-                      id="example_output"
-                      name="example_output"
-                      value={editedPrompt.example_output || ''}
-                      onChange={handleInputChange}
-                      className="mt-1 min-h-[150px] font-mono text-sm"
-                    />
-                    <p className="text-muted-foreground text-xs mt-1">
-                      Example outputs to guide the AI on the expected format and content
-                    </p>
-                  </div>
-                  
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={handleReset}
-                      disabled={isSaving}
-                    >
-                      Reset
-                    </Button>
-                    <Button
-                      onClick={handleSave}
-                      disabled={isSaving}
-                    >
-                      {isSaving ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </div>
-                </div>
-              </ScrollArea>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">
-                  Select a prompt to edit
-                </p>
-              </div>
-            )}
+            <PromptEditor 
+              editedPrompt={editedPrompt}
+              onInputChange={handleInputChange}
+              onSave={handleSave}
+              onReset={handleReset}
+              isSaving={isSaving}
+            />
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
-
