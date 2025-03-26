@@ -11,8 +11,6 @@ import { NotesGeneration } from './NotesGeneration';
 import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
 import { toast } from '@/hooks/toast';
 import { processVersions } from '@/lib/versionUtils';
-import { v4 as uuidv4 } from 'uuid';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -68,20 +66,9 @@ export function NotesField({ form, guests }: NotesFieldProps) {
                 versionSelectorProps,
                 hasInitialized
               }) => (
-                <Tabs defaultValue="editor" className="w-full">
-                  <div className="flex justify-between items-center mb-4">
-                    <TabsList>
-                      <TabsTrigger value="editor">Editor</TabsTrigger>
-                      <TabsTrigger value="versions">
-                        Version History
-                        {formattedVersions.length > 0 && (
-                          <span className="ml-1 rounded-full bg-primary/10 px-2 text-xs">
-                            {formattedVersions.length}
-                          </span>
-                        )}
-                      </TabsTrigger>
-                    </TabsList>
-                    
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div></div>
                     <div className="flex items-center space-x-2">
                       {formattedVersions.length > 0 && (
                         <VersionSelector {...versionSelectorProps} />
@@ -101,75 +88,16 @@ export function NotesField({ form, guests }: NotesFieldProps) {
                     </div>
                   </div>
                   
-                  <TabsContent value="editor" className="mt-0">
-                    <Editor
-                      value={content}
-                      onChange={(value) => {
-                        setContent(value);
-                        form.setValue('notes', value, { shouldDirty: true });
-                      }}
-                      onBlur={handleEditorBlur}
-                      placeholder="Add episode notes here..."
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="versions" className="mt-0">
-                    {formattedVersions.length === 0 ? (
-                      <div className="p-4 text-center text-muted-foreground border rounded-md">
-                        No versions saved yet. Save your first version to start tracking changes.
-                      </div>
-                    ) : (
-                      <div className="rounded-md border">
-                        <div className="p-4">
-                          <h3 className="font-medium">Version History</h3>
-                          <p className="text-sm text-muted-foreground">
-                            View and restore previous versions of your notes.
-                          </p>
-                        </div>
-                        <div className="border-t">
-                          {formattedVersions.map((version, index) => {
-                            const isActive = version.id === activeVersionId;
-                            
-                            return (
-                              <div 
-                                key={version.id} 
-                                className={`flex p-4 border-b last:border-b-0 ${isActive ? 'bg-muted/50' : ''}`}
-                              >
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-medium">
-                                      Version {version.versionNumber || index + 1}
-                                      {isActive && (
-                                        <span className="ml-2 text-xs text-primary">(Current)</span>
-                                      )}
-                                    </h4>
-                                    <span className="text-xs text-muted-foreground">
-                                      {new Date(version.timestamp).toLocaleString()}
-                                    </span>
-                                  </div>
-                                  <div className="mt-1 text-xs text-muted-foreground line-clamp-3">
-                                    {version.content.substring(0, 150)}...
-                                  </div>
-                                </div>
-                                <div className="ml-4 flex items-center">
-                                  {!isActive && (
-                                    <button
-                                      type="button"
-                                      className="text-sm text-primary hover:underline"
-                                      onClick={() => selectVersion(version)}
-                                    >
-                                      Select
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+                  <Editor
+                    value={content}
+                    onChange={(value) => {
+                      setContent(value);
+                      form.setValue('notes', value, { shouldDirty: true });
+                    }}
+                    onBlur={handleEditorBlur}
+                    placeholder="Add episode notes here..."
+                  />
+                </div>
               )}
             </VersionManager>
           </FormControl>

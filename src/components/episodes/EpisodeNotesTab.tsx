@@ -1,11 +1,10 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Episode, ContentVersion } from "@/lib/types";
-import { FileText, Clock } from "lucide-react";
-import { NotesEditor } from "./notes/NotesEditor";
-import { VersionHistory } from "./notes/VersionHistory";
+import { FileText } from "lucide-react";
 import { useVersionManager } from "@/hooks/versions";
+import { Editor } from "@/components/editor/Editor";
+import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
 
 interface EpisodeNotesTabProps {
   episode: Episode;
@@ -21,9 +20,8 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
     activeVersion, 
     addVersion, 
     selectVersion, 
-    revertToVersion,
-    isLatestVersionActive,
-    setContent: updateContent
+    handleEditorBlur,
+    versionSelectorProps
   } = useVersionManager({
     content,
     versions: (episode.notesVersions || []) as ContentVersion[],
@@ -41,50 +39,25 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
   
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="editor" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="editor" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Editor</span>
-          </TabsTrigger>
-          <TabsTrigger value="versions" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span>Version History</span>
-            {versions.length > 0 && (
-              <span className="ml-1 rounded-full bg-primary/10 px-2 text-xs">
-                {versions.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          <span className="font-medium">Episode Notes</span>
+        </div>
         
-        <TabsContent value="editor" className="mt-0">
-          <NotesEditor 
-            content={content}
-            setContent={setContent}
-            activeVersion={activeVersion}
-            isLatestVersionActive={isLatestVersionActive}
-            onSaveContent={(newContent) => {
-              updateContent(newContent);
-              // Return the updated versions from addVersion
-              const newVersions = addVersion(newContent);
-              return newVersions;
-            }}
-          />
-        </TabsContent>
-        
-        <TabsContent value="versions" className="mt-0">
-          <VersionHistory 
-            versions={versions}
-            activeVersion={activeVersion}
-            onSelectVersion={selectVersion}
-            onRevertVersion={(versionId) => {
-              const updatedVersions = revertToVersion(versionId);
-              return updatedVersions;
-            }}
-          />
-        </TabsContent>
-      </Tabs>
+        {versions.length > 0 && (
+          <div className="flex items-center">
+            <VersionSelector {...versionSelectorProps} />
+          </div>
+        )}
+      </div>
+      
+      <Editor
+        value={content}
+        onChange={setContent}
+        onBlur={handleEditorBlur}
+        placeholder="No notes available for this episode."
+      />
     </div>
   );
 }
