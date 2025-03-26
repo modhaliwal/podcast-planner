@@ -5,6 +5,12 @@ import { useSelectorProps } from "./useSelectorProps";
 import { UseFormReturn } from "react-hook-form";
 import { ContentVersion } from "@/lib/types";
 
+// Export utility functions
+export * from "./utils/versionNumberUtils";
+export * from "./utils/versionInitialization";
+export * from "./utils/versionSelection";
+export * from "./utils/versionCreation";
+
 interface UseContentVersionsProps<T extends Record<string, any>> {
   form: UseFormReturn<T>;
   fieldName: keyof T;
