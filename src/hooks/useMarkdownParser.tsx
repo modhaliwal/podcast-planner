@@ -50,7 +50,13 @@ export function useMarkdownParser(markdown: string | undefined) {
             '<td class="border border-gray-300 dark:border-gray-700 p-2">'
           );
           
-          setParsedHtml(styledHtml);
+          // Enhance lists and references
+          const enhancedHtml = styledHtml.replace(
+            /\[(\d+)\]/g, 
+            '<sup class="text-xs font-medium bg-muted px-1 rounded ml-0.5">[⁠$1]</sup>'
+          );
+          
+          setParsedHtml(enhancedHtml);
         } catch (error) {
           console.error('Error parsing markdown with marked:', error);
           // Use fallback parser if marked fails
@@ -83,12 +89,14 @@ function useFallbackParser(markdown: string, setParsedHtml: (html: string) => vo
     .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-md my-4" loading="lazy">')
     // Handle links, open in new tab
     .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    // Handle references with superscript
+    .replace(/\[(\d+)\]/g, '<sup class="text-xs font-medium bg-muted px-1 rounded ml-0.5">[⁠$1]</sup>')
     // Handle paragraphs 
     .replace(/\n\n+/g, '</p><p>')
-    // Handle bullet lists
-    .replace(/^[*-] (.*?)$/gm, '<ul><li>$1</li></ul>')
-    // Handle numbered lists
-    .replace(/^(\d+)\.\s+(.*?)$/gm, '<ol><li>$2</li></ol>');
+    // Handle bullet lists - improved to capture multi-line items
+    .replace(/^[*-] ([\s\S]*?)(?=^[*-]|^$|^\S)/gm, '<ul><li>$1</li></ul>')
+    // Handle numbered lists - improved to capture multi-line items
+    .replace(/^(\d+)\.\s+([\s\S]*?)(?=^\d+\.|^$|^\S)/gm, '<ol><li>$2</li></ol>');
   
   // Fix consecutive list elements
   html = html

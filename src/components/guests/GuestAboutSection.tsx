@@ -26,7 +26,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
   const parsedBackgroundResearch = useMarkdownParser(guest.backgroundResearch);
 
   return (
-    <Card>
+    <Card className="overflow-visible">
       <CardHeader>
         <CardTitle>About</CardTitle>
       </CardHeader>
@@ -86,7 +86,14 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
               )}
             </div>
             <div 
-              className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:mt-4 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-table:w-full prose-th:p-2 prose-th:bg-muted prose-th:border prose-td:p-2 prose-td:border prose-img:my-4 prose-img:rounded-md"
+              className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert 
+                prose-headings:font-semibold prose-headings:mt-5 prose-headings:mb-2
+                prose-p:my-2 prose-p:leading-relaxed
+                prose-ul:my-2 prose-ul:pl-0 prose-li:my-1
+                prose-ol:my-2 prose-ol:pl-0
+                prose-table:w-full prose-th:p-2 prose-th:bg-muted prose-th:border 
+                prose-td:p-2 prose-td:border prose-img:my-4 prose-img:rounded-md
+                prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
               dangerouslySetInnerHTML={{ __html: parsedBackgroundResearch }}
             />
           </div>
