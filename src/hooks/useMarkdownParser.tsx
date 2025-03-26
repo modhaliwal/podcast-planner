@@ -17,7 +17,6 @@ export function useMarkdownParser(markdown: string | undefined) {
         breaks: true,     // Convert \n to <br> in paragraphs
         gfm: true,        // GitHub Flavored Markdown
         pedantic: false,
-        mangle: false,    // Don't escape HTML
         tables: true      // Enable table support
       });
       
