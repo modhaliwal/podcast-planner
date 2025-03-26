@@ -6,24 +6,39 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Guest, ContentVersion } from "@/lib/types";
 import { generateBackgroundResearch } from "./BackgroundResearchGenerator";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
+import { VersionSelector } from "../../form-sections/VersionSelector";
 
 interface BackgroundResearchControlsProps {
   guest: Guest;
   onNewVersionCreated?: (newVersion: ContentVersion) => void;
   onClearAllVersions?: () => void;
   setMarkdownToConvert: (markdown: string | undefined) => void;
+  versions?: ContentVersion[];
+  onSelectVersion?: (version: ContentVersion) => void;
+  activeVersionId?: string;
+  onGenerateResearch?: () => Promise<void>;
+  isGenerating?: boolean;
 }
 
 export function BackgroundResearchControls({
   guest,
   onNewVersionCreated,
   onClearAllVersions,
-  setMarkdownToConvert
+  setMarkdownToConvert,
+  versions = [],
+  onSelectVersion,
+  activeVersionId,
+  onGenerateResearch,
+  isGenerating = false
 }: BackgroundResearchControlsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { getPromptByKey } = useAIPrompts();
 
   const handleGenerateResearch = async () => {
+    if (onGenerateResearch) {
+      return onGenerateResearch();
+    }
+    
     setIsLoading(true);
     await generateBackgroundResearch(
       guest, 
@@ -34,17 +49,25 @@ export function BackgroundResearchControls({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
+      {versions && versions.length > 0 && onSelectVersion && (
+        <VersionSelector 
+          versions={versions}
+          onSelectVersion={onSelectVersion}
+          activeVersionId={activeVersionId}
+        />
+      )}
+      
       <Button
         type="button"
         variant="outline"
         size="sm"
         onClick={handleGenerateResearch}
-        disabled={isLoading}
+        disabled={isLoading || isGenerating}
         className="flex items-center gap-1"
       >
         <Sparkles className="h-4 w-4" />
-        {isLoading ? "Generating..." : "Generate Research"}
+        {isLoading || isGenerating ? "Generating..." : "Generate Research"}
       </Button>
       
       <Button

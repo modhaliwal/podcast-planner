@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { BackgroundResearchEditor } from "./BackgroundResearchEditor";
 import { BackgroundResearchControls } from "./BackgroundResearchControls";
 import { generateBackgroundResearch } from "./BackgroundResearchGenerator";
+import { useAIPrompts } from "@/hooks/useAIPrompts";
 
 interface BackgroundResearchSectionProps {
   backgroundResearch: string;
@@ -30,6 +31,7 @@ export function BackgroundResearchSection({
   const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
   const [versionCreatedSinceFormOpen, setVersionCreatedSinceFormOpen] = useState<boolean>(false);
   const parsedHtml = useMarkdownParser(markdownToConvert);
+  const { getPromptByKey } = useAIPrompts();
 
   // Initialize with the current research as the first version if no versions exist
   useEffect(() => {
@@ -141,7 +143,13 @@ export function BackgroundResearchSection({
     if (guest) {
       setIsLoading(true);
       try {
-        await generateBackgroundResearch(guest, setIsLoading, setMarkdownToConvert);
+        // Make sure to pass all required arguments here - this was missing the 4th argument
+        await generateBackgroundResearch(
+          guest, 
+          setIsLoading, 
+          setMarkdownToConvert,
+          getPromptByKey
+        );
       } catch (error) {
         console.error("Error generating research:", error);
         setIsLoading(false);
@@ -152,6 +160,10 @@ export function BackgroundResearchSection({
   return (
     <div className="space-y-4">
       <BackgroundResearchControls 
+        guest={guest || { id: '', name: '', title: '', bio: '', socialLinks: {}, createdAt: '', updatedAt: '' }}
+        onNewVersionCreated={handleGenerateResearch}
+        onClearAllVersions={() => onVersionsChange([])}
+        setMarkdownToConvert={setMarkdownToConvert}
         versions={backgroundResearchVersions}
         onSelectVersion={selectVersion}
         activeVersionId={activeVersionId}
