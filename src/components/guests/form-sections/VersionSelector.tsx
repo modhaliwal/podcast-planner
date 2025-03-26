@@ -58,7 +58,7 @@ export function VersionSelector({
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="min-w-[250px]">
+      <DropdownMenuContent align="end" className="min-w-[280px]">
         <div className="max-h-[250px] overflow-y-auto">
           {sortedVersions.map(version => (
             <DropdownMenuItem key={version.id} className="py-2 px-4 cursor-pointer">
@@ -67,10 +67,12 @@ export function VersionSelector({
                 onClick={() => onSelectVersion(version)}
               >
                 <div className="flex items-center gap-2">
-                  {version.id === activeVersionId && (
+                  {version.id === activeVersionId ? (
                     <CheckIcon className="h-4 w-4 flex-shrink-0 text-primary" />
+                  ) : (
+                    <div className="h-4 w-4 flex-shrink-0" /> // Empty space for alignment
                   )}
-                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-xs">
+                  <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">
                     v{version.versionNumber || '?'}
                   </span>
                   <span className="text-sm">{getSourceLabel(version.source)}</span>
