@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { isBlobUrl, deleteImage, uploadImage } from '@/lib/imageUpload';
 
 export function useCoverArtHandler(initialCoverArt?: string) {
@@ -25,7 +26,10 @@ export function useCoverArtHandler(initialCoverArt?: string) {
         const fileName = 'cover-art.jpg';
         const file = new File([blob], fileName, { type: blob.type });
         
-        toast.info("Uploading cover art...");
+        toast({
+          title: "Info",
+          description: "Uploading cover art..."
+        });
         const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
         
         if (uploadedUrl) {
@@ -36,15 +40,26 @@ export function useCoverArtHandler(initialCoverArt?: string) {
             await deleteImage(originalCoverArt);
           }
           
-          toast.success("Cover art uploaded successfully");
+          toast({
+            title: "Success",
+            description: "Cover art uploaded successfully"
+          });
           return uploadedUrl;
         } else {
-          toast.error("Failed to upload cover art");
+          toast({
+            title: "Error",
+            description: "Failed to upload cover art",
+            variant: "destructive"
+          });
           return undefined;
         }
       } catch (error) {
         console.error("Error uploading cover art:", error);
-        toast.error("Error uploading cover art");
+        toast({
+          title: "Error",
+          description: "Error uploading cover art",
+          variant: "destructive"
+        });
         return undefined;
       } finally {
         if (coverArt) {
@@ -54,7 +69,10 @@ export function useCoverArtHandler(initialCoverArt?: string) {
     } else if (coverArt === undefined && originalCoverArt) {
       console.log("Deleting old cover art on removal:", originalCoverArt);
       await deleteImage(originalCoverArt);
-      toast.success("Cover art removed successfully");
+      toast({
+        title: "Success",
+        description: "Cover art removed successfully"
+      });
       return null;
     }
     

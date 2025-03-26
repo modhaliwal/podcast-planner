@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -52,7 +52,11 @@ export function useEpisodeGuests() {
       
       return true;
     } catch (error: any) {
-      toast.error(`Error updating guest relationships: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Error updating guest relationships: ${error.message}`,
+        variant: "destructive"
+      });
       console.error("Error in updateEpisodeGuests:", error);
       return false;
     } finally {
