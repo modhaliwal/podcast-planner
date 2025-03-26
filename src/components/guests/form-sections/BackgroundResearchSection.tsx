@@ -85,7 +85,7 @@ export function BackgroundResearchSection({
           disabled={isLoading}
         >
           <Lightbulb className="h-4 w-4 mr-2" />
-          {isLoading ? "Generating..." : "Generate Research"}
+          {isLoading ? "Generating with Perplexity..." : "Generate Background Research"}
         </Button>
       </div>
       <ReactQuill
