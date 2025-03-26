@@ -26,6 +26,10 @@ export function TopicField({ form }: TopicFieldProps) {
               className="resize-y"
               {...field} 
               value={field.value || ''}
+              onChange={(e) => {
+                console.log("Topic field changed:", e.target.value);
+                field.onChange(e.target.value);
+              }}
             />
           </FormControl>
           <FormDescription>

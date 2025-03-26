@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -107,14 +108,31 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     setIsSubmitting(true);
     
     try {
+      console.log("Form values being submitted:", data);
       const processedCoverArt = await handleCoverArtUpload(data.coverArt);
+      
+      // Log the data being sent to Supabase for debugging
+      console.log("Updating episode with data:", {
+        title: data.title,
+        episode_number: data.episodeNumber,
+        topic: data.topic,
+        introduction: data.introduction,
+        notes: data.notes,
+        status: data.status,
+        scheduled: data.scheduled.toISOString(),
+        publish_date: data.publishDate ? data.publishDate.toISOString() : null,
+        cover_art: processedCoverArt,
+        recording_links: data.recordingLinks,
+        podcast_urls: data.podcastUrls,
+        resources: data.resources,
+      });
       
       const { error: updateError } = await supabase
         .from('episodes')
         .update({
           title: data.title,
           episode_number: data.episodeNumber,
-          topic: data.topic || null,
+          topic: data.topic || null, // Ensure empty string is saved as null
           introduction: data.introduction,
           notes: data.notes,
           status: data.status,

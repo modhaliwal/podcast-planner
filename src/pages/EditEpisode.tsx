@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Episode, Guest } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,9 +25,25 @@ const EditEpisode = () => {
         // Load data in parallel
         await Promise.all([refreshGuests(), refreshEpisodes()]);
         
+        // For debugging: directly fetch the episode from Supabase
+        if (id) {
+          const { data: directEpisode, error } = await supabase
+            .from('episodes')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+          if (error) {
+            console.error("Error directly fetching episode:", error);
+          } else {
+            console.log("Directly fetched episode data:", directEpisode);
+          }
+        }
+        
         // Set data from context after refresh
         if (id) {
           const episode = episodes.find(e => e.id === id);
+          console.log("Episode data from context:", episode);
           setEpisodeData(episode || null);
           setGuestsData(guests || []);
         }
