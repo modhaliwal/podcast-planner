@@ -24,8 +24,8 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <TopicField form={form} />
-        <IntroductionField form={form} />
         <NotesField form={form} guests={guests} />
+        <IntroductionField form={form} />
       </CardContent>
     </Card>
   );
