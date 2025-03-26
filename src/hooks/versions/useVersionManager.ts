@@ -67,8 +67,9 @@ export function useVersionManager({
     handleContentChange,
     selectVersion,
     addNewVersion,
-    addAIVersion,  // Make sure this is included
+    addAIVersion,
     clearAllVersions,
-    versionSelectorProps
+    versionSelectorProps,
+    hasInitialized
   };
 }

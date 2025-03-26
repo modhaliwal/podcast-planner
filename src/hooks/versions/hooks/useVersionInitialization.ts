@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "../utils/versionNumberUtils";
+import { processVersions } from "@/lib/versionUtils";
 
 /**
  * Hook that handles the initialization of version state
@@ -22,7 +23,10 @@ export function useVersionInitialization(
     if (hasInitialized) return;
     
     const timer = setTimeout(() => {
-      if (versions.length === 0 && content) {
+      // Process versions to ensure they're valid
+      const processedVersions = processVersions(versions);
+      
+      if (processedVersions.length === 0 && content) {
         // Create initial version if none exists
         const initialVersion: ContentVersion = {
           id: uuidv4(),
@@ -36,9 +40,9 @@ export function useVersionInitialization(
         onVersionsChange([initialVersion]);
         setActiveVersionId(initialVersion.id);
         setPreviousContent(content);
-      } else if (versions.length > 0) {
+      } else if (processedVersions.length > 0) {
         // Find the active version
-        const activeVersion = versions.find(v => v.active);
+        const activeVersion = processedVersions.find(v => v.active);
         
         if (activeVersion) {
           setActiveVersionId(activeVersion.id);
@@ -50,12 +54,12 @@ export function useVersionInitialization(
           setPreviousContent(activeVersion.content);
         } else {
           // If no version is marked as active, use the most recent one
-          const sortedVersions = [...versions].sort(
+          const sortedVersions = [...processedVersions].sort(
             (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
           );
           
           if (sortedVersions.length > 0) {
-            const updatedVersions = versions.map(v => ({
+            const updatedVersions = processedVersions.map(v => ({
               ...v,
               active: v.id === sortedVersions[0].id
             }));
@@ -67,6 +71,11 @@ export function useVersionInitialization(
               onContentChange(sortedVersions[0].content);
             }
           }
+        }
+        
+        // If the versions array was updated by processing, update it
+        if (JSON.stringify(processedVersions) !== JSON.stringify(versions)) {
+          onVersionsChange(processedVersions);
         }
       }
       
