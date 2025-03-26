@@ -77,10 +77,10 @@ export function VersionSelector({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-[200px]"
+        className="w-[200px] max-h-[300px] overflow-auto"
         ref={dropdownRef}
-        // Remove the Portal behavior to allow page scrolling when dropdown is open
-        portalled={false}
+        // Use forceMount instead of portalled to ensure content is rendered in DOM
+        forceMount
       >
         {sortedVersions.map((version) => (
           <DropdownMenuItem
