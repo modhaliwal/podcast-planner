@@ -31,7 +31,7 @@ export async function generateResearchWithPerplexity(
           },
           {
             role: "user",
-            content: `Create detailed background research on ${name}, who is a ${title} at ${companyInfo}, for a podcast interview.
+            content: `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
             
             Format the output as well-structured markdown with proper headings (##), lists (*, -), and sections.
             
@@ -85,9 +85,6 @@ export async function generateResearchWithPerplexity(
             }
           }
         }
-        web_search_options: {
-          search_context_size: "high"
-        },
       }),
     });
 
@@ -104,13 +101,47 @@ export async function generateResearchWithPerplexity(
       throw new Error(`Perplexity API error: ${data.error.message || data.error}`);
     }
     
-    // Extract the generated research from the completion
+    // Parse the response content according to the JSON format
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       console.error("Unexpected response format from Perplexity:", data);
       throw new Error("Unexpected response format from Perplexity");
     }
     
-    const generatedResearch = data.choices[0].message.content.trim();
+    // Extract content from the JSON response - handle either format
+    let generatedResearch;
+    
+    try {
+      // Check if the content is already JSON or needs to be parsed
+      const messageContent = data.choices[0].message.content;
+      console.log("Raw message content type:", typeof messageContent);
+      
+      if (typeof messageContent === 'string') {
+        try {
+          // Try to parse as JSON if it looks like JSON
+          if (messageContent.trim().startsWith('{')) {
+            const parsedContent = JSON.parse(messageContent);
+            generatedResearch = parsedContent.Body || messageContent;
+            console.log("Successfully parsed JSON string from content");
+          } else {
+            // Not JSON format, use as is
+            generatedResearch = messageContent;
+            console.log("Using content as plain text (not JSON)");
+          }
+        } catch (e) {
+          console.log("Failed to parse as JSON, using as plain text:", e);
+          generatedResearch = messageContent;
+        }
+      } else if (typeof messageContent === 'object') {
+        // It's already a parsed object
+        generatedResearch = messageContent.Body || JSON.stringify(messageContent);
+        console.log("Using pre-parsed object content");
+      } else {
+        throw new Error("Unexpected content format");
+      }
+    } catch (error) {
+      console.error("Error parsing Perplexity response content:", error);
+      throw new Error(`Failed to parse Perplexity response: ${error.message}`);
+    }
     
     console.log("Successfully generated research with Perplexity");
     
