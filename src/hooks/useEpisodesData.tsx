@@ -1,6 +1,6 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Episode, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
 import { EpisodeStatus } from "@/lib/enums";
@@ -114,7 +114,11 @@ export function useEpisodesData(userId: string | undefined) {
       return formattedEpisodes;
       
     } catch (error: any) {
-      toast.error(`Error fetching episodes: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Error fetching episodes: ${error.message}`,
+        variant: "destructive"
+      });
       console.error("Error fetching episodes:", error);
       return episodes;
     } finally {
