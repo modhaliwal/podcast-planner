@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useGuestsData } from "@/hooks/guests/useGuestsData";
 import { useEpisodesData } from "@/hooks/useEpisodesData";
 import { User as AppUser } from "@/lib/types";
@@ -56,12 +56,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await refreshUserProfile();
           refreshGuests();
           refreshEpisodes();
-          toast.success("Signed in successfully!");
+          toast({
+            title: "Success",
+            description: "Signed in successfully"
+          });
         }
         
         if (event === 'SIGNED_OUT') {
           setAppUser(null);
-          toast.info("Signed out successfully");
+          toast({
+            title: "Info",
+            description: "Signed out successfully"
+          });
         }
 
         setLoading(false);
@@ -94,13 +100,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) {
         console.error("Error during sign out:", error);
-        toast.error(`Sign out error: ${error.message}`);
+        toast({
+          title: "Error",
+          description: `Sign out error: ${error.message}`,
+          variant: "destructive"
+        });
       } else {
         window.location.href = "/";
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Unexpected error during sign out:", error);
-      toast.error("An unexpected error occurred while signing out");
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while signing out",
+        variant: "destructive"
+      });
     }
   };
 
