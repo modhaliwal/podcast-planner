@@ -4,15 +4,17 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Wand2 } from 'lucide-react';
 import { ContentVersion } from '@/lib/types';
+import { UseFormReturn } from 'react-hook-form';
 
 interface BioGenerationProps {
+  form: UseFormReturn<any>;
   bio: string;
   setBio: (bio: string) => void;
   versions: ContentVersion[];
   onVersionsChange: (versions: ContentVersion[]) => void;
 }
 
-export function BioGeneration({ bio, setBio, versions, onVersionsChange }: BioGenerationProps) {
+export function BioGeneration({ form, bio, setBio, versions, onVersionsChange }: BioGenerationProps) {
   const [loading, setLoading] = useState(false);
   
   // Simplified generation function without the AI stream
@@ -28,6 +30,10 @@ export function BioGeneration({ bio, setBio, versions, onVersionsChange }: BioGe
         `${bio}\n\nAdditional AI-generated content would appear here.` : 
         "This is a placeholder for AI-generated bio content.";
       
+      // Update the form field value
+      form.setValue('bio', generatedBio, { shouldDirty: true });
+      
+      // Also update through the callback for version management
       setBio(generatedBio);
       
       // Show success toast using sonner

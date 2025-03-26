@@ -1,13 +1,14 @@
 
 import { FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useFormContext, UseFormReturn } from "react-hook-form";
-import { Guest } from "@/lib/types";
+import { Guest, ContentVersion } from "@/lib/types";
 import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { NotesGeneration } from "./NotesGeneration";
 import { NotesEditor } from "./NotesEditor";
 import { memo } from "react";
 import { VersionManager } from "@/components/guests/form-sections/VersionManager";
+import { v4 as uuidv4 } from "uuid";
 
 // Inner component that uses the VersionManager
 const NotesFieldContent = memo(function NotesFieldContent({
@@ -23,6 +24,21 @@ const NotesFieldContent = memo(function NotesFieldContent({
   guests?: Guest[];
   form: UseFormReturn<EpisodeFormValues>;
 }) {
+  // Ensure we have valid versions array that meets ContentVersion type requirements
+  const getCurrentVersions = (): ContentVersion[] => {
+    const versions = form.getValues("notesVersions") || [];
+    
+    // Ensure each version has required properties
+    return versions.map(version => ({
+      id: version.id || uuidv4(),
+      content: version.content || "",
+      timestamp: version.timestamp || new Date().toISOString(),
+      source: version.source || "manual",
+      active: version.active || false,
+      versionNumber: version.versionNumber || 1
+    }));
+  };
+
   return (
     <FormItem>
       <div className="flex items-center justify-between mb-2">
@@ -31,7 +47,7 @@ const NotesFieldContent = memo(function NotesFieldContent({
       
       <VersionManager
         content={form.getValues("notes") || ""}
-        versions={form.getValues("notesVersions") || []}
+        versions={getCurrentVersions()}
         onVersionsChange={(versions) => {
           form.setValue("notesVersions", versions, { shouldDirty: true });
         }}
