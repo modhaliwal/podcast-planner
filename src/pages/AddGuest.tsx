@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
@@ -26,7 +26,8 @@ const AddGuest = () => {
   
   const handleSave = async (newGuest: Guest) => {
     if (!user) {
-      toast("Authentication Required", {
+      toast({
+        title: "Authentication Required",
         description: "You need to be logged in to add guests"
       });
       return;
@@ -60,13 +61,18 @@ const AddGuest = () => {
       
       await refreshGuests();
       
-      toast.success("Guest added successfully");
+      toast({
+        title: "Success",
+        description: "Guest added successfully"
+      });
       
       // Navigate to the new guest's page
       navigate(`/guests/${data.id}`);
     } catch (error: any) {
-      toast("Error", {
-        description: `Failed to add guest: ${error.message}`
+      toast({
+        title: "Error",
+        description: `Failed to add guest: ${error.message}`,
+        variant: "destructive"
       });
       console.error("Error adding guest:", error);
     } finally {

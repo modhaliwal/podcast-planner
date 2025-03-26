@@ -1,7 +1,7 @@
+
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Toaster as ShadcnToaster } from '@/components/ui/toaster';
-import { Toaster as SonnerToaster } from 'sonner';
+import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './contexts/AuthContext';
 import { LoadingIndicator } from './components/ui/loading-indicator';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -88,8 +88,7 @@ function App() {
           } />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <ShadcnToaster />
-        <SonnerToaster position="bottom-right" />
+        <Toaster />
       </Suspense>
     </AuthProvider>
   );

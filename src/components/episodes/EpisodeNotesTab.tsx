@@ -1,3 +1,4 @@
+
 import { BookText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect } from 'react';
 import { NotesGeneration } from './FormSections/ContentComponents/NotesGeneration';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { EpisodeFormValues } from './EpisodeFormSchema';
 
@@ -97,10 +98,17 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
         .eq('id', episode.id);
         
       if (error) throw error;
-      toast.success('Notes updated successfully');
+      toast({
+        title: "Success",
+        description: "Notes updated successfully",
+      });
     } catch (error: any) {
       console.error('Error saving notes:', error);
-      toast.error(`Failed to save notes: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to save notes: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
   

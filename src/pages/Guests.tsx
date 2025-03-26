@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { GuestHeader } from '@/components/guests/GuestHeader';
 import { GuestControls } from '@/components/guests/GuestControls';
 import { GuestContent } from '@/components/guests/GuestContent';
@@ -47,7 +47,8 @@ const Guests = () => {
 
   const handleAddGuest = () => {
     if (!user) {
-      toast("Authentication Required", {
+      toast({
+        title: "Authentication Required",
         description: "You need to be logged in to add guests"
       });
       return;
