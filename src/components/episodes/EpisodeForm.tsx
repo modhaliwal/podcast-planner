@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,25 +29,29 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalCoverArt, setOriginalCoverArt] = useState<string | undefined>(episode.coverArt);
   
+  // Use useMemo to prevent recreating default values on each render
+  const defaultValues = useMemo(() => ({
+    title: episode.title,
+    episodeNumber: episode.episodeNumber,
+    topic: episode.topic || '',
+    introduction: episode.introduction,
+    notes: episode.notes,
+    status: episode.status,
+    scheduled: new Date(episode.scheduled),
+    publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
+    guestIds: episode.guestIds,
+    coverArt: episode.coverArt,
+    recordingLinks: episode.recordingLinks || {},
+    podcastUrls: episode.podcastUrls || {},
+    resources: episode.resources || []
+  }), [episode]);
+  
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
-    defaultValues: {
-      title: episode.title,
-      episodeNumber: episode.episodeNumber,
-      topic: episode.topic || '',
-      introduction: episode.introduction,
-      notes: episode.notes,
-      status: episode.status,
-      scheduled: new Date(episode.scheduled),
-      publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
-      guestIds: episode.guestIds,
-      coverArt: episode.coverArt,
-      recordingLinks: episode.recordingLinks || {},
-      podcastUrls: episode.podcastUrls || {},
-      resources: episode.resources || []
-    },
+    defaultValues,
   });
   
+  // Only update originalCoverArt when episode.coverArt changes, not on every render
   useEffect(() => {
     setOriginalCoverArt(episode.coverArt);
   }, [episode.coverArt]);

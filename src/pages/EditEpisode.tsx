@@ -5,26 +5,65 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Episode, Guest } from '@/lib/types';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { episodes, guests, refreshEpisodes, refreshGuests } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [episodeData, setEpisodeData] = useState<Episode | null>(null);
+  const [guestsData, setGuestsData] = useState<Guest[]>([]);
   
-  // Ensure we have the latest data
+  // Load data once on component mount
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([refreshGuests(), refreshEpisodes()]);
+      setIsLoading(true);
+      try {
+        // Load data in parallel
+        await Promise.all([refreshGuests(), refreshEpisodes()]);
+        
+        // Set data from context after refresh
+        if (id) {
+          const episode = episodes.find(e => e.id === id);
+          setEpisodeData(episode || null);
+          setGuestsData(guests || []);
+        }
+      } catch (error) {
+        console.error("Error loading episode data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     loadData();
-  }, [refreshGuests, refreshEpisodes]);
+    // Only run on mount and when ID changes
+  }, [id]);
   
-  // Find the episode with the matching ID
-  const episode = episodes.find(e => e.id === id);
+  const handleBack = () => {
+    navigate(`/episodes/${id}`);
+  };
   
-  if (!episode) {
+  // If still loading, show minimal UI to prevent flashing
+  if (isLoading) {
+    return (
+      <Shell>
+        <div className="page-container">
+          <Button variant="ghost" size="sm" onClick={handleBack} className="mr-2">
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back
+          </Button>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="animate-pulse">Loading episode data...</div>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+  
+  // If episode not found after loading
+  if (!episodeData) {
     return (
       <Shell>
         <div className="page-container">
@@ -39,10 +78,6 @@ const EditEpisode = () => {
       </Shell>
     );
   }
-  
-  const handleBack = () => {
-    navigate(`/episodes/${id}`);
-  };
   
   return (
     <Shell>
@@ -65,11 +100,11 @@ const EditEpisode = () => {
         
         <EpisodeForm 
           episode={{
-            ...episode,
-            coverArt: episode.coverArt || undefined,
-            resources: episode.resources || []
+            ...episodeData,
+            coverArt: episodeData.coverArt || undefined,
+            resources: episodeData.resources || []
           }} 
-          guests={guests}
+          guests={guestsData}
         />
       </div>
     </Shell>
