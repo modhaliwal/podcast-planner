@@ -8,6 +8,7 @@ export type ToasterToast = ToastProps & {
   description?: React.ReactNode
   action?: ToastActionElement
   variant?: "default" | "destructive"
+  duration?: number
 }
 
 export type ActionType = typeof actionTypes
@@ -39,4 +40,28 @@ export type Action =
 
 export interface State {
   toasts: ToasterToast[]
+}
+
+// Extend the base toast function with shorthand methods
+export interface ToastFunction {
+  (props: Omit<ToasterToast, "id">): {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  error: (message: string, options?: Omit<ToasterToast, "id" | "title" | "description" | "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  success: (message: string, options?: Omit<ToasterToast, "id" | "title" | "description" | "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  info: (message: string, options?: Omit<ToasterToast, "id" | "title" | "description" | "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
 }

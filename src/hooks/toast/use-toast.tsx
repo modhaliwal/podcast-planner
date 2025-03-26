@@ -11,7 +11,20 @@ import {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+// Helper functions for common toast types
+function createToastMethod(variant?: "default" | "destructive") {
+  return (message: string, options: Omit<Toast, "title" | "description"> = {}) => {
+    return toast({
+      title: variant === "destructive" ? "Error" : variant === "default" ? "Info" : "Success",
+      description: message,
+      variant,
+      ...options,
+    })
+  }
+}
+
+// Main toast function
+function toast(props: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -47,6 +60,11 @@ function toast({ ...props }: Toast) {
     update,
   }
 }
+
+// Add shorthand methods to toast
+toast.error = createToastMethod("destructive")
+toast.success = createToastMethod(undefined)
+toast.info = createToastMethod("default")
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
