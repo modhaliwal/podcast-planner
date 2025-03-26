@@ -15,7 +15,7 @@ export function IntroductionField({ form }: IntroductionFieldProps) {
       control={form.control}
       name="introduction"
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="pt-4">
           <FormLabel className="flex items-center gap-2">
             <Info className="h-4 w-4 text-muted-foreground" />
             Introduction
@@ -23,7 +23,7 @@ export function IntroductionField({ form }: IntroductionFieldProps) {
           <FormControl>
             <Textarea 
               placeholder="Enter episode introduction" 
-              className="min-h-[120px] resize-y"
+              className="min-h-[150px] resize-y"
               {...field} 
             />
           </FormControl>

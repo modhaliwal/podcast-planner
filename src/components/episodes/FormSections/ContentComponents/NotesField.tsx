@@ -83,13 +83,14 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
             </Button>
           </div>
           <FormControl>
-            <div className="min-h-[200px] mb-12">
+            <div className="min-h-[300px] relative mb-16">
               <ReactQuill 
                 theme="snow" 
                 value={field.value || ''} 
                 onChange={field.onChange}
                 placeholder="Enter episode notes"
-                className="h-[240px]"
+                className="h-[300px]"
+                style={{ height: '300px' }}
               />
             </div>
           </FormControl>
