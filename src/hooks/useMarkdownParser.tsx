@@ -12,12 +12,11 @@ export function useMarkdownParser(markdown: string | undefined) {
     }
 
     try {
-      // Configure marked with improved options for better HTML rendering
+      // Configure marked with options supported by the current version
       marked.setOptions({
         breaks: true,     // Convert \n to <br> in paragraphs
         gfm: true,        // GitHub Flavored Markdown
-        pedantic: false,
-        tables: true      // Enable table support
+        pedantic: false
       });
       
       const parseMarkdown = async () => {
