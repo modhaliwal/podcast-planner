@@ -1,6 +1,6 @@
 
 import { UseFormReturn } from "react-hook-form";
-import { BioSection } from "./BioSection";
+import { BioSection } from "./bio"; // Updated import path
 import { BackgroundResearchSection } from "./BackgroundResearchSection";
 import { NotesSection } from "./NotesSection";
 import { Guest, ContentVersion } from "@/lib/types";
