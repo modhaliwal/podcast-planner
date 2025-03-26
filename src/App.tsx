@@ -1,26 +1,26 @@
 
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './contexts/AuthContext';
 import { LoadingIndicator } from './components/ui/loading-indicator';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
-// Lazy loaded pages
-const Index = lazy(() => import('./pages/Index'));
-const Auth = lazy(() => import('./pages/Auth'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Guests = lazy(() => import('./pages/Guests'));
-const GuestView = lazy(() => import('./pages/GuestView'));
-const AddGuest = lazy(() => import('./pages/AddGuest'));
-const EditGuest = lazy(() => import('./pages/EditGuest'));
-const Episodes = lazy(() => import('./pages/Episodes'));
-const CreateEpisode = lazy(() => import('./pages/CreateEpisode'));
-const EpisodeView = lazy(() => import('./pages/EpisodeView'));
-const EditEpisode = lazy(() => import('./pages/EditEpisode'));
-const Settings = lazy(() => import('./pages/Settings'));
-const Users = lazy(() => import('./pages/Users'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+// Direct imports instead of lazy loading
+import Index from './pages/Index';
+import Auth from './pages/Auth';
+import Dashboard from './pages/Dashboard';
+import Guests from './pages/Guests';
+import GuestView from './pages/GuestView';
+import AddGuest from './pages/AddGuest';
+import EditGuest from './pages/EditGuest';
+import Episodes from './pages/Episodes';
+import CreateEpisode from './pages/CreateEpisode';
+import EpisodeView from './pages/EpisodeView';
+import EditEpisode from './pages/EditEpisode';
+import Settings from './pages/Settings';
+import Users from './pages/Users';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
