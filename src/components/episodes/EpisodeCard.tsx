@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube, ExternalLink } from 'lucide-react';
+import { Calendar, ChevronRight, CalendarDays, Clock, Image, Music, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { EpisodeStatus } from '@/lib/enums';
+import { GuestChip } from '@/components/guests/GuestChip';
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -61,9 +62,9 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
           <div className="flex items-start gap-4">
             <div className={cn(
               "h-12 w-12 rounded-full flex items-center justify-center shrink-0",
-              episode.status === EpisodeStatus.PUBLISHED ? "bg-green-100 text-green-700" :
-              episode.status === EpisodeStatus.RECORDED ? "bg-blue-100 text-blue-700" :
-              "bg-orange-100 text-orange-700"
+              episode.status === EpisodeStatus.PUBLISHED ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" :
+              episode.status === EpisodeStatus.RECORDED ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" :
+              "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
             )}>
               <Calendar className="h-6 w-6" />
             </div>
@@ -98,39 +99,32 @@ export function EpisodeCard({ episode, guests, className }: EpisodeCardProps) {
                 )}
               </div>
               
-              <div className="flex items-center -space-x-2 mb-3">
-                {episodeGuests.slice(0, 3).map((guest) => {
-                  const initials = guest.name
-                    .split(' ')
-                    .map(n => n[0])
-                    .join('')
-                    .toUpperCase();
-                  
-                  return (
-                    <Avatar key={guest.id} className="border-2 border-background h-8 w-8">
-                      <AvatarImage src={guest.imageUrl} alt={guest.name} />
-                      <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-                    </Avatar>
-                  );
-                })}
-                
-                {episodeGuests.length > 3 && (
-                  <Avatar className="border-2 border-background h-8 w-8">
-                    <AvatarFallback className="text-xs">+{episodeGuests.length - 3}</AvatarFallback>
-                  </Avatar>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {episodeGuests.length > 0 ? (
+                  <>
+                    {episodeGuests.slice(0, 3).map((guest) => (
+                      <GuestChip 
+                        key={guest.id} 
+                        guest={guest} 
+                        size="sm" 
+                        showLink={false}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.location.href = `/guests/${guest.id}`;
+                        }}
+                      />
+                    ))}
+                    
+                    {episodeGuests.length > 3 && (
+                      <Badge variant="outline">
+                        +{episodeGuests.length - 3} more
+                      </Badge>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">No guests</span>
                 )}
-                
-                <div className="ml-4 text-sm">
-                  {episodeGuests.length > 0 ? (
-                    <span>
-                      {episodeGuests.length === 1 
-                        ? episodeGuests[0].name 
-                        : `${episodeGuests.length} guests`}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">No guests</span>
-                  )}
-                </div>
               </div>
               
               {/* Podcast links */}

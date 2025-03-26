@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import { Guest } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { GuestChip } from '@/components/guests/GuestChip';
 
 interface EpisodeGuestsProps {
   guests?: Guest[];
@@ -25,19 +25,11 @@ export function EpisodeGuests({ guests: propGuests, guestIds }: EpisodeGuestsPro
       <div className="flex flex-wrap gap-2">
         {guests.length > 0 ? (
           guests.map(guest => (
-            <Link 
+            <GuestChip 
               key={guest.id} 
-              to={`/guests/${guest.id}`}
-              className="flex items-center p-2 bg-muted rounded-lg hover:bg-accent transition-colors"
-            >
-              <Avatar className="h-6 w-6 mr-2">
-                <AvatarImage src={guest.imageUrl} alt={guest.name} />
-                <AvatarFallback className="text-xs">
-                  {guest.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{guest.name}</span>
-            </Link>
+              guest={guest} 
+              size="sm"
+            />
           ))
         ) : (
           <span className="text-sm text-muted-foreground">No guests assigned</span>
