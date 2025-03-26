@@ -6,7 +6,7 @@ import { ContentVersion } from "@/lib/types";
 import { VersionSelector } from "../VersionSelector";
 import { BioGeneration } from "./BioGeneration";
 import { BioEditor } from "./BioEditor";
-import { useVersionManager } from "./hooks";
+import { useVersionManager } from "@/hooks/versions";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;

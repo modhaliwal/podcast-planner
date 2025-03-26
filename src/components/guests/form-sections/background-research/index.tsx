@@ -6,7 +6,7 @@ import { useMarkdownParser } from "@/hooks/useMarkdownParser";
 import { BackgroundResearchEditor } from "./BackgroundResearchEditor";
 import { VersionSelector } from "../VersionSelector";
 import { AIResearchGenerator } from "./AIResearchGenerator";
-import { VersionManager } from "./VersionManager";
+import { useVersionManager } from "@/hooks/versions";
 
 interface BackgroundResearchSectionProps {
   backgroundResearch: string;
@@ -32,7 +32,7 @@ export function BackgroundResearchSection({
     handleEditorBlur,
     addNewVersion,
     versionSelectorProps
-  } = VersionManager({
+  } = useVersionManager({
     content: backgroundResearch,
     versions: backgroundResearchVersions,
     onVersionsChange,

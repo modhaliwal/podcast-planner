@@ -19,7 +19,6 @@ interface GuestFormVersionsStateProps {
 }
 
 export function GuestFormVersionsState({ guest, children }: GuestFormVersionsStateProps) {
-  const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
   const [notes, setNotes] = useState(guest.notes || "");
   const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
   const [bioVersions, setBioVersions] = useState<ContentVersion[]>(
