@@ -10,7 +10,7 @@ import { Guest } from '@/lib/types';
 
 interface ContentSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
-  guests?: Guest[];
+  guests: Guest[];
 }
 
 export function ContentSection({ form, guests = [] }: ContentSectionProps) {

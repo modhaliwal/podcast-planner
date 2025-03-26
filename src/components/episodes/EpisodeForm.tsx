@@ -10,7 +10,6 @@ import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSectio
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
 import { useEpisodeForm } from '@/hooks/useEpisodeForm';
-import { EpisodeFormValues } from './EpisodeFormSchema';
 import { useMemo } from 'react';
 
 interface EpisodeFormProps {

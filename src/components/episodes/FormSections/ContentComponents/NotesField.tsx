@@ -1,80 +1,81 @@
 
-import { useVersionManager } from "@/hooks/versions";
-import { ContentVersion, Guest } from "@/lib/types";
-import { Editor } from "@/components/editor/Editor";
-import { UseFormReturn } from "react-hook-form";
-import { useEffect, useState } from "react";
-import { EpisodeFormValues } from "@/components/episodes/EpisodeFormSchema";
-import { FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { UseFormReturn } from 'react-hook-form';
+import { EpisodeFormValues } from '../../EpisodeFormSchema';
+import { Editor } from '@/components/editor/Editor';
+import { FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Guest } from '@/lib/types';
+import { useVersionManager } from '@/hooks/versions';
+import { NotesGeneration } from './NotesGeneration';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
-  guests?: Guest[];
-  showLabel?: boolean;
+  guests: Guest[];
 }
 
-export function NotesField({ form, guests = [], showLabel = true }: NotesFieldProps) {
-  const { getValues, setValue, watch } = form;
-  const [initialContent] = useState(getValues("notes") || "");
-  const watchedNotes = watch("notes") || "";
-  const watchedVersions = watch("notesVersions") || [];
+export function NotesField({ form, guests }: NotesFieldProps) {
+  const [content, setContent] = useState(form.watch('notes') || '');
   
-  // Ensure we have valid versions
-  const typedVersions = Array.isArray(watchedVersions) 
-    ? watchedVersions.map(v => ({
-        id: v.id || crypto.randomUUID(),
-        content: v.content || "",
-        timestamp: v.timestamp || new Date().toISOString(),
-        source: v.source || "manual",
-        versionNumber: v.versionNumber || 1,
-        active: v.active || false
-      }) as ContentVersion)
-    : [];
-  
+  // Initialize versions manager
   const { 
     versions, 
-    addVersion, 
-    setContent
+    handleContentChange,
+    handleEditorBlur,
+    isLatestVersionActive,
+    activeVersion
   } = useVersionManager({
-    content: watchedNotes,
-    versions: typedVersions,
-    onVersionsChange: (newVersions) => {
-      setValue("notesVersions", newVersions as any, { shouldDirty: true });
+    initialContent: content,
+    initialVersions: form.watch('notesVersions') || [],
+    onContentChange: (newContent) => {
+      setContent(newContent);
+      form.setValue('notes', newContent);
     },
-    onContentChange: (content) => {
-      setValue("notes", content, { shouldDirty: true });
-    },
+    onVersionsChange: (updatedVersions) => {
+      form.setValue('notesVersions', updatedVersions);
+    }
   });
   
-  // Keep versioning state in sync with form
-  useEffect(() => {
-    if (versions.length > 0 && JSON.stringify(versions) !== JSON.stringify(watchedVersions)) {
-      setValue("notesVersions", versions as any, { shouldDirty: true });
-    }
-  }, [versions, setValue, watchedVersions]);
-  
-  // Handle content save
-  const handleSave = (content: string) => {
-    setContent(content);
-    const updatedVersions = addVersion(content);
-    setValue("notesVersions", updatedVersions as any, { shouldDirty: true });
+  // Update form values when content changes
+  const handleChange = (value: string) => {
+    setContent(value);
+    handleContentChange(value);
   };
   
+  // Handle saving content (which also creates a new version)
+  const handleSave = (content: string) => {
+    form.setValue('notes', content);
+    form.setValue('notesVersions', versions);
+  };
+
   return (
     <FormField
       control={form.control}
       name="notes"
       render={({ field }) => (
-        <FormItem className="w-full">
-          {showLabel && <FormLabel>Episode Notes</FormLabel>}
-          <Editor
-            value={field.value || ""}
-            onChange={(value) => {
-              field.onChange(value);
-            }}
-            onSave={handleSave}
-            placeholder="Use this editor to write or generate your episode notes..."
-          />
+        <FormItem>
+          <FormLabel className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            Episode Notes
+          </FormLabel>
+          <FormControl>
+            <div className="rounded-md border">
+              <Editor
+                value={content}
+                onChange={handleChange}
+                placeholder="Enter episode notes..."
+              />
+            </div>
+          </FormControl>
+          <FormMessage />
+          
+          <div className="mt-4">
+            <NotesGeneration 
+              guests={guests}
+              onNotesGenerated={handleChange}
+              form={form}
+            />
+          </div>
         </FormItem>
       )}
     />
