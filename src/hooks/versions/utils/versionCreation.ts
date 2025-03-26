@@ -1,13 +1,13 @@
 
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
-import { UseFormReturn, Path, PathValue } from "react-hook-form";
 import { findHighestVersionNumber } from "./versionNumberUtils";
+import { UseFormReturn } from "react-hook-form";
 
 /**
- * Create a new version based on content
+ * Creates a new version based on the current content if it has changed
  */
-export const createVersionFromContent = <T extends Record<string, any>>(
+export function createVersionFromContent<T extends Record<string, any>>(
   form: UseFormReturn<T>,
   fieldName: keyof T,
   versionsFieldName: keyof T,
@@ -15,127 +15,118 @@ export const createVersionFromContent = <T extends Record<string, any>>(
   versions: ContentVersion[],
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
-): void => {
-  const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
+) {
+  // Get current content from form
+  const currentContent = form.getValues(fieldName as string) as string;
   
-  if (typeof currentContent === "string" && currentContent.trim() && activeVersionId) {
-    const activeVersion = versions.find(v => v.id === activeVersionId);
+  if (!currentContent?.trim()) return;
+  
+  // Find active version
+  const activeVersion = versions.find(v => v.id === activeVersionId);
+  
+  // Only create a new version if content has changed from active version
+  if (activeVersion && currentContent !== activeVersion.content) {
+    const nextVersionNumber = findHighestVersionNumber(versions) + 1;
     
-    // Only create a new version if content has changed from the active version
-    if (activeVersion && currentContent !== activeVersion.content) {
-      // Calculate next version number
-      const nextVersionNumber = findHighestVersionNumber(versions) + 1;
-      
-      const newVersion: ContentVersion = {
-        id: uuidv4(),
-        content: currentContent,
-        timestamp: new Date().toISOString(),
-        source: "manual",
-        active: true, // Mark the new version as active
-        versionNumber: nextVersionNumber
-      };
-      
-      // Remove active flag from other versions
-      const updatedVersions = versions.map(v => ({
-        ...v,
-        active: false // Remove active flag from all existing versions
-      }));
-      
-      // Add the new version to the collection
-      const newVersions = [...updatedVersions, newVersion];
-      
-      // Update state and form values
-      setVersions(newVersions);
-      setActiveVersionId(newVersion.id);
-      form.setValue(
-        versionsFieldName as unknown as Path<T>, 
-        newVersions as unknown as PathValue<T, Path<T>>,
-        { shouldDirty: true }
-      );
-    }
+    const newVersion: ContentVersion = {
+      id: uuidv4(),
+      content: currentContent,
+      timestamp: new Date().toISOString(),
+      source: "manual",
+      active: true,
+      versionNumber: nextVersionNumber
+    };
+    
+    // Mark all versions as inactive
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Add new version
+    const newVersions = [...updatedVersions, newVersion];
+    
+    // Update state
+    setVersions(newVersions);
+    setActiveVersionId(newVersion.id);
+    
+    // Update form values
+    form.setValue(versionsFieldName as string, newVersions as any, { shouldDirty: true });
   }
-};
+}
 
 /**
- * Creates a new version with the specified content
+ * Adds a new version with specified content
  */
-export const addNewVersionUtil = <T extends Record<string, any>>(
+export function addNewVersionUtil<T extends Record<string, any>>(
   form: UseFormReturn<T>,
   fieldName: keyof T,
   versionsFieldName: keyof T,
   content: string,
-  source: "manual" | "ai" | "import",
+  source: "manual" | "ai" | "import" = "manual",
   versions: ContentVersion[],
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
-): ContentVersion => {
-  // Calculate next version number
+): ContentVersion {
   const nextVersionNumber = findHighestVersionNumber(versions) + 1;
   
-  // Create a new version
+  // Create new version
   const newVersion: ContentVersion = {
     id: uuidv4(),
     content,
     timestamp: new Date().toISOString(),
     source,
-    active: true, // Mark as active
+    active: true,
     versionNumber: nextVersionNumber
   };
   
-  // Remove active flag from other versions
+  // Set all versions to inactive
   const updatedVersions = versions.map(v => ({
     ...v,
     active: false
   }));
   
-  // Add the new version
+  // Add new version to list
   const newVersions = [...updatedVersions, newVersion];
   
-  // Update state and form values
+  // Update state
   setVersions(newVersions);
   setActiveVersionId(newVersion.id);
-  form.setValue(
-    fieldName as unknown as Path<T>, 
-    content as unknown as PathValue<T, Path<T>>,
-    { shouldDirty: true }
-  );
-  form.setValue(
-    versionsFieldName as unknown as Path<T>, 
-    newVersions as unknown as PathValue<T, Path<T>>,
-    { shouldDirty: true }
-  );
+  
+  // Update form values
+  form.setValue(fieldName as string, content as any, { shouldDirty: true });
+  form.setValue(versionsFieldName as string, newVersions as any, { shouldDirty: true });
   
   return newVersion;
-};
+}
 
 /**
- * Removes all versions except for a new one based on the current content
+ * Clears all versions except a new one based on current content
  */
-export const clearAllVersionsUtil = <T extends Record<string, any>>(
+export function clearAllVersionsUtil<T extends Record<string, any>>(
   form: UseFormReturn<T>,
   fieldName: keyof T,
   versionsFieldName: keyof T,
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
-): void => {
-  const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
+) {
+  // Get current content
+  const currentContent = form.getValues(fieldName as string) as string;
   
-  // Create a single new version with the current content
+  // Create new version
   const newVersion: ContentVersion = {
     id: uuidv4(),
-    content: typeof currentContent === "string" ? currentContent : "",
+    content: currentContent,
     timestamp: new Date().toISOString(),
     source: "manual",
-    active: true, // Mark as active
-    versionNumber: 1 // Reset to version 1
+    active: true,
+    versionNumber: 1
   };
   
-  // Update state and form values
+  // Update state
   setVersions([newVersion]);
   setActiveVersionId(newVersion.id);
-  form.setValue(
-    versionsFieldName as unknown as Path<T>,
-    [newVersion] as unknown as PathValue<T, Path<T>>,
-    { shouldDirty: true }
-  );
-};
+  
+  // Update form
+  form.setValue(versionsFieldName as string, [newVersion] as any, { shouldDirty: true });
+}

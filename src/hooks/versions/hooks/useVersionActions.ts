@@ -35,7 +35,10 @@ export function useVersionActions(
 
   // Handle editor blur - create a new version if content has changed
   const handleEditorBlur = useCallback(() => {
-    if (!content.trim() || content === previousContent) return;
+    if (!content.trim()) return;
+    
+    // Only create a new version if content has changed from previous content
+    if (content === previousContent) return;
     
     const activeVersion = versions.find(v => v.id === activeVersionId);
     
@@ -72,6 +75,9 @@ export function useVersionActions(
 
   // Add a new version with specified content
   const addNewVersion = useCallback((newContent: string, newSource: "manual" | "ai" | "import" = "manual") => {
+    // Skip if the content is identical to the previous content
+    if (newContent === previousContent) return;
+    
     const nextVersionNumber = findHighestVersionNumber(versions) + 1;
     
     const newVersion: ContentVersion = {
@@ -96,7 +102,7 @@ export function useVersionActions(
     setPreviousContent(newContent);
     
     return newVersion;
-  }, [versions, onVersionsChange, onContentChange, setActiveVersionId, setPreviousContent]);
+  }, [versions, onVersionsChange, onContentChange, setActiveVersionId, setPreviousContent, previousContent]);
 
   // Add an AI-generated version
   const addAIVersion = useCallback((newContent: string) => {

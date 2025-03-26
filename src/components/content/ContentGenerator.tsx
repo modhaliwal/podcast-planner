@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UseFormReturn } from "react-hook-form";
 import { Guest } from "@/lib/types";
@@ -50,7 +50,10 @@ export function ContentGenerator({
   const generateContent = async () => {
     try {
       setIsGenerating(true);
-      toast.info(`Generating ${fieldName}...`);
+      toast({
+        title: "Generating",
+        description: `Generating ${fieldName}...`
+      });
       
       // Get form data for context
       const formValues = form.getValues();
@@ -96,13 +99,20 @@ export function ContentGenerator({
           onContentGenerated(generatedContent);
         }
         
-        toast.success(`${fieldName} generated successfully!`);
+        toast({
+          title: "Success",
+          description: `${fieldName} generated successfully!`
+        });
       } else {
         throw new Error(`No ${fieldName} generated`);
       }
     } catch (error: any) {
       console.error(`Error generating ${fieldName}:`, error);
-      toast.error(`Failed to generate ${fieldName}: ${error.message}`);
+      toast({
+        title: "Error", 
+        description: `Failed to generate ${fieldName}: ${error.message}`,
+        variant: "destructive"
+      });
     } finally {
       setIsGenerating(false);
     }
