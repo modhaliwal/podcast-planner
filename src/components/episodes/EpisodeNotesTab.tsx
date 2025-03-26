@@ -4,8 +4,8 @@ import { BookText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Episode, ContentVersion } from '@/lib/types';
-import { VersionManager } from '@/components/guests/form-sections/background-research/VersionManager';
 import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
+import { useContentVersions } from '@/hooks/useContentVersions';
 
 interface EpisodeNotesTabProps {
   episode: Episode;
@@ -15,15 +15,24 @@ export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
   const [notes, setNotes] = useState<string>(episode.notes || '');
   const [notesVersions, setNotesVersions] = useState<ContentVersion[]>(episode.notesVersions || []);
   
-  // Use the version manager to handle version control
-  const {
+  // Create a mock form for the content versions hook
+  const mockForm = {
+    getValues: (field: string) => field === 'notes' ? notes : notesVersions,
+    setValue: (field: string, value: any) => {
+      if (field === 'notes') setNotes(value);
+      else if (field === 'notesVersions') setNotesVersions(value);
+    }
+  };
+  
+  // Use our generic hook with the mock form
+  const { 
     activeVersionId,
-    versionSelectorProps
-  } = VersionManager({
-    content: notes,
-    versions: notesVersions,
-    onVersionsChange: setNotesVersions,
-    onContentChange: setNotes
+    selectVersion, 
+    versionSelectorProps 
+  } = useContentVersions({
+    form: mockForm as any,
+    fieldName: 'notes' as any,
+    versionsFieldName: 'notesVersions' as any
   });
   
   // Update notes if episode changes

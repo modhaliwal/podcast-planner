@@ -20,13 +20,13 @@ export function NotesEditor({
   readOnly = false
 }: NotesEditorProps) {
   const handleContentChange = (value: string) => {
-    form.setValue(fieldName, value);
+    form.setValue(fieldName as keyof EpisodeFormValues, value as any);
   };
 
   return (
     <FormControl>
       <Editor
-        value={form.getValues(fieldName) || ""}
+        value={form.getValues(fieldName as keyof EpisodeFormValues) || ""}
         onChange={handleContentChange}
         onBlur={onBlur}
         placeholder={placeholder}
