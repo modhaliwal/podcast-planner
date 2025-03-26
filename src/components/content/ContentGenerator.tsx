@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UseFormReturn } from "react-hook-form";
 import { Guest } from "@/lib/types";
@@ -49,8 +49,34 @@ export function ContentGenerator({
     generationType
   } = config;
 
+  // Determine if we should disable the button based on required fields
+  const shouldDisable = () => {
+    // For episode notes generation, require a topic
+    if (edgeFunctionName === 'generate-episode-notes') {
+      const topic = additionalContext.topic || form.watch('topic');
+      if (!topic) return true;
+    }
+    
+    // Add other conditions as needed for different generation types
+    
+    return isGenerating;
+  };
+
   const generateContent = async () => {
     try {
+      // For episode notes, check if we have a topic
+      if (edgeFunctionName === 'generate-episode-notes') {
+        const topic = additionalContext.topic || form.watch('topic');
+        if (!topic) {
+          toast({
+            title: "Warning",
+            description: "Please add a topic before generating notes",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+      
       setIsGenerating(true);
       toast({
         title: "Generating",
@@ -71,7 +97,7 @@ export function ContentGenerator({
       
       // Prepare social links properly (ensuring it's an object, not undefined)
       const socialLinks = formValues.socialLinks || 
-                         additionalContext?.guest?.socialLinks || 
+                          additionalContext?.guest?.socialLinks || 
                          {
                            twitter: formValues.twitter || '',
                            facebook: formValues.facebook || '',
@@ -121,6 +147,8 @@ export function ContentGenerator({
         generatedContent = data.bio;
       } else if (data?.research) {
         generatedContent = data.research;
+      } else if (data?.notes) {
+        generatedContent = data.notes;
       } else if (typeof data === 'string') {
         generatedContent = data;
       }
@@ -161,9 +189,10 @@ export function ContentGenerator({
       size="sm"
       variant="outline"
       onClick={generateContent}
-      disabled={isGenerating}
+      disabled={shouldDisable()}
+      className="flex items-center gap-1"
     >
-      <Sparkles className="h-4 w-4 mr-1" />
+      <Sparkles className="h-4 w-4" />
       {isGenerating ? loadingLabel : buttonLabel}
     </Button>
   );

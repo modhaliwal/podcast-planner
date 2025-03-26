@@ -11,6 +11,9 @@ import { NotesGeneration } from './NotesGeneration';
 import { toast } from '@/hooks/toast';
 import { ensureVersionNumbers } from '@/hooks/versions';
 import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/ui/button';
+import { NotesEditor, VersionHistory } from '../../notes';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -40,7 +43,10 @@ export function NotesField({ form, guests }: NotesFieldProps) {
     handleContentChange,
     handleEditorBlur,
     isLatestVersionActive,
-    activeVersion
+    activeVersion,
+    addVersion,
+    selectVersion,
+    revertToVersion
   } = useVersionManager({
     content: content,
     versions: formattedVersions,
@@ -58,16 +64,6 @@ export function NotesField({ form, guests }: NotesFieldProps) {
     setContent(value);
     handleContentChange();
   };
-  
-  // Handle saving content (which also creates a new version)
-  const handleSave = () => {
-    form.setValue('notes', content);
-    form.setValue('notesVersions', versions);
-    toast({
-      title: "Success",
-      description: "Notes saved successfully",
-    });
-  };
 
   return (
     <FormField
@@ -77,32 +73,63 @@ export function NotesField({ form, guests }: NotesFieldProps) {
         <FormItem>
           <FormLabel className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-muted-foreground" />
-            Episode Notes
+            Notes
           </FormLabel>
           <FormControl>
-            <div className="rounded-md border">
-              <Editor
-                value={content}
-                onChange={handleChange}
-                placeholder="Enter episode notes..."
-              />
-            </div>
+            <Tabs defaultValue="editor" className="w-full">
+              <div className="flex justify-between items-center mb-4">
+                <TabsList>
+                  <TabsTrigger value="editor">Editor</TabsTrigger>
+                  <TabsTrigger value="versions">
+                    Version History
+                    {versions.length > 0 && (
+                      <span className="ml-1 rounded-full bg-primary/10 px-2 text-xs">
+                        {versions.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+                
+                <div className="flex items-center space-x-2">
+                  <NotesGeneration 
+                    guests={guests}
+                    onNotesGenerated={(generatedNotes) => {
+                      handleChange(generatedNotes);
+                      toast({
+                        title: "Success",
+                        description: "AI-generated notes added",
+                      });
+                    }}
+                    form={form}
+                  />
+                </div>
+              </div>
+              
+              <TabsContent value="editor" className="mt-0">
+                <NotesEditor 
+                  content={content}
+                  setContent={setContent}
+                  activeVersion={activeVersion}
+                  isLatestVersionActive={isLatestVersionActive}
+                  onSaveContent={(newContent) => {
+                    setContent(newContent);
+                    form.setValue('notes', newContent);
+                    return addVersion(newContent);
+                  }}
+                />
+              </TabsContent>
+              
+              <TabsContent value="versions" className="mt-0">
+                <VersionHistory 
+                  versions={versions}
+                  activeVersion={activeVersion}
+                  onSelectVersion={selectVersion}
+                  onRevertVersion={revertToVersion}
+                />
+              </TabsContent>
+            </Tabs>
           </FormControl>
           <FormMessage />
-          
-          <div className="mt-4">
-            <NotesGeneration 
-              guests={guests}
-              onNotesGenerated={(generatedNotes) => {
-                handleChange(generatedNotes);
-                toast({
-                  title: "Success",
-                  description: "AI-generated notes added",
-                });
-              }}
-              form={form}
-            />
-          </div>
         </FormItem>
       )}
     />
