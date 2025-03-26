@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
@@ -27,6 +26,8 @@ export function TopicField({ form }: TopicFieldProps) {
               {...field} 
               value={field.value || ''}
               onChange={(e) => {
+                // If the value is an empty string after trimming, set it to null
+                // Otherwise, keep the actual string value
                 const value = e.target.value.trim() === '' ? null : e.target.value;
                 console.log("Topic field changed:", e.target.value, "Processed value:", value);
                 field.onChange(value);

@@ -54,8 +54,10 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
       console.log("Form values being submitted:", data);
       const processedCoverArt = await handleCoverArtUpload(data.coverArt);
       
-      // Ensure topic is properly handled (null if empty)
-      const topicValue = data.topic === '' ? null : data.topic;
+      // Ensure topic is properly handled - fix for topic not saving
+      // Using optional chaining and nullish coalescing to handle cases where topic is undefined or empty string
+      const topicValue = data.topic === '' || data.topic === undefined ? null : data.topic;
+      console.log("Processed topic value:", topicValue);
       
       // Log the data being sent to Supabase for debugging
       console.log("Updating episode with data:", {
@@ -78,7 +80,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
         .update({
           title: data.title,
           episode_number: data.episodeNumber,
-          topic: topicValue,
+          topic: topicValue, // Using the processed topic value
           introduction: data.introduction,
           notes: data.notes,
           status: data.status,
