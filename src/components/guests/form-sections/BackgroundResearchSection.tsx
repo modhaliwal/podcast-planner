@@ -4,7 +4,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Lightbulb } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Guest } from "@/lib/types";
