@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Episode } from "@/lib/types";
@@ -24,6 +25,36 @@ export function useEpisodeData(episodeId: string | undefined, episodes: Episode[
     try {
       const processedCoverArt = await handleCoverArtUpload(updatedEpisode.coverArt);
       
+      // Convert our typed objects to JSON-compatible objects for Supabase
+      const recordingLinksJson = updatedEpisode.recordingLinks ? {
+        audio: updatedEpisode.recordingLinks.audio,
+        video: updatedEpisode.recordingLinks.video,
+        transcript: updatedEpisode.recordingLinks.transcript,
+        other: updatedEpisode.recordingLinks.other,
+      } : null;
+      
+      const podcastUrlsJson = updatedEpisode.podcastUrls ? {
+        spotify: updatedEpisode.podcastUrls.spotify,
+        applePodcasts: updatedEpisode.podcastUrls.applePodcasts,
+        amazonPodcasts: updatedEpisode.podcastUrls.amazonPodcasts,
+        youtube: updatedEpisode.podcastUrls.youtube,
+      } : null;
+      
+      const resourcesJson = updatedEpisode.resources ? 
+        updatedEpisode.resources.map(resource => ({
+          label: resource.label,
+          url: resource.url,
+          description: resource.description,
+        })) : null;
+      
+      const notesVersionsJson = updatedEpisode.notesVersions ? 
+        updatedEpisode.notesVersions.map(version => ({
+          id: version.id,
+          content: version.content,
+          timestamp: version.timestamp,
+          source: version.source,
+        })) : null;
+      
       const { error: updateError } = await supabase
         .from('episodes')
         .update({
@@ -32,14 +63,14 @@ export function useEpisodeData(episodeId: string | undefined, episodes: Episode[
           topic: updatedEpisode.topic,
           introduction: updatedEpisode.introduction,
           notes: updatedEpisode.notes,
-          notes_versions: updatedEpisode.notesVersions,
+          notes_versions: notesVersionsJson,
           status: updatedEpisode.status,
           scheduled: updatedEpisode.scheduled,
           publish_date: updatedEpisode.publishDate,
           cover_art: processedCoverArt,
-          recording_links: updatedEpisode.recordingLinks,
-          podcast_urls: updatedEpisode.podcastUrls,
-          resources: updatedEpisode.resources,
+          recording_links: recordingLinksJson,
+          podcast_urls: podcastUrlsJson,
+          resources: resourcesJson,
           updated_at: new Date().toISOString()
         })
         .eq('id', episodeId)

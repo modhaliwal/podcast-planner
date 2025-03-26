@@ -2,10 +2,11 @@
 import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Episode } from '@/lib/types';
+import { Episode, ContentVersion } from '@/lib/types';
 import { toast } from 'sonner';
 import { episodeFormSchema, EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 import { useCoverArtHandler } from './useCoverArtHandler';
+import { v4 as uuidv4 } from 'uuid';
 
 export function useEpisodeForm(
   episode: Episode, 
@@ -27,8 +28,18 @@ export function useEpisodeForm(
     publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
     guestIds: episode.guestIds,
     coverArt: episode.coverArt,
-    recordingLinks: episode.recordingLinks || {},
-    podcastUrls: episode.podcastUrls || {},
+    recordingLinks: episode.recordingLinks || {
+      audio: undefined,
+      video: undefined,
+      transcript: undefined,
+      other: []
+    },
+    podcastUrls: episode.podcastUrls || {
+      spotify: undefined,
+      applePodcasts: undefined,
+      amazonPodcasts: undefined,
+      youtube: undefined
+    },
     resources: episode.resources || []
   }), [episode]);
   
@@ -46,22 +57,46 @@ export function useEpisodeForm(
     setIsSubmitting(true);
     
     try {
+      // Ensure all required fields are present
+      const notesVersions: ContentVersion[] = (data.notesVersions || []).map(version => ({
+        id: version.id || uuidv4(),
+        content: version.content || '',
+        timestamp: version.timestamp || new Date().toISOString(),
+        source: version.source || 'manual'
+      }));
+      
+      // Ensure required fields for recording links
+      const recordingLinks = data.recordingLinks || {};
+      if (recordingLinks.other) {
+        recordingLinks.other = recordingLinks.other.map(item => ({
+          label: item.label || '',
+          url: item.url || ''
+        }));
+      }
+      
+      // Ensure required fields for resources
+      const resources = (data.resources || []).map(resource => ({
+        label: resource.label || '',
+        url: resource.url || '',
+        description: resource.description
+      }));
+      
       // Create updated episode object
       const updatedEpisode: Episode = {
         ...episode,
         title: data.title,
         episodeNumber: data.episodeNumber,
         topic: data.topic,
-        introduction: data.introduction,
-        notes: data.notes,
-        notesVersions: data.notesVersions,
+        introduction: data.introduction || '',
+        notes: data.notes || '',
+        notesVersions,
         status: data.status,
         scheduled: data.scheduled.toISOString(),
         publishDate: data.publishDate ? data.publishDate.toISOString() : null,
         coverArt: data.coverArt,
-        recordingLinks: data.recordingLinks,
+        recordingLinks,
         podcastUrls: data.podcastUrls,
-        resources: data.resources,
+        resources,
         guestIds: data.guestIds,
         updatedAt: new Date().toISOString()
       };
