@@ -6,20 +6,28 @@ import { Episode, ContentVersion } from '@/lib/types';
 import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
 import { VersionManager } from '@/components/guests/form-sections/VersionManager';
 import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect } from 'react';
 
 interface EpisodeNotesContentProps {
   episode: Episode;
 }
 
 function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
-  const notes = episode.notes || '';
+  const [notes, setNotes] = useState(episode.notes || '');
+  const [versions, setVersions] = useState<ContentVersion[]>([]);
+  
+  // Initialize versions when the episode changes
+  useEffect(() => {
+    setNotes(episode.notes || '');
+    setVersions(getCurrentVersions());
+  }, [episode]);
   
   // Ensure we have valid versions array
   const getCurrentVersions = (): ContentVersion[] => {
-    const versions = episode.notesVersions || [];
+    const episodeVersions = episode.notesVersions || [];
     
     // Ensure each version has required properties
-    return versions.map(version => ({
+    return episodeVersions.map(version => ({
       id: version.id || uuidv4(),
       content: version.content || "",
       timestamp: version.timestamp || new Date().toISOString(),
@@ -34,9 +42,9 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
       <CardHeader className="bg-slate-50 dark:bg-slate-800 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
         <VersionManager
           content={notes}
-          versions={getCurrentVersions()}
-          onVersionsChange={() => {/* read-only view */}}
-          onContentChange={() => {/* read-only view */}}
+          versions={versions}
+          onVersionsChange={(newVersions) => setVersions(newVersions)}
+          onContentChange={(newContent) => setNotes(newContent)}
         >
           {({ versionSelectorProps }) => (
             <div className="flex items-center justify-between">

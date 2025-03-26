@@ -70,6 +70,10 @@ export function NotesGeneration({
       
       if (data && data.notes) {
         console.log("Notes generated successfully:", data.notes.substring(0, 100) + "...");
+        
+        // Set the notes value in the form directly to trigger UI update
+        form.setValue("notes", data.notes, { shouldDirty: true });
+        
         // Call the callback with generated notes
         onNotesGenerated(data.notes);
         

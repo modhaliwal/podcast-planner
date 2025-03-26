@@ -6,7 +6,7 @@ import { VersionSelector } from "@/components/guests/form-sections/VersionSelect
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { NotesGeneration } from "./NotesGeneration";
 import { NotesEditor } from "./NotesEditor";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { VersionManager } from "@/components/guests/form-sections/VersionManager";
 import { v4 as uuidv4 } from "uuid";
 
@@ -24,12 +24,31 @@ const NotesFieldContent = memo(function NotesFieldContent({
   guests?: Guest[];
   form: UseFormReturn<EpisodeFormValues>;
 }) {
+  // Add state to track form values changes
+  const [content, setContent] = useState(form.getValues("notes") || "");
+  const [versions, setVersions] = useState<ContentVersion[]>(getCurrentVersions());
+  
+  // Listen for form value changes
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      if (value.notes !== undefined && value.notes !== content) {
+        setContent(value.notes as string);
+      }
+      
+      if (value.notesVersions !== undefined) {
+        setVersions(getCurrentVersions());
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, content]);
+  
   // Ensure we have valid versions array that meets ContentVersion type requirements
-  const getCurrentVersions = (): ContentVersion[] => {
-    const versions = form.getValues("notesVersions") || [];
+  function getCurrentVersions(): ContentVersion[] {
+    const formVersions = form.getValues("notesVersions") || [];
     
     // Ensure each version has required properties
-    return versions.map(version => ({
+    return formVersions.map(version => ({
       id: version.id || uuidv4(),
       content: version.content || "",
       timestamp: version.timestamp || new Date().toISOString(),
@@ -37,7 +56,7 @@ const NotesFieldContent = memo(function NotesFieldContent({
       active: version.active || false,
       versionNumber: version.versionNumber || 1
     }));
-  };
+  }
 
   return (
     <FormItem>
@@ -46,13 +65,15 @@ const NotesFieldContent = memo(function NotesFieldContent({
       </div>
       
       <VersionManager
-        content={form.getValues("notes") || ""}
-        versions={getCurrentVersions()}
-        onVersionsChange={(versions) => {
-          form.setValue("notesVersions", versions, { shouldDirty: true });
+        content={content}
+        versions={versions}
+        onVersionsChange={(newVersions) => {
+          setVersions(newVersions);
+          form.setValue("notesVersions", newVersions, { shouldDirty: true });
         }}
-        onContentChange={(content) => {
-          form.setValue("notes", content, { shouldDirty: true });
+        onContentChange={(newContent) => {
+          setContent(newContent);
+          form.setValue("notes", newContent, { shouldDirty: true });
         }}
       >
         {({
