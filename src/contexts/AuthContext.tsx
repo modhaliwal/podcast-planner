@@ -127,10 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      setUser(null);
-      setSession(null);
-      setAppUser(null);
-      
+      // First complete the Supabase sign-out process
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -140,9 +137,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           description: `Sign out error: ${error.message}`,
           variant: "destructive"
         });
-      } else {
-        window.location.href = "/";
+        return;
       }
+      
+      // Only after successful sign-out, clear the state
+      setUser(null);
+      setSession(null);
+      setAppUser(null);
+      
+      // Then navigate
+      window.location.href = "/";
     } catch (error: any) {
       console.error("Unexpected error during sign out:", error);
       toast({
