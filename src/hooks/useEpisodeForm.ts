@@ -1,154 +1,147 @@
 
-import { useState, useCallback } from 'react';
-import { Episode, ContentVersion } from '@/lib/types';
-import { EpisodeStatus } from '@/lib/enums';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { episodeFormSchema, EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
-import { v4 as uuidv4 } from 'uuid';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Episode, EpisodeStatus } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { ensureVersionNumbers } from "@/hooks/versions";
 
-interface UseEpisodeFormProps {
-  episode: Episode | null;
-  onSubmit: (data: Episode) => Promise<void>;
+// Define form values type for strong typing
+export interface EpisodeFormValues {
+  title: string;
+  episodeNumber: number;
+  topic?: string;
+  scheduled: string;
+  publishDate?: string;
+  status: EpisodeStatus;
+  guestIds: string[];
+  introduction: string;
+  notes: string;
+  notesVersions?: {
+    id: string;
+    content: string;
+    timestamp: string;
+    source: 'manual' | 'ai' | 'import';
+    active?: boolean;
+    versionNumber?: number;
+  }[];
+  coverArt?: string;
+  // Recording Links
+  recordingLinks_audio?: string;
+  recordingLinks_video?: string;
+  recordingLinks_transcript?: string;
+  // Podcast URLs
+  podcastUrls_spotify?: string;
+  podcastUrls_applePodcasts?: string;
+  podcastUrls_amazonPodcasts?: string;
+  podcastUrls_youtube?: string;
+  // Resources
+  resources?: { label: string; url: string; description?: string }[];
 }
 
-export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Default values that will be used if episode is null or undefined
-  const defaultValues: EpisodeFormValues = {
-    title: '',
-    episodeNumber: 1,
-    introduction: '',
-    notes: '',
-    notesVersions: [],
-    status: EpisodeStatus.SCHEDULED,
-    scheduled: new Date(),
-    publishDate: null,
-    guestIds: [],
-    topic: null,
-    coverArt: undefined,
-    recordingLinks: {
-      audio: '',
-      video: '',
-      transcript: '',
-      other: []
-    },
-    podcastUrls: {
-      spotify: '',
-      applePodcasts: '',
-      amazonPodcasts: '',
-      youtube: ''
-    },
-    resources: []
-  };
+export interface UseEpisodeFormProps {
+  episode: Episode;
+  onSubmit: (episode: Episode) => Promise<void>;
+}
 
-  // Initialize form with values from the episode, or default values if episode is null/undefined
+export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  
+  // Initialize form with episode data
   const form = useForm<EpisodeFormValues>({
-    resolver: zodResolver(episodeFormSchema),
-    defaultValues: episode ? {
+    defaultValues: {
       title: episode.title,
       episodeNumber: episode.episodeNumber,
-      topic: episode.topic || null,
-      introduction: episode.introduction,
-      notes: episode.notes,
-      notesVersions: Array.isArray(episode.notesVersions) ? 
-        episode.notesVersions.map(v => ({
-          id: v.id,
-          content: v.content,
-          timestamp: v.timestamp,
-          source: v.source,
-          active: v.active,
-          versionNumber: v.versionNumber || 0
-        })) : 
-        [],
+      topic: episode.topic || "",
+      scheduled: episode.scheduled,
+      publishDate: episode.publishDate || "",
       status: episode.status,
-      scheduled: new Date(episode.scheduled),
-      publishDate: episode.publishDate ? new Date(episode.publishDate) : null,
-      guestIds: episode.guestIds,
+      guestIds: episode.guestIds || [],
+      introduction: episode.introduction || "",
+      notes: episode.notes || "",
+      notesVersions: episode.notesVersions || [],
       coverArt: episode.coverArt,
-      recordingLinks: episode.recordingLinks || {
-        audio: '',
-        video: '',
-        transcript: '',
-        other: []
-      },
-      podcastUrls: episode.podcastUrls || {
-        spotify: '',
-        applePodcasts: '',
-        amazonPodcasts: '',
-        youtube: ''
-      },
-      resources: Array.isArray(episode.resources) ? 
-        episode.resources.map(r => ({
-          label: r.label,
-          url: r.url,
-          description: r.description || ''
-        })) : 
-        []
-    } : defaultValues,
-    mode: 'onChange'
-  });
-  
-  // Function to handle form submission
-  const onSubmit = async (data: EpisodeFormValues) => {
-    if (!episode) {
-      console.error("Cannot submit form: episode is null or undefined");
-      return;
+      // Recording Links
+      recordingLinks_audio: episode.recordingLinks?.audio || "",
+      recordingLinks_video: episode.recordingLinks?.video || "",
+      recordingLinks_transcript: episode.recordingLinks?.transcript || "",
+      // Podcast URLs
+      podcastUrls_spotify: episode.podcastUrls?.spotify || "",
+      podcastUrls_applePodcasts: episode.podcastUrls?.applePodcasts || "",
+      podcastUrls_amazonPodcasts: episode.podcastUrls?.amazonPodcasts || "",
+      podcastUrls_youtube: episode.podcastUrls?.youtube || "",
+      // Resources
+      resources: episode.resources || []
     }
-    
+  });
+
+  // Handle form submission
+  const handleSubmit = async (data: EpisodeFormValues) => {
     setIsSubmitting(true);
     
     try {
+      // Organize recording links
+      const recordingLinks = {
+        audio: data.recordingLinks_audio || undefined,
+        video: data.recordingLinks_video || undefined,
+        transcript: data.recordingLinks_transcript || undefined
+      };
+      
+      // Organize podcast URLs
+      const podcastUrls = {
+        spotify: data.podcastUrls_spotify || undefined,
+        applePodcasts: data.podcastUrls_applePodcasts || undefined,
+        amazonPodcasts: data.podcastUrls_amazonPodcasts || undefined,
+        youtube: data.podcastUrls_youtube || undefined
+      };
+      
+      // Process any version numbers
+      const notesVersions = data.notesVersions ? 
+        ensureVersionNumbers(data.notesVersions) : 
+        undefined;
+      
+      // Create updated episode object
       const updatedEpisode: Episode = {
         ...episode,
         title: data.title,
-        episodeNumber: data.episodeNumber,
-        topic: data.topic,
+        episodeNumber: Number(data.episodeNumber),
+        topic: data.topic || undefined,
+        scheduled: data.scheduled,
+        publishDate: data.publishDate || undefined,
+        status: data.status,
+        guestIds: data.guestIds,
         introduction: data.introduction,
         notes: data.notes,
-        notesVersions: data.notesVersions.map(v => {
-          // Explicitly create a complete ContentVersion object
-          const version: ContentVersion = {
-            id: v.id || uuidv4(),
-            content: v.content || "",
-            timestamp: v.timestamp || new Date().toISOString(),
-            source: v.source || "manual",
-            active: v.active === undefined ? false : v.active,
-            versionNumber: v.versionNumber || 0
-          };
-          return version;
-        }),
-        status: data.status,
-        scheduled: data.scheduled.toISOString(),
-        publishDate: data.publishDate?.toISOString() || null,
-        guestIds: data.guestIds,
+        notesVersions: notesVersions,
         coverArt: data.coverArt,
-        recordingLinks: {
-          audio: data.recordingLinks.audio,
-          video: data.recordingLinks.video,
-          transcript: data.recordingLinks.transcript,
-          other: Array.isArray(data.recordingLinks.other) ? 
-            data.recordingLinks.other.map(item => ({
-              label: item.label || '',
-              url: item.url || ''
-            })) : []
-        },
-        podcastUrls: data.podcastUrls,
-        resources: Array.isArray(data.resources) ?
-          data.resources.map(r => ({
-            label: r.label || '',
-            url: r.url || '',
-            description: r.description || ''
-          })) : [],
+        recordingLinks: Object.values(recordingLinks).some(Boolean) ? recordingLinks : undefined,
+        podcastUrls: Object.values(podcastUrls).some(Boolean) ? podcastUrls : undefined,
+        resources: data.resources?.length ? data.resources : undefined,
         updatedAt: new Date().toISOString()
       };
       
-      await submitAction(updatedEpisode);
+      // Submit updated episode
+      await onSubmit(updatedEpisode);
+      
+      // Show success message
+      toast.success("Episode saved successfully");
+      
+      // Navigate to episode view
+      if (!episode.id) {
+        navigate('/episodes');
+      }
+    } catch (error: any) {
+      console.error("Failed to save episode:", error);
+      toast.error(`Failed to save episode: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  return { form, isSubmitting, onSubmit };
+
+  return {
+    form,
+    isSubmitting,
+    onSubmit: handleSubmit
+  };
 }

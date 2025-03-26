@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { ContentVersion } from "@/lib/types";
-import { VersionManager } from "../background-research/VersionManager";
+import { VersionSelector } from "../VersionSelector";
 import { BioGeneration } from "./BioGeneration";
 import { BioEditor } from "./BioEditor";
+import { useVersionManager } from "./hooks";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;
@@ -34,7 +35,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     handleEditorBlur,
     addAIVersion,
     versionSelectorProps
-  } = VersionManager({
+  } = useVersionManager({
     content: bio,
     versions: bioVersions,
     onVersionsChange: onVersionsChange,
@@ -44,13 +45,13 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     }
   });
   
-  const handleBioChange = (event: React.FocusEvent<HTMLTextAreaElement>) => {
+  const handleBioChange = () => {
     handleEditorBlur();
   };
   
-  const handleNewVersionCreated = (version: ContentVersion) => {
-    form.setValue('bio', version.content);
-    addAIVersion(version.content);
+  const handleNewVersionCreated = (content: string) => {
+    form.setValue('bio', content);
+    addAIVersion(content);
   };
 
   return (
@@ -65,10 +66,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
           )}
           <BioGeneration 
             bio={bio}
-            setBio={(newBio) => {
-              form.setValue('bio', newBio);
-              setBio(newBio);
-            }}
+            setBio={handleNewVersionCreated}
             versions={bioVersions}
             onVersionsChange={onVersionsChange}
           />
@@ -82,6 +80,3 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     </div>
   );
 }
-
-// Importing the VersionSelector to avoid circular dependency issues
-import { VersionSelector } from "../VersionSelector";
