@@ -6,19 +6,35 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { guests } = useAuth();
+  const { guests, refreshGuests } = useAuth();
   const { isLoading, episode, handleSave } = useEpisodeData(id);
+  const [isGuestsLoading, setIsGuestsLoading] = useState(true);
   
-  // Memoize the guests list to prevent unnecessary re-renders
-  const availableGuests = useMemo(() => guests || [], [guests]);
+  // Ensure guests are loaded
+  useEffect(() => {
+    const loadGuests = async () => {
+      try {
+        setIsGuestsLoading(true);
+        await refreshGuests();
+      } catch (error) {
+        console.error("Error loading guests:", error);
+        toast.error("Failed to load guest data");
+      } finally {
+        setIsGuestsLoading(false);
+      }
+    };
+    
+    loadGuests();
+  }, [refreshGuests]);
   
-  // If loading or episode not found, show appropriate UI
-  if (isLoading) {
+  // If either episode or guests are loading, show loading indicator
+  if (isLoading || isGuestsLoading) {
     return (
       <Shell>
         <div className="page-container">
@@ -62,7 +78,7 @@ const EditEpisode = () => {
         <EpisodeForm
           key={`episode-form-${episode.id}`}
           episode={episode}
-          guests={availableGuests}
+          guests={guests || []}
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
         />

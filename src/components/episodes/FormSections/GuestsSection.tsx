@@ -1,3 +1,4 @@
+
 import { FormField } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
@@ -8,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
 import { Button } from '@/components/ui/button';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 interface GuestsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -18,27 +20,33 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
   // Use guests from Auth context if none are provided as props
   const { guests: contextGuests, refreshGuests } = useAuth();
   const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // Ensure we have up-to-date guests data
-    refreshGuests();
+    const loadGuests = async () => {
+      setIsLoading(true);
+      if (!propGuests || propGuests.length === 0) {
+        await refreshGuests();
+      }
+      setIsLoading(false);
+    };
     
-    // Set available guests, preferring props over context
-    setAvailableGuests(propGuests || contextGuests);
-  }, [propGuests, contextGuests, refreshGuests]);
+    loadGuests();
+  }, [propGuests, refreshGuests]);
   
-  // Debug logs to identify guest loading issues
   useEffect(() => {
-    console.log("GuestsSection - Guest sources:", { 
-      propsGuests: propGuests?.length || 0,
-      contextGuests: contextGuests?.length || 0,
-      availableGuests: availableGuests?.length || 0
-    });
-  }, [propGuests, contextGuests, availableGuests]);
+    // Set available guests, preferring props over context
+    if (propGuests && propGuests.length > 0) {
+      setAvailableGuests(propGuests);
+    } else if (contextGuests && contextGuests.length > 0) {
+      setAvailableGuests(contextGuests);
+    }
+  }, [propGuests, contextGuests]);
 
   // Handle removing a guest
   const handleRemoveGuest = (guestId: string) => {
-    const currentValues = form.getValues('guestIds');
+    const currentValues = form.getValues('guestIds') || [];
     form.setValue(
       'guestIds', 
       currentValues.filter(id => id !== guestId),
@@ -46,7 +54,21 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
     );
   };
 
-  // If no guests are available, show a message
+  // If loading, show a spinner
+  if (isLoading) {
+    return (
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Guests</CardTitle>
+        </CardHeader>
+        <CardContent className="flex justify-center py-8">
+          <LoadingIndicator message="Loading guests..." />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If no guests are available after loading, show a message
   if (!availableGuests || availableGuests.length === 0) {
     return (
       <Card className="md:col-span-2">
@@ -77,7 +99,7 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
               />
               
               <SelectedGuestsGrid
-                selectedGuestIds={form.getValues('guestIds')}
+                selectedGuestIds={form.getValues('guestIds') || []}
                 availableGuests={availableGuests}
                 onRemoveGuest={handleRemoveGuest}
               />
@@ -97,7 +119,7 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
                             size="sm"
                             className="h-4 w-4 p-0 ml-2"
                             onClick={() => {
-                              const currentValues = form.getValues('guestIds');
+                              const currentValues = form.getValues('guestIds') || [];
                               form.setValue(
                                 'guestIds', 
                                 currentValues.filter(id => id !== guestId),

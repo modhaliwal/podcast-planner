@@ -87,6 +87,11 @@ export function NotesField({
   const fieldName = "notes";
   const versionsFieldName = "notesVersions";
   
+  if (!form) {
+    console.error("NotesField: No form context or prop provided");
+    return null;
+  }
+  
   return (
     <NotesVersionsProvider 
       form={form} 

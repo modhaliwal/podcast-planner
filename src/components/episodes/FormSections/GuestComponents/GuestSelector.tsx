@@ -13,13 +13,13 @@ interface GuestSelectorProps {
 }
 
 export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
-  const field = form.getValues('guestIds');
+  const guestIds = form.getValues('guestIds') || [];
   
   const handleValueChange = (value: string) => {
     if (value === "all") {
       form.setValue('guestIds', availableGuests.map(guest => guest.id), { shouldValidate: true });
     } else {
-      const currentValues = [...field || []];
+      const currentValues = [...guestIds];
       
       // Add or remove the value
       const valueIndex = currentValues.indexOf(value);
@@ -35,6 +35,16 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
     }
   };
 
+  const getSelectedDisplay = () => {
+    if (guestIds.length === 0) {
+      return "Select guests";
+    } else if (guestIds.length === 1) {
+      return availableGuests.find(g => g.id === guestIds[0])?.name || "1 guest selected";
+    } else {
+      return `${guestIds.length} guests selected`;
+    }
+  };
+
   return (
     <FormItem>
       <FormLabel>Select Guests</FormLabel>
@@ -42,9 +52,7 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
         <FormControl>
           <SelectTrigger>
             <SelectValue placeholder="Select guests">
-              {field?.length === 1 
-                ? availableGuests.find(g => g.id === field![0])?.name 
-                : `${field?.length || 0} guests selected`}
+              {getSelectedDisplay()}
             </SelectValue>
           </SelectTrigger>
         </FormControl>
@@ -55,11 +63,11 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
               value={guest.id}
               className={cn(
                 "flex items-center",
-                field?.includes(guest.id) && "bg-secondary"
+                guestIds.includes(guest.id) && "bg-secondary"
               )}
             >
               <div className="flex items-center">
-                {field?.includes(guest.id) && (
+                {guestIds.includes(guest.id) && (
                   <span className="mr-2">✓</span>
                 )}
                 {guest.name}
