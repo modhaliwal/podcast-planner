@@ -26,9 +26,9 @@ export function useGuestsRefresh(userId: string | undefined) {
     lastRefreshTimeRef.current = now;
     
     try {
-      console.log("Fetching guests from database...");
+      console.log("Fetching guests from database for user:", userId);
       
-      // Fetch all guests regardless of user_id
+      // Fetch all guests
       const { data, error } = await supabase
         .from('guests')
         .select('*')

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,13 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("Refreshing all data for user:", user.id);
     
     try {
-      // First refresh guests, then episodes
-      await refreshGuests(true);
+      // First refresh guests with force=true
+      const refreshedGuests = await refreshGuests(true);
+      console.log(`Refreshed ${refreshedGuests.length} guests`);
       
-      // Small delay to ensure guest data is fully loaded
-      setTimeout(async () => {
-        await refreshEpisodes(true);
-      }, 100);
+      // Then refresh episodes with force=true
+      const refreshedEpisodes = await refreshEpisodes(true);
+      console.log(`Refreshed ${refreshedEpisodes.length} episodes`);
     } catch (error) {
       console.error("Error refreshing all data:", error);
     }

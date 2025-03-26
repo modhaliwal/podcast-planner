@@ -14,8 +14,8 @@ export function useGuestsData(userId: string | undefined) {
   // Load guests on initial mount, but only if not already loaded and userId is available
   useEffect(() => {
     const loadGuests = async () => {
-      if (userId && isInitialMountRef.current && !hasLoadedInitialDataRef.current) {
-        console.log("Initial useGuestsData mount, refreshing guests for user:", userId);
+      if (userId && !hasLoadedInitialDataRef.current) {
+        console.log("Initial useGuestsData mount, loading guests for user:", userId);
         setIsLoadingGuests(true);
         
         try {
@@ -43,12 +43,18 @@ export function useGuestsData(userId: string | undefined) {
       return guests;
     }
     
+    if (!userId) {
+      console.log("Cannot refresh guests: No user ID available");
+      return guests;
+    }
+    
     setIsLoadingGuests(true);
     lastFetchTimeRef.current = now;
     
     try {
       console.log("Refreshing guests for user:", userId);
       const fetchedGuests = await fetchGuestData();
+      console.log(`Fetched ${fetchedGuests.length} guests`);
       setGuests(fetchedGuests);
       return fetchedGuests;
     } catch (error) {

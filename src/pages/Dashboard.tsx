@@ -7,20 +7,23 @@ import { useEffect, useRef } from 'react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Dashboard = () => {
-  const { guests, episodes, isDataLoading, refreshAllData } = useAuth();
+  const { 
+    guests, 
+    episodes, 
+    isDataLoading, 
+    refreshAllData, 
+    user 
+  } = useAuth();
   const hasInitializedRef = useRef(false);
   
-  // Load data only once when the component mounts
+  // Load data only once when the component mounts and user is available
   useEffect(() => {
-    if (!hasInitializedRef.current) {
-      console.log("Dashboard component mounted, refreshing data");
+    if (!hasInitializedRef.current && user?.id) {
+      console.log("Dashboard component mounted with user, refreshing data");
       refreshAllData();
       hasInitializedRef.current = true;
     }
-    // Intentionally not including refreshAllData in dependencies
-    // to prevent refresh loops
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [refreshAllData, user]);
   
   // Calculate statistics
   const totalGuests = guests.length;
