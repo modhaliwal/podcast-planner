@@ -40,7 +40,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
     defaultValues,
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
   
   // Form submission handler
