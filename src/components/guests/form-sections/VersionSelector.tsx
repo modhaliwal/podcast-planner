@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuItem,
   DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
@@ -50,15 +49,6 @@ export function VersionSelector({
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
-  // Find current active version
-  const activeVersion = sortedVersions.find(v => v.id === activeVersionId) || sortedVersions[0];
-  
-  // Count for each source type
-  const sourceCount = sortedVersions.reduce((acc, v) => {
-    acc[v.source] = (acc[v.source] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -68,22 +58,7 @@ export function VersionSelector({
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-[300px]">
-        <DropdownMenuLabel>
-          <div className="flex justify-between items-center">
-            <span>Version History</span>
-            <span className="text-xs text-muted-foreground">
-              {Object.entries(sourceCount).map(([source, count]) => (
-                <span key={source} className="ml-2">
-                  {getSourceLabel(source)}: {count}
-                </span>
-              ))}
-            </span>
-          </div>
-        </DropdownMenuLabel>
-        
-        <DropdownMenuSeparator />
-        
+      <DropdownMenuContent align="end" className="min-w-[250px]">
         <div className="max-h-[250px] overflow-y-auto">
           {sortedVersions.map(version => (
             <DropdownMenuItem key={version.id} className="py-2 px-4 cursor-pointer">
@@ -91,23 +66,17 @@ export function VersionSelector({
                 className="w-full"
                 onClick={() => onSelectVersion(version)}
               >
-                <div className="flex justify-between items-center">
-                  <span 
-                    className={`font-medium ${version.id === activeVersionId ? 'text-primary' : ''}`}
-                  >
-                    {version.id === activeVersionId && (
-                      <CheckIcon className="inline h-4 w-4 mr-1 text-primary" />
-                    )}
-                    v{version.versionNumber || '?'} - {getSourceLabel(version.source)}
+                <div className="flex items-center gap-2">
+                  {version.id === activeVersionId && (
+                    <CheckIcon className="h-4 w-4 flex-shrink-0 text-primary" />
+                  )}
+                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-xs">
+                    v{version.versionNumber || '?'}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm">{getSourceLabel(version.source)}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">
                     {formatTimestamp(version.timestamp)}
                   </span>
-                </div>
-                
-                <div className="text-xs mt-1 text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-                  {version.content.substring(0, 100)}
-                  {version.content.length > 100 ? '...' : ''}
                 </div>
               </div>
             </DropdownMenuItem>
