@@ -53,13 +53,15 @@ export function VersionSelector({
   );
 
   const handleClearClick = (event: React.MouseEvent) => {
-    // Prevent the dropdown from closing when clicking the clear button
+    // Prevent the dropdown from closing when clicking the clear button the first time
     event.preventDefault();
     event.stopPropagation();
     
     if (isConfirmingClear) {
       onClearAllVersions?.();
       setIsConfirmingClear(false);
+      // Close the dropdown after confirmation
+      setDropdownOpen(false);
     } else {
       setIsConfirmingClear(true);
     }
@@ -101,8 +103,10 @@ export function VersionSelector({
               onClick={handleClearClick}
               className="text-destructive focus:text-destructive flex items-center"
               onSelect={(e) => {
-                // Prevent the dropdown from closing when selecting this item
-                e.preventDefault();
+                // Only prevent the dropdown from closing on the first click
+                if (!isConfirmingClear) {
+                  e.preventDefault();
+                }
               }}
             >
               <Trash className="h-4 w-4 mr-2" />
