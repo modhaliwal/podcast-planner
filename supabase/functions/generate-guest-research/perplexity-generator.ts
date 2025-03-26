@@ -61,6 +61,12 @@ export async function generateResearchWithPerplexity(
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Perplexity API error status:", response.status, errorText);
+      throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
     
     if (data.error) {
