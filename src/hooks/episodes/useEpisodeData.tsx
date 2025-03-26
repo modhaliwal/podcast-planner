@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Episode, EpisodeStatus } from '@/lib/types';
+import { Episode, EpisodeStatus, ContentVersion } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCoverArtHandler } from '../useCoverArtHandler';
@@ -72,6 +72,13 @@ export function useEpisodeData(episodeId: string | undefined) {
               : (Array.isArray(data.resources) ? data.resources : [])
           ) : [];
           
+          // Parse the new notes_versions field
+          const notesVersions = data.notes_versions ? (
+            typeof data.notes_versions === 'string'
+              ? JSON.parse(data.notes_versions)
+              : (Array.isArray(data.notes_versions) ? data.notes_versions : [])
+          ) : [];
+          
           // Create properly typed Episode object
           const formattedEpisode: Episode = {
             id: data.id,
@@ -80,7 +87,7 @@ export function useEpisodeData(episodeId: string | undefined) {
             topic: data.topic,
             introduction: data.introduction || '',
             notes: data.notes || '',
-            notesVersions: [], // Initialize as empty array since column might not exist yet
+            notesVersions: notesVersions as ContentVersion[],
             status: statusValue as EpisodeStatus,
             scheduled: data.scheduled,
             publishDate: data.publish_date,
