@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +13,8 @@ interface BioSectionProps {
 }
 
 export function BioSection({ form }: BioSectionProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
   // Helper function to get social links from the form
   const getSocialLinks = () => {
     const socialLinks = {
@@ -47,6 +50,8 @@ export function BioSection({ form }: BioSectionProps) {
       if (!validateRequiredFields()) {
         return;
       }
+      
+      setIsLoading(true);
       
       const name = form.getValues('name');
       const title = form.getValues('title');
@@ -99,6 +104,8 @@ export function BioSection({ form }: BioSectionProps) {
       
       form.setValue('bio', fallbackBio);
       toast.info("Used fallback bio generator");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -111,9 +118,10 @@ export function BioSection({ form }: BioSectionProps) {
           variant="outline" 
           size="sm" 
           onClick={generateBio}
+          disabled={isLoading}
         >
           <Sparkles className="h-4 w-4 mr-1" />
-          Generate Bio
+          {isLoading ? "Generating with OpenAI..." : "Generate Bio"}
         </Button>
       </div>
       <FormField
