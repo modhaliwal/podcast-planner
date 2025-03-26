@@ -1,10 +1,9 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { mapEpisodeFromDB } from '@/services/episodeService';
 import { Episode } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast';
 
 export function useEpisodeLoader(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);

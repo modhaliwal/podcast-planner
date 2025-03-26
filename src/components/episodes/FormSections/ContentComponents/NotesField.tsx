@@ -5,10 +5,11 @@ import { EpisodeFormValues } from '../../EpisodeFormSchema';
 import { Editor } from '@/components/editor/Editor';
 import { FileText } from 'lucide-react';
 import { useState } from 'react';
-import { Guest } from '@/lib/types';
+import { Guest, ContentVersion } from '@/lib/types';
 import { useVersionManager } from '@/hooks/versions';
 import { NotesGeneration } from './NotesGeneration';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast';
+import { ensureVersionNumbers } from '@/hooks/versions';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -17,6 +18,10 @@ interface NotesFieldProps {
 
 export function NotesField({ form, guests }: NotesFieldProps) {
   const [content, setContent] = useState(form.watch('notes') || '');
+  
+  // Make sure versions are properly formatted with required properties
+  const initialVersions = form.watch('notesVersions') || [];
+  const formattedVersions = ensureVersionNumbers(initialVersions);
   
   // Initialize versions manager
   const { 
@@ -27,7 +32,7 @@ export function NotesField({ form, guests }: NotesFieldProps) {
     activeVersion
   } = useVersionManager({
     content: content,
-    versions: form.watch('notesVersions') || [],
+    versions: formattedVersions,
     onContentChange: (newContent) => {
       setContent(newContent);
       form.setValue('notes', newContent);
@@ -44,7 +49,7 @@ export function NotesField({ form, guests }: NotesFieldProps) {
   };
   
   // Handle saving content (which also creates a new version)
-  const handleSave = (content: string) => {
+  const handleSave = () => {
     form.setValue('notes', content);
     form.setValue('notesVersions', versions);
     toast({

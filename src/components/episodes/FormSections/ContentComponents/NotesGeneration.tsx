@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SparkleIcon } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/toast";
 
 interface NotesGenerationProps {
   guests: Guest[];

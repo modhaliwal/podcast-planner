@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Guest, ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/toast";
 import { ensureVersionNumbers } from "@/hooks/versions";
 
 interface GuestFormSubmitHandlerProps {

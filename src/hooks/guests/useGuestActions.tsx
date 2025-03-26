@@ -1,6 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
 import { deleteImage, isBlobUrl } from '@/lib/imageUpload';
