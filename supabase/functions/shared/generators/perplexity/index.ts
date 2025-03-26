@@ -11,7 +11,8 @@ export async function generateResearchWithPerplexity(
   name: string, 
   title: string, 
   company: string | undefined,
-  extractedContent: string
+  extractedContent: string,
+  customSystemPrompt?: string
 ) {
   // Validate API key
   const perplexityApiKey = validatePerplexityApiKey();
@@ -20,8 +21,8 @@ export async function generateResearchWithPerplexity(
   const companyInfo = company ? `at ${company}` : "";
   
   try {
-    // Create prompts
-    const systemPrompt = createSystemPrompt();
+    // Create prompts - use custom system prompt if provided
+    const systemPrompt = customSystemPrompt || createSystemPrompt();
     const userPrompt = createUserPrompt(name, title, companyInfo, extractedContent);
     
     // Call API

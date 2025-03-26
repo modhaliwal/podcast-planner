@@ -11,6 +11,9 @@ export type AIPrompt = {
   description?: string;
   created_at: string;
   updated_at: string;
+  system_prompt?: string;
+  context_instructions?: string;
+  example_output?: string;
 };
 
 export function useAIPrompts() {

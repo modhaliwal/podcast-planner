@@ -8,7 +8,12 @@ export async function generateBackgroundResearch(
   guest: Guest,
   setIsLoading: (isLoading: boolean) => void,
   setMarkdownToConvert: (markdown: string | undefined) => void,
-  getPromptByKey: (key: string) => { prompt_text: string } | undefined
+  getPromptByKey: (key: string) => { 
+    prompt_text: string;
+    system_prompt?: string;
+    context_instructions?: string;
+    example_output?: string;
+  } | undefined
 ) {
   try {
     const { name, title, company, socialLinks } = guest;
@@ -21,10 +26,10 @@ export async function generateBackgroundResearch(
     
     toast.info("Generating background research for guest...");
     
-    // Get the prompt template
-    const promptTemplate = getPromptByKey('guest_research_generator')?.prompt_text;
+    // Get the prompt template and additional fields
+    const promptData = getPromptByKey('guest_research_generator');
     
-    if (!promptTemplate) {
+    if (!promptData || !promptData.prompt_text) {
       throw new Error("Guest research generator prompt not found");
     }
     
@@ -32,20 +37,36 @@ export async function generateBackgroundResearch(
     const companyInfo = company ? `at ${company}` : "";
     
     // Replace variables in the prompt template
-    const prompt = promptTemplate
+    const prompt = promptData.prompt_text
       .replace('${name}', name)
       .replace('${title}', title)
       .replace('${companyInfo}', companyInfo);
     
+    // Build request body with all available prompt components
+    const requestBody: any = {
+      name,
+      title,
+      company,
+      socialLinks,
+      prompt
+    };
+    
+    // Add optional fields if they exist
+    if (promptData.system_prompt) {
+      requestBody.systemPrompt = promptData.system_prompt;
+    }
+    
+    if (promptData.context_instructions) {
+      requestBody.contextInstructions = promptData.context_instructions;
+    }
+    
+    if (promptData.example_output) {
+      requestBody.exampleOutput = promptData.example_output;
+    }
+    
     // Call the edge function to generate the research
     const { data, error } = await supabase.functions.invoke('generate-guest-research', {
-      body: {
-        name,
-        title,
-        company,
-        socialLinks,
-        prompt
-      }
+      body: requestBody
     });
     
     if (error) {

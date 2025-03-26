@@ -34,24 +34,40 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
       setIsGeneratingNotes(true);
       toast.info("Generating episode notes with research about this topic. This may take a minute...");
       
-      // Get the prompt from the database
-      const promptTemplate = getPromptByKey('episode_notes_generator')?.prompt_text;
+      // Get the prompt from the database with all fields
+      const promptData = getPromptByKey('episode_notes_generator');
       
-      if (!promptTemplate) {
+      if (!promptData) {
         throw new Error("Episode notes generator prompt not found");
       }
       
       // Replace variables in the prompt template
-      const prompt = promptTemplate.replace('${topic}', topic);
+      const prompt = promptData.prompt_text.replace('${topic}', topic);
       
       console.log("Calling generate-episode-notes function with prompt based on topic:", topic);
       
+      // Build request body with all available prompt components
+      const requestBody: any = {
+        topic,
+        prompt
+      };
+      
+      // Add optional fields if they exist
+      if (promptData.system_prompt) {
+        requestBody.systemPrompt = promptData.system_prompt;
+      }
+      
+      if (promptData.context_instructions) {
+        requestBody.contextInstructions = promptData.context_instructions;
+      }
+      
+      if (promptData.example_output) {
+        requestBody.exampleOutput = promptData.example_output;
+      }
+      
       // Call the Supabase function to generate notes
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
-        body: {
-          topic,
-          prompt
-        }
+        body: requestBody
       });
       
       console.log("Function response:", data, error);

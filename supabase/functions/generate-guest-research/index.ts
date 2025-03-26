@@ -16,7 +16,16 @@ serve(async (req) => {
 
     // Parse request body
     const requestData = await req.json();
-    const { name, title, company, socialLinks, prompt } = requestData;
+    const { 
+      name, 
+      title, 
+      company, 
+      socialLinks, 
+      prompt,
+      systemPrompt,
+      contextInstructions,
+      exampleOutput
+    } = requestData;
 
     if (!name || !title) {
       return new Response(
@@ -40,6 +49,8 @@ serve(async (req) => {
     Title: ${title}
     ${company ? `Company: ${company}` : ''}
     ${socialProfiles ? `Social Media Profiles:\n${socialProfiles}` : ''}
+    ${contextInstructions ? `\nAdditional Context:\n${contextInstructions}` : ''}
+    ${exampleOutput ? `\nExample Format:\n${exampleOutput}` : ''}
     `;
 
     console.log("Generating research for:", name);
@@ -48,12 +59,13 @@ serve(async (req) => {
     // Use the provided custom prompt if available, otherwise use the extracted content directly
     const promptToUse = prompt || extractedContent;
 
-    // Generate the research using Perplexity
+    // Generate the research using Perplexity with system prompt if provided
     const research = await generateResearchWithPerplexity(
       name,
       title,
       company,
-      promptToUse
+      promptToUse,
+      systemPrompt
     );
 
     return new Response(

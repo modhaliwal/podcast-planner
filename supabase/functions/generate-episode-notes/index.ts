@@ -11,7 +11,13 @@ serve(async (req) => {
 
   try {
     const requestData = await req.json();
-    const { topic, prompt } = requestData;
+    const { 
+      topic, 
+      prompt, 
+      systemPrompt,
+      contextInstructions,
+      exampleOutput
+    } = requestData;
     
     if (!topic) {
       throw new Error("Topic is required");
@@ -19,25 +25,27 @@ serve(async (req) => {
     
     console.log(`Generating episode notes for topic: ${topic}`);
     
-    // Use the provided custom prompt if available, otherwise use a default prompt
-    const promptToUse = prompt || 
-      `Generate comprehensive research notes about "${topic}" for a podcast episode. 
-      
-      Focus on:
-      - Recent trends and developments in this area
-      - Unique facts and surprising statistics 
-      - Historical context and future outlook
-      - Common misconceptions or debates
-      - Notable experts or voices in this field
-      
-      Structure the information in well-organized sections with clear headings. Include specific data points and quotable facts that would make engaging talking points for podcast hosts.`;
+    // Build the full prompt with context and examples if provided
+    let promptToUse = prompt || 
+      `Generate comprehensive research notes about "${topic}" for a podcast episode.`;
+    
+    // Add context if provided
+    if (contextInstructions) {
+      promptToUse += `\n\nContext: ${contextInstructions}`;
+    }
+    
+    // Add example if provided
+    if (exampleOutput) {
+      promptToUse += `\n\nPlease format your response similar to this example:\n${exampleOutput}`;
+    }
     
     // Generate research based on the topic with the provided or default prompt
     const generatedNotes = await generateResearchWithPerplexity(
       "Topic Research",
       "Episode Research",
       undefined,
-      promptToUse
+      promptToUse,
+      systemPrompt
     );
 
     console.log("Successfully generated notes, returning response");

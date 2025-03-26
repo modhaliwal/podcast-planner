@@ -17,6 +17,7 @@ export function AIPromptsSettings() {
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
   const [editedPrompt, setEditedPrompt] = useState<Partial<AIPrompt> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("general");
 
   const handleSelectPrompt = (promptId: string) => {
     const selectedPrompt = prompts.find(p => p.id === promptId);
@@ -44,7 +45,10 @@ export function AIPromptsSettings() {
     const success = await updatePrompt(activePromptId, {
       title: editedPrompt.title,
       prompt_text: editedPrompt.prompt_text,
-      description: editedPrompt.description
+      description: editedPrompt.description,
+      example_output: editedPrompt.example_output,
+      context_instructions: editedPrompt.context_instructions,
+      system_prompt: editedPrompt.system_prompt
     });
     
     setIsSaving(false);
@@ -128,19 +132,78 @@ export function AIPromptsSettings() {
                   </p>
                 </div>
                 
-                <div>
-                  <Label htmlFor="prompt_text">Prompt Text</Label>
-                  <Textarea
-                    id="prompt_text"
-                    name="prompt_text"
-                    value={editedPrompt.prompt_text || ''}
-                    onChange={handleInputChange}
-                    className="mt-1 min-h-[200px] font-mono text-sm"
-                  />
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Use ${'{variable}'} for dynamic values that will be replaced at runtime
-                  </p>
-                </div>
+                <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="general">Main Prompt</TabsTrigger>
+                    <TabsTrigger value="system">System Instructions</TabsTrigger>
+                    <TabsTrigger value="context">Context</TabsTrigger>
+                    <TabsTrigger value="examples">Example Output</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="general">
+                    <div>
+                      <Label htmlFor="prompt_text">Main Prompt Text</Label>
+                      <Textarea
+                        id="prompt_text"
+                        name="prompt_text"
+                        value={editedPrompt.prompt_text || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 min-h-[200px] font-mono text-sm"
+                      />
+                      <p className="text-muted-foreground text-xs mt-1">
+                        Use ${'{variable}'} for dynamic values that will be replaced at runtime
+                      </p>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="system">
+                    <div>
+                      <Label htmlFor="system_prompt">System Instructions</Label>
+                      <Textarea
+                        id="system_prompt"
+                        name="system_prompt"
+                        value={editedPrompt.system_prompt || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 min-h-[200px] font-mono text-sm"
+                      />
+                      <p className="text-muted-foreground text-xs mt-1">
+                        Instructions that set the AI's behavior, tone, and constraints
+                      </p>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="context">
+                    <div>
+                      <Label htmlFor="context_instructions">Context Instructions</Label>
+                      <Textarea
+                        id="context_instructions"
+                        name="context_instructions"
+                        value={editedPrompt.context_instructions || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 min-h-[200px] font-mono text-sm"
+                      />
+                      <p className="text-muted-foreground text-xs mt-1">
+                        Additional context that helps the AI understand how to process the prompt
+                      </p>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="examples">
+                    <div>
+                      <Label htmlFor="example_output">Example Output</Label>
+                      <Textarea
+                        id="example_output"
+                        name="example_output"
+                        value={editedPrompt.example_output || ''}
+                        onChange={handleInputChange}
+                        className="mt-1 min-h-[200px] font-mono text-sm"
+                      />
+                      <p className="text-muted-foreground text-xs mt-1">
+                        Example outputs to guide the AI on the expected format and content
+                      </p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
                 
                 <div className="flex justify-end space-x-2">
                   <Button
