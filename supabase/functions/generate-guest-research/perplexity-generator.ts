@@ -54,7 +54,37 @@ export async function generateResearchWithPerplexity(
         max_tokens: 2000,
         return_images: false,
         return_related_questions: false,
-        response_format: { type: "text" },
+        response_format: {
+          "type": "json_schema",
+          "json_schema": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Body": {
+                  "type": "string",
+                  "description": "The full response in Markdown format."
+                },
+                "References": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "description": "List of numbered source URLs referenced in the response."
+                },
+                "Images": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "description": "List of image URLs referenced in the response."
+                }
+              },
+              "required": ["Body", "References", "Images"]
+            }
+          }
+        }
         web_search_options: {
           search_context_size: "high"
         },
