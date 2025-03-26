@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { mapEpisodeFromDB } from '@/services/episodeService';
@@ -48,10 +49,25 @@ export function useEpisodeLoader(episodeId: string | undefined) {
       // Extract guest IDs
       const guestIds = guestRelationships?.map(rel => rel.guest_id) || [];
       
+      // Parse resources if it's a string
+      let parsedResources = episodeData.resources;
+      if (typeof episodeData.resources === 'string') {
+        try {
+          parsedResources = JSON.parse(episodeData.resources);
+        } catch (e) {
+          console.error('Error parsing resources JSON:', e);
+          parsedResources = [];
+        }
+      } else if (!Array.isArray(episodeData.resources)) {
+        // If resources exists but is not an array, set it to empty array
+        parsedResources = [];
+      }
+      
       // Map the database result to our Episode type
       const mappedEpisode = mapEpisodeFromDB({ 
         ...episodeData, 
-        guestIds 
+        guestIds,
+        resources: parsedResources
       });
       
       console.log('Loaded episode:', mappedEpisode);

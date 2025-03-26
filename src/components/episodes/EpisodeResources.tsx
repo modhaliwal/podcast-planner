@@ -7,7 +7,20 @@ interface EpisodeResourcesProps {
 }
 
 export function EpisodeResources({ episode }: EpisodeResourcesProps) {
-  if (!episode.resources || episode.resources.length === 0) {
+  // Make sure resources exists and is an array
+  if (!episode.resources) {
+    return null;
+  }
+  
+  // Ensure resources is an array by converting if needed
+  const resourcesArray = Array.isArray(episode.resources) 
+    ? episode.resources 
+    : typeof episode.resources === 'string' 
+      ? JSON.parse(episode.resources) 
+      : [];
+  
+  // If resources array is empty after converting, return null
+  if (resourcesArray.length === 0) {
     return null;
   }
 
@@ -15,7 +28,7 @@ export function EpisodeResources({ episode }: EpisodeResourcesProps) {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Additional Resources</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {episode.resources.map((resource, index) => (
+        {resourcesArray.map((resource, index) => (
           <div 
             key={index} 
             className="p-4 border rounded-md hover:bg-accent/50 transition-colors"
