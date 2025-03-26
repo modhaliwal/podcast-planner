@@ -4,45 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Guest } from '@/lib/types';
-import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
-import { Button } from '@/components/ui/button';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 interface GuestsSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
-  guests?: Guest[]; // Make this optional
+  guests: Guest[]; // Make this required
 }
 
-export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) {
-  // Use guests from Auth context if none are provided as props
-  const { guests: contextGuests, refreshGuests } = useAuth();
-  const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const GuestsSection = memo(function GuestsSection({ form, guests }: GuestsSectionProps) {
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    // Ensure we have up-to-date guests data
-    const loadGuests = async () => {
-      setIsLoading(true);
-      if (!propGuests || propGuests.length === 0) {
-        await refreshGuests();
-      }
-      setIsLoading(false);
-    };
-    
-    loadGuests();
-  }, [propGuests, refreshGuests]);
-  
-  useEffect(() => {
-    // Set available guests, preferring props over context
-    if (propGuests && propGuests.length > 0) {
-      setAvailableGuests(propGuests);
-    } else if (contextGuests && contextGuests.length > 0) {
-      setAvailableGuests(contextGuests);
+    // Set form values for guestIds if they're empty but we have the episode's guest IDs
+    const currentGuestIds = form.getValues('guestIds');
+    if ((!currentGuestIds || currentGuestIds.length === 0) && guests && guests.length > 0) {
+      form.setValue('guestIds', []);
     }
-  }, [propGuests, contextGuests]);
+  }, [form, guests]);
 
   // Handle removing a guest
   const handleRemoveGuest = (guestId: string) => {
@@ -57,7 +38,7 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
   // If loading, show a spinner
   if (isLoading) {
     return (
-      <Card className="md:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Guests</CardTitle>
         </CardHeader>
@@ -68,10 +49,10 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
     );
   }
 
-  // If no guests are available after loading, show a message
-  if (!availableGuests || availableGuests.length === 0) {
+  // If no guests are available, show a message
+  if (!guests || guests.length === 0) {
     return (
-      <Card className="md:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Guests</CardTitle>
         </CardHeader>
@@ -83,7 +64,7 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
   }
 
   return (
-    <Card className="md:col-span-2">
+    <Card>
       <CardHeader>
         <CardTitle>Guests</CardTitle>
       </CardHeader>
@@ -95,50 +76,18 @@ export function GuestsSection({ form, guests: propGuests }: GuestsSectionProps) 
             <>
               <GuestSelector 
                 form={form} 
-                availableGuests={availableGuests} 
+                availableGuests={guests} 
               />
               
               <SelectedGuestsGrid
                 selectedGuestIds={form.getValues('guestIds') || []}
-                availableGuests={availableGuests}
+                availableGuests={guests}
                 onRemoveGuest={handleRemoveGuest}
               />
-              
-              {/* Legacy tag-style selected guests (now hidden) */}
-              <div className="hidden flex-wrap gap-2 mt-2">
-                {form.getValues('guestIds') && form.getValues('guestIds').length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {form.getValues('guestIds').map((guestId) => {
-                      const guest = availableGuests.find(g => g.id === guestId);
-                      return (
-                        <div key={guestId} className="flex items-center bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm">
-                          {guest?.name || 'Unknown Guest'}
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-4 w-4 p-0 ml-2"
-                            onClick={() => {
-                              const currentValues = form.getValues('guestIds') || [];
-                              form.setValue(
-                                'guestIds', 
-                                currentValues.filter(id => id !== guestId),
-                                { shouldValidate: true }
-                              );
-                            }}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
             </>
           )}
         />
       </CardContent>
     </Card>
   );
-}
+});

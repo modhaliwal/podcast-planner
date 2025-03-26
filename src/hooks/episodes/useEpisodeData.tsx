@@ -14,30 +14,73 @@ export function useEpisodeData(episodeId: string | undefined) {
   const { episodes, refreshEpisodes } = useAuth();
   const [episode, setEpisode] = useState<Episode | null>(null);
   const navigate = useNavigate();
-  const { handleCoverArtUpload } = useCoverArtHandler(episode?.coverArt);
+  const { handleCoverArtUpload } = useCoverArtHandler();
   const { updateEpisodeGuests } = useEpisodeGuests();
 
   // Load episode data initially
   useEffect(() => {
-    if (episodeId) {
-      // First try to get from context to avoid flickering
-      const contextEpisode = episodes.find(e => e.id === episodeId);
-      if (contextEpisode) {
-        setEpisode(contextEpisode);
+    const fetchEpisode = async () => {
+      if (!episodeId) {
         setIsLoading(false);
-      } else {
-        // If not in context, we need to load it
-        refreshEpisodes().then(() => {
-          const refreshedEpisode = episodes.find(e => e.id === episodeId);
-          if (refreshedEpisode) {
-            setEpisode(refreshedEpisode);
-          }
-          setIsLoading(false);
-        });
+        return;
       }
-    } else {
-      setIsLoading(false);
-    }
+      
+      setIsLoading(true);
+      
+      try {
+        // First try to get from context to avoid flickering
+        const contextEpisode = episodes.find(e => e.id === episodeId);
+        if (contextEpisode) {
+          setEpisode(contextEpisode);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If not in context, fetch directly from database
+        const { data, error } = await supabase
+          .from('episodes')
+          .select('*, episode_guests(guest_id)')
+          .eq('id', episodeId)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          // Convert from database format to app format
+          const guestIds = data.episode_guests ? 
+            data.episode_guests.map((eg: any) => eg.guest_id) : [];
+            
+          const formattedEpisode: Episode = {
+            id: data.id,
+            title: data.title,
+            episodeNumber: data.episode_number,
+            topic: data.topic,
+            introduction: data.introduction || '',
+            notes: data.notes || '',
+            notesVersions: data.notes_versions || [],
+            status: data.status,
+            scheduled: data.scheduled,
+            publishDate: data.publish_date,
+            coverArt: data.cover_art,
+            recordingLinks: data.recording_links,
+            podcastUrls: data.podcast_urls,
+            resources: data.resources || [],
+            guestIds: guestIds,
+            createdAt: data.created_at,
+            updatedAt: data.updated_at
+          };
+          
+          setEpisode(formattedEpisode);
+        }
+      } catch (error: any) {
+        console.error('Error fetching episode:', error);
+        toast.error('Failed to load episode data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchEpisode();
   }, [episodeId, episodes]);
 
   const handleSave = useCallback(async (updatedEpisode: Episode) => {
@@ -46,7 +89,7 @@ export function useEpisodeData(episodeId: string | undefined) {
     setIsLoading(true);
     
     try {
-      const processedCoverArt = await handleCoverArtUpload(updatedEpisode.coverArt);
+      const processedCoverArt = await handleCoverArtUpload(updatedEpisode.coverArt, episode?.coverArt);
       
       // Convert our typed objects to JSON-compatible objects for Supabase
       const recordingLinksJson = updatedEpisode.recordingLinks ? {
@@ -118,7 +161,7 @@ export function useEpisodeData(episodeId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  }, [episodeId, handleCoverArtUpload, updateEpisodeGuests, refreshEpisodes]);
+  }, [episodeId, handleCoverArtUpload, updateEpisodeGuests, refreshEpisodes, episode]);
 
   const handleDelete = useCallback(async () => {
     if (!episodeId) return { success: false };
@@ -134,7 +177,7 @@ export function useEpisodeData(episodeId: string | undefined) {
       
       // Delete cover art from storage if it exists
       if (episodeData?.cover_art) {
-        await handleCoverArtUpload(undefined);
+        await handleCoverArtUpload(undefined, episodeData.cover_art);
       }
       
       // Delete episode-guest relationships

@@ -2,39 +2,25 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
-import { useAuth } from '@/contexts/AuthContext';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
-import { useEpisodeData } from '@/hooks/episodes';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
+import { useGuestsData } from '@/hooks/guests';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { guests, refreshGuests } = useAuth();
-  const { isLoading, episode, handleSave } = useEpisodeData(id);
-  const [isGuestsLoading, setIsGuestsLoading] = useState(true);
   
-  // Ensure guests are loaded
-  useEffect(() => {
-    const loadGuests = async () => {
-      try {
-        setIsGuestsLoading(true);
-        await refreshGuests();
-      } catch (error) {
-        console.error("Error loading guests:", error);
-        toast.error("Failed to load guest data");
-      } finally {
-        setIsGuestsLoading(false);
-      }
-    };
-    
-    loadGuests();
-  }, [refreshGuests]);
+  // Use the episode data hook with the ID from URL params
+  const { isLoading: isEpisodeLoading, episode, handleSave } = useEpisodeData(id);
   
-  // If either episode or guests are loading, show loading indicator
-  if (isLoading || isGuestsLoading) {
+  // Use guests data hook to fetch guests 
+  const { guests, isLoadingGuests } = useGuestsData(undefined);
+  
+  // If loading, show loading indicator
+  const isLoading = isEpisodeLoading || isLoadingGuests;
+  
+  if (isLoading) {
     return (
       <Shell>
         <div className="page-container">
@@ -62,7 +48,7 @@ const EditEpisode = () => {
   
   const onSave = async (updatedEpisode: any) => {
     const result = await handleSave(updatedEpisode);
-    if (result.success) {
+    if (result?.success) {
       navigate(`/episodes/${id}`);
     }
   };
@@ -76,7 +62,7 @@ const EditEpisode = () => {
         </div>
         
         <EpisodeForm
-          key={`episode-form-${episode.id}`}
+          key={`episode-form-${episode.id}-${new Date().getTime()}`}
           episode={episode}
           guests={guests || []}
           onSave={onSave}

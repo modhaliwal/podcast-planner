@@ -1,33 +1,63 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Guest } from "@/lib/types";
 import { useGuestsRefresh } from "./useGuestsRefresh";
 
 export function useGuestsData(userId: string | undefined) {
   const [guests, setGuests] = useState<Guest[]>([]);
-  const { isLoadingGuests, refreshGuests } = useGuestsRefresh(userId);
+  const [isLoadingGuests, setIsLoadingGuests] = useState(true);
+  const { refreshGuests: fetchGuestData } = useGuestsRefresh(userId);
   const isInitialMountRef = useRef(true);
+  const lastFetchTimeRef = useRef<number>(0);
 
   // Load guests on initial mount only
   useEffect(() => {
-    if (userId && isInitialMountRef.current) {
-      console.log("Initial useGuestsData mount, refreshing guests");
-      refreshGuests().then(fetchedGuests => {
-        setGuests(fetchedGuests);
-      });
-      isInitialMountRef.current = false;
-    }
-  }, [userId, refreshGuests]);
+    const loadGuests = async () => {
+      if (isInitialMountRef.current) {
+        setIsLoadingGuests(true);
+        console.log("Initial useGuestsData mount, refreshing guests");
+        try {
+          const fetchedGuests = await fetchGuestData();
+          setGuests(fetchedGuests);
+        } catch (error) {
+          console.error("Error loading guests:", error);
+        } finally {
+          setIsLoadingGuests(false);
+          isInitialMountRef.current = false;
+        }
+      }
+    };
+    
+    loadGuests();
+  }, [fetchGuestData]);
 
   // Create a function that wraps refreshGuests and updates the guests state
-  const refreshAndUpdateGuests = async () => {
-    const fetchedGuests = await refreshGuests();
-    setGuests(fetchedGuests);
-  };
+  const refreshGuests = useCallback(async () => {
+    // Throttle refreshes to prevent too many calls
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < 2000) {
+      console.log("Skipping refresh, too soon since last refresh");
+      return guests;
+    }
+    
+    setIsLoadingGuests(true);
+    lastFetchTimeRef.current = now;
+    
+    try {
+      const fetchedGuests = await fetchGuestData();
+      setGuests(fetchedGuests);
+      return fetchedGuests;
+    } catch (error) {
+      console.error("Error refreshing guests:", error);
+      return guests;
+    } finally {
+      setIsLoadingGuests(false);
+    }
+  }, [fetchGuestData, guests]);
 
   return {
     guests,
     isLoadingGuests,
-    refreshGuests: refreshAndUpdateGuests
+    refreshGuests
   };
 }

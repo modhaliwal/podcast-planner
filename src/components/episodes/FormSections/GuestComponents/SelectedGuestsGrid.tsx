@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Guest } from '@/lib/types';
 import { GuestMiniCard } from './GuestMiniCard';
 
@@ -9,7 +9,11 @@ interface SelectedGuestsGridProps {
   onRemoveGuest: (guestId: string) => void;
 }
 
-export function SelectedGuestsGrid({ selectedGuestIds, availableGuests, onRemoveGuest }: SelectedGuestsGridProps) {
+export const SelectedGuestsGrid = memo(function SelectedGuestsGrid({ 
+  selectedGuestIds, 
+  availableGuests, 
+  onRemoveGuest 
+}: SelectedGuestsGridProps) {
   if (!selectedGuestIds || selectedGuestIds.length === 0) {
     return null;
   }
@@ -36,4 +40,4 @@ export function SelectedGuestsGrid({ selectedGuestIds, availableGuests, onRemove
       </div>
     </div>
   );
-}
+});
