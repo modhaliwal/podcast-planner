@@ -33,6 +33,12 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     resources: episode.resources || []
   }), [episode]);
   
+  // Initialize form first, before adding watchers
+  const form = useForm<EpisodeFormValues>({
+    resolver: zodResolver(episodeFormSchema),
+    defaultValues,
+  });
+  
   // For debugging - log the current form values
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -40,11 +46,6 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     });
     return () => subscription.unsubscribe();
   }, [form]);
-  
-  const form = useForm<EpisodeFormValues>({
-    resolver: zodResolver(episodeFormSchema),
-    defaultValues,
-  });
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {

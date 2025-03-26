@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +62,9 @@ export function useEpisodesData(userId: string | undefined) {
       
       // Format episodes data
       const formattedEpisodes: Episode[] = episodesData.map(episode => {
+        // Add extra debugging for topic field
+        console.log(`Processing episode ${episode.id}, topic:`, episode.topic);
+        
         // Parse resources safely
         let typedResources: Resource[] = [];
         if (episode.resources && Array.isArray(episode.resources)) {
@@ -77,6 +79,7 @@ export function useEpisodesData(userId: string | undefined) {
           id: episode.id,
           episodeNumber: episode.episode_number,
           title: episode.title,
+          topic: episode.topic, // Ensure this is passed directly, not transformed
           scheduled: episode.scheduled,
           publishDate: episode.publish_date || undefined,
           status: episode.status as EpisodeStatus,
