@@ -34,8 +34,6 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     resources: episode.resources || []
   }), [episode]);
   
-  console.log("useEpisodeForm hook initialized with episode:", episode.id);
-  
   // Initialize form
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
@@ -45,38 +43,14 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
-    console.log("❗ Episode form submission initiated with data:", data);
-    
-    // Prevent multiple submissions
-    if (isSubmitting) {
-      console.log("Submission already in progress, ignoring");
-      return;
-    }
+    if (isSubmitting) return;
     
     setIsSubmitting(true);
     
     try {
-      console.log("Form values being submitted:", data);
       const processedCoverArt = await handleCoverArtUpload(data.coverArt);
       
-      // Log the data being sent to Supabase for debugging
-      console.log("❗ Updating episode with data:", {
-        title: data.title,
-        episode_number: data.episodeNumber,
-        topic: data.topic,
-        introduction: data.introduction,
-        notes: data.notes,
-        notes_versions: data.notesVersions,
-        status: data.status,
-        scheduled: data.scheduled.toISOString(),
-        publish_date: data.publishDate ? data.publishDate.toISOString() : null,
-        cover_art: processedCoverArt,
-        recording_links: data.recordingLinks,
-        podcast_urls: data.podcastUrls,
-        resources: data.resources,
-      });
-      
-      const { data: updateResult, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('episodes')
         .update({
           title: data.title,
@@ -97,14 +71,11 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
         .eq('id', episode.id)
         .select();
       
-      console.log("❗ Update response:", updateResult, updateError);
-      
       if (updateError) {
-        console.error("Error updating episode:", updateError);
         throw updateError;
       }
       
-      // Use the extracted guest relationship management function
+      // Update guest relationships
       await updateEpisodeGuests(data.guestIds, episode.id);
       
       await refreshEpisodes();

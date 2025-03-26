@@ -25,10 +25,6 @@ export function TopicField({ form }: TopicFieldProps) {
               placeholder="Enter episode topic" 
               className="resize-y"
               {...field} 
-              value={field.value || ''}
-              onChange={(e) => {
-                field.onChange(e.target.value);
-              }}
             />
           </FormControl>
           <FormDescription>
