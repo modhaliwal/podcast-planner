@@ -1,6 +1,4 @@
 
-import { validateOpenAIApiKey } from "../utils.ts";
-
 export async function generateBioWithOpenAI(
   name: string,
   title: string,
@@ -9,8 +7,11 @@ export async function generateBioWithOpenAI(
   customPrompt?: string,
   customSystemPrompt?: string
 ) {
-  // Validate API Key
-  const apiKey = validateOpenAIApiKey();
+  // Get API Key from environment
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!apiKey) {
+    throw new Error("OpenAI API key is required but not provided");
+  }
 
   try {
     // Format the company information
@@ -67,8 +68,11 @@ export async function generateResearchWithOpenAI(
   company: string | undefined,
   extractedContent: string
 ) {
-  // Validate API Key
-  const apiKey = validateOpenAIApiKey();
+  // Get API Key from environment
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!apiKey) {
+    throw new Error("OpenAI API key is required but not provided");
+  }
 
   try {
     // Format the company information

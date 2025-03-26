@@ -1,35 +1,39 @@
 
-// CORS headers for cross-origin requests
+// CORS headers for all Edge Functions
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Validate that required API key is set
-export function validateApiKey(apiKey?: string) {
-  const openAIApiKey = apiKey || Deno.env.get('OPENAI_API_KEY');
-  if (!openAIApiKey) {
-    throw new Error("OpenAI API key is not configured");
-  }
-  return openAIApiKey;
-}
-
-// Validate that Perplexity API key is set
-export function validatePerplexityApiKey() {
-  const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
-  if (!perplexityApiKey) {
-    throw new Error("Perplexity API key is not configured");
-  }
-  return perplexityApiKey;
-}
-
-// Validate request data contains required fields
+// Validate request data for content generation functions
 export function validateRequestData(data: any) {
-  const { type = 'bio', name, title } = data;
-  
-  if (!name || !title) {
-    throw new Error("Name and title are required");
+  const { 
+    type, 
+    name, 
+    title, 
+    socialLinks,
+  } = data;
+
+  if (!type) {
+    throw new Error("Type is required ('bio' or 'research')");
   }
   
-  return { type, name, title, company: data.company, socialLinks: data.socialLinks };
+  if (!name) {
+    throw new Error("Name is required");
+  }
+  
+  if (!title) {
+    throw new Error("Title is required");
+  }
+  
+  return data;
+}
+
+// Helper for checking if OpenAI API key is set
+export function validateOpenAIApiKey() {
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!apiKey) {
+    throw new Error("OpenAI API key is required but not provided");
+  }
+  return apiKey;
 }
