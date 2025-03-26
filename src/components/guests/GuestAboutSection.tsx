@@ -4,6 +4,7 @@ import { Guest, ContentVersion } from "@/lib/types";
 import { format } from "date-fns";
 import { Clock, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useMarkdownParser } from "@/hooks/useMarkdownParser";
 
 interface GuestAboutSectionProps {
   guest: Guest;
@@ -20,6 +21,9 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
 
   const bioVersion = getMostRecentVersion(guest.bioVersions);
   const researchVersion = getMostRecentVersion(guest.backgroundResearchVersions);
+  
+  // Parse markdown for background research
+  const parsedBackgroundResearch = useMarkdownParser(guest.backgroundResearch);
 
   return (
     <Card>
@@ -83,7 +87,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
             </div>
             <div 
               className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-table:table-auto prose-img:rounded-md prose-img:max-w-full prose-img:h-auto"
-              dangerouslySetInnerHTML={{ __html: guest.backgroundResearch }}
+              dangerouslySetInnerHTML={{ __html: parsedBackgroundResearch }}
             />
           </div>
         )}
