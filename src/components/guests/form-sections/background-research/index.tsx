@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { Guest, ContentVersion } from "@/lib/types";
@@ -33,7 +32,6 @@ export function BackgroundResearchSection({
   const parsedHtml = useMarkdownParser(markdownToConvert);
   const { getPromptByKey } = useAIPrompts();
 
-  // Initialize with the current research as the first version if no versions exist
   useEffect(() => {
     if (backgroundResearchVersions.length === 0 && backgroundResearch) {
       const initialVersion: ContentVersion = {
@@ -46,7 +44,6 @@ export function BackgroundResearchSection({
       setActiveVersionId(initialVersion.id);
       setPreviousContent(backgroundResearch);
     } else if (!activeVersionId && backgroundResearchVersions.length > 0) {
-      // Set the most recent version as active
       const sortedVersions = [...backgroundResearchVersions].sort(
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
@@ -55,13 +52,10 @@ export function BackgroundResearchSection({
     }
   }, [backgroundResearchVersions, backgroundResearch, onVersionsChange, activeVersionId]);
 
-  // Update background research when parsedHtml changes
   useEffect(() => {
     if (parsedHtml) {
-      // Update content with the AI-generated HTML
       setBackgroundResearch(parsedHtml);
       
-      // Save as new AI version
       const newVersion: ContentVersion = {
         id: uuidv4(),
         content: parsedHtml,
@@ -69,7 +63,6 @@ export function BackgroundResearchSection({
         source: 'ai'
       };
       
-      // Add the new version and update the active version
       const updatedVersions = [...backgroundResearchVersions, newVersion];
       onVersionsChange(updatedVersions);
       setActiveVersionId(newVersion.id);
@@ -77,11 +70,10 @@ export function BackgroundResearchSection({
       setHasChangedSinceLastSave(false);
       setVersionCreatedSinceFormOpen(true);
       
-      setMarkdownToConvert(undefined); // Reset after conversion
+      setMarkdownToConvert(undefined);
     }
   }, [parsedHtml]);
 
-  // Track content changes
   useEffect(() => {
     if (backgroundResearch !== previousContent) {
       setHasChangedSinceLastSave(true);
@@ -93,23 +85,15 @@ export function BackgroundResearchSection({
   };
 
   const selectVersion = (version: ContentVersion) => {
-    // Update the active version ID first
     setActiveVersionId(version.id);
-    
-    // Then update the content to match the selected version
     setBackgroundResearch(version.content);
     setPreviousContent(version.content);
     setHasChangedSinceLastSave(false);
   };
 
   const saveCurrentVersion = () => {
-    // Don't save empty content
     if (!backgroundResearch.trim()) return;
-    
-    // Don't save if content hasn't changed
     if (backgroundResearch === previousContent) return;
-    
-    // Don't create multiple versions in one editing session
     if (versionCreatedSinceFormOpen) return;
     
     const newVersion: ContentVersion = {
@@ -119,7 +103,6 @@ export function BackgroundResearchSection({
       source: 'manual'
     };
     
-    // Add the new version and update the active version
     const updatedVersions = [...backgroundResearchVersions, newVersion];
     onVersionsChange(updatedVersions);
     setActiveVersionId(newVersion.id);
@@ -130,10 +113,7 @@ export function BackgroundResearchSection({
     return newVersion;
   };
 
-  // Handle editor blur to create a version if content has changed
   const handleEditorBlur = () => {
-    // Only create a new version if the content has actually changed from the previous version
-    // and we haven't already saved this change
     if (hasChangedSinceLastSave && backgroundResearch !== previousContent && backgroundResearch.trim() && !versionCreatedSinceFormOpen) {
       saveCurrentVersion();
     }
@@ -143,7 +123,6 @@ export function BackgroundResearchSection({
     if (guest) {
       setIsLoading(true);
       try {
-        // Make sure to pass all required arguments here - this was missing the 4th argument
         await generateBackgroundResearch(
           guest, 
           setIsLoading, 
@@ -161,7 +140,7 @@ export function BackgroundResearchSection({
     <div className="space-y-4">
       <BackgroundResearchControls 
         guest={guest || { id: '', name: '', title: '', bio: '', socialLinks: {}, createdAt: '', updatedAt: '' }}
-        onNewVersionCreated={handleGenerateResearch}
+        onNewVersionCreated={saveCurrentVersion}
         onClearAllVersions={() => onVersionsChange([])}
         setMarkdownToConvert={setMarkdownToConvert}
         versions={backgroundResearchVersions}
