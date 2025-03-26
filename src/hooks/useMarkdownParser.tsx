@@ -16,9 +16,7 @@ export function useMarkdownParser(markdown: string | undefined) {
       marked.setOptions({
         breaks: true, // Convert \n to <br> in paragraphs
         gfm: true,    // GitHub Flavored Markdown
-        pedantic: false,
-        headerIds: false, // Disable header IDs to prevent React Quill issues
-        mangle: false     // Disable mangling to prevent React Quill issues
+        pedantic: false
       });
       
       const parseMarkdown = async () => {

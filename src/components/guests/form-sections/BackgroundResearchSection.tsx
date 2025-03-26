@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { FormLabel } from "@/components/ui/form";
@@ -26,12 +26,12 @@ export function BackgroundResearchSection({
   const parsedHtml = useMarkdownParser(markdownToConvert);
 
   // Update background research when parsedHtml changes
-  useState(() => {
+  useEffect(() => {
     if (parsedHtml) {
       setBackgroundResearch(parsedHtml);
       setMarkdownToConvert(undefined); // Reset after conversion
     }
-  });
+  }, [parsedHtml, setBackgroundResearch]);
 
   const handleChange = (content: string) => {
     console.log("Background research changed:", content);
