@@ -7,7 +7,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Guest } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAIPrompts } from '@/hooks/useAIPrompts';
@@ -41,10 +41,13 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
         throw new Error("Episode notes generator prompt not found");
       }
       
+      console.log("Retrieved prompt data:", promptData);
+      
       // Replace variables in the prompt template
       const prompt = promptData.prompt_text.replace('${topic}', topic);
       
-      console.log("Calling generate-episode-notes function with prompt based on topic:", topic);
+      console.log("Calling generate-episode-notes function with topic:", topic);
+      console.log("Using prompt:", prompt);
       
       // Build request body with all available prompt components
       const requestBody: any = {

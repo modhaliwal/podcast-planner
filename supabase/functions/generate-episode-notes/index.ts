@@ -24,6 +24,11 @@ serve(async (req) => {
     }
     
     console.log(`Generating episode notes for topic: ${topic}`);
+    console.log(`Using custom prompt: ${prompt}`);
+    
+    if (systemPrompt) {
+      console.log("Using custom system prompt from database");
+    }
     
     // Build the full prompt with context and examples if provided
     let promptToUse = prompt || 
@@ -31,13 +36,17 @@ serve(async (req) => {
     
     // Add context if provided
     if (contextInstructions) {
+      console.log("Adding context instructions to prompt");
       promptToUse += `\n\nContext: ${contextInstructions}`;
     }
     
     // Add example if provided
     if (exampleOutput) {
+      console.log("Adding example output to prompt");
       promptToUse += `\n\nPlease format your response similar to this example:\n${exampleOutput}`;
     }
+    
+    console.log("Final prompt:", promptToUse);
     
     // Generate research based on the topic with the provided or default prompt
     const generatedNotes = await generateResearchWithPerplexity(

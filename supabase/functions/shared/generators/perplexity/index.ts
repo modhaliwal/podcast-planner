@@ -23,9 +23,14 @@ export async function generateResearchWithPerplexity(
   const companyInfo = company ? `at ${company}` : "";
   
   try {
+    console.log("Generating research with Perplexity...");
+    
     // Create prompts - use custom system prompt if provided
-    const systemPrompt = customSystemPrompt || createSystemPrompt();
-    const userPrompt = createUserPrompt(name, title, companyInfo, extractedContent);
+    const systemPrompt = customSystemPrompt ? customSystemPrompt : createSystemPrompt();
+    console.log(`Using ${customSystemPrompt ? 'custom' : 'default'} system prompt`);
+    
+    const userPrompt = extractedContent;
+    console.log("Using user prompt:", userPrompt.substring(0, 100) + "...");
     
     // Call API
     const data = await callPerplexityAPI(
