@@ -1,8 +1,8 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest, ContentVersion } from '@/lib/types';
 import { isBlobUrl } from '@/lib/imageUpload';
+import { toast } from '@/hooks/use-toast';
 
 export function useFetchGuest(guestId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);

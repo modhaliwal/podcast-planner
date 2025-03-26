@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Upload, Trash, ImageIcon } from "lucide-react";
 import { isBlobUrl } from "@/lib/imageUpload";
+import { toast } from "@/hooks/use-toast";
 
 interface HeadshotSectionProps {
   initialImageUrl?: string;
@@ -18,12 +18,9 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
   const [isRemoved, setIsRemoved] = useState(false);
   
-  // Set initial image preview
   useEffect(() => {
-    // Reset removed status when component mounts with new image
     setIsRemoved(false);
     
-    // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (initialImageUrl && !isBlobUrl(initialImageUrl)) {
       setImagePreview(initialImageUrl);
     }
@@ -45,41 +42,33 @@ export function HeadshotSection({ initialImageUrl, guestName, onImageChange }: H
       return;
     }
 
-    // Revoke any existing blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
     }
 
-    // Reset removed status when new image is selected
     setIsRemoved(false);
 
-    // Create a new blob URL for preview only
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     
-    // Pass the file and preview URL to the parent component
     onImageChange(file, previewUrl);
   };
 
   const removeImage = () => {
-    // Revoke the temporary blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
     
-    // Clear the image preview
     setImagePreview(undefined);
     setIsRemoved(true);
     
-    // Notify parent component - null signals image should be removed
     onImageChange(null);
     toast.info("Image removed");
   };
 
   useEffect(() => {
-    // Clean up blob URLs when component unmounts
     return () => {
       if (localBlobUrl) {
         URL.revokeObjectURL(localBlobUrl);

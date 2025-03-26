@@ -9,6 +9,7 @@ import { Navigation } from './Navigation';
 import { UserDropdown } from './UserDropdown';
 import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/hooks/use-toast';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);

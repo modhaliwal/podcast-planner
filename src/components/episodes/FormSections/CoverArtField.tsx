@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, Trash } from 'lucide-react';
 import { isBlobUrl } from '@/lib/imageUpload';
+import { toast } from '@/hooks/use-toast';
 
 interface CoverArtFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -18,15 +18,11 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
   const [isRemoved, setIsRemoved] = useState(false);
   
-  // Get cover art value from form once on mount
   const coverArtValue = form.getValues('coverArt');
   
-  // Set initial image preview only once on mount or when coverArtValue changes
   useEffect(() => {
-    // Reset removed status when component mounts with new cover art
     setIsRemoved(false);
     
-    // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (coverArtValue && !isBlobUrl(coverArtValue) && typeof coverArtValue === 'string') {
       console.log("Setting initial cover art preview:", coverArtValue);
       setImagePreview(coverArtValue);
@@ -49,31 +45,25 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
       return;
     }
 
-    // Revoke any existing blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
     }
 
-    // Reset removed status when new image is selected
     setIsRemoved(false);
 
-    // Create a new blob URL for preview only
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     
-    // Set the form value to the blob URL temporarily
     form.setValue('coverArt', previewUrl, { shouldValidate: true });
   }, [form, localBlobUrl]);
 
   const removeImage = useCallback(() => {
-    // Revoke the temporary blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
     
-    // Clear the image preview and form value
     setImagePreview(undefined);
     form.setValue('coverArt', undefined, { shouldValidate: true });
     setIsRemoved(true);
@@ -81,7 +71,6 @@ export function CoverArtField({ form }: CoverArtFieldProps) {
     toast.info("Cover art removed");
   }, [form, localBlobUrl]);
 
-  // Clean up blob URLs when component unmounts
   useEffect(() => {
     return () => {
       if (localBlobUrl) {

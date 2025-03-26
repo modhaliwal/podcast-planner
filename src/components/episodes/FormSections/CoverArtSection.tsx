@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
@@ -9,6 +8,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { isBlobUrl } from '@/lib/imageUpload';
+import { toast } from '@/hooks/use-toast';
 
 interface CoverArtSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -19,9 +19,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
   
-  // Set initial image preview
   useEffect(() => {
-    // Only set initial image if it's not a blob URL (which would be invalid after page refresh)
     if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
       console.log("Setting initial cover art preview:", currentCoverArt);
       setImagePreview(currentCoverArt);
@@ -44,28 +42,23 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
       return;
     }
 
-    // Revoke any existing blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
     }
 
-    // Create a new blob URL for preview only
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     
-    // Set the form value to the blob URL temporarily
     form.setValue('coverArt', previewUrl, { shouldValidate: true });
   };
 
   const resetImage = () => {
-    // Revoke the temporary blob URL to prevent memory leaks
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
     
-    // Reset to initial image if it's not a blob URL
     if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
       setImagePreview(currentCoverArt);
       form.setValue('coverArt', currentCoverArt, { shouldValidate: true });
@@ -78,7 +71,6 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
   };
 
   useEffect(() => {
-    // Clean up blob URLs when component unmounts
     return () => {
       if (localBlobUrl) {
         URL.revokeObjectURL(localBlobUrl);
