@@ -1,124 +1,111 @@
 
-import { useState, useEffect } from 'react';
-import { Episode, ContentVersion } from '@/lib/types';
-import { EpisodeStatus } from '@/lib/enums';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { mapEpisodeFromDB } from '@/services/episodeService';
+import { Episode } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { ensureVersionNumbers } from '@/lib/versionUtils';
+import { toast } from '@/hooks/use-toast';
 
 export function useEpisodeLoader(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
   const [episode, setEpisode] = useState<Episode | null>(null);
-  const { episodes } = useAuth();
-
-  // Load episode data initially
-  useEffect(() => {
-    const fetchEpisode = async () => {
-      if (!episodeId) {
-        setIsLoading(false);
-        return;
-      }
-      
-      setIsLoading(true);
-      
-      try {
-        // First try to get from context to avoid flickering
-        const contextEpisode = episodes.find(e => e.id === episodeId);
-        if (contextEpisode) {
-          setEpisode(contextEpisode);
-          setIsLoading(false);
-          return;
-        }
-        
-        // If not in context, fetch directly from database
-        const { data, error } = await supabase
-          .from('episodes')
-          .select('*, episode_guests(guest_id)')
-          .eq('id', episodeId)
-          .single();
-          
-        if (error) throw error;
-        
-        if (data) {
-          // Convert from database format to app format
-          const guestIds = data.episode_guests ? 
-            data.episode_guests.map((eg: any) => eg.guest_id) : [];
-            
-          // Properly cast the status to EpisodeStatus enum
-          const statusValue = data.status as keyof typeof EpisodeStatus;
-          
-          // Properly parse JSON fields with type checking
-          const recordingLinks = data.recording_links ? (
-            typeof data.recording_links === 'string' 
-              ? JSON.parse(data.recording_links) 
-              : data.recording_links
-          ) : undefined;
-          
-          const podcastUrls = data.podcast_urls ? (
-            typeof data.podcast_urls === 'string' 
-              ? JSON.parse(data.podcast_urls) 
-              : data.podcast_urls
-          ) : undefined;
-          
-          const resources = data.resources ? (
-            typeof data.resources === 'string' 
-              ? JSON.parse(data.resources) 
-              : (Array.isArray(data.resources) ? data.resources : [])
-          ) : [];
-          
-          // Parse the notes_versions field and ensure version numbers
-          let notesVersions: ContentVersion[] = [];
-          try {
-            notesVersions = data.notes_versions ? (
-              typeof data.notes_versions === 'string'
-                ? JSON.parse(data.notes_versions)
-                : (Array.isArray(data.notes_versions) ? data.notes_versions : [])
-            ) : [];
-            
-            // Ensure all versions have version numbers
-            notesVersions = ensureVersionNumbers(notesVersions);
-          } catch (e) {
-            console.error("Error parsing notes versions for episode", data.id, e);
-          }
-          
-          // Create properly typed Episode object
-          const formattedEpisode: Episode = {
-            id: data.id,
-            title: data.title,
-            episodeNumber: data.episode_number,
-            topic: data.topic,
-            introduction: data.introduction || '',
-            notes: data.notes || '',
-            notesVersions: notesVersions,
-            status: statusValue as EpisodeStatus,
-            scheduled: data.scheduled,
-            publishDate: data.publish_date,
-            coverArt: data.cover_art,
-            recordingLinks: recordingLinks,
-            podcastUrls: podcastUrls,
-            resources: resources,
-            guestIds: guestIds,
-            createdAt: data.created_at,
-            updatedAt: data.updated_at
-          };
-          
-          setEpisode(formattedEpisode);
-        }
-      } catch (error: any) {
-        console.error('Error fetching episode:', error);
-        toast.error('Failed to load episode data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { refreshEpisodes } = useAuth();
+  
+  const fetchEpisode = useCallback(async () => {
+    if (!episodeId) {
+      setIsLoading(false);
+      return null;
+    }
     
+    setIsLoading(true);
+    
+    try {
+      console.log(`Loading episode with ID: ${episodeId}`);
+      
+      // Fetch episode data
+      const { data: episodeData, error: episodeError } = await supabase
+        .from('episodes')
+        .select('*')
+        .eq('id', episodeId)
+        .single();
+      
+      if (episodeError) throw episodeError;
+      
+      if (!episodeData) {
+        console.error('Episode not found:', episodeId);
+        setEpisode(null);
+        setIsLoading(false);
+        return null;
+      }
+      
+      // Fetch guest relationships
+      const { data: guestRelationships, error: guestsError } = await supabase
+        .from('episode_guests')
+        .select('guest_id')
+        .eq('episode_id', episodeId);
+      
+      if (guestsError) throw guestsError;
+      
+      // Extract guest IDs
+      const guestIds = guestRelationships?.map(rel => rel.guest_id) || [];
+      
+      // Map the database result to our Episode type
+      const mappedEpisode = mapEpisodeFromDB({ 
+        ...episodeData, 
+        guestIds 
+      });
+      
+      // Process the versions
+      if (mappedEpisode.notesVersions) {
+        // Ensure each version has the required fields
+        mappedEpisode.notesVersions = mappedEpisode.notesVersions.map(version => {
+          // If the version is missing any required fields, add them with default values
+          if (!version.id) version.id = crypto.randomUUID();
+          if (!version.timestamp) version.timestamp = new Date().toISOString();
+          if (!version.source) version.source = "manual";
+          if (!version.versionNumber) version.versionNumber = 1;
+          if (version.active === undefined) version.active = false;
+          return version;
+        });
+        
+        // Ensure at least one version is active
+        const hasActiveVersion = mappedEpisode.notesVersions.some(v => v.active);
+        if (!hasActiveVersion && mappedEpisode.notesVersions.length > 0) {
+          const latestVersion = [...mappedEpisode.notesVersions].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )[0];
+          latestVersion.active = true;
+        }
+      }
+      
+      console.log('Loaded episode:', mappedEpisode);
+      setEpisode(mappedEpisode);
+      return mappedEpisode;
+    } catch (error: any) {
+      console.error('Error loading episode:', error);
+      toast({
+        title: "Error loading episode",
+        description: error.message || "Could not load episode data",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [episodeId]);
+  
+  useEffect(() => {
     fetchEpisode();
-  }, [episodeId, episodes]);
-
+  }, [fetchEpisode]);
+  
+  const refreshEpisode = async () => {
+    await fetchEpisode();
+    refreshEpisodes();
+  };
+  
   return {
     isLoading,
     episode,
-    setEpisode
+    refreshEpisode
   };
 }

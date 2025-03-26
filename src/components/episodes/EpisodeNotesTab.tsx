@@ -1,194 +1,243 @@
 
-import { BookText } from 'lucide-react';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Episode, ContentVersion } from '@/lib/types';
-import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
-import { VersionManager } from '@/components/guests/form-sections/VersionManager';
-import { v4 as uuidv4 } from 'uuid';
-import { useState, useEffect, useMemo } from 'react';
-import { NotesGeneration } from './FormSections/ContentComponents/NotesGeneration';
-import { useForm } from 'react-hook-form';
-import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { EpisodeFormValues } from './EpisodeFormSchema';
-import { processVersions } from '@/lib/versionUtils';
-
-interface EpisodeNotesContentProps {
-  episode: Episode;
-}
-
-function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
-  // Process versions to ensure they have proper structure
-  const initialVersions = useMemo(() => {
-    return processVersions(episode.notesVersions || []);
-  }, [episode.notesVersions]);
-  
-  const [notes, setNotes] = useState(episode.notes || '');
-  const [versions, setVersions] = useState<ContentVersion[]>(initialVersions);
-  
-  const form = useForm<EpisodeFormValues>({
-    defaultValues: {
-      title: episode.title || '',
-      topic: episode.topic || null,
-      guestIds: episode.guestIds || [],
-      notes: episode.notes || '',
-      notesVersions: initialVersions,
-      introduction: episode.introduction || '',
-      episodeNumber: episode.episodeNumber || 0,
-      scheduled: episode.scheduled || '',
-      publishDate: episode.publishDate || null,
-      status: episode.status || 'scheduled' as any,
-      resources: episode.resources || [],
-      coverArt: episode.coverArt || '',
-      podcastUrls: {
-        spotify: episode.podcastUrls?.spotify || '',
-        applePodcasts: episode.podcastUrls?.applePodcasts || '',
-        amazonPodcasts: episode.podcastUrls?.amazonPodcasts || '',
-        youtube: episode.podcastUrls?.youtube || '',
-      },
-    }
-  });
-  
-  useEffect(() => {
-    setNotes(episode.notes || '');
-    setVersions(processVersions(episode.notesVersions || []));
-    
-    form.reset({
-      title: episode.title || '',
-      topic: episode.topic || null,
-      guestIds: episode.guestIds || [],
-      notes: episode.notes || '',
-      notesVersions: processVersions(episode.notesVersions || []),
-      introduction: episode.introduction || '',
-      episodeNumber: episode.episodeNumber || 0,
-      scheduled: episode.scheduled || '',
-      publishDate: episode.publishDate || null,
-      status: episode.status || 'scheduled' as any,
-      resources: episode.resources || [],
-      coverArt: episode.coverArt || '',
-      podcastUrls: {
-        spotify: episode.podcastUrls?.spotify || '',
-        applePodcasts: episode.podcastUrls?.applePodcasts || '',
-        amazonPodcasts: episode.podcastUrls?.amazonPodcasts || '',
-        youtube: episode.podcastUrls?.youtube || '',
-      },
-    });
-  }, [episode, form]);
-  
-  const handleSaveChanges = async (newNotes: string, newVersions: ContentVersion[]) => {
-    try {
-      setNotes(newNotes);
-      setVersions(newVersions);
-      
-      const { error } = await supabase
-        .from('episodes')
-        .update({
-          notes: newNotes,
-          notes_versions: newVersions,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', episode.id);
-        
-      if (error) throw error;
-      toast({
-        title: "Success",
-        description: "Notes updated successfully",
-      });
-    } catch (error: any) {
-      console.error('Error saving notes:', error);
-      toast({
-        title: "Error",
-        description: `Failed to save notes: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const handleNotesGenerated = (generatedNotes: string) => {
-    setNotes(generatedNotes);
-    
-    const formValues = form.getValues();
-    
-    const newVersion: ContentVersion = {
-      id: uuidv4(),
-      content: generatedNotes,
-      timestamp: new Date().toISOString(),
-      source: "ai",
-      active: true,
-      versionNumber: versions.length + 1
-    };
-    
-    const updatedVersions = [
-      ...versions.map(v => ({ ...v, active: false })),
-      newVersion
-    ];
-    
-    setVersions(updatedVersions);
-    handleSaveChanges(generatedNotes, updatedVersions);
-  };
-  
-  return (
-    <Card className="shadow-sm border-slate-200 dark:border-slate-700">
-      <CardHeader className="bg-slate-50 dark:bg-slate-800 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
-        <VersionManager
-          content={notes}
-          versions={versions}
-          onVersionsChange={(newVersions) => {
-            setVersions(newVersions);
-            handleSaveChanges(notes, newVersions);
-          }}
-          onContentChange={(newContent) => {
-            setNotes(newContent);
-            form.setValue('notes', newContent);
-            handleSaveChanges(newContent, versions);
-          }}
-        >
-          {({ versionSelectorProps, addNewVersion, hasInitialized }) => (
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <BookText className="h-5 w-5 text-primary" />
-                Episode Notes
-              </CardTitle>
-              
-              <div className="flex items-center gap-2">
-                {hasInitialized && versionSelectorProps.versions.length > 0 && (
-                  <VersionSelector {...versionSelectorProps} />
-                )}
-                
-                {hasInitialized && (
-                  <NotesGeneration 
-                    guests={[]} // We'll fetch guests in real-time
-                    onNotesGenerated={handleNotesGenerated}
-                    form={form}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-        </VersionManager>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[calc(100vh-400px)] max-h-[600px]">
-          <div className="p-6">
-            <div className="prose dark:prose-invert max-w-none">
-              {notes ? (
-                <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: notes }} />
-              ) : (
-                <p className="text-slate-500 dark:text-slate-400 italic">No notes added yet</p>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Editor } from "@/components/editor/Editor";
+import { Button } from "@/components/ui/button";
+import { useState, useCallback } from "react";
+import { Separator } from "@/components/ui/separator";
+import { FileText, Clock, RotateCcw } from "lucide-react";
+import { useVersionManager } from "@/hooks/versions";
+import { Episode, ContentVersion } from "@/lib/types";
+import { useEpisodeData } from "@/hooks/episodes";
 
 interface EpisodeNotesTabProps {
   episode: Episode;
+  onVersionChange?: (versions: ContentVersion[]) => Promise<void>;
 }
 
-export function EpisodeNotesTab({ episode }: EpisodeNotesTabProps) {
-  return <EpisodeNotesContent episode={episode} />;
+export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabProps) {
+  const [content, setContent] = useState(episode.notes || "");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Use version manager hook for handling versions
+  const { 
+    versions, 
+    activeVersion, 
+    addVersion, 
+    selectVersion, 
+    revertToVersion,
+    isLatestVersionActive
+  } = useVersionManager({
+    content,
+    initialVersions: (episode.notesVersions || []) as ContentVersion[],
+    onContentChange: setContent,
+  });
+  
+  // Save function for version changes
+  const handleVersionChange = useCallback(
+    async (updatedVersions: ContentVersion[]) => {
+      try {
+        setIsLoading(true);
+        
+        if (onVersionChange) {
+          await onVersionChange(updatedVersions);
+        }
+      } catch (error) {
+        console.error("Error saving version:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onVersionChange]
+  );
+  
+  // Save content changes
+  const handleSaveContent = useCallback(
+    async (newContent: string) => {
+      try {
+        setIsLoading(true);
+        setContent(newContent);
+        
+        // Add new version
+        const updatedVersions = addVersion(newContent);
+        
+        // Save to database
+        if (onVersionChange) {
+          await onVersionChange(updatedVersions);
+        }
+      } catch (error) {
+        console.error("Error saving content:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [addVersion, onVersionChange]
+  );
+  
+  // Handle selecting a different version
+  const handleSelectVersion = useCallback(
+    async (versionId: string) => {
+      try {
+        setIsLoading(true);
+        const updatedVersions = selectVersion(versionId);
+        
+        if (onVersionChange) {
+          await onVersionChange(updatedVersions as ContentVersion[]);
+        }
+      } catch (error) {
+        console.error("Error selecting version:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [selectVersion, onVersionChange]
+  );
+  
+  // Handle reverting to a previous version
+  const handleRevert = useCallback(
+    async (versionId: string) => {
+      try {
+        setIsLoading(true);
+        const updatedVersions = revertToVersion(versionId);
+        
+        if (onVersionChange) {
+          await onVersionChange(updatedVersions);
+        }
+      } catch (error) {
+        console.error("Error reverting version:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [revertToVersion, onVersionChange]
+  );
+  
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue="editor" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="editor" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Editor</span>
+          </TabsTrigger>
+          <TabsTrigger value="versions" className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            <span>Version History</span>
+            {versions.length > 0 && (
+              <span className="ml-1 rounded-full bg-primary/10 px-2 text-xs">
+                {versions.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="editor" className="mt-0">
+          <Editor
+            value={content}
+            onChange={setContent}
+            onSave={handleSaveContent}
+            placeholder="Start typing your notes here..."
+            key={`editor-${activeVersion?.id || 'default'}`}
+          />
+          
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {activeVersion ? (
+                <>
+                  Editing version from {new Date(activeVersion.timestamp).toLocaleString()}
+                  {!isLatestVersionActive && (
+                    <span className="ml-2 text-yellow-500">
+                      (This is not the latest version)
+                    </span>
+                  )}
+                </>
+              ) : (
+                "Create your first version by saving"
+              )}
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handleSaveContent(content)}
+              disabled={isLoading}
+            >
+              Save Version
+            </Button>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="versions" className="mt-0">
+          <div className="rounded-md border">
+            <div className="p-4">
+              <h3 className="font-medium">Version History</h3>
+              <p className="text-sm text-muted-foreground">
+                View and restore previous versions of your notes.
+              </p>
+            </div>
+            
+            <Separator />
+            
+            <div className="max-h-[400px] overflow-y-auto p-0">
+              {versions.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  No versions saved yet. Save your first version to start tracking changes.
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {versions.map((version, index) => (
+                    <div key={version.id} className={`flex items-start justify-between p-4 ${
+                      version.active ? 'bg-muted/50' : ''
+                    } ${index !== versions.length - 1 ? 'border-b' : ''}`}>
+                      <div className="flex-1">
+                        <div className="flex items-center">
+                          <h4 className="text-sm font-medium">
+                            Version {version.versionNumber || index + 1}
+                            {version.active && (
+                              <span className="ml-2 text-xs text-primary">(Current)</span>
+                            )}
+                          </h4>
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {new Date(version.timestamp).toLocaleString()}
+                        </div>
+                        <div className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                          {version.content.substring(0, 120)}...
+                        </div>
+                      </div>
+                      
+                      <div className="ml-4 flex items-center gap-2">
+                        {!version.active && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSelectVersion(version.id)}
+                            disabled={isLoading}
+                          >
+                            View
+                          </Button>
+                        )}
+                        
+                        {!version.active && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-1"
+                            onClick={() => handleRevert(version.id)}
+                            disabled={isLoading}
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            Revert
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }

@@ -8,12 +8,14 @@ import type {
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 5000
+const AUTO_DISMISS_DELAY = 2500 // 2.5 seconds for auto-dismissal
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  variant?: "default" | "destructive" // Make sure variant is included
 }
 
 const actionTypes = {
@@ -70,6 +72,24 @@ const addToRemoveQueue = (toastId: string) => {
   }, TOAST_REMOVE_DELAY)
 
   toastTimeouts.set(toastId, timeout)
+}
+
+// Add auto-dismiss for non-destructive toasts
+const addToAutoDismissQueue = (toast: ToasterToast) => {
+  // Don't auto-dismiss destructive (error) toasts
+  if (toast.variant === "destructive") {
+    return
+  }
+  
+  const timeout = setTimeout(() => {
+    dispatch({
+      type: "DISMISS_TOAST",
+      toastId: toast.id,
+    })
+  }, AUTO_DISMISS_DELAY)
+
+  // We need to clean up the timeout if toast is dismissed manually
+  return timeout;
 }
 
 export const reducer = (state: State, action: Action): State => {
@@ -150,17 +170,24 @@ function toast({ ...props }: Toast) {
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
+  const toastToAdd = {
+    ...props,
+    id,
+    open: true,
+    onOpenChange: (open: boolean) => {
+      if (!open) dismiss()
+    },
+  } as ToasterToast;
+
   dispatch({
     type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
+    toast: toastToAdd,
   })
+
+  // Add auto-dismiss for non-destructive toasts
+  if (props.variant !== "destructive") {
+    addToAutoDismissQueue(toastToAdd);
+  }
 
   return {
     id: id,
