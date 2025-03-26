@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Episode } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { deleteImage } from "@/lib/imageUpload";
 
 export function useEpisodeData(
@@ -47,7 +47,10 @@ export function useEpisodeData(
       
       if (error) throw error;
       
-      toast.success("Episode deleted successfully");
+      toast({
+        title: "Success",
+        description: "Episode deleted successfully"
+      });
       
       // Refresh episodes data
       await refreshEpisodes();
@@ -55,7 +58,11 @@ export function useEpisodeData(
       // Navigate back to episodes list
       navigate('/episodes');
     } catch (error: any) {
-      toast.error(`Error deleting episode: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Error deleting episode: ${error.message}`,
+        variant: "destructive"
+      });
       console.error("Error deleting episode:", error);
     } finally {
       setIsLoading(false);

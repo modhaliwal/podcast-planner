@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Episode, ContentVersion } from "@/lib/types";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { EpisodeStatus } from "@/lib/enums";
 import { ensureVersionNumbers } from "./versions/utils/versionNumberUtils";
 import { processVersions } from "@/lib/versionUtils";
@@ -85,10 +85,17 @@ export function useEpisodeForm({ episode, onSubmit }: UseEpisodeFormProps) {
       
       // Submit the form
       await onSubmit(updatedEpisode);
-      toast.success("Episode saved successfully");
+      toast({
+        title: "Success",
+        description: "Episode saved successfully"
+      });
     } catch (error) {
       console.error("Error saving episode:", error);
-      toast.error("Failed to save episode");
+      toast({
+        title: "Error",
+        description: "Failed to save episode",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
