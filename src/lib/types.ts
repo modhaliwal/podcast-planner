@@ -63,16 +63,17 @@ export interface Episode {
   id: string;
   episodeNumber: number;
   title: string;
-  scheduled: string;       // Recording session date and time
-  publishDate?: string;    // Date the episode will be published
+  topic?: string;       // Added topic field
+  scheduled: string;    // Recording session date and time
+  publishDate?: string; // Date the episode will be published
   status: EpisodeStatus;
-  coverArt?: string;       // URL to the cover art image
+  coverArt?: string;    // URL to the cover art image
   guestIds: string[];
   introduction: string;
   notes: string;
   recordingLinks?: RecordingLinks;
   podcastUrls?: PodcastUrls;
-  resources?: Resource[];  // Added resources field
+  resources?: Resource[]; // Added resources field
   createdAt: string;
   updatedAt: string;
 }

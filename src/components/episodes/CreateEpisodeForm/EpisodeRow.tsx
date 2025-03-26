@@ -29,7 +29,7 @@ export const EpisodeRow = ({
   onUpdateTime
 }: EpisodeRowProps) => {
   return (
-    <div className="grid grid-cols-4 gap-4 items-center">
+    <div className="grid grid-cols-5 gap-4 items-center">
       <div className="flex items-center gap-2">
         <Input
           type="number"
@@ -55,6 +55,13 @@ export const EpisodeRow = ({
         placeholder={`Episode #${episode.episodeNumber}`}
         value={episode.title || ''}
         onChange={(e) => onUpdate(index, 'title', e.target.value)}
+      />
+      
+      <Input
+        type="text"
+        placeholder="Topic or keywords"
+        value={episode.topic || ''}
+        onChange={(e) => onUpdate(index, 'topic', e.target.value)}
       />
       
       <Popover>

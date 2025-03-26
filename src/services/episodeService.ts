@@ -26,6 +26,7 @@ export const createEpisodes = async (
           user_id: user.id,
           episode_number: episode.episodeNumber,
           title: episode.title || `Episode #${episode.episodeNumber}`,
+          topic: episode.topic || null,
           scheduled: episode.scheduled.toISOString(),
           status: EpisodeStatus.SCHEDULED,
           introduction: `Introduction for Episode #${episode.episodeNumber}`, // Default introduction

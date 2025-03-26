@@ -32,9 +32,10 @@ export const EpisodeFormCard = ({
       <CardContent>
         <div className="space-y-4">
           {/* Header row with field labels */}
-          <div className="grid grid-cols-4 gap-4 font-medium text-sm mb-1">
+          <div className="grid grid-cols-5 gap-4 font-medium text-sm mb-1">
             <Label>Episode Number</Label>
             <Label>Title</Label>
+            <Label>Topic</Label>
             <Label>Recording Date</Label>
             <Label>Recording Time</Label>
           </div>

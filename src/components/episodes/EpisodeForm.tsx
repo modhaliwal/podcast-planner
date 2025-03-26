@@ -34,6 +34,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
     defaultValues: {
       title: episode.title,
       episodeNumber: episode.episodeNumber,
+      topic: episode.topic || '',
       introduction: episode.introduction,
       notes: episode.notes,
       status: episode.status,
@@ -119,6 +120,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
         .update({
           title: data.title,
           episode_number: data.episodeNumber,
+          topic: data.topic || null,
           introduction: data.introduction,
           notes: data.notes,
           status: data.status,

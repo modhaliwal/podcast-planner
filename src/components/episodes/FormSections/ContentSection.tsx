@@ -1,10 +1,10 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
-import { BookText, Info } from 'lucide-react';
+import { BookText, Info, Tag } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -22,6 +22,31 @@ export function ContentSection({ form }: ContentSectionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        <FormField
+          control={form.control}
+          name="topic"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-muted-foreground" />
+                Topic
+              </FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Enter episode topic" 
+                  className="resize-y"
+                  {...field} 
+                  value={field.value || ''}
+                />
+              </FormControl>
+              <FormDescription>
+                Provide a short phrase or sentence including any specific keywords relevant to industry, field or ideas to be discussed in this episode.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <FormField
           control={form.control}
           name="introduction"

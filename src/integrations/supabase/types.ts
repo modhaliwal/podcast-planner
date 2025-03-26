@@ -60,6 +60,7 @@ export type Database = {
           scheduled: string
           status: string
           title: string
+          topic: string | null
           updated_at: string
           user_id: string
         }
@@ -77,6 +78,7 @@ export type Database = {
           scheduled: string
           status?: string
           title: string
+          topic?: string | null
           updated_at?: string
           user_id: string
         }
@@ -94,6 +96,7 @@ export type Database = {
           scheduled?: string
           status?: string
           title?: string
+          topic?: string | null
           updated_at?: string
           user_id?: string
         }
