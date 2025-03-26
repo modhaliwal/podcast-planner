@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from "react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Guest } from "@/lib/types";
 import { mapDatabaseGuestToGuest } from "@/services/guests/guestMappers";
@@ -9,15 +9,15 @@ export function useGuestsRefresh(userId: string | undefined) {
   const [isLoadingGuests, setIsLoadingGuests] = useState(false);
   const lastRefreshTimeRef = useRef<number>(0);
   
-  const refreshGuests = useCallback(async () => {
+  const refreshGuests = useCallback(async (force = false) => {
     if (!userId) {
       console.log("No user found, skipping guest refresh");
       return [];
     }
     
-    // Prevent multiple rapid refreshes (must be at least 2 seconds apart)
+    // Prevent multiple rapid refreshes unless forced
     const now = Date.now();
-    if (now - lastRefreshTimeRef.current < 2000) {
+    if (!force && now - lastRefreshTimeRef.current < 2000) {
       console.log("Skipping refresh, too soon since last refresh");
       return [];
     }
@@ -48,8 +48,12 @@ export function useGuestsRefresh(userId: string | undefined) {
       console.log(`Loaded ${formattedGuests.length} guests`);
       return formattedGuests;
     } catch (error: any) {
-      toast.error(`Error fetching guests: ${error.message}`);
       console.error("Error fetching guests:", error);
+      toast({
+        title: "Error fetching guests",
+        description: error.message,
+        variant: "destructive"
+      });
       return [];
     } finally {
       setIsLoadingGuests(false);

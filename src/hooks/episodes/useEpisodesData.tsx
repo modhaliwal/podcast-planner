@@ -1,6 +1,6 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Episode, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
 import { EpisodeStatus } from "@/lib/enums";
@@ -20,6 +20,8 @@ function useEpisodesData(userId: string | undefined) {
         await refreshEpisodes(true);
         isInitialMountRef.current = false;
         hasLoadedInitialDataRef.current = true;
+      } else if (!userId) {
+        console.log("No userId available, skipping initial episodes load");
       }
     };
     
@@ -113,8 +115,12 @@ function useEpisodesData(userId: string | undefined) {
       return formattedEpisodes;
       
     } catch (error: any) {
-      toast.error(`Error fetching episodes: ${error.message}`);
       console.error("Error fetching episodes:", error);
+      toast({
+        title: "Error fetching episodes",
+        description: error.message,
+        variant: "destructive"
+      });
       return episodes;
     } finally {
       setIsLoadingEpisodes(false);

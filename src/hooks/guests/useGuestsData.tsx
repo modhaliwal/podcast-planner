@@ -6,10 +6,10 @@ import { useGuestsRefresh } from "./useGuestsRefresh";
 export function useGuestsData(userId: string | undefined) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoadingGuests, setIsLoadingGuests] = useState(true);
-  const { refreshGuests: fetchGuestData } = useGuestsRefresh(userId);
-  const isInitialMountRef = useRef(true);
-  const lastFetchTimeRef = useRef<number>(0);
+  const { refreshGuests: fetchGuestData, isLoadingGuests: isRefreshing } = useGuestsRefresh(userId);
   const hasLoadedInitialDataRef = useRef(false);
+  const lastFetchTimeRef = useRef<number>(0);
+  const isInitialMountRef = useRef(true);
 
   // Load guests on initial mount, but only if not already loaded and userId is available
   useEffect(() => {
@@ -19,7 +19,7 @@ export function useGuestsData(userId: string | undefined) {
         setIsLoadingGuests(true);
         
         try {
-          const fetchedGuests = await fetchGuestData();
+          const fetchedGuests = await fetchGuestData(true);
           setGuests(fetchedGuests);
           hasLoadedInitialDataRef.current = true;
         } catch (error) {
@@ -28,6 +28,8 @@ export function useGuestsData(userId: string | undefined) {
           setIsLoadingGuests(false);
           isInitialMountRef.current = false;
         }
+      } else if (!userId) {
+        console.log("No userId available, skipping initial guests load");
       }
     };
     
@@ -53,7 +55,7 @@ export function useGuestsData(userId: string | undefined) {
     
     try {
       console.log("Refreshing guests for user:", userId);
-      const fetchedGuests = await fetchGuestData();
+      const fetchedGuests = await fetchGuestData(force);
       console.log(`Fetched ${fetchedGuests.length} guests`);
       setGuests(fetchedGuests);
       return fetchedGuests;
@@ -67,7 +69,7 @@ export function useGuestsData(userId: string | undefined) {
 
   return {
     guests,
-    isLoadingGuests,
+    isLoadingGuests: isLoadingGuests || isRefreshing,
     refreshGuests,
     isInitialMount: isInitialMountRef.current,
     setIsInitialMount: (value: boolean) => {

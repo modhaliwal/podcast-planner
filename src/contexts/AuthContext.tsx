@@ -1,9 +1,9 @@
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useGuestsData } from "@/hooks/guests";
+import { useGuestsData } from "@/hooks/guests/useGuestsData";
 import { default as useEpisodesData } from "@/hooks/episodes/useEpisodesData";
 import { User as AppUser } from "@/lib/types";
 import { getCurrentUserProfile } from "@/services/userService";
@@ -31,14 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Pass the user ID directly without using useAuth to avoid circular dependencies
-  const { guests, isLoadingGuests, refreshGuests } = useGuestsData(user?.id);
-  const { episodes, isLoadingEpisodes, refreshEpisodes } = useEpisodesData(user?.id);
+  // Pass the user ID directly to data hooks
+  const { 
+    guests, 
+    isLoadingGuests, 
+    refreshGuests 
+  } = useGuestsData(user?.id);
+  
+  const { 
+    episodes, 
+    isLoadingEpisodes, 
+    refreshEpisodes 
+  } = useEpisodesData(user?.id);
   
   const isDataLoading = isLoadingGuests || isLoadingEpisodes;
 
   // Unified data refresh function
-  const refreshAllData = async () => {
+  const refreshAllData = useCallback(async () => {
     if (!user?.id) {
       console.log("Cannot refresh data: No user ID available");
       return;
@@ -57,13 +66,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error refreshing all data:", error);
     }
-  };
+  }, [user, refreshGuests, refreshEpisodes]);
 
   const refreshUserProfile = async () => {
     if (user) {
-      const { user: profile } = await getCurrentUserProfile();
-      if (profile) {
-        setAppUser(profile);
+      try {
+        const { user: profile } = await getCurrentUserProfile();
+        if (profile) {
+          setAppUser(profile);
+        }
+      } catch (error) {
+        console.error("Error refreshing user profile:", error);
       }
     }
   };
@@ -77,8 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN' && session) {
           await refreshUserProfile();
-          // Data loading will be triggered by the useGuestsData and useEpisodesData hooks
-          // when they detect the user ID is available
+          // Data loading will happen in the useEffect hooks of the data hooks
           toast({
             title: "Success",
             description: "Signed in successfully"
@@ -104,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (session?.user) {
         await refreshUserProfile();
-        // Data loading will be triggered by the useGuestsData and useEpisodesData hooks
+        // Data loading will happen in the useEffect hooks of the data hooks
       }
       
       setLoading(false);

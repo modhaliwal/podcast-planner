@@ -16,7 +16,10 @@ const Dashboard = () => {
   } = useAuth();
   const hasInitializedRef = useRef(false);
   
-  // Load data only once when the component mounts and user is available
+  // Debug guests data
+  console.log("Dashboard rendering with guests:", guests.length, "episodes:", episodes.length);
+  
+  // Load data when the component mounts and user is available
   useEffect(() => {
     if (!hasInitializedRef.current && user?.id) {
       console.log("Dashboard component mounted with user, refreshing data");
