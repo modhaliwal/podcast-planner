@@ -15,7 +15,7 @@ function useEpisodesData(userId: string | undefined) {
   // Load episodes on initial mount
   useEffect(() => {
     const loadEpisodes = async () => {
-      if (userId && isInitialMountRef.current && !hasLoadedInitialDataRef.current) {
+      if (userId && !hasLoadedInitialDataRef.current) {
         console.log("Initial useEpisodesData mount, loading episodes for user:", userId);
         await refreshEpisodes(true);
         isInitialMountRef.current = false;
@@ -78,9 +78,6 @@ function useEpisodesData(userId: string | undefined) {
       
       // Format episodes data
       const formattedEpisodes: Episode[] = episodesData.map(episode => {
-        // Add extra debugging for topic field
-        console.log(`Processing episode ${episode.id}, topic:`, episode.topic);
-        
         // Parse resources safely
         let typedResources: Resource[] = [];
         if (episode.resources && Array.isArray(episode.resources)) {
