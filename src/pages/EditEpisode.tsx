@@ -5,88 +5,26 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Episode, Guest } from '@/lib/types';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
+import { useEpisodeData } from '@/hooks/episodes';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { episodes, guests, refreshEpisodes, refreshGuests } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [episodeData, setEpisodeData] = useState<Episode | null>(null);
-  const [guestsData, setGuestsData] = useState<Guest[]>([]);
+  const { episodes, guests, refreshEpisodes } = useAuth();
+  const { isLoading, episode, handleSave } = useEpisodeData(id, episodes, refreshEpisodes);
   
-  // Load data once on component mount
+  // Refresh data on initial mount
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        console.log("Loading data for episode edit page...");
-        // Load data in parallel
-        await Promise.all([refreshGuests(), refreshEpisodes()]);
-        
-        // For debugging: directly fetch the episode from Supabase
-        if (id) {
-          const { data: directEpisode, error } = await supabase
-            .from('episodes')
-            .select('*')
-            .eq('id', id)
-            .single();
-            
-          if (error) {
-            console.error("Error directly fetching episode:", error);
-          } else {
-            console.log("Directly fetched episode data:", directEpisode);
-          }
-        }
-        
-        // Set data from context after refresh
-        if (id) {
-          const episode = episodes.find(e => e.id === id);
-          console.log("Episode data from context:", episode);
-          
-          if (!episode) {
-            console.error("Episode not found in context after refresh. Available episodes:", episodes);
-          }
-          
-          setEpisodeData(episode || null);
-          setGuestsData(guests || []);
-        }
-      } catch (error) {
-        console.error("Error loading episode data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadData();
-    // Only run on mount and when ID changes
-  }, [id]);
+    refreshEpisodes();
+  }, [refreshEpisodes]);
   
   const handleBack = () => {
     navigate(`/episodes/${id}`);
   };
   
-  // If still loading, show minimal UI to prevent flashing
-  if (isLoading) {
-    return (
-      <Shell>
-        <div className="page-container">
-          <Button variant="ghost" size="sm" onClick={handleBack} className="mr-2">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="animate-pulse">Loading episode data...</div>
-          </div>
-        </div>
-      </Shell>
-    );
-  }
-  
   // If episode not found after loading
-  if (!episodeData) {
+  if (!episode) {
     return (
       <Shell>
         <div className="page-container">
@@ -102,7 +40,12 @@ const EditEpisode = () => {
     );
   }
   
-  console.log("Rendering episode form with data:", episodeData);
+  const onSave = async (updatedEpisode: any) => {
+    const result = await handleSave(updatedEpisode);
+    if (result.success) {
+      navigate(`/episodes/${id}`);
+    }
+  };
   
   return (
     <Shell>
@@ -125,11 +68,13 @@ const EditEpisode = () => {
         
         <EpisodeForm 
           episode={{
-            ...episodeData,
-            coverArt: episodeData.coverArt || undefined,
-            resources: episodeData.resources || []
+            ...episode,
+            coverArt: episode.coverArt || undefined,
+            resources: episode.resources || []
           }} 
-          guests={guestsData}
+          guests={guests}
+          onSave={onSave}
+          onCancel={() => navigate(`/episodes/${id}`)}
         />
       </div>
     </Shell>

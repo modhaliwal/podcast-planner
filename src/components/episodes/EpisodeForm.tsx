@@ -14,15 +14,24 @@ import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 interface EpisodeFormProps {
   episode: Episode;
   guests: Guest[];
+  onSave?: (episode: Episode) => Promise<void>;
+  onCancel?: () => void;
 }
 
-export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
+export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormProps) {
   const { refreshEpisodes } = useAuth();
   
   // Use our custom hook for form handling
-  const { form, isSubmitting, onSubmit } = useEpisodeForm(episode, refreshEpisodes);
-  
-  console.log("Rendering EpisodeForm with submit handler:", !!onSubmit);
+  const { form, isSubmitting, onSubmit } = useEpisodeForm(
+    episode, 
+    async (updatedEpisode) => {
+      if (onSave) {
+        await onSave(updatedEpisode);
+      } else {
+        await refreshEpisodes();
+      }
+    }
+  );
   
   return (
     <Form {...form}>
@@ -45,6 +54,7 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
         <FormActions 
           episodeId={episode.id} 
           isSubmitting={isSubmitting}
+          onCancel={onCancel}
         />
       </form>
     </Form>
