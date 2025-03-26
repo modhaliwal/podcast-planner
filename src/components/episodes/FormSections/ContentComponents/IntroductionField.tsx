@@ -15,7 +15,7 @@ export function IntroductionField({ form }: IntroductionFieldProps) {
       control={form.control}
       name="introduction"
       render={({ field }) => (
-        <FormItem className="pt-4">
+        <FormItem className="pt-8">
           <FormLabel className="flex items-center gap-2">
             <Info className="h-4 w-4 text-muted-foreground" />
             Introduction

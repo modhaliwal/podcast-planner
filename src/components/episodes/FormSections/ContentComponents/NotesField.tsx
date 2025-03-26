@@ -83,7 +83,7 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
             </Button>
           </div>
           <FormControl>
-            <div className="min-h-[300px] relative mb-16">
+            <div className="min-h-[300px] relative mb-24">
               <ReactQuill 
                 theme="snow" 
                 value={field.value || ''} 

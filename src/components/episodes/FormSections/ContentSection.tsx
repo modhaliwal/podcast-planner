@@ -22,7 +22,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
           Episode Content
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-10">
+      <CardContent className="space-y-12">
         <TopicField form={form} />
         <NotesField form={form} guests={guests} />
         <IntroductionField form={form} />
