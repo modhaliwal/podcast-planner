@@ -26,16 +26,7 @@ export function TopicField({ form }: TopicFieldProps) {
               className="resize-y"
               {...field} 
               value={field.value || ''}
-              onBlur={() => {
-                // On blur, if the value is an empty string after trimming, set it to null
-                if (field.value && field.value.trim() === '') {
-                  field.onChange(null);
-                }
-              }}
               onChange={(e) => {
-                // During typing, just update with the raw value
-                // We'll handle empty strings on blur
-                console.log("Topic field changed:", e.target.value);
                 field.onChange(e.target.value);
               }}
             />
