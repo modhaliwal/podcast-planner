@@ -22,7 +22,8 @@ export interface ContentGenerationConfig {
   
   // Edge function configuration
   edgeFunctionName: string;                 // Name of the Supabase edge function
-  generationType?: "bio" | "research";      // Type of generation (for edge functions that support multiple types)
+  generationType?: "bio" | "research" | "notes";      // Type of generation
+  preferredProvider?: "openai" | "perplexity";        // Preferred AI provider
 }
 
 interface ContentGeneratorProps {
@@ -46,7 +47,8 @@ export function ContentGenerator({
     guests = [],
     additionalContext = {},
     edgeFunctionName,
-    generationType
+    generationType = "bio",
+    preferredProvider
   } = config;
 
   // Determine if we should disable the button based on required fields
@@ -119,6 +121,7 @@ export function ContentGenerator({
         systemPrompt: prompt?.system_prompt,
         contextInstructions: prompt?.context_instructions,
         exampleOutput: prompt?.example_output,
+        preferredProvider,
         ...additionalContext  // Add all other context
       };
       
@@ -155,6 +158,11 @@ export function ContentGenerator({
       
       if (generatedContent) {
         console.log(`Content generated successfully:`, generatedContent.substring(0, 100) + "...");
+        
+        // Log metadata if available
+        if (data?.metadata) {
+          console.log("Generation metadata:", data.metadata);
+        }
         
         // Set the content value in the form directly to trigger UI update
         form.setValue(fieldName, generatedContent, { shouldDirty: true });

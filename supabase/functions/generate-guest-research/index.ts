@@ -1,8 +1,8 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { generateResearchWithPerplexity } from "../shared/generators/perplexity/index.ts";
 import { corsHeaders } from "../shared/utils.ts";
+import { AIGeneratorConfig } from "../shared/generators/ai.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -53,22 +53,27 @@ serve(async (req) => {
     console.log("Generating research for:", name);
     console.log("Extracted content:", extractedContent);
 
-    // Use the provided custom prompt if available, otherwise use the extracted content directly
-    const promptToUse = prompt || extractedContent;
-
-    // Generate the research using Perplexity with system prompt if provided
-    const research = await generateResearchWithPerplexity(
+    // Prepare the configuration for the AI generator
+    const config: AIGeneratorConfig = {
+      type: 'research',
       name,
       title,
       company,
-      promptToUse,
-      systemPrompt
-    );
+      prompt: prompt || extractedContent,
+      systemPrompt,
+      contextInstructions,
+      exampleOutput
+    };
+
+    // Import and use the AI generator
+    const { generateContent } = await import("../shared/generators/ai.ts");
+    const result = await generateContent(config, 'perplexity');
 
     return new Response(
       JSON.stringify({
         success: true,
-        research: research
+        research: result.content,
+        metadata: result.metadata
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

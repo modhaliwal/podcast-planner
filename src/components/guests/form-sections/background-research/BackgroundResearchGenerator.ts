@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
 
+/**
+ * @deprecated Use BackgroundResearchGenerator.tsx component instead
+ */
 export async function generateBackgroundResearch(
   guest: Guest,
   setIsLoading: (isLoading: boolean) => void,
@@ -50,6 +53,7 @@ export async function generateBackgroundResearch(
     
     // Build request body with all available prompt components
     const requestBody: any = {
+      type: 'research',
       name,
       title,
       company,

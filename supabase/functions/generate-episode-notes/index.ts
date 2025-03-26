@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../shared/utils.ts"
-import { generateResearchWithPerplexity } from "../shared/generators/perplexity/index.ts"
+import { AIGeneratorConfig } from "../shared/generators/ai.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -30,21 +30,21 @@ serve(async (req) => {
     const topicToResearch = episode.topic || episode.title || "podcast episode";
     
     // Build the full prompt with context and examples if provided
-    let promptToUse = prompt || 
+    let fullPrompt = prompt || 
       `Generate comprehensive research notes about "${topicToResearch}" for a podcast episode.`;
     
     // Add guest information if available
     if (guests && guests.length > 0) {
       const guestNames = guests.map(g => g.fullName || g.name || 'Unknown Guest').join(', ');
-      promptToUse += `\n\nThis episode features the following guests: ${guestNames}.`;
+      fullPrompt += `\n\nThis episode features the following guests: ${guestNames}.`;
       
       // Add guest details if available
       guests.forEach(guest => {
         if (guest.bio) {
-          promptToUse += `\n\n${guest.fullName || guest.name}'s bio: ${guest.bio}`;
+          fullPrompt += `\n\n${guest.fullName || guest.name}'s bio: ${guest.bio}`;
         }
         if (guest.expertise) {
-          promptToUse += `\n\n${guest.fullName || guest.name}'s expertise: ${guest.expertise}`;
+          fullPrompt += `\n\n${guest.fullName || guest.name}'s expertise: ${guest.expertise}`;
         }
       });
     }
@@ -52,32 +52,40 @@ serve(async (req) => {
     // Add context if provided
     if (contextInstructions) {
       console.log("Adding context instructions to prompt");
-      promptToUse += `\n\nContext: ${contextInstructions}`;
+      fullPrompt += `\n\nContext: ${contextInstructions}`;
     }
     
     // Add example if provided
     if (exampleOutput) {
       console.log("Adding example output to prompt");
-      promptToUse += `\n\nPlease format your response similar to this example:\n${exampleOutput}`;
+      fullPrompt += `\n\nPlease format your response similar to this example:\n${exampleOutput}`;
     }
     
-    console.log("Final prompt:", promptToUse);
+    console.log("Final prompt:", fullPrompt);
     
-    // Generate research based on the topic with the provided or default prompt
-    const generatedNotes = await generateResearchWithPerplexity(
-      "Episode Research",
-      `Notes for "${episode.title || topicToResearch}"`,
-      undefined,
-      promptToUse,
-      systemPrompt
-    );
+    // Create the AI generator config
+    const config: AIGeneratorConfig = {
+      type: 'notes',
+      name: topicToResearch,
+      title: `Notes for "${episode.title || topicToResearch}"`,
+      prompt: fullPrompt,
+      systemPrompt,
+      contextInstructions,
+      exampleOutput,
+      episode
+    };
+    
+    // Import and use the AI generator
+    const { generateContent } = await import("../shared/generators/ai.ts");
+    const result = await generateContent(config, 'perplexity');
 
     console.log("Successfully generated notes, returning response");
-    console.log("Generated note preview:", generatedNotes.substring(0, 200) + "...");
+    console.log("Generated note preview:", result.content.substring(0, 200) + "...");
 
     return new Response(
       JSON.stringify({ 
-        notes: generatedNotes,
+        notes: result.content,
+        metadata: result.metadata
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
