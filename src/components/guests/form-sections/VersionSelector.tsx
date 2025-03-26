@@ -1,3 +1,4 @@
+
 import { ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Clock, Check, Trash } from "lucide-react";
@@ -9,7 +10,7 @@ import {
   DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 
 interface VersionSelectorProps {
   versions: ContentVersion[];
@@ -18,7 +19,7 @@ interface VersionSelectorProps {
   onClearAllVersions?: () => void;
 }
 
-export function VersionSelector({ 
+export const VersionSelector = memo(function VersionSelector({ 
   versions, 
   onSelectVersion, 
   activeVersionId,
@@ -57,23 +58,8 @@ export function VersionSelector({
     event.stopPropagation();
     
     if (isConfirmingClear) {
-      // If we have an active version, preserve it
-      if (activeVersionId && onClearAllVersions) {
-        // Find the active version object
-        const activeVersion = versions.find(v => v.id === activeVersionId);
-        
-        if (activeVersion) {
-          // Pass a function that will keep only the active version
-          onClearAllVersions();
-        } else {
-          // If somehow activeVersionId doesn't match any version, clear all
-          onClearAllVersions();
-        }
-      } else {
-        // No active version, just clear all
-        onClearAllVersions?.();
-      }
-      
+      // If we're confirming, call the clear function
+      onClearAllVersions?.();
       setIsConfirmingClear(false);
       // Close the dropdown after confirmation
       setDropdownOpen(false);
@@ -94,7 +80,7 @@ export function VersionSelector({
         align="end"
         className="w-[240px] max-h-[300px] overflow-auto"
         ref={dropdownRef}
-        // Use forceMount instead of portalled to ensure content is rendered in DOM
+        // Use forceMount to ensure content is rendered in DOM
         forceMount
       >
         {sortedVersions.map((version, index) => (
@@ -143,4 +129,4 @@ export function VersionSelector({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

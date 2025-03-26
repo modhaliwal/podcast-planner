@@ -7,9 +7,10 @@ import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { NotesGeneration } from "./NotesGeneration";
 import { NotesEditor } from "./NotesEditor";
 import { NotesVersionsProvider, useNotesVersions } from "@/contexts/NotesVersionsContext";
+import { memo } from "react";
 
 // Inner component that uses the context
-function NotesFieldContent({
+const NotesFieldContent = memo(function NotesFieldContent({
   editMode = true,
   label = "Episode Notes",
   placeholder = "Add episode notes here...",
@@ -62,7 +63,7 @@ function NotesFieldContent({
       <FormMessage />
     </FormItem>
   );
-}
+});
 
 // Wrapper component that provides the context
 interface NotesFieldProps {

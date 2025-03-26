@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Episode } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,17 +9,38 @@ import { useEpisodeGuests } from '../useEpisodeGuests';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useEpisodeData(episodeId: string | undefined) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { episodes, refreshEpisodes } = useAuth();
-  const [episode, setEpisode] = useState<Episode | null>(
-    episodes.find(e => e.id === episodeId) || null
-  );
+  const [episode, setEpisode] = useState<Episode | null>(null);
   const navigate = useNavigate();
   const { handleCoverArtUpload } = useCoverArtHandler(episode?.coverArt);
   const { updateEpisodeGuests } = useEpisodeGuests();
 
-  const handleSave = async (updatedEpisode: Episode) => {
+  // Load episode data initially
+  useEffect(() => {
+    if (episodeId) {
+      // First try to get from context to avoid flickering
+      const contextEpisode = episodes.find(e => e.id === episodeId);
+      if (contextEpisode) {
+        setEpisode(contextEpisode);
+        setIsLoading(false);
+      } else {
+        // If not in context, we need to load it
+        refreshEpisodes().then(() => {
+          const refreshedEpisode = episodes.find(e => e.id === episodeId);
+          if (refreshedEpisode) {
+            setEpisode(refreshedEpisode);
+          }
+          setIsLoading(false);
+        });
+      }
+    } else {
+      setIsLoading(false);
+    }
+  }, [episodeId, episodes]);
+
+  const handleSave = useCallback(async (updatedEpisode: Episode) => {
     if (!episodeId) return { success: false };
     
     setIsLoading(true);
@@ -32,7 +53,7 @@ export function useEpisodeData(episodeId: string | undefined) {
         audio: updatedEpisode.recordingLinks.audio,
         video: updatedEpisode.recordingLinks.video,
         transcript: updatedEpisode.recordingLinks.transcript,
-        other: updatedEpisode.recordingLinks.other,
+        other: updatedEpisode.recordingLinks.other || [],
       } : null;
       
       const podcastUrlsJson = updatedEpisode.podcastUrls ? {
@@ -97,9 +118,9 @@ export function useEpisodeData(episodeId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [episodeId, handleCoverArtUpload, updateEpisodeGuests, refreshEpisodes]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!episodeId) return { success: false };
     
     setIsLoading(true);
@@ -149,7 +170,7 @@ export function useEpisodeData(episodeId: string | undefined) {
       setIsLoading(false);
       setIsDeleteDialogOpen(false);
     }
-  };
+  }, [episodeId, navigate, refreshEpisodes, handleCoverArtUpload]);
 
   return {
     isLoading,

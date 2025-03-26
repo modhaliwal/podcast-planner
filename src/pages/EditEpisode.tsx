@@ -6,12 +6,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes';
+import { useMemo } from 'react';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { guests } = useAuth();
   const { isLoading, episode, handleSave } = useEpisodeData(id);
+  
+  // Memoize the guests list to prevent unnecessary re-renders
+  const availableGuests = useMemo(() => guests || [], [guests]);
   
   // If loading or episode not found, show appropriate UI
   if (isLoading) {
@@ -56,8 +60,9 @@ const EditEpisode = () => {
         </div>
         
         <EpisodeForm
+          key={`episode-form-${episode.id}`}
           episode={episode}
-          guests={guests}
+          guests={availableGuests}
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
         />

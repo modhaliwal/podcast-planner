@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { ContentVersion } from "@/lib/types";
@@ -41,7 +41,7 @@ export function NotesVersionsProvider({
   const [versions, setVersions] = useState<ContentVersion[]>([]);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
-  // Initialize versions if they don't exist
+  // Initialize versions if they don't exist - only run once
   useEffect(() => {
     if (!hasInitialized) {
       const currentContent = form.getValues(fieldName) || "";
@@ -57,7 +57,7 @@ export function NotesVersionsProvider({
         
         // Update both the local state and the form value
         setVersions([initialVersion]);
-        form.setValue(versionsFieldName, [initialVersion]);
+        form.setValue(versionsFieldName, [initialVersion], { shouldDirty: false });
         setActiveVersionId(initialVersion.id);
       } else if (existingVersions.length > 0) {
         // Set to the most recent version
@@ -72,7 +72,8 @@ export function NotesVersionsProvider({
     }
   }, [form, fieldName, versionsFieldName, hasInitialized]);
 
-  const handleContentChange = () => {
+  // Memoize these functions to prevent unnecessary re-renders
+  const handleContentChange = useCallback(() => {
     const currentContent = form.getValues(fieldName) || "";
     
     // Check if content is not empty and if we have an active version to compare with
@@ -90,18 +91,18 @@ export function NotesVersionsProvider({
         
         const updatedVersions = [...versions, newVersion];
         setVersions(updatedVersions);
-        form.setValue(versionsFieldName, updatedVersions);
+        form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
         setActiveVersionId(newVersion.id);
       }
     }
-  };
+  }, [activeVersionId, versions, form, fieldName, versionsFieldName]);
 
-  const selectVersion = (version: ContentVersion) => {
-    form.setValue(fieldName, version.content);
+  const selectVersion = useCallback((version: ContentVersion) => {
+    form.setValue(fieldName, version.content, { shouldDirty: false });
     setActiveVersionId(version.id);
-  };
+  }, [form, fieldName]);
 
-  const clearAllVersions = () => {
+  const clearAllVersions = useCallback(() => {
     const currentContent = form.getValues(fieldName) || "";
     
     // Create a single version with current content
@@ -113,11 +114,11 @@ export function NotesVersionsProvider({
     };
     
     setVersions([newVersion]);
-    form.setValue(versionsFieldName, [newVersion]);
+    form.setValue(versionsFieldName, [newVersion], { shouldDirty: false });
     setActiveVersionId(newVersion.id);
-  };
+  }, [form, fieldName, versionsFieldName]);
 
-  const addNewVersion = (content: string, source: "manual" | "ai" | "import" = "manual") => {
+  const addNewVersion = useCallback((content: string, source: "manual" | "ai" | "import" = "manual") => {
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content,
@@ -127,13 +128,13 @@ export function NotesVersionsProvider({
     
     const updatedVersions = [...versions, newVersion];
     setVersions(updatedVersions);
-    form.setValue(versionsFieldName, updatedVersions);
+    form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
     setActiveVersionId(newVersion.id);
     
     return newVersion;
-  };
+  }, [versions, form, versionsFieldName]);
 
-  // For version selector dropdown
+  // For version selector dropdown - memoized to prevent re-renders
   const versionSelectorProps = {
     versions,
     onSelectVersion: selectVersion,

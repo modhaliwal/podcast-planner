@@ -2,7 +2,7 @@
 import { Editor } from "@/components/editor/Editor";
 import { FormControl } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { useNotesVersions } from "@/contexts/NotesVersionsContext";
+import { memo, useCallback } from "react";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 
 interface NotesEditorProps {
@@ -11,7 +11,7 @@ interface NotesEditorProps {
   readOnly?: boolean;
 }
 
-export function NotesEditor({
+export const NotesEditor = memo(function NotesEditor({
   onBlur,
   placeholder = "Add episode notes here...",
   readOnly = false
@@ -19,9 +19,9 @@ export function NotesEditor({
   const form = useFormContext<EpisodeFormValues>();
   const fieldName = "notes";
   
-  const handleContentChange = (value: string) => {
-    form.setValue(fieldName, value);
-  };
+  const handleContentChange = useCallback((value: string) => {
+    form.setValue(fieldName, value, { shouldDirty: true });
+  }, [form]);
 
   return (
     <FormControl>
@@ -34,4 +34,4 @@ export function NotesEditor({
       />
     </FormControl>
   );
-}
+});
