@@ -14,9 +14,12 @@ export function useMarkdownParser(markdown: string | undefined) {
     try {
       // Configure marked with improved options for better HTML rendering
       marked.setOptions({
-        breaks: true, // Convert \n to <br> in paragraphs
-        gfm: true,    // GitHub Flavored Markdown
-        pedantic: false
+        breaks: true,     // Convert \n to <br> in paragraphs
+        gfm: true,        // GitHub Flavored Markdown
+        pedantic: false,
+        headerIds: true,  // Generate IDs for headings
+        mangle: false,    // Don't escape HTML
+        tables: true      // Enable table support
       });
       
       const parseMarkdown = async () => {
@@ -25,7 +28,32 @@ export function useMarkdownParser(markdown: string | undefined) {
           // Parse markdown to HTML
           const html = await marked.parse(markdown);
           console.log("Parsed HTML result:", html.substring(0, 100) + "...");
-          setParsedHtml(html);
+          
+          // Make all links open in a new tab with security attributes
+          const safeHtml = html.replace(
+            /<a href="([^"]+)"/g, 
+            '<a href="$1" target="_blank" rel="noopener noreferrer"'
+          );
+          
+          // Make images responsive 
+          const responsiveHtml = safeHtml.replace(
+            /<img src="([^"]+)"([^>]*)>/g,
+            '<img src="$1" class="max-w-full h-auto rounded-md my-4" loading="lazy" $2>'
+          );
+          
+          // Ensure tables are styled properly
+          const styledHtml = responsiveHtml.replace(
+            /<table>/g,
+            '<table class="w-full border-collapse my-4">'
+          ).replace(
+            /<th>/g,
+            '<th class="border border-gray-300 dark:border-gray-700 p-2 bg-gray-100 dark:bg-gray-800">'
+          ).replace(
+            /<td>/g,
+            '<td class="border border-gray-300 dark:border-gray-700 p-2">'
+          );
+          
+          setParsedHtml(styledHtml);
         } catch (error) {
           console.error('Error parsing markdown with marked:', error);
           // Use fallback parser if marked fails
@@ -43,7 +71,7 @@ export function useMarkdownParser(markdown: string | undefined) {
   return parsedHtml;
 }
 
-// Fallback parser with improved list handling
+// Fallback parser with improved list and image handling
 function useFallbackParser(markdown: string, setParsedHtml: (html: string) => void) {
   // Convert markdown to HTML with basic rules
   let html = markdown
@@ -54,6 +82,10 @@ function useFallbackParser(markdown: string, setParsedHtml: (html: string) => vo
     // Handle basic formatting
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Handle images
+    .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-md my-4" loading="lazy">')
+    // Handle links, open in new tab
+    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     // Handle paragraphs 
     .replace(/\n\n+/g, '</p><p>')
     // Handle bullet lists
