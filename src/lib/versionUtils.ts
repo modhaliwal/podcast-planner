@@ -93,9 +93,9 @@ export function processVersions(versions: any[]): ContentVersion[] {
       }
     }
     
-    // Ensure each version has required properties
+    // Filter out invalid entries (non-objects, primitives)
     const validVersions = versions.filter(v => 
-      v && typeof v === 'object' && (v.content !== undefined || v.id !== undefined)
+      v && typeof v === 'object' && !Array.isArray(v) && (v.content !== undefined || v.id !== undefined)
     );
     
     if (validVersions.length === 0) {
@@ -103,7 +103,17 @@ export function processVersions(versions: any[]): ContentVersion[] {
       return [];
     }
     
-    const withNumbers = ensureVersionNumbers(validVersions as ContentVersion[]);
+    // Convert each version to proper ContentVersion format
+    const normalizedVersions = validVersions.map(v => ({
+      id: v.id || `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      content: v.content || '',
+      timestamp: v.timestamp || new Date().toISOString(),
+      source: v.source || 'manual',
+      active: Boolean(v.active),
+      versionNumber: Number(v.versionNumber) || 0
+    }));
+    
+    const withNumbers = ensureVersionNumbers(normalizedVersions);
     const withActive = ensureActiveVersion(withNumbers);
     
     console.log("processVersions result:", withActive);
@@ -140,6 +150,9 @@ export function migrateContentVersions<T extends Record<string, any>>(
         }
       } else if (Array.isArray(result[field as keyof T])) {
         result[field as keyof T] = processVersions(result[field as keyof T] as unknown as ContentVersion[]) as any;
+      } else {
+        // For non-string, non-array values, convert to empty array
+        result[field as keyof T] = [] as any;
       }
     }
   });

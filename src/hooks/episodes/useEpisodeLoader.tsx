@@ -70,14 +70,19 @@ export function useEpisodeLoader(episodeId: string | undefined) {
         try {
           // If it's a string, parse it
           if (typeof episodeData.notes_versions === 'string') {
-            notesVersions = JSON.parse(episodeData.notes_versions);
-          } else {
-            // If it's already an object/array, use it directly
+            const parsed = JSON.parse(episodeData.notes_versions);
+            // Ensure we have a proper array to work with
+            notesVersions = Array.isArray(parsed) ? parsed : [];
+          } else if (Array.isArray(episodeData.notes_versions)) {
+            // If it's already an array, use it directly
             notesVersions = episodeData.notes_versions;
+          } else {
+            // If it's an object but not an array, wrap it in an array
+            notesVersions = [episodeData.notes_versions];
           }
           
           // Ensure we have valid versions with required properties
-          notesVersions = processVersions(Array.isArray(notesVersions) ? notesVersions : []);
+          notesVersions = processVersions(notesVersions);
           
           console.log("Processed notes versions:", notesVersions);
         } catch (e) {

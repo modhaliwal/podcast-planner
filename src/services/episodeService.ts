@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EpisodeStatus } from "@/lib/enums";
 import { User as AppUser, Episode, ContentVersion } from "@/lib/types";
@@ -14,7 +15,7 @@ interface DBEpisode {
   status: string;
   introduction: string;
   notes?: string;
-  notes_versions?: ContentVersion[];
+  notes_versions?: any; // Changed to any to handle various input types
   cover_art?: string;
   topic?: string;
   podcast_urls?: {
@@ -41,9 +42,26 @@ interface DBEpisode {
 // Map from database structure to application structure
 export function mapEpisodeFromDB(dbEpisode: any): Episode {
   // Process notes versions if they exist
-  const notesVersions = dbEpisode.notes_versions
-    ? processVersions(dbEpisode.notes_versions as ContentVersion[])
-    : undefined;
+  let notesVersions: ContentVersion[] | undefined;
+  
+  try {
+    if (dbEpisode.notes_versions) {
+      // Make sure we pass an array to processVersions
+      const versionData = Array.isArray(dbEpisode.notes_versions) 
+        ? dbEpisode.notes_versions 
+        : [dbEpisode.notes_versions];
+      
+      notesVersions = processVersions(versionData);
+      
+      console.log("Mapped notesVersions:", {
+        input: dbEpisode.notes_versions,
+        processed: notesVersions
+      });
+    }
+  } catch (error) {
+    console.error("Error processing notes_versions in mapEpisodeFromDB:", error);
+    notesVersions = [];
+  }
 
   // Map podcast URLs from legacy fields if needed
   let podcastUrls = dbEpisode.podcast_urls || {};
