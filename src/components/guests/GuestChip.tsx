@@ -10,7 +10,7 @@ interface GuestChipProps {
   size?: 'sm' | 'md' | 'lg';
   showLink?: boolean;
   className?: string;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export function GuestChip({ 
