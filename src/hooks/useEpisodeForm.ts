@@ -40,6 +40,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),
     defaultValues,
+    mode: 'onChange', // This helps validate as the user types
   });
   
   // For debugging - log the current form values
@@ -53,6 +54,13 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
     console.log("❗ Episode form submission initiated with data:", data);
+    
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      console.log("Submission already in progress, ignoring");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
