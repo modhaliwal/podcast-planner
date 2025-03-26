@@ -133,6 +133,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
             setNotes={setNotes}
             backgroundResearch={backgroundResearch}
             setBackgroundResearch={setBackgroundResearch}
+            guest={guest}
           />
 
           <div className="flex justify-end space-x-2 pt-4 border-t">

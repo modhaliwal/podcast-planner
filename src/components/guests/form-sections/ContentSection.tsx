@@ -3,6 +3,7 @@ import { UseFormReturn } from "react-hook-form";
 import { BioSection } from "./BioSection";
 import { BackgroundResearchSection } from "./BackgroundResearchSection";
 import { NotesSection } from "./NotesSection";
+import { Guest } from "@/lib/types";
 
 interface ContentSectionProps {
   form: UseFormReturn<any>;
@@ -10,6 +11,7 @@ interface ContentSectionProps {
   setNotes: (value: string) => void;
   backgroundResearch: string;
   setBackgroundResearch: (value: string) => void;
+  guest?: Guest;
 }
 
 export function ContentSection({ 
@@ -17,7 +19,8 @@ export function ContentSection({
   notes,
   setNotes,
   backgroundResearch,
-  setBackgroundResearch
+  setBackgroundResearch,
+  guest
 }: ContentSectionProps) {
   return (
     <div className="space-y-6">
@@ -25,6 +28,7 @@ export function ContentSection({
       <BackgroundResearchSection 
         backgroundResearch={backgroundResearch}
         setBackgroundResearch={setBackgroundResearch}
+        guest={guest}
       />
       <NotesSection 
         notes={notes}
