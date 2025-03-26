@@ -74,23 +74,28 @@ export function BackgroundResearchSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <FormLabel>Background Research</FormLabel>
-        <div className="flex space-x-2">
-          {backgroundResearchVersions.length > 0 && (
-            <VersionSelector {...versionSelectorProps} />
-          )}
-          <AIResearchGenerator 
-            guest={guest} 
-            onGenerationComplete={handleGenerationComplete}
-            form={form}
-          />
-        </div>
+        <AIResearchGenerator 
+          guest={guest} 
+          onGenerationComplete={handleGenerationComplete}
+          form={form}
+        />
       </div>
       
-      <BackgroundResearchEditor 
-        backgroundResearch={backgroundResearch}
-        onChangeBackgroundResearch={handleChange}
-        onBlur={handleEditorBlur}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <BackgroundResearchEditor 
+            backgroundResearch={backgroundResearch}
+            onChangeBackgroundResearch={handleChange}
+            onBlur={handleEditorBlur}
+          />
+        </div>
+        
+        {backgroundResearchVersions.length > 0 && (
+          <div className="md:col-span-1">
+            <VersionSelector {...versionSelectorProps} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

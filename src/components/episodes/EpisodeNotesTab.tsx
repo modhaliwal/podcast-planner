@@ -47,18 +47,24 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
           <FileText className="h-4 w-4" />
           <span className="font-medium">Episode Notes</span>
         </div>
-        
-        {versions.length > 0 && (
-          <VersionSelector {...versionSelectorProps} />
-        )}
       </div>
       
-      <Editor
-        value={content}
-        onChange={setContent}
-        onBlur={handleEditorBlur}
-        placeholder="No notes available for this episode."
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Editor
+            value={content}
+            onChange={setContent}
+            onBlur={handleEditorBlur}
+            placeholder="No notes available for this episode."
+          />
+        </div>
+        
+        {versions.length > 0 && (
+          <div className="md:col-span-1">
+            <VersionSelector {...versionSelectorProps} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,15 +1,7 @@
 
 import React from 'react';
 import { ContentVersion } from '@/lib/types';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { HistoryIcon, CheckIcon, TrashIcon } from 'lucide-react';
+import { CheckIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
 // Format a timestamp for display
@@ -50,54 +42,41 @@ export function VersionSelector({
   );
   
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-1">
-          <HistoryIcon className="h-4 w-4 mr-1" />
-          Versions ({versions.length})
-        </Button>
-      </DropdownMenuTrigger>
+    <div className="w-full space-y-2">
+      <div className="text-sm font-medium">Version History</div>
+      <div className="border rounded-md overflow-hidden">
+        {sortedVersions.map(version => (
+          <div
+            key={version.id}
+            className={`flex items-center gap-2 p-3 border-b last:border-b-0 cursor-pointer ${
+              version.id === activeVersionId ? 'bg-muted/50' : 'hover:bg-muted/20'
+            }`}
+            onClick={() => onSelectVersion(version)}
+          >
+            <div className="w-4">
+              {version.id === activeVersionId && (
+                <CheckIcon className="h-4 w-4 text-primary" />
+              )}
+            </div>
+            <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">
+              v{version.versionNumber || '?'}
+            </span>
+            <span className="text-sm">{getSourceLabel(version.source)}</span>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {formatTimestamp(version.timestamp)}
+            </span>
+          </div>
+        ))}
+      </div>
       
-      <DropdownMenuContent align="end" className="min-w-[280px]">
-        <div className="max-h-[250px] overflow-y-auto">
-          {sortedVersions.map(version => (
-            <DropdownMenuItem key={version.id} className="py-2 px-4 cursor-pointer">
-              <div 
-                className="w-full"
-                onClick={() => onSelectVersion(version)}
-              >
-                <div className="flex items-center gap-2">
-                  {version.id === activeVersionId ? (
-                    <CheckIcon className="h-4 w-4 flex-shrink-0 text-primary" />
-                  ) : (
-                    <div className="h-4 w-4 flex-shrink-0" /> // Empty space for alignment
-                  )}
-                  <span className="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-xs">
-                    v{version.versionNumber || '?'}
-                  </span>
-                  <span className="text-sm">{getSourceLabel(version.source)}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">
-                    {formatTimestamp(version.timestamp)}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuItem>
-          ))}
-        </div>
-        
-        {onClearAllVersions && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-destructive cursor-pointer"
-              onClick={onClearAllVersions}
-            >
-              <TrashIcon className="h-4 w-4 mr-2" />
-              Clear All Versions
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      {onClearAllVersions && versions.length > 1 && (
+        <button 
+          onClick={onClearAllVersions}
+          className="text-xs text-destructive hover:underline mt-1"
+        >
+          Clear all versions
+        </button>
+      )}
+    </div>
   );
 }

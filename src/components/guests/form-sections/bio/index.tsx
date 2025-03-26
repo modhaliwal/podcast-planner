@@ -64,25 +64,30 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <FormLabel>Bio</FormLabel>
-        <div className="flex space-x-2">
-          {bioVersions.length > 0 && (
-            <VersionSelector {...versionSelectorProps} />
-          )}
-          <BioGeneration 
-            form={form}
-            bio={bio}
-            setBio={handleNewVersionCreated}
-            versions={bioVersions}
-            onVersionsChange={onVersionsChange}
-          />
-        </div>
+        <BioGeneration 
+          form={form}
+          bio={bio}
+          setBio={handleNewVersionCreated}
+          versions={bioVersions}
+          onVersionsChange={onVersionsChange}
+        />
       </div>
       
-      <BioEditor 
-        form={form} 
-        activeVersionId={activeVersionId || undefined}
-        onBioChange={handleBioChange}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <BioEditor 
+            form={form} 
+            activeVersionId={activeVersionId || undefined}
+            onBioChange={handleBioChange}
+          />
+        </div>
+        
+        {bioVersions.length > 0 && (
+          <div className="md:col-span-1">
+            <VersionSelector {...versionSelectorProps} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
