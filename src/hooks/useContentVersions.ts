@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, Path, PathValue } from "react-hook-form";
 
-interface UseContentVersionsProps<T> {
+interface UseContentVersionsProps<T extends Record<string, any>> {
   form: UseFormReturn<T>;
   fieldName: keyof T;
   versionsFieldName: keyof T;
@@ -22,8 +22,8 @@ export function useContentVersions<T extends Record<string, any>>({
   // Initialize versions if they don't exist
   useEffect(() => {
     if (!hasInitialized) {
-      const currentContent = form.getValues(fieldName) || "";
-      const existingVersions = form.getValues(versionsFieldName) || [];
+      const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
+      const existingVersions = form.getValues(versionsFieldName as unknown as Path<T>) || [];
 
       if (Array.isArray(existingVersions) && existingVersions.length === 0 && currentContent) {
         const initialVersion: ContentVersion = {
@@ -35,8 +35,10 @@ export function useContentVersions<T extends Record<string, any>>({
         
         // Update both the local state and the form value
         setVersions([initialVersion]);
-        // Type assertion to any to bypass TypeScript's strict checking
-        form.setValue(versionsFieldName, [initialVersion] as any);
+        form.setValue(
+          versionsFieldName as unknown as Path<T>, 
+          [initialVersion] as unknown as PathValue<T, Path<T>>
+        );
         setActiveVersionId(initialVersion.id);
       } else if (Array.isArray(existingVersions) && existingVersions.length > 0) {
         // Set to the most recent version
@@ -52,7 +54,7 @@ export function useContentVersions<T extends Record<string, any>>({
   }, [form, fieldName, versionsFieldName, hasInitialized]);
 
   const handleContentChange = () => {
-    const currentContent = form.getValues(fieldName) || "";
+    const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
     
     // Check if content is not empty and if we have an active version to compare with
     if (typeof currentContent === 'string' && currentContent.trim() && activeVersionId) {
@@ -69,21 +71,25 @@ export function useContentVersions<T extends Record<string, any>>({
         
         const updatedVersions = [...versions, newVersion];
         setVersions(updatedVersions);
-        // Type assertion to any to bypass TypeScript's strict checking
-        form.setValue(versionsFieldName, updatedVersions as any);
+        form.setValue(
+          versionsFieldName as unknown as Path<T>, 
+          updatedVersions as unknown as PathValue<T, Path<T>>
+        );
         setActiveVersionId(newVersion.id);
       }
     }
   };
 
   const selectVersion = (version: ContentVersion) => {
-    // Type assertion to any to bypass TypeScript's strict checking
-    form.setValue(fieldName, version.content as any);
+    form.setValue(
+      fieldName as unknown as Path<T>, 
+      version.content as unknown as PathValue<T, Path<T>>
+    );
     setActiveVersionId(version.id);
   };
 
   const clearAllVersions = () => {
-    const currentContent = form.getValues(fieldName) || "";
+    const currentContent = form.getValues(fieldName as unknown as Path<T>) || "";
     
     // Create a single version with current content
     const newVersion: ContentVersion = {
@@ -94,8 +100,10 @@ export function useContentVersions<T extends Record<string, any>>({
     };
     
     setVersions([newVersion]);
-    // Type assertion to any to bypass TypeScript's strict checking
-    form.setValue(versionsFieldName, [newVersion] as any);
+    form.setValue(
+      versionsFieldName as unknown as Path<T>, 
+      [newVersion] as unknown as PathValue<T, Path<T>>
+    );
     setActiveVersionId(newVersion.id);
   };
 
@@ -109,8 +117,10 @@ export function useContentVersions<T extends Record<string, any>>({
     
     const updatedVersions = [...versions, newVersion];
     setVersions(updatedVersions);
-    // Type assertion to any to bypass TypeScript's strict checking
-    form.setValue(versionsFieldName, updatedVersions as any);
+    form.setValue(
+      versionsFieldName as unknown as Path<T>, 
+      updatedVersions as unknown as PathValue<T, Path<T>>
+    );
     setActiveVersionId(newVersion.id);
     
     return newVersion;
