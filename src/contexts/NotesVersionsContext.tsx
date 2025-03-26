@@ -65,7 +65,13 @@ export function NotesVersionsProvider({
           (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         setVersions(sortedVersions);
-        setActiveVersionId(sortedVersions[0].id);
+        
+        // Find a version that's marked as active or use the most recent one
+        const activeVersion = sortedVersions.find(v => v.active === true) || sortedVersions[0];
+        setActiveVersionId(activeVersion.id);
+        
+        // Make sure the form content matches the active version
+        form.setValue(fieldName, activeVersion.content, { shouldDirty: false });
       }
       
       setHasInitialized(true);
@@ -86,21 +92,40 @@ export function NotesVersionsProvider({
           id: uuidv4(),
           content: currentContent,
           timestamp: new Date().toISOString(),
-          source: "manual"
+          source: "manual",
+          active: true
         };
         
-        const updatedVersions = [...versions, newVersion];
-        setVersions(updatedVersions);
-        form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
+        // Update active status in all versions
+        const updatedVersions = versions.map(v => ({
+          ...v,
+          active: false // Set all existing versions as inactive
+        }));
+        
+        // Add the new active version
+        const finalVersions = [...updatedVersions, newVersion];
+        setVersions(finalVersions);
+        form.setValue(versionsFieldName, finalVersions, { shouldDirty: true });
         setActiveVersionId(newVersion.id);
       }
     }
   }, [activeVersionId, versions, form, fieldName, versionsFieldName]);
 
   const selectVersion = useCallback((version: ContentVersion) => {
+    // Update form content to match selected version
     form.setValue(fieldName, version.content, { shouldDirty: false });
+    
+    // Update active status in all versions
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: v.id === version.id
+    }));
+    
+    // Update form and state
+    setVersions(updatedVersions);
+    form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
     setActiveVersionId(version.id);
-  }, [form, fieldName]);
+  }, [form, fieldName, versionsFieldName, versions]);
 
   const clearAllVersions = useCallback(() => {
     const currentContent = form.getValues(fieldName) || "";
@@ -110,25 +135,34 @@ export function NotesVersionsProvider({
       id: uuidv4(),
       content: typeof currentContent === 'string' ? currentContent : '',
       timestamp: new Date().toISOString(),
-      source: "manual"
+      source: "manual",
+      active: true
     };
     
     setVersions([newVersion]);
-    form.setValue(versionsFieldName, [newVersion], { shouldDirty: false });
+    form.setValue(versionsFieldName, [newVersion], { shouldDirty: true });
     setActiveVersionId(newVersion.id);
   }, [form, fieldName, versionsFieldName]);
 
   const addNewVersion = useCallback((content: string, source: "manual" | "ai" | "import" = "manual") => {
+    // Set all versions as inactive
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Create new active version
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content,
       timestamp: new Date().toISOString(),
-      source
+      source,
+      active: true
     };
     
-    const updatedVersions = [...versions, newVersion];
-    setVersions(updatedVersions);
-    form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
+    const finalVersions = [...updatedVersions, newVersion];
+    setVersions(finalVersions);
+    form.setValue(versionsFieldName, finalVersions, { shouldDirty: true });
     setActiveVersionId(newVersion.id);
     
     return newVersion;

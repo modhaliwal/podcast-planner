@@ -31,6 +31,7 @@ export function useContentVersions<T extends Record<string, any>>({
           content: String(currentContent),
           timestamp: new Date().toISOString(),
           source: "manual",
+          active: true
         };
         
         // Update both the local state and the form value
@@ -41,12 +42,39 @@ export function useContentVersions<T extends Record<string, any>>({
         );
         setActiveVersionId(initialVersion.id);
       } else if (Array.isArray(existingVersions) && existingVersions.length > 0) {
-        // Set to the most recent version
-        const sortedVersions = [...existingVersions].sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        setVersions(sortedVersions);
-        setActiveVersionId(sortedVersions[0].id);
+        // Find active version or use the most recent one
+        const activeVersion = existingVersions.find(v => v.active === true);
+        
+        if (activeVersion) {
+          setVersions(existingVersions);
+          setActiveVersionId(activeVersion.id);
+          form.setValue(
+            fieldName as unknown as Path<T>,
+            activeVersion.content as unknown as PathValue<T, Path<T>>
+          );
+        } else {
+          // If no active version found, mark the most recent one as active
+          const sortedVersions = [...existingVersions].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+          
+          // Update all versions to set the first one as active
+          const updatedVersions = existingVersions.map(v => ({
+            ...v,
+            active: v.id === sortedVersions[0].id
+          }));
+          
+          setVersions(updatedVersions);
+          setActiveVersionId(sortedVersions[0].id);
+          form.setValue(
+            versionsFieldName as unknown as Path<T>,
+            updatedVersions as unknown as PathValue<T, Path<T>>
+          );
+          form.setValue(
+            fieldName as unknown as Path<T>,
+            sortedVersions[0].content as unknown as PathValue<T, Path<T>>
+          );
+        }
       }
       
       setHasInitialized(true);
@@ -62,18 +90,26 @@ export function useContentVersions<T extends Record<string, any>>({
       
       // Only create a new version if content has changed
       if (activeVersion && currentContent !== activeVersion.content) {
+        // Set all versions as inactive
+        const updatedVersions = versions.map(v => ({
+          ...v,
+          active: false
+        }));
+        
+        // Create new active version
         const newVersion: ContentVersion = {
           id: uuidv4(),
           content: currentContent,
           timestamp: new Date().toISOString(),
-          source: "manual"
+          source: "manual",
+          active: true
         };
         
-        const updatedVersions = [...versions, newVersion];
-        setVersions(updatedVersions);
+        const finalVersions = [...updatedVersions, newVersion];
+        setVersions(finalVersions);
         form.setValue(
           versionsFieldName as unknown as Path<T>, 
-          updatedVersions as unknown as PathValue<T, Path<T>>
+          finalVersions as unknown as PathValue<T, Path<T>>
         );
         setActiveVersionId(newVersion.id);
       }
@@ -81,9 +117,23 @@ export function useContentVersions<T extends Record<string, any>>({
   };
 
   const selectVersion = (version: ContentVersion) => {
+    // Update form content to match selected version
     form.setValue(
       fieldName as unknown as Path<T>, 
       version.content as unknown as PathValue<T, Path<T>>
+    );
+    
+    // Update active status in all versions
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: v.id === version.id
+    }));
+    
+    // Update form and state
+    setVersions(updatedVersions);
+    form.setValue(
+      versionsFieldName as unknown as Path<T>, 
+      updatedVersions as unknown as PathValue<T, Path<T>>
     );
     setActiveVersionId(version.id);
   };
@@ -96,7 +146,8 @@ export function useContentVersions<T extends Record<string, any>>({
       id: uuidv4(),
       content: typeof currentContent === 'string' ? currentContent : String(currentContent),
       timestamp: new Date().toISOString(),
-      source: "manual"
+      source: "manual",
+      active: true
     };
     
     setVersions([newVersion]);
@@ -108,18 +159,26 @@ export function useContentVersions<T extends Record<string, any>>({
   };
 
   const addNewVersion = (content: string, source: "manual" | "ai" | "import" = "manual") => {
+    // Set all versions as inactive
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Create new active version
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content,
       timestamp: new Date().toISOString(),
-      source
+      source,
+      active: true
     };
     
-    const updatedVersions = [...versions, newVersion];
-    setVersions(updatedVersions);
+    const finalVersions = [...updatedVersions, newVersion];
+    setVersions(finalVersions);
     form.setValue(
       versionsFieldName as unknown as Path<T>, 
-      updatedVersions as unknown as PathValue<T, Path<T>>
+      finalVersions as unknown as PathValue<T, Path<T>>
     );
     setActiveVersionId(newVersion.id);
     

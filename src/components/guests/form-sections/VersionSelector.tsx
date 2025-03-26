@@ -68,6 +68,9 @@ export const VersionSelector = memo(function VersionSelector({
     }
   };
 
+  // Get the currently active version
+  const activeVersion = versions.find(v => v.id === activeVersionId || v.active);
+
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
@@ -87,7 +90,7 @@ export const VersionSelector = memo(function VersionSelector({
           <DropdownMenuItem
             key={version.id}
             onClick={() => onSelectVersion(version)}
-            className="flex items-center justify-between"
+            className={`flex items-center justify-between ${version.active || activeVersionId === version.id ? 'bg-muted/50' : ''}`}
           >
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
@@ -102,7 +105,7 @@ export const VersionSelector = memo(function VersionSelector({
                 {version.source}
               </span>
             </div>
-            {activeVersionId === version.id && (
+            {(version.active || activeVersionId === version.id) && (
               <Check className="h-4 w-4 text-primary" />
             )}
           </DropdownMenuItem>

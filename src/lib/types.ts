@@ -17,6 +17,7 @@ export interface ContentVersion {
   content: string;
   timestamp: string;
   source: 'manual' | 'ai' | 'import';
+  active?: boolean; // Added active flag to track which version is active
 }
 
 export interface Guest {

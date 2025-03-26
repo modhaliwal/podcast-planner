@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
@@ -27,19 +28,39 @@ export function VersionManager({
         id: uuidv4(),
         content: content,
         timestamp: new Date().toISOString(),
-        source: 'manual'
+        source: 'manual',
+        active: true
       };
       onVersionsChange([initialVersion]);
       setActiveVersionId(initialVersion.id);
       setPreviousContent(content);
     } else if (!activeVersionId && versions.length > 0) {
-      const sortedVersions = [...versions].sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      setActiveVersionId(sortedVersions[0].id);
-      setPreviousContent(sortedVersions[0].content);
+      // Find active version or use the most recent one
+      const activeVersion = versions.find(v => v.active === true);
+      
+      if (activeVersion) {
+        setActiveVersionId(activeVersion.id);
+        setPreviousContent(activeVersion.content);
+        onContentChange(activeVersion.content);
+      } else {
+        // If no active version, use the most recent one and mark it as active
+        const sortedVersions = [...versions].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        // Update all versions to set the first one as active
+        const updatedVersions = versions.map((v, i) => ({
+          ...v,
+          active: v.id === sortedVersions[0].id
+        }));
+        
+        onVersionsChange(updatedVersions);
+        setActiveVersionId(sortedVersions[0].id);
+        setPreviousContent(sortedVersions[0].content);
+        onContentChange(sortedVersions[0].content);
+      }
     }
-  }, [versions, content, onVersionsChange, activeVersionId]);
+  }, [versions, content, onVersionsChange, activeVersionId, onContentChange]);
 
   useEffect(() => {
     if (content !== previousContent) {
@@ -48,6 +69,13 @@ export function VersionManager({
   }, [content, previousContent]);
 
   const selectVersion = (version: ContentVersion) => {
+    // Update all versions to set the selected one as active
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: v.id === version.id
+    }));
+    
+    onVersionsChange(updatedVersions);
     setActiveVersionId(version.id);
     onContentChange(version.content);
     setPreviousContent(version.content);
@@ -55,29 +83,18 @@ export function VersionManager({
   };
 
   const handleClearAllVersions = () => {
-    // Keep only the active version
-    const activeVersion = versions.find(v => v.id === activeVersionId);
+    // Create a single active version with current content
+    const newVersion: ContentVersion = {
+      id: uuidv4(),
+      content: content,
+      timestamp: new Date().toISOString(),
+      source: 'manual',
+      active: true
+    };
     
-    if (activeVersion) {
-      // Keep only the active version
-      onVersionsChange([activeVersion]);
-    } else {
-      // If no active version found, create a new version with current content
-      onVersionsChange([]);
-      
-      // Create a new initial version if there's content
-      if (content.trim()) {
-        const initialVersion: ContentVersion = {
-          id: uuidv4(),
-          content: content,
-          timestamp: new Date().toISOString(),
-          source: 'manual'
-        };
-        onVersionsChange([initialVersion]);
-        setActiveVersionId(initialVersion.id);
-        setPreviousContent(content);
-      }
-    }
+    onVersionsChange([newVersion]);
+    setActiveVersionId(newVersion.id);
+    setPreviousContent(content);
     
     // Reset states
     setHasChangedSinceLastSave(false);
@@ -89,15 +106,23 @@ export function VersionManager({
     if (content === previousContent) return;
     if (versionCreatedSinceFormOpen) return;
     
+    // Set all versions as inactive
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Create new active version
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content: content,
       timestamp: new Date().toISOString(),
-      source: 'manual'
+      source: 'manual',
+      active: true
     };
     
-    const updatedVersions = [...versions, newVersion];
-    onVersionsChange(updatedVersions);
+    const finalVersions = [...updatedVersions, newVersion];
+    onVersionsChange(finalVersions);
     setActiveVersionId(newVersion.id);
     setPreviousContent(content);
     setHasChangedSinceLastSave(false);
@@ -113,15 +138,23 @@ export function VersionManager({
   };
 
   const addAIVersion = (newContent: string) => {
+    // Set all versions as inactive
+    const updatedVersions = versions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Create new active version
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content: newContent,
       timestamp: new Date().toISOString(),
-      source: 'ai'
+      source: 'ai',
+      active: true
     };
     
-    const updatedVersions = [...versions, newVersion];
-    onVersionsChange(updatedVersions);
+    const finalVersions = [...updatedVersions, newVersion];
+    onVersionsChange(finalVersions);
     setActiveVersionId(newVersion.id);
     setPreviousContent(newContent);
     setHasChangedSinceLastSave(false);
