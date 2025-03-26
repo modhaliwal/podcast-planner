@@ -24,7 +24,8 @@ export function AIResearchGenerator({ guest, form, onGenerationComplete }: AIRes
     additionalContext: {
       guest: guest
     },
-    edgeFunctionName: "generate-guest-research"
+    edgeFunctionName: "generate-guest-research",
+    generationType: "research" // Specify that we're generating research
   };
 
   return <ContentGenerator config={config} form={form} />;

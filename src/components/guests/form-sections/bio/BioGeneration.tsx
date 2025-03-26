@@ -23,7 +23,8 @@ export function BioGeneration({ form, bio, setBio, versions, onVersionsChange }:
       currentBio: bio,
       versions: versions
     },
-    edgeFunctionName: "generate-bio"
+    edgeFunctionName: "generate-bio",
+    generationType: "bio" // Specify that we're generating a bio
   };
 
   return <ContentGenerator config={config} form={form} />;

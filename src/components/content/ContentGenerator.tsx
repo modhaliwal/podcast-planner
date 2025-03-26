@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UseFormReturn } from "react-hook-form";
 import { Guest } from "@/lib/types";
@@ -22,6 +22,7 @@ export interface ContentGenerationConfig {
   
   // Edge function configuration
   edgeFunctionName: string;                 // Name of the Supabase edge function
+  generationType?: "bio" | "research";      // Type of generation (for edge functions that support multiple types)
 }
 
 interface ContentGeneratorProps {
@@ -44,7 +45,8 @@ export function ContentGenerator({
     onContentGenerated,
     guests = [],
     additionalContext = {},
-    edgeFunctionName
+    edgeFunctionName,
+    generationType
   } = config;
 
   const generateContent = async () => {
@@ -67,17 +69,25 @@ export function ContentGenerator({
       
       console.log(`Generating content for ${fieldName} using ${edgeFunctionName}`);
       
+      // Prepare the request body
+      const requestBody: any = {
+        formData: formValues,
+        guests,
+        prompt: prompt?.prompt_text,
+        systemPrompt: prompt?.system_prompt,
+        contextInstructions: prompt?.context_instructions,
+        exampleOutput: prompt?.example_output,
+        additionalContext
+      };
+      
+      // Add generationType if provided (for edge functions that handle multiple types)
+      if (generationType) {
+        requestBody.type = generationType;
+      }
+      
       // Call the edge function
       const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
-        body: {
-          formData: formValues,
-          guests,
-          prompt: prompt?.prompt_text,
-          systemPrompt: prompt?.system_prompt,
-          contextInstructions: prompt?.context_instructions,
-          exampleOutput: prompt?.example_output,
-          additionalContext
-        }
+        body: requestBody
       });
       
       if (error) {
@@ -86,7 +96,21 @@ export function ContentGenerator({
       
       // Extract generated content from response
       // The field name in the response should match the configured field name
-      const generatedContent = data?.[fieldName] || data?.content || data?.generatedContent;
+      let generatedContent;
+      
+      if (data?.[fieldName]) {
+        generatedContent = data[fieldName];
+      } else if (data?.content) {
+        generatedContent = data.content;
+      } else if (data?.generatedContent) {
+        generatedContent = data.generatedContent;
+      } else if (data?.bio) {
+        generatedContent = data.bio;
+      } else if (data?.research) {
+        generatedContent = data.research;
+      } else if (typeof data === 'string') {
+        generatedContent = data;
+      }
       
       if (generatedContent) {
         console.log(`Content generated successfully:`, generatedContent.substring(0, 100) + "...");
