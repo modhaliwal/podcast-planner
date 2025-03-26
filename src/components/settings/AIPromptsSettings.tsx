@@ -4,7 +4,6 @@ import { useAIPrompts, AIPrompt } from "@/hooks/useAIPrompts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,6 @@ export function AIPromptsSettings() {
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
   const [editedPrompt, setEditedPrompt] = useState<Partial<AIPrompt> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("general");
 
   const handleSelectPrompt = (promptId: string) => {
     const selectedPrompt = prompts.find(p => p.id === promptId);
@@ -86,7 +84,7 @@ export function AIPromptsSettings() {
           <div className="col-span-1">
             <h3 className="text-sm font-medium mb-3">Available Prompts</h3>
             <Separator className="mb-3" />
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[500px]">
               <div className="space-y-2">
                 {prompts.map((prompt) => (
                   <Button
@@ -106,121 +104,108 @@ export function AIPromptsSettings() {
           
           <div className="col-span-1 md:col-span-2">
             {editedPrompt ? (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    value={editedPrompt.title || ''}
-                    onChange={handleInputChange}
-                    className="mt-1"
-                  />
+              <ScrollArea className="h-[500px] pr-4">
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      name="title"
+                      value={editedPrompt.title || ''}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      name="description"
+                      value={editedPrompt.description || ''}
+                      onChange={handleInputChange}
+                      className="mt-1"
+                    />
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Brief explanation of where this prompt is used
+                    </p>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <Label htmlFor="prompt_text" className="text-base font-semibold">Main Prompt Text</Label>
+                    <Textarea
+                      id="prompt_text"
+                      name="prompt_text"
+                      value={editedPrompt.prompt_text || ''}
+                      onChange={handleInputChange}
+                      className="mt-1 min-h-[150px] font-mono text-sm"
+                    />
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Use ${'{variable}'} for dynamic values that will be replaced at runtime
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="system_prompt" className="text-base font-semibold">System Instructions</Label>
+                    <Textarea
+                      id="system_prompt"
+                      name="system_prompt"
+                      value={editedPrompt.system_prompt || ''}
+                      onChange={handleInputChange}
+                      className="mt-1 min-h-[150px] font-mono text-sm"
+                    />
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Instructions that set the AI's behavior, tone, and constraints
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="context_instructions" className="text-base font-semibold">Context Instructions</Label>
+                    <Textarea
+                      id="context_instructions"
+                      name="context_instructions"
+                      value={editedPrompt.context_instructions || ''}
+                      onChange={handleInputChange}
+                      className="mt-1 min-h-[150px] font-mono text-sm"
+                    />
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Additional context that helps the AI understand how to process the prompt
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="example_output" className="text-base font-semibold">Example Output</Label>
+                    <Textarea
+                      id="example_output"
+                      name="example_output"
+                      value={editedPrompt.example_output || ''}
+                      onChange={handleInputChange}
+                      className="mt-1 min-h-[150px] font-mono text-sm"
+                    />
+                    <p className="text-muted-foreground text-xs mt-1">
+                      Example outputs to guide the AI on the expected format and content
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={handleReset}
+                      disabled={isSaving}
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </div>
                 </div>
-                
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    name="description"
-                    value={editedPrompt.description || ''}
-                    onChange={handleInputChange}
-                    className="mt-1"
-                  />
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Brief explanation of where this prompt is used
-                  </p>
-                </div>
-                
-                <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="general">Main Prompt</TabsTrigger>
-                    <TabsTrigger value="system">System Instructions</TabsTrigger>
-                    <TabsTrigger value="context">Context</TabsTrigger>
-                    <TabsTrigger value="examples">Example Output</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="general">
-                    <div>
-                      <Label htmlFor="prompt_text">Main Prompt Text</Label>
-                      <Textarea
-                        id="prompt_text"
-                        name="prompt_text"
-                        value={editedPrompt.prompt_text || ''}
-                        onChange={handleInputChange}
-                        className="mt-1 min-h-[200px] font-mono text-sm"
-                      />
-                      <p className="text-muted-foreground text-xs mt-1">
-                        Use ${'{variable}'} for dynamic values that will be replaced at runtime
-                      </p>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="system">
-                    <div>
-                      <Label htmlFor="system_prompt">System Instructions</Label>
-                      <Textarea
-                        id="system_prompt"
-                        name="system_prompt"
-                        value={editedPrompt.system_prompt || ''}
-                        onChange={handleInputChange}
-                        className="mt-1 min-h-[200px] font-mono text-sm"
-                      />
-                      <p className="text-muted-foreground text-xs mt-1">
-                        Instructions that set the AI's behavior, tone, and constraints
-                      </p>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="context">
-                    <div>
-                      <Label htmlFor="context_instructions">Context Instructions</Label>
-                      <Textarea
-                        id="context_instructions"
-                        name="context_instructions"
-                        value={editedPrompt.context_instructions || ''}
-                        onChange={handleInputChange}
-                        className="mt-1 min-h-[200px] font-mono text-sm"
-                      />
-                      <p className="text-muted-foreground text-xs mt-1">
-                        Additional context that helps the AI understand how to process the prompt
-                      </p>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="examples">
-                    <div>
-                      <Label htmlFor="example_output">Example Output</Label>
-                      <Textarea
-                        id="example_output"
-                        name="example_output"
-                        value={editedPrompt.example_output || ''}
-                        onChange={handleInputChange}
-                        className="mt-1 min-h-[200px] font-mono text-sm"
-                      />
-                      <p className="text-muted-foreground text-xs mt-1">
-                        Example outputs to guide the AI on the expected format and content
-                      </p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleReset}
-                    disabled={isSaving}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                  >
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              </div>
+              </ScrollArea>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-muted-foreground">
@@ -234,3 +219,4 @@ export function AIPromptsSettings() {
     </Card>
   );
 }
+
