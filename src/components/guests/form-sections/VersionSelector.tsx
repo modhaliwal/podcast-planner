@@ -77,21 +77,26 @@ export function VersionSelector({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-[200px] max-h-[300px] overflow-auto"
+        className="w-[240px] max-h-[300px] overflow-auto"
         ref={dropdownRef}
         // Use forceMount instead of portalled to ensure content is rendered in DOM
         forceMount
       >
-        {sortedVersions.map((version) => (
+        {sortedVersions.map((version, index) => (
           <DropdownMenuItem
             key={version.id}
             onClick={() => onSelectVersion(version)}
             className="flex items-center justify-between"
           >
             <div className="flex flex-col">
-              <span className="text-sm">
-                {format(new Date(version.timestamp), "MMM d, yyyy h:mm a")}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium px-1.5 py-0.5 bg-muted rounded-sm">
+                  v{versions.length - index}
+                </span>
+                <span className="text-sm">
+                  {format(new Date(version.timestamp), "MMM d, yyyy h:mm a")}
+                </span>
+              </div>
               <span className="text-xs text-muted-foreground capitalize">
                 {version.source}
               </span>
