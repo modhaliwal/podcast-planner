@@ -33,7 +33,7 @@ export function useVersionManager({
     
     const timer = setTimeout(() => {
       if (versions.length === 0 && content) {
-        // Create initial version based on current content
+        // Create initial version if none exists
         const initialVersion: ContentVersion = {
           id: uuidv4(),
           content: content,
@@ -72,12 +72,10 @@ export function useVersionManager({
             
             onVersionsChange(updatedVersions);
             setActiveVersionId(sortedVersions[0].id);
-            
-            // Only update content if it's different
+            setPreviousContent(sortedVersions[0].content);
             if (content !== sortedVersions[0].content) {
               onContentChange(sortedVersions[0].content);
             }
-            setPreviousContent(sortedVersions[0].content);
           }
         }
       }
@@ -164,6 +162,11 @@ export function useVersionManager({
     return newVersion;
   }, [versions, onVersionsChange, onContentChange]);
 
+  // Add an AI-generated version
+  const addAIVersion = useCallback((newContent: string) => {
+    return addNewVersion(newContent, "ai");
+  }, [addNewVersion]);
+
   // Clear all versions except a new one with current content
   const clearAllVersions = useCallback(() => {
     const newVersion: ContentVersion = {
@@ -180,6 +183,11 @@ export function useVersionManager({
     setPreviousContent(content);
   }, [content, onVersionsChange]);
 
+  // Maps content changes to handleEditorBlur for backward compatibility
+  const handleContentChange = useCallback(() => {
+    handleEditorBlur();
+  }, [handleEditorBlur]);
+
   // Prepare props for VersionSelector component
   const versionSelectorProps = {
     versions,
@@ -192,8 +200,10 @@ export function useVersionManager({
     activeVersionId,
     versions,
     handleEditorBlur,
+    handleContentChange,
     selectVersion,
     addNewVersion,
+    addAIVersion,
     clearAllVersions,
     versionSelectorProps
   };

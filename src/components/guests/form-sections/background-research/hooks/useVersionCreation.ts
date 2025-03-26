@@ -93,8 +93,8 @@ export function useVersionCreation(
     }
   };
 
-  // Function to add an AI-generated version
-  const addAIVersion = (newContent: string) => {
+  // Function to add an AI-generated version - changed name from addAIVersion to match centralized implementation
+  const addNewAIVersion = (newContent: string) => {
     // Calculate next version number
     const nextVersionNumber = findHighestVersionNumber(versions) + 1;
     
@@ -120,13 +120,15 @@ export function useVersionCreation(
     setPreviousContent(newContent);
     setHasChangedSinceLastSave(false);
     setVersionCreatedSinceFormOpen(true);
+    
+    return newVersion;
   };
 
   return {
     hasChangedSinceLastSave,
     versionCreatedSinceFormOpen,
     handleEditorBlur,
-    addAIVersion,
+    addNewAIVersion,
     handleClearAllVersions
   };
 }

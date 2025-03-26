@@ -1,6 +1,6 @@
 
 import { ContentVersion } from "@/lib/types";
-import { useVersionManager } from "./hooks/useVersionManager";
+import { useVersionManager } from "@/hooks/versions/useVersionManager";
 
 interface VersionManagerProps {
   content: string;

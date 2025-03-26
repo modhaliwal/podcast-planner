@@ -39,7 +39,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
   const {
     activeVersionId,
     handleEditorBlur,
-    addAIVersion,
+    addNewVersion,
     versionSelectorProps
   } = useVersionManager({
     content: bio,
@@ -54,7 +54,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
   
   const handleNewVersionCreated = (content: string) => {
     handleContentChange(content);
-    addAIVersion(content);
+    addNewVersion(content, "ai");
   };
 
   return (

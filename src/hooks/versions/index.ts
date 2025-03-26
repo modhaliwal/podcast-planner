@@ -28,8 +28,8 @@ export function useContentVersions<T extends Record<string, any>>({
   versionsFieldName
 }: UseContentVersionsProps<T>) {
   // Get current values
-  const content = form.getValues(fieldName as string) || '';
-  const versions = form.getValues(versionsFieldName as string) || [];
+  const content = form.getValues(fieldName as any) || '';
+  const versions = form.getValues(versionsFieldName as any) || [];
   
   // Use the consolidated version manager
   return useVersionManager({

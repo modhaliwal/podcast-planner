@@ -30,7 +30,7 @@ export function BackgroundResearchSection({
   const {
     activeVersionId,
     handleEditorBlur,
-    addAIVersion,
+    addNewVersion,
     versionSelectorProps
   } = VersionManager({
     content: backgroundResearch,
@@ -43,10 +43,10 @@ export function BackgroundResearchSection({
   useEffect(() => {
     if (parsedHtml) {
       setBackgroundResearch(parsedHtml);
-      addAIVersion(parsedHtml);
+      addNewVersion(parsedHtml, "ai");
       setMarkdownToConvert(undefined);
     }
-  }, [parsedHtml]);
+  }, [parsedHtml, setBackgroundResearch, addNewVersion]);
 
   const handleChange = (content: string) => {
     setBackgroundResearch(content);
