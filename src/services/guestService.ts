@@ -20,11 +20,18 @@ export const getUserGuests = async (): Promise<{ data: Guest[] | null; error: an
       let backgroundResearchVersions: ContentVersion[] = [];
       
       try {
-        if (guest.bio_versions) {
+        if (guest.bio_versions && typeof guest.bio_versions === 'string') {
           bioVersions = JSON.parse(guest.bio_versions);
+        } else if (guest.bio_versions) {
+          // If it's already an object, assign directly
+          bioVersions = guest.bio_versions as unknown as ContentVersion[];
         }
-        if (guest.background_research_versions) {
+        
+        if (guest.background_research_versions && typeof guest.background_research_versions === 'string') {
           backgroundResearchVersions = JSON.parse(guest.background_research_versions);
+        } else if (guest.background_research_versions) {
+          // If it's already an object, assign directly
+          backgroundResearchVersions = guest.background_research_versions as unknown as ContentVersion[];
         }
       } catch (e) {
         console.error("Error parsing versions for guest", guest.id, e);
@@ -73,11 +80,18 @@ export const getGuest = async (id: string): Promise<{ data: Guest | null; error:
     let backgroundResearchVersions: ContentVersion[] = [];
     
     try {
-      if (data.bio_versions) {
+      if (data.bio_versions && typeof data.bio_versions === 'string') {
         bioVersions = JSON.parse(data.bio_versions);
+      } else if (data.bio_versions) {
+        // If it's already an object, assign directly
+        bioVersions = data.bio_versions as unknown as ContentVersion[];
       }
-      if (data.background_research_versions) {
+      
+      if (data.background_research_versions && typeof data.background_research_versions === 'string') {
         backgroundResearchVersions = JSON.parse(data.background_research_versions);
+      } else if (data.background_research_versions) {
+        // If it's already an object, assign directly
+        backgroundResearchVersions = data.background_research_versions as unknown as ContentVersion[];
       }
     } catch (e) {
       console.error("Error parsing versions for guest", data.id, e);

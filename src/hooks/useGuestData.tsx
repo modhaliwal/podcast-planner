@@ -41,11 +41,18 @@ export function useGuestData(guestId: string | undefined) {
         let backgroundResearchVersions: ContentVersion[] = [];
         
         try {
-          if (data.bio_versions) {
+          if (data.bio_versions && typeof data.bio_versions === 'string') {
             bioVersions = JSON.parse(data.bio_versions);
+          } else if (data.bio_versions) {
+            // If it's already an object, assign directly
+            bioVersions = data.bio_versions as unknown as ContentVersion[];
           }
-          if (data.background_research_versions) {
+          
+          if (data.background_research_versions && typeof data.background_research_versions === 'string') {
             backgroundResearchVersions = JSON.parse(data.background_research_versions);
+          } else if (data.background_research_versions) {
+            // If it's already an object, assign directly
+            backgroundResearchVersions = data.background_research_versions as unknown as ContentVersion[];
           }
         } catch (e) {
           console.error("Error parsing versions:", e);
