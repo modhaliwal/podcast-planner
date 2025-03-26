@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,11 @@ export function UsersList() {
     } catch (error: any) {
       console.error('Error fetching users:', error);
       setError(`Failed to fetch users: ${error.message}`);
-      toast.error(`Failed to fetch users: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to fetch users: ${error.message}`,
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +137,10 @@ export function UsersList() {
                           <DropdownMenuItem
                             onClick={() => {
                               navigator.clipboard.writeText(user.id);
-                              toast.success('User ID copied to clipboard');
+                              toast({
+                                title: "Success",
+                                description: "User ID copied to clipboard"
+                              });
                             }}
                             className="cursor-pointer"
                           >
