@@ -1,4 +1,3 @@
-
 import { BookText } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,8 +20,6 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
   const [notes, setNotes] = useState(episode.notes || '');
   const [versions, setVersions] = useState<ContentVersion[]>([]);
   
-  // Create a form instance for the NotesGeneration component
-  // Fix: Use EpisodeFormValues type to match expected types
   const form = useForm<EpisodeFormValues>({
     defaultValues: {
       title: episode.title || '',
@@ -34,7 +31,7 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
       episodeNumber: episode.episodeNumber || 0,
       scheduled: episode.scheduled || '',
       publishDate: episode.publishDate || null,
-      status: episode.status || 'scheduled',
+      status: episode.status || 'scheduled' as any,
       resources: episode.resources || [],
       coverArt: episode.coverArt || '',
       podcastUrls: {
@@ -46,12 +43,10 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
     }
   });
   
-  // Initialize versions when the episode changes
   useEffect(() => {
     setNotes(episode.notes || '');
     setVersions(getCurrentVersions());
     
-    // Update form values when episode changes
     form.reset({
       title: episode.title || '',
       topic: episode.topic || null,
@@ -62,7 +57,7 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
       episodeNumber: episode.episodeNumber || 0,
       scheduled: episode.scheduled || '',
       publishDate: episode.publishDate || null,
-      status: episode.status || 'scheduled',
+      status: episode.status || 'scheduled' as any,
       resources: episode.resources || [],
       coverArt: episode.coverArt || '',
       podcastUrls: {
@@ -74,11 +69,9 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
     });
   }, [episode]);
   
-  // Ensure we have valid versions array
   const getCurrentVersions = (): ContentVersion[] => {
     const episodeVersions = episode.notesVersions || [];
     
-    // Ensure each version has required properties
     return episodeVersions.map(version => ({
       id: version.id || uuidv4(),
       content: version.content || "",
@@ -89,14 +82,11 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
     }));
   };
   
-  // Handle saving versions and content back to the episode
   const handleSaveChanges = async (newNotes: string, newVersions: ContentVersion[]) => {
     try {
-      // Update local state
       setNotes(newNotes);
       setVersions(newVersions);
       
-      // Save to database
       const { error } = await supabase
         .from('episodes')
         .update({
@@ -114,15 +104,11 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
     }
   };
   
-  // Handle notes generation
   const handleNotesGenerated = (generatedNotes: string) => {
-    // The form will be updated by the NotesGeneration component
     setNotes(generatedNotes);
     
-    // Get the latest form values after generation
     const formValues = form.getValues();
     
-    // Create a new version for the generated content
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content: generatedNotes,
@@ -132,13 +118,11 @@ function EpisodeNotesContent({ episode }: EpisodeNotesContentProps) {
       versionNumber: versions.length + 1
     };
     
-    // Update versions (deactivate others, add the new one)
     const updatedVersions = [
       ...versions.map(v => ({ ...v, active: false })),
       newVersion
     ];
     
-    // Update state and save changes
     setVersions(updatedVersions);
     handleSaveChanges(generatedNotes, updatedVersions);
   };

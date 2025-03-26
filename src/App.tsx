@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster as ShadcnToaster } from '@/components/ui/toaster';
@@ -14,7 +13,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Guests = lazy(() => import('./pages/Guests'));
 const GuestView = lazy(() => import('./pages/GuestView'));
 const AddGuest = lazy(() => import('./pages/AddGuest'));
-const EditGuest = lazy(() => import('./pages/EditGuest')); // New import
+const EditGuest = lazy(() => import('./pages/EditGuest'));
 const Episodes = lazy(() => import('./pages/Episodes'));
 const CreateEpisode = lazy(() => import('./pages/CreateEpisode'));
 const EpisodeView = lazy(() => import('./pages/EpisodeView'));
@@ -90,7 +89,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
         <ShadcnToaster />
-        <SonnerToaster position="top-right" />
+        <SonnerToaster position="bottom-right" />
       </Suspense>
     </AuthProvider>
   );
