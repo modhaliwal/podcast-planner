@@ -8,7 +8,7 @@ import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
 import { useGuestsData } from '@/hooks/guests';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +27,11 @@ const EditEpisode = () => {
   // Show an error and navigate back if episode is null after loading
   useEffect(() => {
     if (!isEpisodeLoading && !episode) {
-      toast.error("Episode not found");
+      toast({
+        title: "Error",
+        description: "Episode not found",
+        variant: "destructive"
+      });
       navigate('/episodes');
     }
   }, [isEpisodeLoading, episode, navigate]);
