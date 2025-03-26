@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { ContentVersion } from "@/lib/types";
-import { v4 as uuidv4 } from "uuid";
 import { useVersionInitialization } from "./useVersionInitialization";
 import { useVersionSelection } from "./useVersionSelection";
 import { useVersionCreation } from "./useVersionCreation";
@@ -15,15 +14,15 @@ interface UseVersionManagerProps {
 
 export function useVersionManager({
   content,
-  versions,
+  versions: initialVersions,
   onVersionsChange,
   onContentChange
 }: UseVersionManagerProps) {
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
-  const [versionsList, setVersionsList] = useState<ContentVersion[]>(versions || []);
+  const [versionsList, setVersionsList] = useState<ContentVersion[]>(initialVersions || []);
 
-  // Initialize versions if they don't exist
-  const { initialize } = useVersionInitialization({
+  // Initialize versions if they don't exist - using the hook with useEffect inside
+  const { } = useVersionInitialization({
     content,
     versions: versionsList,
     setVersions: setVersionsList,
@@ -53,11 +52,6 @@ export function useVersionManager({
     onContentChange,
     onVersionsChange
   });
-
-  // Initialize on first load
-  useEffect(() => {
-    initialize();
-  }, []);
 
   // Sync versions with parent component when they change
   useEffect(() => {

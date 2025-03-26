@@ -29,6 +29,12 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     return () => subscription.unsubscribe();
   }, [form]);
   
+  // Handle content changes without directly updating form in the render
+  const handleContentChange = (newContent: string) => {
+    setBio(newContent);
+    form.setValue('bio', newContent);
+  };
+  
   // Use the version manager to handle version control
   const {
     activeVersionId,
@@ -39,10 +45,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     content: bio,
     versions: bioVersions,
     onVersionsChange: onVersionsChange,
-    onContentChange: (newContent) => {
-      form.setValue('bio', newContent);
-      setBio(newContent);
-    }
+    onContentChange: handleContentChange
   });
   
   const handleBioChange = () => {
@@ -50,7 +53,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
   };
   
   const handleNewVersionCreated = (content: string) => {
-    form.setValue('bio', content);
+    handleContentChange(content);
     addAIVersion(content);
   };
 
@@ -74,7 +77,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
       </div>
       <BioEditor 
         form={form} 
-        activeVersionId={activeVersionId}
+        activeVersionId={activeVersionId || undefined}
         onBioChange={handleBioChange}
       />
     </div>

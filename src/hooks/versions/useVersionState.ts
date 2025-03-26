@@ -22,7 +22,7 @@ export function useVersionState<T extends Record<string, any>>({
   const [versions, setVersions] = useState<ContentVersion[]>([]);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
-  // Initialize versions if they don't exist
+  // Initialize versions if they don't exist - with a proper useEffect to prevent loops
   useEffect(() => {
     if (!hasInitialized) {
       const existingVersions = form.getValues(versionsFieldName as unknown as Path<T>) || [];

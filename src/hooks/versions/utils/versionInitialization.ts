@@ -78,21 +78,23 @@ export const processExistingVersions = <T extends Record<string, any>>(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
-    // Update all versions to set the first one as active
-    const updatedVersions = versionsWithNumbers.map(v => ({
-      ...v,
-      active: v.id === sortedVersions[0].id
-    }));
-    
-    setVersions(updatedVersions);
-    setActiveVersionId(sortedVersions[0].id);
-    form.setValue(
-      versionsFieldName as unknown as Path<T>,
-      updatedVersions as unknown as PathValue<T, Path<T>>
-    );
-    form.setValue(
-      fieldName as unknown as Path<T>,
-      sortedVersions[0].content as unknown as PathValue<T, Path<T>>
-    );
+    if (sortedVersions.length > 0) {
+      // Update all versions to set the first one as active
+      const updatedVersions = versionsWithNumbers.map(v => ({
+        ...v,
+        active: v.id === sortedVersions[0].id
+      }));
+      
+      setVersions(updatedVersions);
+      setActiveVersionId(sortedVersions[0].id);
+      form.setValue(
+        versionsFieldName as unknown as Path<T>,
+        updatedVersions as unknown as PathValue<T, Path<T>>
+      );
+      form.setValue(
+        fieldName as unknown as Path<T>,
+        sortedVersions[0].content as unknown as PathValue<T, Path<T>>
+      );
+    }
   }
 };

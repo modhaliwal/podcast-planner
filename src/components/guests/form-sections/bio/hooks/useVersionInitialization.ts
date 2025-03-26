@@ -2,6 +2,7 @@
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "@/hooks/versions";
+import { useEffect } from "react";
 
 interface UseVersionInitializationProps {
   content: string;
@@ -16,7 +17,8 @@ export function useVersionInitialization({
   setVersions,
   setActiveVersionId
 }: UseVersionInitializationProps) {
-  const initialize = () => {
+  // Using useEffect to prevent infinite loops during initialization
+  useEffect(() => {
     if (versions.length === 0 && content) {
       // Create initial version based on current content
       const initialVersion: ContentVersion = {
@@ -53,7 +55,7 @@ export function useVersionInitialization({
         }
       }
     }
-  };
-
-  return { initialize };
+  }, []); // Run once on mount only
+  
+  return {};
 }
