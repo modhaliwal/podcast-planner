@@ -84,7 +84,8 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        notes: result.content,
+        notes: result.content,        // HTML content
+        markdownNotes: result.markdown, // Original markdown
         metadata: result.metadata
       }),
       {

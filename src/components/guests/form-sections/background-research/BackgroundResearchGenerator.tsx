@@ -6,7 +6,7 @@ import { ContentGenerator, ContentGenerationConfig } from "@/components/content/
 interface BackgroundResearchGeneratorProps {
   guest?: Guest;
   form: UseFormReturn<any>;
-  onGenerationComplete: (markdown: string) => void;
+  onGenerationComplete: (html: string) => void;
 }
 
 export function BackgroundResearchGenerator({ 

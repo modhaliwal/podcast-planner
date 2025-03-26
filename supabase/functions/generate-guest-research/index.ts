@@ -72,7 +72,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        research: result.content,
+        research: result.content,      // This is now HTML
+        markdown: result.markdown,     // Original markdown for reference
         metadata: result.metadata
       }),
       { 

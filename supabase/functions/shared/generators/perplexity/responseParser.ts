@@ -7,7 +7,7 @@ import { formatMarkdownWithMedia } from "./markdownFormatter.ts";
 /**
  * Processes the raw API response from Perplexity
  */
-export function processApiResponse(data: any): string {
+export function processApiResponse(data: any): any {
   if (data.error) {
     console.error("Perplexity API error:", data.error);
     throw new Error(`Perplexity API error: ${data.error.message || data.error}`);
@@ -29,7 +29,7 @@ export function processApiResponse(data: any): string {
 /**
  * Parses the content from API response
  */
-export function parseResponseContent(messageContent: any): string {
+export function parseResponseContent(messageContent: any): any {
   let bodyContent = "";
   let references: string[] = [];
   let images: string[] = [];
@@ -66,8 +66,11 @@ export function parseResponseContent(messageContent: any): string {
     // Clean up the content to ensure it's valid markdown
     bodyContent = cleanupMarkdown(bodyContent);
     
-    // Format the markdown with the parsed content
-    return formatMarkdownWithMedia(bodyContent, images, references);
+    return {
+      content: bodyContent,
+      references,
+      images
+    };
   } catch (error) {
     console.error("Error parsing response content:", error);
     throw new Error(`Failed to parse response: ${error.message}`);

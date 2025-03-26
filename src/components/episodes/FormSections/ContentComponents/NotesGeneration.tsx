@@ -34,6 +34,8 @@ export function NotesGeneration({ guests, onNotesGenerated, form }: NotesGenerat
           topic
         },
         edgeFunctionName: 'generate-episode-notes',
+        generationType: "notes",
+        preferredProvider: "perplexity" // Prefer Perplexity for notes
       }}
       form={form}
     />

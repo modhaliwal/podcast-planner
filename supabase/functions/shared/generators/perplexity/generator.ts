@@ -2,6 +2,7 @@
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
 import { DEFAULT_CONFIG, createResponseFormat } from './config.ts';
 import { processApiResponse } from './responseParser.ts';
+import { convertMarkdownToHtml } from '../../utils/markdownConverter.ts';
 
 /**
  * Generates content using Perplexity API
@@ -70,7 +71,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     const data = await response.json();
     
     // Process the response
-    let content;
+    let markdown;
     let metadata: any = {
       provider: 'perplexity',
       model: DEFAULT_CONFIG.model
@@ -80,27 +81,37 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
       try {
         // Process structured response
         const parsed = processApiResponse(data);
-        content = parsed.content || parsed.Body || data.choices[0].message.content;
+        markdown = parsed.content || parsed.Body || data.choices[0].message.content;
         
         // Add references and images to metadata if available
         if (parsed.references) metadata.references = parsed.references;
         if (parsed.images) metadata.images = parsed.images;
       } catch (e) {
         console.error("Error processing structured response:", e);
-        content = data.choices[0].message.content;
+        markdown = data.choices[0].message.content;
       }
     } else {
       // Simple text response
-      content = data.choices[0].message.content;
+      markdown = data.choices[0].message.content;
     }
     
-    console.log("Successfully generated content with Perplexity");
-    console.log("Content preview:", content.substring(0, 100) + "...");
+    console.log("Successfully generated markdown content with Perplexity");
+    console.log("Markdown preview:", markdown.substring(0, 100) + "...");
     
-    return {
-      content,
-      metadata
-    };
+    // Convert markdown to HTML
+    try {
+      const html = await convertMarkdownToHtml(markdown);
+      console.log("Successfully converted markdown to HTML");
+      
+      return {
+        content: html,
+        markdown: markdown, // Keep the original markdown for reference if needed
+        metadata
+      };
+    } catch (error) {
+      console.error("Error converting markdown to HTML:", error);
+      throw new Error(`Failed to convert markdown to HTML: ${error.message}`);
+    }
   } catch (error) {
     console.error("Error generating content with Perplexity:", error);
     throw new Error(`Failed to generate content with Perplexity: ${error.message}`);

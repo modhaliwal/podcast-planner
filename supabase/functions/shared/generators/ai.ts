@@ -18,7 +18,8 @@ export interface AIGeneratorConfig {
  * Common response structure for AI generators
  */
 export interface AIGeneratorResponse {
-  content: string;
+  content: string;      // HTML content
+  markdown?: string;    // Original markdown content if available
   metadata?: {
     model?: string;
     provider?: string;
