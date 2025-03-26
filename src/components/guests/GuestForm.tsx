@@ -1,17 +1,17 @@
 
-import { useState, useEffect } from "react";
-import { Guest, ContentVersion } from "@/lib/types";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Guest } from "@/lib/types";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { HeadshotSection } from "./form-sections/HeadshotSection";
 import { BasicInfoSection } from "./form-sections/BasicInfoSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
-import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-import { ensureVersionNumbers } from "@/hooks/versions";
+import { 
+  GuestFormSubmitHandler, 
+  GuestFormVersionsState,
+  GuestImageState
+} from "./form";
 
 interface GuestFormProps {
   guest: Guest;
@@ -20,52 +20,8 @@ interface GuestFormProps {
 }
 
 export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
-  const [socialLinks, setSocialLinks] = useState(guest.socialLinks);
-  const [notes, setNotes] = useState(guest.notes || "");
-  const [backgroundResearch, setBackgroundResearch] = useState(guest.backgroundResearch || "");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Version state
-  const [bioVersions, setBioVersions] = useState<ContentVersion[]>(
-    ensureVersionNumbers(guest.bioVersions || [])
-  );
-  const [backgroundResearchVersions, setBackgroundResearchVersions] = useState<ContentVersion[]>(
-    ensureVersionNumbers(guest.backgroundResearchVersions || [])
-  );
-
-  // Initialize versions if they don't exist
-  useEffect(() => {
-    const initializeVersions = () => {
-      if (bioVersions.length === 0 && guest.bio) {
-        const initialVersion: ContentVersion = {
-          id: uuidv4(),
-          content: guest.bio,
-          timestamp: guest.updatedAt || new Date().toISOString(),
-          source: 'import',
-          active: true,
-          versionNumber: 1
-        };
-        setBioVersions([initialVersion]);
-      }
-  
-      if (backgroundResearchVersions.length === 0 && guest.backgroundResearch) {
-        const initialVersion: ContentVersion = {
-          id: uuidv4(),
-          content: guest.backgroundResearch,
-          timestamp: guest.updatedAt || new Date().toISOString(),
-          source: 'import',
-          active: true,
-          versionNumber: 1
-        };
-        setBackgroundResearchVersions([initialVersion]);
-      }
-    };
-
-    initializeVersions();
-  }, [guest, bioVersions.length, backgroundResearchVersions.length]);
-
   const form = useForm({
     defaultValues: {
       name: guest.name,
@@ -75,129 +31,85 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
       phone: guest.phone || "",
       bio: guest.bio,
       status: guest.status || "potential",
-      twitter: socialLinks.twitter || "",
-      facebook: socialLinks.facebook || "",
-      linkedin: socialLinks.linkedin || "",
-      instagram: socialLinks.instagram || "",
-      tiktok: socialLinks.tiktok || "",
-      youtube: socialLinks.youtube || "",
-      website: socialLinks.website || "",
+      twitter: guest.socialLinks.twitter || "",
+      facebook: guest.socialLinks.facebook || "",
+      linkedin: guest.socialLinks.linkedin || "",
+      instagram: guest.socialLinks.instagram || "",
+      tiktok: guest.socialLinks.tiktok || "",
+      youtube: guest.socialLinks.youtube || "",
+      website: guest.socialLinks.website || "",
     },
   });
 
-  const handleImageChange = (file: File | null, previewUrl?: string) => {
-    setImageFile(file);
-    setIsImageRemoved(file === null);
-  };
-
-  const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
-    
-    try {
-      let imageUrl = guest.imageUrl;
-      
-      if (imageFile) {
-        toast.info("Uploading image...");
-        
-        const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
-        
-        if (uploadedUrl) {
-          if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
-            await deleteImage(imageUrl);
-          }
-          
-          imageUrl = uploadedUrl;
-          toast.success("Image uploaded successfully");
-        } else {
-          toast.error("Failed to upload image");
-        }
-      } 
-      else if (isImageRemoved) {
-        imageUrl = null;
-      }
-      
-      // Ensure versions have active flag and version numbers
-      const processedBioVersions = ensureVersionNumbers(bioVersions);
-      const processedBackgroundVersions = ensureVersionNumbers(backgroundResearchVersions);
-      
-      const updatedGuest: Guest = {
-        ...guest,
-        name: data.name,
-        title: data.title,
-        company: data.company || undefined,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        bio: data.bio,
-        bioVersions: processedBioVersions,
-        notes: notes || undefined,
-        backgroundResearch: backgroundResearch || undefined,
-        backgroundResearchVersions: processedBackgroundVersions,
-        status: data.status,
-        imageUrl: imageUrl as string | undefined,
-        socialLinks: {
-          twitter: data.twitter || undefined,
-          facebook: data.facebook || undefined,
-          linkedin: data.linkedin || undefined,
-          instagram: data.instagram || undefined,
-          tiktok: data.tiktok || undefined,
-          youtube: data.youtube || undefined,
-          website: data.website || undefined,
-        },
-        updatedAt: new Date().toISOString(),
-      };
-
-      onSave(updatedGuest);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast.error("Failed to save guest information");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <HeadshotSection 
-                initialImageUrl={guest.imageUrl}
-                guestName={form.getValues('name')}
-                onImageChange={handleImageChange}
-              />
-              
-              <BasicInfoSection form={form} />
-            </div>
+      <GuestImageState>
+        {({ imageFile, isImageRemoved, handleImageChange }) => (
+          <GuestFormVersionsState guest={guest}>
+            {({ 
+              bioVersions, 
+              backgroundResearchVersions, 
+              notes, 
+              backgroundResearch, 
+              setBioVersions, 
+              setBackgroundResearchVersions, 
+              setNotes, 
+              setBackgroundResearch 
+            }) => (
+              <Form {...form}>
+                <form 
+                  onSubmit={form.handleSubmit((data) => {})} 
+                  className="space-y-6"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <HeadshotSection 
+                        initialImageUrl={guest.imageUrl}
+                        guestName={form.getValues('name')}
+                        onImageChange={handleImageChange}
+                      />
+                      
+                      <BasicInfoSection form={form} />
+                    </div>
 
-            <div className="space-y-4">
-              <SocialLinksSection form={form} />
-            </div>
-          </div>
+                    <div className="space-y-4">
+                      <SocialLinksSection form={form} />
+                    </div>
+                  </div>
 
-          <ContentSection 
-            form={form}
-            notes={notes}
-            setNotes={setNotes}
-            backgroundResearch={backgroundResearch}
-            setBackgroundResearch={setBackgroundResearch}
-            bioVersions={bioVersions}
-            backgroundResearchVersions={backgroundResearchVersions}
-            onBioVersionsChange={setBioVersions}
-            onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
-            guest={guest}
-          />
+                  <ContentSection 
+                    form={form}
+                    notes={notes}
+                    setNotes={setNotes}
+                    backgroundResearch={backgroundResearch}
+                    setBackgroundResearch={setBackgroundResearch}
+                    bioVersions={bioVersions}
+                    backgroundResearchVersions={backgroundResearchVersions}
+                    onBioVersionsChange={setBioVersions}
+                    onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
+                    guest={guest}
+                  />
 
-          <div className="flex justify-end space-x-2 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </form>
-      </Form>
+                  <GuestFormSubmitHandler
+                    guest={guest}
+                    isSubmitting={isSubmitting}
+                    setIsSubmitting={setIsSubmitting}
+                    imageFile={imageFile}
+                    isImageRemoved={isImageRemoved}
+                    bioVersions={bioVersions}
+                    backgroundResearchVersions={backgroundResearchVersions}
+                    formData={form.getValues()}
+                    notes={notes}
+                    backgroundResearch={backgroundResearch}
+                    onSave={onSave}
+                    onCancel={onCancel}
+                  />
+                </form>
+              </Form>
+            )}
+          </GuestFormVersionsState>
+        )}
+      </GuestImageState>
     </div>
   );
 }
