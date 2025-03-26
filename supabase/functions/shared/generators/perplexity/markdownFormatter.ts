@@ -41,6 +41,16 @@ export function formatMarkdownWithMedia(bodyContent: string, images: string[], r
     });
   }
   
+  // Ensure content has proper markdown formatting for headings
+  bodyContent = bodyContent.replace(/^(#{1,6})(?!\s)/gm, "$1 ");
+  
+  // Ensure proper list formatting
+  bodyContent = bodyContent.replace(/^(-|\*|\+)(?!\s)/gm, "$1 ");
+  bodyContent = bodyContent.replace(/^(\d+\.)(?!\s)/gm, "$1 ");
+  
+  // Fix common markdown issues
+  bodyContent = bodyContent.replace(/\[(.*?)\]\s*\((.*?)\)/g, "[$1]($2)");
+  
   // Log output statistics
   const wordCount = bodyContent.split(/\s+/).length;
   console.log(`Total word count: ${wordCount}`);

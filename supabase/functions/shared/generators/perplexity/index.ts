@@ -44,6 +44,8 @@ export async function generateResearchWithPerplexity(
     const generatedResearch = processApiResponse(data);
     
     console.log("Successfully generated research with Perplexity");
+    console.log("Research preview:", generatedResearch.substring(0, 100) + "...");
+    
     return generatedResearch;
   } catch (error) {
     console.error("Error calling Perplexity for research:", error);

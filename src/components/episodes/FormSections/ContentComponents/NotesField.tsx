@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Guest } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAIPrompts } from '@/hooks/useAIPrompts';
+import { useMarkdownParser } from '@/hooks/useMarkdownParser';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -19,7 +20,19 @@ interface NotesFieldProps {
 
 export function NotesField({ form, guests = [] }: NotesFieldProps) {
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
+  const [markdownToConvert, setMarkdownToConvert] = useState<string | undefined>();
   const { getPromptByKey } = useAIPrompts();
+  const parsedHtml = useMarkdownParser(markdownToConvert);
+  
+  // Update form when HTML is parsed from markdown
+  if (parsedHtml && markdownToConvert) {
+    form.setValue('notes', parsedHtml, { shouldValidate: true });
+    setMarkdownToConvert(undefined);
+    if (isGeneratingNotes) {
+      setIsGeneratingNotes(false);
+      toast.success("Episode notes generated successfully");
+    }
+  }
   
   const handleGenerateNotes = async () => {
     const topic = form.getValues('topic');
@@ -83,14 +96,12 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
         throw new Error("No notes were generated");
       }
       
-      // Update the form with generated notes
-      form.setValue('notes', data.notes, { shouldValidate: true });
-      toast.success("Episode notes generated successfully");
+      // Set the markdown to be converted to HTML
+      setMarkdownToConvert(data.notes);
       
     } catch (error: any) {
       console.error("Error generating notes:", error);
       toast.error(`Failed to generate notes: ${error.message || "Unknown error"}`);
-    } finally {
       setIsGeneratingNotes(false);
     }
   };

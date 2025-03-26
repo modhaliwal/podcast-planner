@@ -58,6 +58,7 @@ serve(async (req) => {
     );
 
     console.log("Successfully generated notes, returning response");
+    console.log("Generated note preview:", generatedNotes.substring(0, 200) + "...");
 
     return new Response(
       JSON.stringify({ 

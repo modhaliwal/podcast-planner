@@ -63,10 +63,38 @@ export function parseResponseContent(messageContent: any): string {
       throw new Error("Unexpected content format");
     }
     
+    // Clean up the content to ensure it's valid markdown
+    bodyContent = cleanupMarkdown(bodyContent);
+    
     // Format the markdown with the parsed content
     return formatMarkdownWithMedia(bodyContent, images, references);
   } catch (error) {
     console.error("Error parsing response content:", error);
     throw new Error(`Failed to parse response: ${error.message}`);
   }
+}
+
+/**
+ * Cleans up markdown to ensure it can be properly converted to HTML
+ */
+function cleanupMarkdown(markdown: string): string {
+  // Remove any HTML tags that might be in the content already
+  let cleaned = markdown.replace(/<\/?[^>]+(>|$)/g, "");
+  
+  // Ensure proper spacing for headings
+  cleaned = cleaned.replace(/^(#{1,6})(?!\s)/gm, "$1 ");
+  
+  // Ensure proper spacing for lists
+  cleaned = cleaned.replace(/^(-|\*|\+)(?!\s)/gm, "$1 ");
+  cleaned = cleaned.replace(/^(\d+\.)(?!\s)/gm, "$1 ");
+  
+  // Fix common markdown issues with line breaks
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+  
+  // Ensure proper link format
+  cleaned = cleaned.replace(/\[(.*?)\]\s*\((.*?)\)/g, "[$1]($2)");
+  
+  console.log("Cleaned markdown preview:", cleaned.substring(0, 100) + "...");
+  
+  return cleaned;
 }
