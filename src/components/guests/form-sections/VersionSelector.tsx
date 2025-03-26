@@ -98,7 +98,7 @@ export function VersionSelector({
                     {version.id === activeVersionId && (
                       <CheckIcon className="inline h-4 w-4 mr-1 text-primary" />
                     )}
-                    {getSourceLabel(version.source)}
+                    v{version.versionNumber || '?'} - {getSourceLabel(version.source)}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {formatTimestamp(version.timestamp)}

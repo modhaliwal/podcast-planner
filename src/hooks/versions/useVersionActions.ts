@@ -14,6 +14,14 @@ interface UseVersionActionsProps<T extends Record<string, any>> {
 }
 
 /**
+ * Find the highest version number in an array of content versions
+ */
+const findHighestVersionNumber = (versions: ContentVersion[]): number => {
+  if (!versions.length) return 0;
+  return Math.max(...versions.map(v => v.versionNumber || 0));
+};
+
+/**
  * Hook to provide actions for interacting with content versions
  */
 export function useVersionActions<T extends Record<string, any>>({
@@ -36,12 +44,16 @@ export function useVersionActions<T extends Record<string, any>>({
       
       // Only create a new version if content has changed from the active version
       if (activeVersion && currentContent !== activeVersion.content) {
+        // Calculate next version number
+        const nextVersionNumber = findHighestVersionNumber(versions) + 1;
+        
         const newVersion: ContentVersion = {
           id: uuidv4(),
           content: currentContent,
           timestamp: new Date().toISOString(),
           source: "manual",
-          active: true // Mark the new version as active
+          active: true, // Mark the new version as active
+          versionNumber: nextVersionNumber
         };
         
         // Remove active flag from other versions
@@ -108,7 +120,8 @@ export function useVersionActions<T extends Record<string, any>>({
       content: typeof currentContent === "string" ? currentContent : "",
       timestamp: new Date().toISOString(),
       source: "manual",
-      active: true // Mark as active
+      active: true, // Mark as active
+      versionNumber: 1 // Reset to version 1
     };
     
     // Update state and form values
@@ -125,13 +138,17 @@ export function useVersionActions<T extends Record<string, any>>({
    * Adds a new version with specified content and optionally marks it as active
    */
   const addNewVersion = (content: string, source: "manual" | "ai" | "import" = "manual") => {
+    // Calculate next version number
+    const nextVersionNumber = findHighestVersionNumber(versions) + 1;
+    
     // Create a new version
     const newVersion: ContentVersion = {
       id: uuidv4(),
       content,
       timestamp: new Date().toISOString(),
       source,
-      active: true // Mark as active
+      active: true, // Mark as active
+      versionNumber: nextVersionNumber
     };
     
     // Remove active flag from other versions

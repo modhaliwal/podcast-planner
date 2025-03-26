@@ -11,6 +11,14 @@ interface VersionManagerProps {
   onContentChange: (content: string) => void;
 }
 
+/**
+ * Find the highest version number in an array of content versions
+ */
+const findHighestVersionNumber = (versions: ContentVersion[]): number => {
+  if (!versions.length) return 0;
+  return Math.max(...versions.map(v => v.versionNumber || 0));
+};
+
 export function VersionManager({
   content,
   versions = [],
@@ -22,6 +30,21 @@ export function VersionManager({
   const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
   const [versionCreatedSinceFormOpen, setVersionCreatedSinceFormOpen] = useState<boolean>(false);
 
+  // Ensure all versions have version numbers
+  useEffect(() => {
+    if (versions.length > 0 && versions.some(v => v.versionNumber === undefined)) {
+      // Add sequential version numbers to versions that don't have them
+      const versionsWithNumbers = [...versions].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      ).map((v, index) => ({
+        ...v,
+        versionNumber: v.versionNumber || (index + 1)
+      }));
+      
+      onVersionsChange(versionsWithNumbers);
+    }
+  }, [versions, onVersionsChange]);
+
   useEffect(() => {
     if (versions.length === 0 && content) {
       const initialVersion: ContentVersion = {
@@ -29,7 +52,8 @@ export function VersionManager({
         content: content,
         timestamp: new Date().toISOString(),
         source: 'manual',
-        active: true
+        active: true,
+        versionNumber: 1
       };
       onVersionsChange([initialVersion]);
       setActiveVersionId(initialVersion.id);
@@ -89,7 +113,8 @@ export function VersionManager({
       content: content,
       timestamp: new Date().toISOString(),
       source: 'manual',
-      active: true
+      active: true,
+      versionNumber: 1
     };
     
     onVersionsChange([newVersion]);
@@ -106,6 +131,9 @@ export function VersionManager({
     if (content === previousContent) return;
     if (versionCreatedSinceFormOpen) return;
     
+    // Calculate next version number
+    const nextVersionNumber = findHighestVersionNumber(versions) + 1;
+    
     // Set all versions as inactive
     const updatedVersions = versions.map(v => ({
       ...v,
@@ -118,7 +146,8 @@ export function VersionManager({
       content: content,
       timestamp: new Date().toISOString(),
       source: 'manual',
-      active: true
+      active: true,
+      versionNumber: nextVersionNumber
     };
     
     const finalVersions = [...updatedVersions, newVersion];
@@ -138,6 +167,9 @@ export function VersionManager({
   };
 
   const addAIVersion = (newContent: string) => {
+    // Calculate next version number
+    const nextVersionNumber = findHighestVersionNumber(versions) + 1;
+    
     // Set all versions as inactive
     const updatedVersions = versions.map(v => ({
       ...v,
@@ -150,7 +182,8 @@ export function VersionManager({
       content: newContent,
       timestamp: new Date().toISOString(),
       source: 'ai',
-      active: true
+      active: true,
+      versionNumber: nextVersionNumber
     };
     
     const finalVersions = [...updatedVersions, newVersion];
