@@ -1,26 +1,25 @@
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Guest, SocialLinks } from "@/lib/types";
+import { Guest } from "@/lib/types";
+import { mapDatabaseGuestToGuest } from "@/services/guests/guestMappers";
 
-export function useGuestsData(userId: string | undefined) {
-  const [guests, setGuests] = useState<Guest[]>([]);
+export function useGuestsRefresh(userId: string | undefined) {
   const [isLoadingGuests, setIsLoadingGuests] = useState(false);
   const lastRefreshTimeRef = useRef<number>(0);
-  const isInitialMountRef = useRef(true);
-
+  
   const refreshGuests = useCallback(async () => {
     if (!userId) {
       console.log("No user found, skipping guest refresh");
-      return;
+      return [];
     }
     
     // Prevent multiple rapid refreshes (must be at least 2 seconds apart)
     const now = Date.now();
     if (now - lastRefreshTimeRef.current < 2000) {
       console.log("Skipping refresh, too soon since last refresh");
-      return;
+      return [];
     }
     
     setIsLoadingGuests(true);
@@ -41,48 +40,23 @@ export function useGuestsData(userId: string | undefined) {
       
       if (!data || data.length === 0) {
         console.log("No guests found in database");
-        setGuests([]);
-        return;
+        return [];
       }
       
-      const formattedGuests: Guest[] = data.map(guest => ({
-        id: guest.id,
-        name: guest.name,
-        title: guest.title,
-        company: guest.company || undefined,
-        email: guest.email || undefined,
-        phone: guest.phone || undefined,
-        bio: guest.bio,
-        imageUrl: guest.image_url || undefined,
-        socialLinks: guest.social_links as SocialLinks || {},
-        notes: guest.notes || undefined,
-        backgroundResearch: guest.background_research || undefined,
-        status: (guest.status as Guest['status']) || 'potential',
-        createdAt: guest.created_at,
-        updatedAt: guest.updated_at
-      }));
+      const formattedGuests: Guest[] = data.map(guest => mapDatabaseGuestToGuest(guest));
       
       console.log(`Loaded ${formattedGuests.length} guests`);
-      setGuests(formattedGuests);
+      return formattedGuests;
     } catch (error: any) {
       toast.error(`Error fetching guests: ${error.message}`);
       console.error("Error fetching guests:", error);
+      return [];
     } finally {
       setIsLoadingGuests(false);
     }
   }, [userId]);
 
-  // Load guests on initial mount only
-  useEffect(() => {
-    if (userId && isInitialMountRef.current) {
-      console.log("Initial useGuestsData mount, refreshing guests");
-      refreshGuests();
-      isInitialMountRef.current = false;
-    }
-  }, [userId, refreshGuests]);
-
   return {
-    guests,
     isLoadingGuests,
     refreshGuests
   };
