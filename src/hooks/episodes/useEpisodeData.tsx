@@ -1,15 +1,17 @@
 
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Episode } from "@/lib/types";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useCoverArtHandler } from "../useCoverArtHandler";
-import { useEpisodeGuests } from "../useEpisodeGuests";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Episode } from '@/lib/types';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useCoverArtHandler } from '../useCoverArtHandler';
+import { useEpisodeGuests } from '../useEpisodeGuests';
+import { useAuth } from '@/contexts/AuthContext';
 
-export function useEpisodeData(episodeId: string | undefined, episodes: Episode[], refreshEpisodes: () => Promise<void>) {
+export function useEpisodeData(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { episodes, refreshEpisodes } = useAuth();
   const [episode, setEpisode] = useState<Episode | null>(
     episodes.find(e => e.id === episodeId) || null
   );
@@ -73,8 +75,7 @@ export function useEpisodeData(episodeId: string | undefined, episodes: Episode[
           resources: resourcesJson,
           updated_at: new Date().toISOString()
         })
-        .eq('id', episodeId)
-        .select();
+        .eq('id', episodeId);
       
       if (updateError) {
         throw updateError;
@@ -86,6 +87,7 @@ export function useEpisodeData(episodeId: string | undefined, episodes: Episode[
       await refreshEpisodes();
       
       toast.success("Episode updated successfully");
+      setEpisode(updatedEpisode);
       
       return { success: true, episode: updatedEpisode };
     } catch (error: any) {

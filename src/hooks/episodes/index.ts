@@ -1,2 +1,2 @@
 
-export * from './useEpisodeData';
+export { useEpisodeData } from './useEpisodeData';

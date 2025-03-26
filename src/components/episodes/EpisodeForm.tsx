@@ -14,7 +14,7 @@ import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 interface EpisodeFormProps {
   episode: Episode;
   guests: Guest[];
-  onSave?: (episode: Episode) => Promise<void>;
+  onSave: (episode: Episode) => Promise<void>;
   onCancel?: () => void;
 }
 

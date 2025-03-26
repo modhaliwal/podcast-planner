@@ -1,33 +1,19 @@
 
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useEpisodeData } from '@/hooks/episodes';
+import { useAuth } from '@/contexts/AuthContext';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
-import { Episode } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { useEpisodeData } from '@/hooks/episodes';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { episodes, guests, refreshEpisodes } = useAuth();
-  const { isLoading, handleSave } = useEpisodeData(id, episodes, refreshEpisodes);
-  const [episode, setEpisode] = useState<Episode | null>(null);
+  const { guests } = useAuth();
+  const { isLoading, episode, handleSave } = useEpisodeData(id);
   
-  // Get episode data only once on component mount
-  useEffect(() => {
-    const currentEpisode = episodes.find(e => e.id === id) || null;
-    setEpisode(currentEpisode);
-  }, [id, episodes]);
-  
-  const handleBack = () => {
-    navigate(`/episodes/${id}`);
-  };
-  
-  // Show loading indicator while fetching episode data
+  // If loading or episode not found, show appropriate UI
   if (isLoading) {
     return (
       <Shell>
@@ -38,7 +24,6 @@ const EditEpisode = () => {
     );
   }
   
-  // If episode not found after loading
   if (!episode) {
     return (
       <Shell>
@@ -55,7 +40,7 @@ const EditEpisode = () => {
     );
   }
   
-  const onSave = async (updatedEpisode: Episode) => {
+  const onSave = async (updatedEpisode: any) => {
     const result = await handleSave(updatedEpisode);
     if (result.success) {
       navigate(`/episodes/${id}`);
@@ -65,28 +50,13 @@ const EditEpisode = () => {
   return (
     <Shell>
       <div className="page-container">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" onClick={handleBack} className="mr-2">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
+        <div className="page-header mb-6">
+          <h1 className="section-title">Edit Episode</h1>
+          <p className="section-subtitle">Update episode details and information</p>
         </div>
         
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div className="flex-1 min-w-0">
-            <h1 className="section-title">Edit Episode</h1>
-            <p className="section-subtitle">
-              Update episode details and information
-            </p>
-          </div>
-        </div>
-        
-        <EpisodeForm 
-          episode={{
-            ...episode,
-            coverArt: episode.coverArt || undefined,
-            resources: episode.resources || []
-          }} 
+        <EpisodeForm
+          episode={episode}
           guests={guests}
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
@@ -94,6 +64,6 @@ const EditEpisode = () => {
       </div>
     </Shell>
   );
-}
+};
 
 export default EditEpisode;

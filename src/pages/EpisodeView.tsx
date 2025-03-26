@@ -5,7 +5,6 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
-import { useEpisodeData } from '@/hooks/useEpisodeData';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useEffect } from 'react';
+import { useEpisodeData } from '@/hooks/episodes';
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,18 +24,16 @@ const EpisodeView = () => {
   
   const { 
     isLoading, 
+    episode,
     isDeleteDialogOpen, 
     setIsDeleteDialogOpen, 
-    handleDeleteEpisode 
-  } = useEpisodeData(id, refreshEpisodes);
+    handleDelete 
+  } = useEpisodeData(id);
   
   // Refresh data on initial mount
   useEffect(() => {
     refreshEpisodes();
   }, [refreshEpisodes]);
-  
-  // Find the episode with the matching ID
-  const episode = episodes.find(e => e.id === id);
   
   if (!episode) {
     return (
@@ -104,7 +102,7 @@ const EpisodeView = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction 
-                onClick={handleDeleteEpisode}
+                onClick={handleDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete
