@@ -52,12 +52,12 @@ export async function generateResearchWithPerplexity(
         ],
         temperature: 0.2,
         max_tokens: 2000,
-        return_images: true,
+        return_images: false,
         return_related_questions: false,
+        response_format: { type: "text" },
         web_search_options: {
           search_context_size: "high"
         },
-        response_format: { type: "text" },
       }),
     });
 

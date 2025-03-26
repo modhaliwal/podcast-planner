@@ -17,15 +17,19 @@ export function useMarkdownParser(markdown: string | undefined) {
         breaks: true, // Convert \n to <br> in paragraphs
         gfm: true,    // GitHub Flavored Markdown
         pedantic: false,
+        headerIds: false, // Disable header IDs to prevent React Quill issues
+        mangle: false     // Disable mangling to prevent React Quill issues
       });
       
       const parseMarkdown = async () => {
         try {
+          console.log("Parsing markdown:", markdown.substring(0, 100) + "...");
           // Parse markdown to HTML
           const html = await marked.parse(markdown);
+          console.log("Parsed HTML result:", html.substring(0, 100) + "...");
           setParsedHtml(html);
         } catch (error) {
-          console.error('Error parsing markdown:', error);
+          console.error('Error parsing markdown with marked:', error);
           // Use fallback parser if marked fails
           useFallbackParser(markdown, setParsedHtml);
         }
@@ -69,5 +73,6 @@ function useFallbackParser(markdown: string, setParsedHtml: (html: string) => vo
     html = `<p>${html}</p>`;
   }
   
+  console.log("Fallback parser result:", html.substring(0, 100) + "...");
   setParsedHtml(html);
 }
