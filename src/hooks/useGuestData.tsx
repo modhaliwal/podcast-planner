@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Guest, SocialLinks } from '@/lib/types';
+import { Guest, SocialLinks, ContentVersion } from '@/lib/types';
 import { isBlobUrl, deleteImage } from '@/lib/imageUpload';
 
 export function useGuestData(guestId: string | undefined) {
@@ -36,6 +36,21 @@ export function useGuestData(guestId: string | undefined) {
           ? data.image_url 
           : undefined;
         
+        // Parse bioVersions and backgroundResearchVersions if they exist
+        let bioVersions: ContentVersion[] = [];
+        let backgroundResearchVersions: ContentVersion[] = [];
+        
+        try {
+          if (data.bio_versions) {
+            bioVersions = JSON.parse(data.bio_versions);
+          }
+          if (data.background_research_versions) {
+            backgroundResearchVersions = JSON.parse(data.background_research_versions);
+          }
+        } catch (e) {
+          console.error("Error parsing versions:", e);
+        }
+        
         const formattedGuest: Guest = {
           id: data.id,
           name: data.name,
@@ -44,10 +59,12 @@ export function useGuestData(guestId: string | undefined) {
           email: data.email || undefined,
           phone: data.phone || undefined,
           bio: data.bio,
+          bioVersions: bioVersions,
           imageUrl: imageUrl,
           socialLinks: data.social_links as SocialLinks,
           notes: data.notes || undefined,
           backgroundResearch: data.background_research || undefined,
+          backgroundResearchVersions: backgroundResearchVersions,
           status: (data.status as Guest['status']) || 'potential',
           createdAt: data.created_at,
           updatedAt: data.updated_at
@@ -88,6 +105,13 @@ export function useGuestData(guestId: string | undefined) {
       
       console.log("Final image URL to save to database:", imageUrl);
       
+      // Stringify the versions for database storage
+      const bioVersionsString = updatedGuest.bioVersions ? 
+        JSON.stringify(updatedGuest.bioVersions) : null;
+      
+      const backgroundResearchVersionsString = updatedGuest.backgroundResearchVersions ? 
+        JSON.stringify(updatedGuest.backgroundResearchVersions) : null;
+      
       const { error } = await supabase
         .from('guests')
         .update({
@@ -97,10 +121,12 @@ export function useGuestData(guestId: string | undefined) {
           email: updatedGuest.email,
           phone: updatedGuest.phone,
           bio: updatedGuest.bio,
+          bio_versions: bioVersionsString,
           image_url: imageUrl,
           social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
-          background_research: updatedGuest.backgroundResearch, // Added this line to save backgroundResearch
+          background_research: updatedGuest.backgroundResearch,
+          background_research_versions: backgroundResearchVersionsString,
           status: updatedGuest.status,
           updated_at: new Date().toISOString()
         })

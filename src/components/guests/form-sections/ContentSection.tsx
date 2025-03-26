@@ -3,7 +3,7 @@ import { UseFormReturn } from "react-hook-form";
 import { BioSection } from "./BioSection";
 import { BackgroundResearchSection } from "./BackgroundResearchSection";
 import { NotesSection } from "./NotesSection";
-import { Guest } from "@/lib/types";
+import { Guest, ContentVersion } from "@/lib/types";
 
 interface ContentSectionProps {
   form: UseFormReturn<any>;
@@ -11,6 +11,10 @@ interface ContentSectionProps {
   setNotes: (value: string) => void;
   backgroundResearch: string;
   setBackgroundResearch: (value: string) => void;
+  bioVersions: ContentVersion[];
+  backgroundResearchVersions: ContentVersion[];
+  onBioVersionsChange: (versions: ContentVersion[]) => void;
+  onBackgroundResearchVersionsChange: (versions: ContentVersion[]) => void;
   guest?: Guest;
 }
 
@@ -20,14 +24,24 @@ export function ContentSection({
   setNotes,
   backgroundResearch,
   setBackgroundResearch,
+  bioVersions = [],
+  backgroundResearchVersions = [],
+  onBioVersionsChange,
+  onBackgroundResearchVersionsChange,
   guest
 }: ContentSectionProps) {
   return (
     <div className="space-y-6">
-      <BioSection form={form} />
+      <BioSection 
+        form={form} 
+        bioVersions={bioVersions}
+        onVersionsChange={onBioVersionsChange}
+      />
       <BackgroundResearchSection 
         backgroundResearch={backgroundResearch}
         setBackgroundResearch={setBackgroundResearch}
+        backgroundResearchVersions={backgroundResearchVersions}
+        onVersionsChange={onBackgroundResearchVersionsChange}
         guest={guest}
       />
       <NotesSection 

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Guest } from "@/lib/types";
+
+import { useState, useEffect } from "react";
+import { Guest, ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -9,6 +10,7 @@ import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
 import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 interface GuestFormProps {
   guest: Guest;
@@ -23,6 +25,35 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Version state
+  const [bioVersions, setBioVersions] = useState<ContentVersion[]>(guest.bioVersions || []);
+  const [backgroundResearchVersions, setBackgroundResearchVersions] = useState<ContentVersion[]>(
+    guest.backgroundResearchVersions || []
+  );
+
+  // Initialize versions if they don't exist
+  useEffect(() => {
+    if (bioVersions.length === 0 && guest.bio) {
+      const initialVersion: ContentVersion = {
+        id: uuidv4(),
+        content: guest.bio,
+        timestamp: guest.updatedAt || new Date().toISOString(),
+        source: 'import'
+      };
+      setBioVersions([initialVersion]);
+    }
+
+    if (backgroundResearchVersions.length === 0 && guest.backgroundResearch) {
+      const initialVersion: ContentVersion = {
+        id: uuidv4(),
+        content: guest.backgroundResearch,
+        timestamp: guest.updatedAt || new Date().toISOString(),
+        source: 'import'
+      };
+      setBackgroundResearchVersions([initialVersion]);
+    }
+  }, [guest, bioVersions, backgroundResearchVersions]);
 
   const form = useForm({
     defaultValues: {
@@ -82,8 +113,10 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         email: data.email || undefined,
         phone: data.phone || undefined,
         bio: data.bio,
+        bioVersions: bioVersions,
         notes: notes || undefined,
         backgroundResearch: backgroundResearch || undefined,
+        backgroundResearchVersions: backgroundResearchVersions,
         status: data.status,
         imageUrl: imageUrl as string | undefined,
         socialLinks: {
@@ -133,6 +166,10 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
             setNotes={setNotes}
             backgroundResearch={backgroundResearch}
             setBackgroundResearch={setBackgroundResearch}
+            bioVersions={bioVersions}
+            backgroundResearchVersions={backgroundResearchVersions}
+            onBioVersionsChange={setBioVersions}
+            onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
             guest={guest}
           />
 

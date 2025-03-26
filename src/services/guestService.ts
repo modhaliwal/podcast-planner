@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Guest, SocialLinks } from "@/lib/types";
+import { Guest, SocialLinks, ContentVersion } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
 
 // Function to get all guests for the current user
@@ -14,22 +14,41 @@ export const getUserGuests = async (): Promise<{ data: Guest[] | null; error: an
     if (error) throw error;
     
     // Format the guests into our application's Guest type
-    const formattedGuests: Guest[] = data?.map(guest => ({
-      id: guest.id,
-      name: guest.name,
-      title: guest.title,
-      company: guest.company || undefined,
-      email: guest.email || undefined,
-      phone: guest.phone || undefined,
-      bio: guest.bio,
-      imageUrl: guest.image_url || undefined,
-      socialLinks: guest.social_links as SocialLinks || {},
-      notes: guest.notes || undefined,
-      backgroundResearch: guest.background_research || undefined,
-      status: (guest.status as Guest['status']) || 'potential',
-      createdAt: guest.created_at,
-      updatedAt: guest.updated_at
-    })) || [];
+    const formattedGuests: Guest[] = data?.map(guest => {
+      // Parse bioVersions and backgroundResearchVersions if they exist
+      let bioVersions: ContentVersion[] = [];
+      let backgroundResearchVersions: ContentVersion[] = [];
+      
+      try {
+        if (guest.bio_versions) {
+          bioVersions = JSON.parse(guest.bio_versions);
+        }
+        if (guest.background_research_versions) {
+          backgroundResearchVersions = JSON.parse(guest.background_research_versions);
+        }
+      } catch (e) {
+        console.error("Error parsing versions for guest", guest.id, e);
+      }
+      
+      return {
+        id: guest.id,
+        name: guest.name,
+        title: guest.title,
+        company: guest.company || undefined,
+        email: guest.email || undefined,
+        phone: guest.phone || undefined,
+        bio: guest.bio,
+        bioVersions: bioVersions,
+        imageUrl: guest.image_url || undefined,
+        socialLinks: guest.social_links as SocialLinks || {},
+        notes: guest.notes || undefined,
+        backgroundResearch: guest.background_research || undefined,
+        backgroundResearchVersions: backgroundResearchVersions,
+        status: (guest.status as Guest['status']) || 'potential',
+        createdAt: guest.created_at,
+        updatedAt: guest.updated_at
+      };
+    }) || [];
     
     return { data: formattedGuests, error: null };
   } catch (error) {
@@ -49,6 +68,21 @@ export const getGuest = async (id: string): Promise<{ data: Guest | null; error:
     
     if (error) throw error;
     
+    // Parse bioVersions and backgroundResearchVersions if they exist
+    let bioVersions: ContentVersion[] = [];
+    let backgroundResearchVersions: ContentVersion[] = [];
+    
+    try {
+      if (data.bio_versions) {
+        bioVersions = JSON.parse(data.bio_versions);
+      }
+      if (data.background_research_versions) {
+        backgroundResearchVersions = JSON.parse(data.background_research_versions);
+      }
+    } catch (e) {
+      console.error("Error parsing versions for guest", data.id, e);
+    }
+    
     // Format the guest into our application's Guest type
     const formattedGuest: Guest = {
       id: data.id,
@@ -58,10 +92,12 @@ export const getGuest = async (id: string): Promise<{ data: Guest | null; error:
       email: data.email || undefined,
       phone: data.phone || undefined,
       bio: data.bio,
+      bioVersions: bioVersions,
       imageUrl: data.image_url || undefined,
       socialLinks: data.social_links as SocialLinks || {},
       notes: data.notes || undefined,
       backgroundResearch: data.background_research || undefined,
+      backgroundResearchVersions: backgroundResearchVersions,
       status: (data.status as Guest['status']) || 'potential',
       createdAt: data.created_at,
       updatedAt: data.updated_at
@@ -84,6 +120,13 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
       throw new Error("User not authenticated");
     }
     
+    // Stringify the versions for database storage
+    const bioVersionsString = guest.bioVersions ? 
+      JSON.stringify(guest.bioVersions) : null;
+    
+    const backgroundResearchVersionsString = guest.backgroundResearchVersions ? 
+      JSON.stringify(guest.backgroundResearchVersions) : null;
+    
     const { data, error } = await supabase
       .from('guests')
       .insert({
@@ -94,9 +137,12 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
         email: guest.email,
         phone: guest.phone,
         bio: guest.bio || '',
+        bio_versions: bioVersionsString,
         image_url: guest.imageUrl,
         social_links: guest.socialLinks as unknown as Json || {},
         notes: guest.notes,
+        background_research: guest.backgroundResearch,
+        background_research_versions: backgroundResearchVersionsString,
         status: guest.status || 'potential',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -116,6 +162,13 @@ export const createGuest = async (guest: Partial<Guest>): Promise<{ data: any | 
 // Function to update a guest
 export const updateGuest = async (id: string, updates: Partial<Guest>): Promise<{ success: boolean; error?: any }> => {
   try {
+    // Stringify the versions for database storage
+    const bioVersionsString = updates.bioVersions ? 
+      JSON.stringify(updates.bioVersions) : undefined;
+    
+    const backgroundResearchVersionsString = updates.backgroundResearchVersions ? 
+      JSON.stringify(updates.backgroundResearchVersions) : undefined;
+    
     const { error } = await supabase
       .from('guests')
       .update({
@@ -125,10 +178,12 @@ export const updateGuest = async (id: string, updates: Partial<Guest>): Promise<
         email: updates.email,
         phone: updates.phone,
         bio: updates.bio,
+        bio_versions: bioVersionsString,
         image_url: updates.imageUrl,
         social_links: updates.socialLinks as unknown as Json,
         notes: updates.notes,
         background_research: updates.backgroundResearch,
+        background_research_versions: backgroundResearchVersionsString,
         status: updates.status,
         updated_at: new Date().toISOString()
       })

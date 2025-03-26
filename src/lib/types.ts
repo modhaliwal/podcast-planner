@@ -12,6 +12,13 @@ export interface SocialLinks {
   other?: { label: string; url: string }[];
 }
 
+export interface ContentVersion {
+  id: string;
+  content: string;
+  timestamp: string;
+  source: 'manual' | 'ai' | 'import';
+}
+
 export interface Guest {
   id: string;
   name: string;
@@ -20,11 +27,13 @@ export interface Guest {
   email?: string;
   phone?: string;
   bio: string;
+  bioVersions?: ContentVersion[];
   imageUrl?: string;
   socialLinks: SocialLinks;
   notes?: string;
   // @deprecated - Kept for backward compatibility
   backgroundResearch?: string;
+  backgroundResearchVersions?: ContentVersion[];
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;
   updatedAt: string;
