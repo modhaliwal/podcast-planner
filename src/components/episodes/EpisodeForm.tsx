@@ -23,6 +23,10 @@ export function EpisodeForm({ episode, guests }: EpisodeFormProps) {
   const { form, isSubmitting, onSubmit } = useEpisodeForm(episode, refreshEpisodes);
   
   console.log("Rendering EpisodeForm with submit handler:", !!onSubmit);
+  console.log("Form element properties:", { 
+    handleSubmit: !!form.handleSubmit,
+    formState: form.formState
+  });
   
   return (
     <Form {...form}>

@@ -34,6 +34,8 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     resources: episode.resources || []
   }), [episode]);
   
+  console.log("useEpisodeForm hook initialized with episode:", episode.id);
+  
   // Initialize form first, before adding watchers
   const form = useForm<EpisodeFormValues>({
     resolver: zodResolver(episodeFormSchema),

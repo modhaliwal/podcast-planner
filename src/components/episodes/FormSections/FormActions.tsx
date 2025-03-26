@@ -6,13 +6,11 @@ import { SaveIcon, X } from "lucide-react";
 interface FormActionsProps {
   episodeId: string;
   isSubmitting?: boolean;
-  onSave?: () => void;
 }
 
 export function FormActions({ 
   episodeId, 
-  isSubmitting = false,
-  onSave
+  isSubmitting = false
 }: FormActionsProps) {
   return (
     <div className="flex justify-end gap-4 mt-8">
