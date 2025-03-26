@@ -9,6 +9,7 @@ export function useAuthRedirect(redirectAuthenticatedTo?: string) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Don't do anything while auth is still loading
     if (loading) return;
     
     if (!user) {
