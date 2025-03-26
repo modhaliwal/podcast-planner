@@ -42,10 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
     
     try {
-      await Promise.all([
-        refreshGuests(true),
-        refreshEpisodes(true)
-      ]);
+      // Set a small delay between calls to avoid potential race conditions
+      await refreshGuests(true);
+      await refreshEpisodes(true);
     } catch (error) {
       console.error("Error refreshing all data:", error);
     }

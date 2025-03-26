@@ -7,18 +7,16 @@ import { useEffect } from 'react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Dashboard = () => {
-  const { guests, episodes, isDataLoading, refreshEpisodes, refreshGuests } = useAuth();
+  const { guests, episodes, isDataLoading, refreshAllData } = useAuth();
   
-  // Ensure both episodes and guests are loaded when the component mounts
+  // Load data only once when the component mounts
   useEffect(() => {
-    const loadData = async () => {
-      // Refresh both datasets
-      await refreshGuests();
-      await refreshEpisodes(true);
-    };
-    
-    loadData();
-  }, [refreshEpisodes, refreshGuests]);
+    // Only refresh data when dashboard first loads
+    refreshAllData();
+    // Intentionally not including refreshAllData in dependencies
+    // to prevent refresh loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Calculate statistics
   const totalGuests = guests.length;

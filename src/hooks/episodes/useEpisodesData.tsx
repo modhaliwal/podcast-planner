@@ -21,7 +21,9 @@ function useEpisodesData(userId: string | undefined) {
       }
     };
     
-    loadEpisodes();
+    if (userId) {
+      loadEpisodes();
+    }
   }, [userId]);
 
   const refreshEpisodes = useCallback(async (force = false) => {

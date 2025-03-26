@@ -28,8 +28,10 @@ export function useGuestsData(userId: string | undefined) {
       }
     };
     
-    loadGuests();
-  }, [fetchGuestData]);
+    if (userId) {
+      loadGuests();
+    }
+  }, [fetchGuestData, userId]);
 
   // Create a function that wraps refreshGuests and updates the guests state
   const refreshGuests = useCallback(async (force = false) => {
