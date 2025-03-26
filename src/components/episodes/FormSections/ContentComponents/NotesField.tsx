@@ -69,7 +69,7 @@ export function NotesField({ form, guests }: NotesFieldProps) {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <div></div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       {formattedVersions.length > 0 && (
                         <VersionSelector {...versionSelectorProps} />
                       )}
