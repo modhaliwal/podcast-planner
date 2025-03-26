@@ -17,6 +17,7 @@ interface BioSectionProps {
 export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSectionProps) {
   const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
   const [previousContent, setPreviousContent] = useState<string>("");
+  const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
 
   // Initialize with the current bio as the first version if no versions exist
   useEffect(() => {
@@ -47,6 +48,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     form.setValue('bio', version.content);
     setActiveVersionId(version.id);
     setPreviousContent(version.content);
+    setHasChangedSinceLastSave(false);
   };
 
   const saveCurrentVersion = (source: ContentVersion['source'] = 'manual') => {
@@ -54,6 +56,9 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     
     // Don't save empty content
     if (!currentBio.trim()) return;
+    
+    // Only save if content has actually changed from the previous version
+    if (currentBio === previousContent) return;
     
     const newVersion: ContentVersion = {
       id: uuidv4(),
@@ -67,18 +72,36 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     onVersionsChange(updatedVersions);
     setActiveVersionId(newVersion.id);
     setPreviousContent(currentBio);
+    setHasChangedSinceLastSave(false);
     
     return newVersion;
   };
 
+  // Track when content changes in the form
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'bio') {
+        const currentValue = value.bio as string;
+        if (currentValue !== previousContent) {
+          setHasChangedSinceLastSave(true);
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, previousContent]);
+
   // Handle bio change from text area to create a version
   const handleBioChange = (event: React.FocusEvent<HTMLTextAreaElement>) => {
     // When the textarea loses focus, save the current version if it's different from the saved version
-    const currentBio = event.target.value;
-    
-    // Only create a new version if the content has actually changed
-    if (currentBio !== previousContent && currentBio.trim()) {
-      saveCurrentVersion('manual');
+    // and we haven't already saved it (hasChangedSinceLastSave is true)
+    if (hasChangedSinceLastSave) {
+      const currentBio = event.target.value;
+      
+      // Only create a new version if the content has actually changed
+      if (currentBio !== previousContent && currentBio.trim()) {
+        saveCurrentVersion('manual');
+      }
     }
   };
 
@@ -87,6 +110,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     onVersionsChange(updatedVersions);
     setActiveVersionId(version.id);
     setPreviousContent(version.content);
+    setHasChangedSinceLastSave(false);
   };
 
   return (

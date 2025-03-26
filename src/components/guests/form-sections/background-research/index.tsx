@@ -27,6 +27,7 @@ export function BackgroundResearchSection({
   const [markdownToConvert, setMarkdownToConvert] = useState<string | undefined>();
   const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
   const [previousContent, setPreviousContent] = useState<string>("");
+  const [hasChangedSinceLastSave, setHasChangedSinceLastSave] = useState<boolean>(false);
   const parsedHtml = useMarkdownParser(markdownToConvert);
 
   // Initialize with the current research as the first version if no versions exist
@@ -70,10 +71,18 @@ export function BackgroundResearchSection({
       onVersionsChange(updatedVersions);
       setActiveVersionId(newVersion.id);
       setPreviousContent(parsedHtml);
+      setHasChangedSinceLastSave(false);
       
       setMarkdownToConvert(undefined); // Reset after conversion
     }
   }, [parsedHtml]);
+
+  // Track content changes
+  useEffect(() => {
+    if (backgroundResearch !== previousContent) {
+      setHasChangedSinceLastSave(true);
+    }
+  }, [backgroundResearch, previousContent]);
 
   const handleChange = (content: string) => {
     setBackgroundResearch(content);
@@ -86,11 +95,15 @@ export function BackgroundResearchSection({
     // Then update the content to match the selected version
     setBackgroundResearch(version.content);
     setPreviousContent(version.content);
+    setHasChangedSinceLastSave(false);
   };
 
   const saveCurrentVersion = () => {
     // Don't save empty content
     if (!backgroundResearch.trim()) return;
+    
+    // Don't save if content hasn't changed
+    if (backgroundResearch === previousContent) return;
     
     const newVersion: ContentVersion = {
       id: uuidv4(),
@@ -104,6 +117,7 @@ export function BackgroundResearchSection({
     onVersionsChange(updatedVersions);
     setActiveVersionId(newVersion.id);
     setPreviousContent(backgroundResearch);
+    setHasChangedSinceLastSave(false);
     
     return newVersion;
   };
@@ -111,7 +125,8 @@ export function BackgroundResearchSection({
   // Handle editor blur to create a version if content has changed
   const handleEditorBlur = () => {
     // Only create a new version if the content has actually changed from the previous version
-    if (backgroundResearch !== previousContent && backgroundResearch.trim()) {
+    // and we haven't already saved this change
+    if (hasChangedSinceLastSave && backgroundResearch !== previousContent && backgroundResearch.trim()) {
       saveCurrentVersion();
     }
   };
