@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { ProfileSettings } from '@/components/settings/ProfileSettings';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
+import { AIPromptsSettings } from '@/components/settings/AIPromptsSettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings as SettingsIcon, User } from 'lucide-react';
+import { Settings as SettingsIcon, User, Sparkles } from 'lucide-react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 export default function Settings() {
@@ -49,6 +50,10 @@ export default function Settings() {
               <SettingsIcon className="h-4 w-4" />
               <span>Appearance</span>
             </TabsTrigger>
+            <TabsTrigger value="ai-prompts" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              <span>AI Prompts</span>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile">
@@ -57,6 +62,10 @@ export default function Settings() {
           
           <TabsContent value="appearance">
             <AppearanceSettings />
+          </TabsContent>
+          
+          <TabsContent value="ai-prompts">
+            <AIPromptsSettings />
           </TabsContent>
         </Tabs>
       </div>

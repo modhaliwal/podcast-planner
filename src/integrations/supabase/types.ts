@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_prompts: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          prompt_text: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          prompt_text: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          prompt_text?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       episode_guests: {
         Row: {
           created_at: string

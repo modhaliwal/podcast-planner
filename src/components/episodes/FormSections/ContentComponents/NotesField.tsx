@@ -7,9 +7,10 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Guest } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
+import { useAIPrompts } from '@/hooks/useAIPrompts';
 
 interface NotesFieldProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -18,6 +19,7 @@ interface NotesFieldProps {
 
 export function NotesField({ form, guests = [] }: NotesFieldProps) {
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
+  const { getPromptByKey } = useAIPrompts();
   
   const handleGenerateNotes = async () => {
     const topic = form.getValues('topic');
@@ -32,12 +34,23 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
       setIsGeneratingNotes(true);
       toast.info("Generating episode notes with research about this topic. This may take a minute...");
       
-      console.log("Calling generate-episode-notes function with topic:", topic);
+      // Get the prompt from the database
+      const promptTemplate = getPromptByKey('episode_notes_generator')?.prompt_text;
+      
+      if (!promptTemplate) {
+        throw new Error("Episode notes generator prompt not found");
+      }
+      
+      // Replace variables in the prompt template
+      const prompt = promptTemplate.replace('${topic}', topic);
+      
+      console.log("Calling generate-episode-notes function with prompt based on topic:", topic);
       
       // Call the Supabase function to generate notes
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
         body: {
-          topic
+          topic,
+          prompt
         }
       });
       

@@ -16,7 +16,7 @@ serve(async (req) => {
 
     // Parse request body
     const requestData = await req.json();
-    const { name, title, company, socialLinks } = requestData;
+    const { name, title, company, socialLinks, prompt } = requestData;
 
     if (!name || !title) {
       return new Response(
@@ -45,12 +45,15 @@ serve(async (req) => {
     console.log("Generating research for:", name);
     console.log("Extracted content:", extractedContent);
 
+    // Use the provided custom prompt if available, otherwise use the extracted content directly
+    const promptToUse = prompt || extractedContent;
+
     // Generate the research using Perplexity
     const research = await generateResearchWithPerplexity(
       name,
       title,
       company,
-      extractedContent
+      promptToUse
     );
 
     return new Response(
