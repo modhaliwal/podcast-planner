@@ -10,7 +10,7 @@ interface UseContentVersionsProps<T> {
   versionsFieldName: keyof T;
 }
 
-export function useContentVersions<T>({
+export function useContentVersions<T extends Record<string, any>>({
   form,
   fieldName,
   versionsFieldName
@@ -22,8 +22,8 @@ export function useContentVersions<T>({
   // Initialize versions if they don't exist
   useEffect(() => {
     if (!hasInitialized) {
-      const currentContent = form.getValues(fieldName as any) || "";
-      const existingVersions = form.getValues(versionsFieldName as any) || [];
+      const currentContent = form.getValues(fieldName) || "";
+      const existingVersions = form.getValues(versionsFieldName) || [];
 
       if (Array.isArray(existingVersions) && existingVersions.length === 0 && currentContent) {
         const initialVersion: ContentVersion = {
@@ -35,7 +35,8 @@ export function useContentVersions<T>({
         
         // Update both the local state and the form value
         setVersions([initialVersion]);
-        form.setValue(versionsFieldName as any, [initialVersion]);
+        // Type assertion to any to bypass TypeScript's strict checking
+        form.setValue(versionsFieldName, [initialVersion] as any);
         setActiveVersionId(initialVersion.id);
       } else if (Array.isArray(existingVersions) && existingVersions.length > 0) {
         // Set to the most recent version
@@ -51,7 +52,7 @@ export function useContentVersions<T>({
   }, [form, fieldName, versionsFieldName, hasInitialized]);
 
   const handleContentChange = () => {
-    const currentContent = form.getValues(fieldName as any) || "";
+    const currentContent = form.getValues(fieldName) || "";
     
     // Check if content is not empty and if we have an active version to compare with
     if (typeof currentContent === 'string' && currentContent.trim() && activeVersionId) {
@@ -68,19 +69,21 @@ export function useContentVersions<T>({
         
         const updatedVersions = [...versions, newVersion];
         setVersions(updatedVersions);
-        form.setValue(versionsFieldName as any, updatedVersions);
+        // Type assertion to any to bypass TypeScript's strict checking
+        form.setValue(versionsFieldName, updatedVersions as any);
         setActiveVersionId(newVersion.id);
       }
     }
   };
 
   const selectVersion = (version: ContentVersion) => {
-    form.setValue(fieldName as any, version.content);
+    // Type assertion to any to bypass TypeScript's strict checking
+    form.setValue(fieldName, version.content as any);
     setActiveVersionId(version.id);
   };
 
   const clearAllVersions = () => {
-    const currentContent = form.getValues(fieldName as any) || "";
+    const currentContent = form.getValues(fieldName) || "";
     
     // Create a single version with current content
     const newVersion: ContentVersion = {
@@ -91,7 +94,8 @@ export function useContentVersions<T>({
     };
     
     setVersions([newVersion]);
-    form.setValue(versionsFieldName as any, [newVersion]);
+    // Type assertion to any to bypass TypeScript's strict checking
+    form.setValue(versionsFieldName, [newVersion] as any);
     setActiveVersionId(newVersion.id);
   };
 
@@ -105,7 +109,8 @@ export function useContentVersions<T>({
     
     const updatedVersions = [...versions, newVersion];
     setVersions(updatedVersions);
-    form.setValue(versionsFieldName as any, updatedVersions);
+    // Type assertion to any to bypass TypeScript's strict checking
+    form.setValue(versionsFieldName, updatedVersions as any);
     setActiveVersionId(newVersion.id);
     
     return newVersion;
