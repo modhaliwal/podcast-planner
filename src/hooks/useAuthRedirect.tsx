@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 export function useAuthRedirect(redirectAuthenticatedTo?: string) {
   const { user, loading } = useAuth();
@@ -14,7 +14,11 @@ export function useAuthRedirect(redirectAuthenticatedTo?: string) {
     if (!user) {
       // If not authenticated and we need auth, redirect to login
       if (!redirectAuthenticatedTo) {
-        toast.error("Please sign in to access this page");
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to access this page",
+          variant: "destructive"
+        });
         navigate('/auth');
       }
     } else if (redirectAuthenticatedTo) {

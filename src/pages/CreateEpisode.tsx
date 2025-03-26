@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { EpisodeFormCard } from '@/components/episodes/CreateEpisodeForm/EpisodeFormCard';
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
@@ -68,8 +68,10 @@ const CreateEpisode = () => {
     e.preventDefault();
     
     if (!user) {
-      toast("Authentication Error", {
+      toast({
+        title: "Authentication Error",
         description: "You must be logged in to create episodes",
+        variant: "destructive"
       });
       return;
     }
@@ -77,8 +79,10 @@ const CreateEpisode = () => {
     // Validation
     const hasErrors = episodes.some(ep => !ep.episodeNumber || !ep.scheduled);
     if (hasErrors) {
-      toast("Validation Error", {
+      toast({
+        title: "Validation Error",
         description: "All episodes must have a number and recording date",
+        variant: "destructive"
       });
       return;
     }
@@ -96,15 +100,18 @@ const CreateEpisode = () => {
       // Refresh episodes list
       await refreshEpisodes();
       
-      toast("Success!", {
-        description: `Created ${episodes.length} new episodes`,
+      toast({
+        title: "Success!",
+        description: `Created ${episodes.length} new episodes`
       });
       
       // Navigate back to episodes list
       navigate('/episodes');
     } catch (error: any) {
-      toast("Error Creating Episodes", {
+      toast({
+        title: "Error Creating Episodes",
         description: error.message || "An unexpected error occurred",
+        variant: "destructive"
       });
       console.error("Error creating episodes:", error);
     } finally {

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 export type AIPrompt = {
@@ -32,7 +32,11 @@ export function useAIPrompts() {
       setPrompts(data || []);
     } catch (error: any) {
       console.error('Error fetching AI prompts:', error);
-      toast.error(`Failed to load AI prompts: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to load AI prompts: ${error.message}`,
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -50,12 +54,19 @@ export function useAIPrompts() {
       
       if (error) throw error;
       
-      toast.success('Prompt updated successfully');
+      toast({
+        title: "Success",
+        description: "Prompt updated successfully"
+      });
       await fetchPrompts(); // Refresh the prompts
       return true;
     } catch (error: any) {
       console.error('Error updating AI prompt:', error);
-      toast.error(`Failed to update prompt: ${error.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to update prompt: ${error.message}`,
+        variant: "destructive"
+      });
       return false;
     }
   }, [fetchPrompts]);
