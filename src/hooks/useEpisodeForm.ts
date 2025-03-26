@@ -50,7 +50,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
-    console.log("Form submission initiated with data:", data);
+    console.log("❗ Episode form submission initiated with data:", data);
     setIsSubmitting(true);
     
     try {
@@ -66,7 +66,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
       console.log("Processed topic value for database:", topicValue);
       
       // Log the data being sent to Supabase for debugging
-      console.log("Updating episode with data:", {
+      console.log("❗ Updating episode with data:", {
         title: data.title,
         episode_number: data.episodeNumber,
         topic: topicValue,
@@ -103,7 +103,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
         .eq('id', episode.id)
         .select();
       
-      console.log("Update response:", updateResult, updateError);
+      console.log("❗ Update response:", updateResult, updateError);
       
       if (updateError) {
         console.error("Error updating episode:", updateError);
