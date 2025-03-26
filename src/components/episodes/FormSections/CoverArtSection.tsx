@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
 import { isBlobUrl } from '@/lib/imageUpload';
 
 interface CoverArtSectionProps {
