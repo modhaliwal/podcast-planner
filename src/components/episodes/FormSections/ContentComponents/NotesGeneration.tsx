@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFormContext } from "react-hook-form";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { Guest } from "@/lib/types";
+import { useAIPrompts } from "@/hooks/useAIPrompts";
 
 interface NotesGenerationProps {
   guests: Guest[];
@@ -19,6 +20,7 @@ export function NotesGeneration({
 }: NotesGenerationProps) {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const form = useFormContext<EpisodeFormValues>();
+  const { getPromptByKey } = useAIPrompts();
 
   const generateNotes = async () => {
     try {
@@ -32,16 +34,23 @@ export function NotesGeneration({
         guestIds: form.getValues("guestIds") || []
       };
       
-      if (!episodeData.title) {
-        toast.warning("Please provide an episode title before generating notes");
+      if (!episodeData.title && !episodeData.topic) {
+        toast.warning("Please provide either an episode title or topic before generating notes");
         return;
       }
+      
+      // Get the episode notes prompt from AI prompts
+      const notesPrompt = getPromptByKey("episode_notes");
       
       // Call the edge function
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
         body: {
           episode: episodeData,
-          guests: guests
+          guests: guests,
+          prompt: notesPrompt?.prompt_text,
+          systemPrompt: notesPrompt?.system_prompt,
+          contextInstructions: notesPrompt?.context_instructions,
+          exampleOutput: notesPrompt?.example_output
         }
       });
       
@@ -52,6 +61,7 @@ export function NotesGeneration({
       if (data && data.notes) {
         // Call the callback with generated notes
         onNotesGenerated(data.notes);
+        form.setValue("notes", data.notes);
         
         toast.success("Notes generated successfully!");
       } else {

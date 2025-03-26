@@ -12,27 +12,42 @@ serve(async (req) => {
   try {
     const requestData = await req.json();
     const { 
-      topic, 
+      episode,
+      guests,
       prompt, 
       systemPrompt,
       contextInstructions,
       exampleOutput
     } = requestData;
     
-    if (!topic) {
-      throw new Error("Topic is required");
+    if (!episode) {
+      throw new Error("Episode data is required");
     }
     
-    console.log(`Generating episode notes for topic: ${topic}`);
-    console.log(`Using custom prompt: ${prompt}`);
+    console.log(`Generating episode notes for title: ${episode.title}, topic: ${episode.topic}`);
     
-    if (systemPrompt) {
-      console.log("Using custom system prompt from database");
-    }
+    // Determine the topic to use for research
+    const topicToResearch = episode.topic || episode.title || "podcast episode";
     
     // Build the full prompt with context and examples if provided
     let promptToUse = prompt || 
-      `Generate comprehensive research notes about "${topic}" for a podcast episode.`;
+      `Generate comprehensive research notes about "${topicToResearch}" for a podcast episode.`;
+    
+    // Add guest information if available
+    if (guests && guests.length > 0) {
+      const guestNames = guests.map(g => g.fullName || g.name || 'Unknown Guest').join(', ');
+      promptToUse += `\n\nThis episode features the following guests: ${guestNames}.`;
+      
+      // Add guest details if available
+      guests.forEach(guest => {
+        if (guest.bio) {
+          promptToUse += `\n\n${guest.fullName || guest.name}'s bio: ${guest.bio}`;
+        }
+        if (guest.expertise) {
+          promptToUse += `\n\n${guest.fullName || guest.name}'s expertise: ${guest.expertise}`;
+        }
+      });
+    }
     
     // Add context if provided
     if (contextInstructions) {
@@ -50,8 +65,8 @@ serve(async (req) => {
     
     // Generate research based on the topic with the provided or default prompt
     const generatedNotes = await generateResearchWithPerplexity(
-      "Topic Research",
       "Episode Research",
+      `Notes for "${episode.title || topicToResearch}"`,
       undefined,
       promptToUse,
       systemPrompt
