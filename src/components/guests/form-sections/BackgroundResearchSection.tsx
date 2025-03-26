@@ -84,7 +84,7 @@ export function BackgroundResearchSection({
           onClick={handleGenerateResearch}
           disabled={isLoading}
         >
-          <Lightbulb className="h-4 w-4 mr-2" />
+          <Sparkles className="h-4 w-4 mr-1" />
           {isLoading ? "Generating with Perplexity..." : "Generate Background Research"}
         </Button>
       </div>
