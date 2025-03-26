@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Upload, Trash, ImageIcon } from "lucide-react";
-import { toast } from "sonner";
 import { isBlobUrl } from "@/lib/imageUpload";
 
 interface HeadshotSectionProps {
