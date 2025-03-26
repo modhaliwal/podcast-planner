@@ -55,7 +55,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
       notesVersions: Array.isArray(episode.notesVersions) ? 
         episode.notesVersions.map(v => ({
           ...v, 
-          versionNumber: v.versionNumber
+          versionNumber: v.versionNumber || 0
         })) : 
         [],
       status: episode.status,
@@ -109,7 +109,7 @@ export function useEpisodeForm({ episode, onSubmit: submitAction }: UseEpisodeFo
           timestamp: v.timestamp,
           source: v.source,
           active: v.active,
-          versionNumber: v.versionNumber  // Make sure versionNumber is included here
+          versionNumber: v.versionNumber || 0  // Provide default value if missing
         })),
         status: data.status,
         scheduled: data.scheduled.toISOString(),
