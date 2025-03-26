@@ -10,7 +10,8 @@ serve(async (req) => {
   }
 
   try {
-    const { topic } = await req.json();
+    const requestData = await req.json();
+    const { topic } = requestData;
     
     if (!topic) {
       throw new Error("Topic is required");
@@ -34,6 +35,8 @@ serve(async (req) => {
       
       Structure the information in well-organized sections with clear headings. Include specific data points and quotable facts that would make engaging talking points for podcast hosts.`
     );
+
+    console.log("Successfully generated notes, returning response");
 
     return new Response(
       JSON.stringify({ 

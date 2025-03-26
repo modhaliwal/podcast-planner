@@ -32,12 +32,16 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
       setIsGeneratingNotes(true);
       toast.info("Generating episode notes with research about this topic. This may take a minute...");
       
+      console.log("Calling generate-episode-notes function with topic:", topic);
+      
       // Call the Supabase function to generate notes
       const { data, error } = await supabase.functions.invoke('generate-episode-notes', {
         body: {
           topic
         }
       });
+      
+      console.log("Function response:", data, error);
       
       if (error) {
         throw new Error(error.message || "Failed to generate notes");
@@ -51,7 +55,7 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
       form.setValue('notes', data.notes, { shouldValidate: true });
       toast.success("Episode notes generated successfully");
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating notes:", error);
       toast.error(`Failed to generate notes: ${error.message || "Unknown error"}`);
     } finally {
@@ -64,7 +68,7 @@ export function NotesField({ form, guests = [] }: NotesFieldProps) {
       control={form.control}
       name="notes"
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="mb-12">
           <div className="flex items-center justify-between mb-2">
             <FormLabel className="flex items-center gap-2 mb-0">
               <BookText className="h-4 w-4 text-muted-foreground" />
