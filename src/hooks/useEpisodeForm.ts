@@ -8,11 +8,13 @@ import { toast } from 'sonner';
 import { episodeFormSchema, EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { useCoverArtHandler } from './useCoverArtHandler';
+import { useEpisodeGuests } from './useEpisodeGuests';
 
 export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<void>) {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
+  const { updateEpisodeGuests } = useEpisodeGuests();
   
   // Create form with default values
   const defaultValues = useMemo(() => ({
@@ -43,31 +45,6 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
     });
     return () => subscription.unsubscribe();
   }, [form]);
-  
-  // Helper function to update episode-guest relationships
-  const updateEpisodeGuests = async (guestIds: string[], episodeId: string) => {
-    // Delete existing relationships
-    const { error: deleteError } = await supabase
-      .from('episode_guests')
-      .delete()
-      .eq('episode_id', episodeId);
-    
-    if (deleteError) throw deleteError;
-    
-    // If there are new guest IDs, insert them
-    if (guestIds.length > 0) {
-      const episodeGuestsToInsert = guestIds.map(guestId => ({
-        episode_id: episodeId,
-        guest_id: guestId
-      }));
-      
-      const { error: insertError } = await supabase
-        .from('episode_guests')
-        .insert(episodeGuestsToInsert);
-      
-      if (insertError) throw insertError;
-    }
-  };
   
   // Form submission handler
   const onSubmit = async (data: EpisodeFormValues) => {
@@ -120,6 +97,7 @@ export function useEpisodeForm(episode: Episode, refreshEpisodes: () => Promise<
       
       if (updateError) throw updateError;
       
+      // Use the extracted guest relationship management function
       await updateEpisodeGuests(data.guestIds, episode.id);
       
       await refreshEpisodes();
