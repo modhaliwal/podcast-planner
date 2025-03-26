@@ -5,7 +5,7 @@ import { useEpisodeDelete } from './useEpisodeDelete';
 
 export function useEpisodeData(episodeId: string | undefined) {
   // Use our specialized hooks
-  const { isLoading: isLoadingEpisode, episode, setEpisode, refreshEpisode } = useEpisodeLoader(episodeId);
+  const { isLoading: isLoadingEpisode, episode, refreshEpisode } = useEpisodeLoader(episodeId);
   const { isSubmitting: isSaving, handleSave } = useEpisodeSave(episodeId);
   const { 
     isLoading: isDeleting, 
@@ -20,7 +20,6 @@ export function useEpisodeData(episodeId: string | undefined) {
   return {
     isLoading,
     episode,
-    setEpisode,
     refreshEpisode,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,

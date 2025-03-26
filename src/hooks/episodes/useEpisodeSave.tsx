@@ -27,16 +27,16 @@ export function useEpisodeSave(episodeId: string | undefined, onSuccess?: () => 
             topic: updatedEpisode.topic,
             introduction: updatedEpisode.introduction,
             notes: updatedEpisode.notes,
-            resources: updatedEpisode.resources,
-            podcast_urls: {
-              spotify: updatedEpisode.podcastUrls?.spotify,
-              youtube: updatedEpisode.podcastUrls?.youtube,
-              applePodcasts: updatedEpisode.podcastUrls?.applePodcasts,
-              amazonPodcasts: updatedEpisode.podcastUrls?.amazonPodcasts
-            },
+            resources: updatedEpisode.resources ? JSON.stringify(updatedEpisode.resources) : null,
+            podcast_urls: updatedEpisode.podcastUrls ? {
+              spotify: updatedEpisode.podcastUrls.spotify,
+              youtube: updatedEpisode.podcastUrls.youtube,
+              applePodcasts: updatedEpisode.podcastUrls.applePodcasts,
+              amazonPodcasts: updatedEpisode.podcastUrls.amazonPodcasts
+            } : null,
             cover_art: updatedEpisode.coverArt,
             notes_versions: updatedEpisode.notesVersions ? 
-              (updatedEpisode.notesVersions as any) : null
+              JSON.stringify(updatedEpisode.notesVersions) : null
           })
           .eq('id', episodeId);
         
