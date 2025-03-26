@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { Guest, ContentVersion } from "@/lib/types";
@@ -7,6 +8,9 @@ import { BackgroundResearchEditor } from "./BackgroundResearchEditor";
 import { BackgroundResearchControls } from "./BackgroundResearchControls";
 import { generateBackgroundResearch } from "./BackgroundResearchGenerator";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
+import { VersionSelector } from "../VersionSelector";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 
 interface BackgroundResearchSectionProps {
   backgroundResearch: string;
@@ -91,6 +95,27 @@ export function BackgroundResearchSection({
     setHasChangedSinceLastSave(false);
   };
 
+  const handleClearAllVersions = () => {
+    // Clear the versions array
+    onVersionsChange([]);
+    // Reset state
+    setActiveVersionId(undefined);
+    setPreviousContent("");
+    
+    // Optionally create a new initial version if there's content
+    if (backgroundResearch.trim()) {
+      const initialVersion: ContentVersion = {
+        id: uuidv4(),
+        content: backgroundResearch,
+        timestamp: new Date().toISOString(),
+        source: 'manual'
+      };
+      onVersionsChange([initialVersion]);
+      setActiveVersionId(initialVersion.id);
+      setPreviousContent(backgroundResearch);
+    }
+  };
+
   const saveCurrentVersion = () => {
     if (!backgroundResearch.trim()) return;
     if (backgroundResearch === previousContent) return;
@@ -138,17 +163,28 @@ export function BackgroundResearchSection({
 
   return (
     <div className="space-y-4">
-      <BackgroundResearchControls 
-        guest={guest || { id: '', name: '', title: '', bio: '', socialLinks: {}, createdAt: '', updatedAt: '' }}
-        onNewVersionCreated={saveCurrentVersion}
-        onClearAllVersions={() => onVersionsChange([])}
-        setMarkdownToConvert={setMarkdownToConvert}
-        versions={backgroundResearchVersions}
-        onSelectVersion={selectVersion}
-        activeVersionId={activeVersionId}
-        onGenerateResearch={handleGenerateResearch}
-        isGenerating={isLoading}
-      />
+      <div className="flex items-center justify-between">
+        <FormLabel>Background Research</FormLabel>
+        <div className="flex space-x-2">
+          <VersionSelector 
+            versions={backgroundResearchVersions}
+            onSelectVersion={selectVersion}
+            activeVersionId={activeVersionId}
+            onClearAllVersions={handleClearAllVersions}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateResearch}
+            disabled={isLoading}
+            className="h-8 gap-1"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {isLoading ? "Generating..." : "Generate"}
+          </Button>
+        </div>
+      </div>
       <BackgroundResearchEditor 
         backgroundResearch={backgroundResearch}
         onChangeBackgroundResearch={handleChange}

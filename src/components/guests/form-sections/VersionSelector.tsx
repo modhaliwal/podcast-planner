@@ -1,12 +1,13 @@
 
 import { ContentVersion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Clock, Check } from "lucide-react";
+import { Clock, Check, Trash } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator 
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 
@@ -14,12 +15,14 @@ interface VersionSelectorProps {
   versions: ContentVersion[];
   onSelectVersion: (version: ContentVersion) => void;
   activeVersionId?: string;
+  onClearAllVersions?: () => void;
 }
 
 export function VersionSelector({ 
   versions, 
   onSelectVersion, 
-  activeVersionId 
+  activeVersionId,
+  onClearAllVersions
 }: VersionSelectorProps) {
   if (!versions || versions.length === 0) {
     return null;
@@ -58,6 +61,19 @@ export function VersionSelector({
             )}
           </DropdownMenuItem>
         ))}
+
+        {onClearAllVersions && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onClearAllVersions}
+              className="text-destructive focus:text-destructive flex items-center"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Clear All Versions
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
@@ -82,6 +81,30 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
     return newVersion;
   };
 
+  const handleClearAllVersions = () => {
+    // Clear the versions but keep the current content
+    const currentBio = form.getValues('bio');
+    onVersionsChange([]);
+    // Reset state
+    setActiveVersionId(undefined);
+    setPreviousContent("");
+    setHasChangedSinceLastSave(false);
+    setVersionCreatedSinceFormOpen(false);
+    
+    // Optionally create a new initial version with current content
+    if (currentBio.trim()) {
+      const initialVersion: ContentVersion = {
+        id: uuidv4(),
+        content: currentBio,
+        timestamp: new Date().toISOString(),
+        source: 'manual'
+      };
+      onVersionsChange([initialVersion]);
+      setActiveVersionId(initialVersion.id);
+      setPreviousContent(currentBio);
+    }
+  };
+
   // Track when content changes in the form
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -128,6 +151,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSect
             versions={bioVersions} 
             onSelectVersion={selectVersion} 
             activeVersionId={activeVersionId}
+            onClearAllVersions={handleClearAllVersions}
           />
           <BioGeneration 
             form={form} 
