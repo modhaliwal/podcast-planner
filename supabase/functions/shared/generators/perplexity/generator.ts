@@ -1,5 +1,5 @@
-
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
+import { makePerplexityRequest } from './api.ts';
 import { DEFAULT_CONFIG, createConfig } from './config.ts';
 import { processApiResponse } from './responseParser.ts';
 import { convertMarkdownToHtml } from '../../utils/markdownConverter.ts';
@@ -22,8 +22,8 @@ export const VALID_PERPLEXITY_MODELS = [
  */
 export async function generateWithPerplexity(config: AIGeneratorConfig): Promise<AIGeneratorResponse> {
   // Get API key directly from environment
-  const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
-  if (!perplexityApiKey) {
+  const apiKey = Deno.env.get('PERPLEXITY_API_KEY');
+  if (!apiKey) {
     throw new Error("Perplexity API key is required but not provided");
   }
   
@@ -35,145 +35,85 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     
     // Create system and user prompts based on content type
     const systemPrompt = config.systemPrompt || getDefaultSystemPrompt(config.type);
-    const userPrompt = config.prompt || config.contextInstructions || getDefaultUserPrompt(
+    const userPrompt = config.prompt || getDefaultUserPrompt(
       config.type, 
       config.name, 
       config.title, 
-      companyInfo
+      companyInfo,
+      config.contextInstructions || ""
     );
     
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
-    // Validate and normalize the model name
-    const requestedModel = config.model_name || DEFAULT_CONFIG.model;
-    let model = normalizeModelName(requestedModel);
+    // Get model from config or perplexityConfig or default
+    let model = '';
     
-    console.log(`Using Perplexity model: ${model} (requested: ${requestedModel})`);
+    if (config.perplexityConfig?.model) {
+      model = config.perplexityConfig.model;
+    } else if (config.model_name) {
+      // If model_name is 'o1', convert to a valid Perplexity model
+      if (config.model_name === 'o1') {
+        model = DEFAULT_CONFIG.model;
+        console.log(`Model "o1" not supported by Perplexity, using default model ${model} instead`);
+      } else {
+        model = config.model_name;
+      }
+    } else {
+      model = DEFAULT_CONFIG.model;
+    }
+    
+    // Ensure model is valid for Perplexity
+    if (!VALID_PERPLEXITY_MODELS.includes(model)) {
+      console.log(`Model "${model}" not recognized by Perplexity, using default model ${DEFAULT_CONFIG.model} instead`);
+      model = DEFAULT_CONFIG.model;
+    }
+    
+    console.log(`Using Perplexity model: ${model}`);
     
     // Configure the Perplexity API request
     const perplexityConfig = createConfig({
-      model: model,
-      temperature: DEFAULT_CONFIG.temperature,
-      maxTokens: DEFAULT_CONFIG.maxTokens,
-      returnImages: DEFAULT_CONFIG.returnImages,
-      returnRelatedQuestions: DEFAULT_CONFIG.returnRelatedQuestions
+      ...config.perplexityConfig,
+      model,
+      systemPrompt,
+      userPrompt
     });
     
-    // Prepare request body
-    const requestBody: any = {
-      model: perplexityConfig.model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      temperature: perplexityConfig.temperature,
-      max_tokens: perplexityConfig.maxTokens,
-      return_images: perplexityConfig.returnImages,
-      return_related_questions: perplexityConfig.returnRelatedQuestions
-    };
+    // Call the Perplexity API
+    const apiResponse = await makePerplexityRequest(apiKey, perplexityConfig);
     
-    // Only add response_format for newer models that support it properly
-    if (perplexityConfig.model.includes("llama-3") || perplexityConfig.model.includes("sonar")) {
-      requestBody.response_format = { type: "text" };
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json();
+      console.error("Perplexity API error status:", apiResponse.status, JSON.stringify(errorData));
+      throw new Error(`Perplexity API error: ${apiResponse.status} - ${JSON.stringify(errorData)}`);
     }
-    
-    // Make the API call
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${perplexityApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Perplexity API error status:", response.status, errorText);
-      throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
-    }
-    
-    const data = await response.json();
     
     // Process the response
-    let markdown = "";
-    let metadata: any = {
-      provider: 'perplexity',
-      model: model
-    };
+    const data = await apiResponse.json();
+    const processedResponse = processApiResponse(data);
     
-    try {
-      // Extract content from the response
-      const messageContent = data.choices?.[0]?.message?.content;
-      
-      if (!messageContent) {
-        throw new Error("No content received from Perplexity API");
+    // Convert markdown to HTML if needed
+    let content = processedResponse.content;
+    let markdown = content;
+    
+    // If the response format is HTML and the content is in markdown, convert it
+    if (perplexityConfig.responseFormat === 'html' && content) {
+      content = await convertMarkdownToHtml(content);
+    }
+    
+    return {
+      content,
+      markdown,
+      metadata: {
+        ...processedResponse.metadata,
+        provider: 'perplexity',
+        model
       }
-      
-      // Process structured response or use raw content
-      const processedResponse = processApiResponse(data);
-      markdown = processedResponse.content || messageContent;
-      
-      // Add references and images to metadata if available
-      if (processedResponse.references) metadata.references = processedResponse.references;
-      if (processedResponse.images) metadata.images = processedResponse.images;
-    } catch (e) {
-      console.error("Error processing structured response:", e);
-      // Fallback to direct content extraction
-      markdown = data.choices?.[0]?.message?.content || '';
-    }
-    
-    console.log("Successfully generated markdown content with Perplexity");
-    console.log("Markdown preview:", markdown.substring(0, 100) + "...");
-    
-    // Convert markdown to HTML - using the imported converter that works in Deno
-    try {
-      const html = await convertMarkdownToHtml(markdown);
-      console.log("Successfully converted markdown to HTML");
-      
-      return {
-        content: html,
-        markdown: markdown, // Keep the original markdown for reference if needed
-        metadata
-      };
-    } catch (error) {
-      console.error("Error converting markdown to HTML:", error);
-      // Return markdown as content in case of HTML conversion failure
-      return {
-        content: markdown,
-        markdown: markdown,
-        metadata
-      };
-    }
+    };
   } catch (error) {
     console.error("Error generating content with Perplexity:", error);
     throw new Error(`Failed to generate content with Perplexity: ${error.message}`);
   }
-}
-
-/**
- * Normalizes model name to ensure it's valid for Perplexity
- */
-function normalizeModelName(model: string): string {
-  // Check if the model is already a valid Perplexity model
-  if (VALID_PERPLEXITY_MODELS.includes(model)) {
-    return model;
-  }
-  
-  // Handle specific model aliases or corrections
-  if (model === 'o1') {
-    console.log('Model "o1" is not valid, using default Perplexity model instead');
-    return DEFAULT_CONFIG.model;
-  }
-  
-  // For other unrecognized models, default to the DEFAULT_CONFIG
-  if (!VALID_PERPLEXITY_MODELS.includes(model)) {
-    console.log(`Unrecognized model "${model}", using "${DEFAULT_CONFIG.model}" instead`);
-    return DEFAULT_CONFIG.model;
-  }
-  
-  return model;
 }
 
 /**
@@ -184,7 +124,7 @@ function getDefaultSystemPrompt(type: string): string {
     case 'bio':
       return "You are an AI assistant tasked with writing professional biographies. Create concise, professional bios that highlight expertise and experience.";
     case 'research':
-      return "You are a skilled researcher specializing in preparing background information for podcast hosts. Your research is thorough, well-organized, and helps hosts conduct great interviews. Format your response in clean markdown using ## for section headings, bullet points with *, and proper markdown syntax for emphasis.";
+      return "You are an AI research assistant tasked with preparing background information on podcast guests. Create detailed, well-organized research notes that will help the podcast host prepare for an interview.";
     case 'notes':
       return "You are an AI assistant tasked with preparing comprehensive episode notes for a podcast. Create well-structured, informative notes that cover the main topics to be discussed.";
     default:
@@ -193,32 +133,25 @@ function getDefaultSystemPrompt(type: string): string {
 }
 
 /**
- * Gets the default user prompt based on content type
+ * Gets the default user prompt based on content type and context
  */
 function getDefaultUserPrompt(
   type: string, 
   name: string, 
   title: string, 
-  companyInfo: string
+  companyInfo: string,
+  additionalContext: string
 ): string {
+  const contextSection = additionalContext ? `\n\nAdditional context:\n${additionalContext}` : '';
+  
   switch (type) {
     case 'bio':
-      return `Create a professional bio for ${name}, who works as ${title} ${companyInfo}.`;
+      return `Create a professional bio for ${name}, who works as ${title} ${companyInfo}.${contextSection}`;
     case 'research':
-      return `Create detailed background research on ${name}, who is a ${title} ${companyInfo}, for a podcast interview.
-            
-      Format the output as well-structured markdown with proper headings (##), lists (*, -), and sections.
-      
-      Include the following sections:
-      - Educational background and career journey
-      - Notable accomplishments and expertise areas
-      - Previous media appearances and speaking style
-      - Recent projects or publications
-      - Social media presence and online engagement
-      - Recommended topics to explore in the interview`;
+      return `Prepare comprehensive background research on ${name}, who works as ${title} ${companyInfo}. Include education, career highlights, notable achievements, and areas of expertise.${contextSection}`;
     case 'notes':
-      return `Generate comprehensive research notes about "${name}" for a podcast episode.`;
+      return `Create comprehensive notes for a podcast episode about ${name || "the given topic"}.${contextSection}`;
     default:
-      return `Generate professional content about ${name}, who works as ${title} ${companyInfo}.`;
+      return `Generate professional content about ${name}, who works as ${title} ${companyInfo}.${contextSection}`;
   }
 }

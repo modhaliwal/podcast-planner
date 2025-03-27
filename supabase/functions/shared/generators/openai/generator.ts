@@ -1,4 +1,3 @@
-
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
 
 /**
@@ -28,7 +27,8 @@ export const VALID_OPENAI_MODELS = [
   'gpt-4',
   'gpt-4-turbo',
   'gpt-4o',
-  'gpt-4o-mini'
+  'gpt-4o-mini',
+  'o1'
 ];
 
 /**
@@ -60,11 +60,9 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
-    // Validate and normalize the model name
-    const requestedModel = config.model_name || DEFAULT_OPENAI_CONFIG.model;
-    let model = normalizeModelName(requestedModel);
-    
-    console.log(`Using OpenAI model: ${model} (requested: ${requestedModel})`);
+    // Use the requested model directly without normalization
+    const model = config.model_name || DEFAULT_OPENAI_CONFIG.model;
+    console.log(`Using OpenAI model: ${model}`);
     
     // Build the request body
     const requestBody: any = {
@@ -83,7 +81,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     };
     
     // Determine whether to use max_tokens or max_completion_tokens based on model
-    if (model.includes('gpt-4o')) {
+    if (model === 'o1' || model.includes('gpt-4o')) {
       requestBody.max_completion_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
     } else {
       requestBody.max_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
@@ -121,30 +119,6 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     console.error("Error generating content with OpenAI:", error);
     throw new Error(`Failed to generate content with OpenAI: ${error.message}`);
   }
-}
-
-/**
- * Normalizes model name to ensure it's valid for OpenAI
- */
-function normalizeModelName(model: string): string {
-  // Check if the model is already a valid OpenAI model
-  if (VALID_OPENAI_MODELS.includes(model)) {
-    return model;
-  }
-  
-  // Handle specific model aliases or corrections
-  if (model === 'o1') {
-    console.log('Model "o1" is not valid, using "gpt-4o" instead');
-    return 'gpt-4o';
-  }
-  
-  // For other unrecognized models, default to gpt-4o
-  if (!VALID_OPENAI_MODELS.includes(model)) {
-    console.log(`Unrecognized model "${model}", using "${DEFAULT_OPENAI_CONFIG.model}" instead`);
-    return DEFAULT_OPENAI_CONFIG.model;
-  }
-  
-  return model;
 }
 
 /**
