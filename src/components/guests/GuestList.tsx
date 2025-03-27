@@ -51,14 +51,14 @@ export function GuestList({ guests }: GuestListProps) {
           <Link to={`/guests/${guest.id}`} key={guest.id}>
             <Card className="p-4 hover:bg-muted/40 transition-colors">
               <div className="flex items-center gap-3">
-                {/* Avatar section */}
-                <Avatar className="h-16 w-16 border">
+                {/* Avatar section - fixed width */}
+                <Avatar className="h-16 w-16 shrink-0 border">
                   <AvatarImage src={guest.imageUrl} alt={guest.name} />
                   <AvatarFallback className="text-lg">{initials}</AvatarFallback>
                 </Avatar>
                 
-                {/* Guest info section */}
-                <div className="flex-1 min-w-0 space-y-1">
+                {/* Guest info section - give it more priority with min-width */}
+                <div className="flex-1 min-w-[200px] space-y-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-medium truncate">{guest.name}</h3>
                     
@@ -67,7 +67,7 @@ export function GuestList({ guests }: GuestListProps) {
                       <Badge 
                         variant="outline" 
                         className={cn(
-                          "text-xs capitalize px-2 py-0.5",
+                          "text-xs capitalize px-2 py-0.5 shrink-0",
                           statusColor.bg,
                           statusColor.text,
                           statusColor.border,
@@ -87,8 +87,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links - hidden on smaller screens but centered when visible */}
-                <div className="hidden md:flex items-center justify-center flex-grow mx-8">
+                {/* Social links section - allow this to shrink more aggressively */}
+                <div className="hidden md:flex items-center justify-center shrink flex-grow-0 mx-auto">
                   <div className="flex items-center space-x-1">
                     {guest.socialLinks.twitter && (
                       <a 
@@ -157,8 +157,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </div>
                 
-                {/* Latest episode info - hidden on smaller screens */}
-                <div className="hidden lg:block min-w-[280px]">
+                {/* Latest episode info - allow this to shrink first */}
+                <div className="hidden lg:block shrink-0 lg:max-w-[280px] lg:min-w-[200px] w-[280px]">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
