@@ -62,7 +62,7 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
           
           {/* Latest episode info - full width on mobile, 1/3 width on desktop */}
           <div className="w-full sm:w-1/3 shrink-0">
-            {latestEpisode ? (
+            {latestEpisode && (
               <GuestEpisodeMiniCard episode={latestEpisode} />
             )}
           </div>
