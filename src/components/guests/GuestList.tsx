@@ -48,7 +48,7 @@ export function GuestList({ guests }: GuestListProps) {
         return (
           <Link to={`/guests/${guest.id}`} key={guest.id}>
             <Card className="p-4 hover:bg-muted/40 transition-colors">
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 {/* Avatar section */}
                 <Avatar className="h-16 w-16 border">
                   <AvatarImage src={guest.imageUrl} alt={guest.name} />
@@ -85,8 +85,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links - centered both horizontally and vertically */}
-                <div className="flex items-center justify-center self-center h-full">
+                {/* Social links - ensuring proper vertical and horizontal centering */}
+                <div className="flex items-center justify-center h-full">
                   <div className="flex items-center space-x-1">
                     {guest.socialLinks.twitter && (
                       <a 
