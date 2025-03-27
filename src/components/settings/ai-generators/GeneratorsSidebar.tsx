@@ -1,8 +1,7 @@
 
 import React from "react";
 import { AIPrompt } from "@/hooks/useAIPrompts";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { GeneratorsList } from "./GeneratorsList";
 
 interface GeneratorsSidebarProps {
@@ -17,25 +16,24 @@ export function GeneratorsSidebar({
   prompts, 
   activePromptId, 
   onSelectPrompt, 
-  isAdding,
-  onAddNew
+  isAdding
 }: GeneratorsSidebarProps) {
   return (
-    <div className="col-span-1">
-      <div className="flex justify-between items-center mb-3">
+    <div className="border rounded-md overflow-hidden">
+      <div className="p-3 bg-muted/30 border-b">
         <h3 className="text-sm font-medium">Available Generators</h3>
-        <Button variant="outline" size="sm" onClick={onAddNew}>
-          <PlusCircle className="h-4 w-4 mr-1" />
-          Add New
-        </Button>
       </div>
       
-      <GeneratorsList 
-        prompts={prompts} 
-        activePromptId={activePromptId} 
-        onSelectPrompt={onSelectPrompt} 
-        isAdding={isAdding}
-      />
+      <ScrollArea className="h-[calc(100vh-300px)]">
+        <div className="p-2">
+          <GeneratorsList 
+            prompts={prompts} 
+            activePromptId={activePromptId} 
+            onSelectPrompt={onSelectPrompt} 
+            isAdding={isAdding}
+          />
+        </div>
+      </ScrollArea>
     </div>
   );
 }
