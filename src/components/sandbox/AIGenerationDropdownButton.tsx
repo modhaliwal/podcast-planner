@@ -87,7 +87,7 @@ export function AIGenerationDropdownButton({
   onOptionSelect,
   onClearAllVersions,
   className,
-  showNotification = false,
+  showNotification = true,
   selectedOptionId,
   hoverCardConfig,
   editorContent = "",
