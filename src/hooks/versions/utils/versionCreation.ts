@@ -124,7 +124,7 @@ export function addNewVersionUtil<T extends Record<string, any>>(
 
 /**
  * Clears all versions except the currently active one
- * Preserves the active version's version number
+ * Preserves the active version's version number and its content
  */
 export function clearAllVersionsUtil<T extends Record<string, any>>(
   form: UseFormReturn<T>,

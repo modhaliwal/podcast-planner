@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2, Type, AlignLeft } from "lucide-react";
@@ -102,13 +103,18 @@ export function AIGenerationDropdownButton({
 
   const handleClearAllVersions = () => {
     if (clearConfirmationState) {
+      // Get current versions and active version
       const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
       const activeVersion = currentVersions.find(v => v.active);
       
+      // Store current content to preserve it
+      const currentDisplayedContent = onEditorChange ? editorContent : internalEditorContent;
+      
       if (activeVersion) {
+        // Create a new version that preserves the version number but uses the current displayed content
         const newVersion: ContentVersion = {
           id: `version-${Date.now()}`,
-          content: activeVersion.content,
+          content: currentDisplayedContent, // Use the currently displayed content
           timestamp: new Date().toISOString(),
           source: activeVersion.source,
           active: true,
@@ -125,11 +131,24 @@ export function AIGenerationDropdownButton({
           setInternalContentVersions([newVersion]);
         }
       } else {
+        // If no active version, create a new version with the current content
+        const newVersion: ContentVersion = {
+          id: `version-${Date.now()}`,
+          content: currentDisplayedContent, // Use the currently displayed content
+          timestamp: new Date().toISOString(),
+          source: 'manual',
+          active: true,
+          versionNumber: 1
+        };
+        
         if (onClearAllVersions) {
           onClearAllVersions();
         }
-        if (!onContentVersionsChange) {
-          setInternalContentVersions([]);
+        
+        if (onContentVersionsChange) {
+          onContentVersionsChange([newVersion]);
+        } else {
+          setInternalContentVersions([newVersion]);
         }
       }
       

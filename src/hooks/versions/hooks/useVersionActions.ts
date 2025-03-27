@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
@@ -127,7 +128,7 @@ export function useVersionActions(
     // Create a new version with the current content but preserve version number
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: content,
+      content: content, // Use the current content to preserve what's displayed
       timestamp: new Date().toISOString(),
       source: "manual",
       active: true,
