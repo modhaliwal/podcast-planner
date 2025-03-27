@@ -2,7 +2,6 @@
 import { Form } from '@/components/ui/form';
 import { Episode, Guest } from '@/lib/types';
 import { ContentSection } from './FormSections/ContentSection';
-import { FormActions } from './FormSections/FormActions';
 import { useAuth } from '@/contexts/AuthContext';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
@@ -10,6 +9,7 @@ import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
+import { FormActions } from '@/components/ui/form-actions';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -54,9 +54,9 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
         <PodcastUrlsSection form={form} />
         
         <FormActions 
-          episodeId={episode?.id} 
-          isSubmitting={isSubmitting}
+          cancelHref={`/episodes/${episode?.id}`}
           onCancel={onCancel}
+          isSubmitting={isSubmitting}
         />
       </form>
     </Form>

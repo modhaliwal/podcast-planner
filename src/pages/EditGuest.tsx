@@ -44,6 +44,6 @@ const EditGuest = () => {
       </div>
     </Shell>
   );
-};
+}
 
 export default EditGuest;

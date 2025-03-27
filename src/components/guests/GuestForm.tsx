@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Form } from "@/components/ui/form";
@@ -12,6 +11,7 @@ import {
   GuestFormVersionsState,
   GuestImageState
 } from "./form";
+import { FormActions } from "@/components/ui/form-actions";
 
 interface GuestFormProps {
   guest: Guest;
@@ -41,6 +41,10 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     },
   });
 
+  const handleSubmit = async (data: any) => {
+    // This function will be handled by GuestFormSubmitHandler
+  };
+
   return (
     <div className="space-y-6">
       <GuestImageState>
@@ -58,7 +62,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
             }) => (
               <Form {...form}>
                 <form 
-                  onSubmit={form.handleSubmit((data) => {})} 
+                  onSubmit={form.handleSubmit(handleSubmit)} 
                   className="space-y-6"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -90,20 +94,27 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                     guest={guest}
                   />
 
-                  <GuestFormSubmitHandler
-                    guest={guest}
-                    isSubmitting={isSubmitting}
-                    setIsSubmitting={setIsSubmitting}
-                    imageFile={imageFile}
-                    isImageRemoved={isImageRemoved}
-                    bioVersions={bioVersions}
-                    backgroundResearchVersions={backgroundResearchVersions}
-                    formData={form.getValues()}
-                    notes={notes}
-                    backgroundResearch={backgroundResearch}
-                    onSave={onSave}
+                  <FormActions
                     onCancel={onCancel}
+                    isSubmitting={isSubmitting}
                   />
+
+                  <div className="hidden">
+                    <GuestFormSubmitHandler
+                      guest={guest}
+                      isSubmitting={isSubmitting}
+                      setIsSubmitting={setIsSubmitting}
+                      imageFile={imageFile}
+                      isImageRemoved={isImageRemoved}
+                      bioVersions={bioVersions}
+                      backgroundResearchVersions={backgroundResearchVersions}
+                      formData={form.getValues()}
+                      notes={notes}
+                      backgroundResearch={backgroundResearch}
+                      onSave={onSave}
+                      onCancel={onCancel}
+                    />
+                  </div>
                 </form>
               </Form>
             )}
