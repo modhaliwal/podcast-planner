@@ -84,7 +84,7 @@ export function AIGenerationDropdownButton({
   hoverCardConfig,
   editorContent = "",
   onEditorChange,
-  showEditor = false,
+  showEditor = true,
   editorPlaceholder = "Enter your content here...",
 }: AIGenerationDropdownButtonProps) {
   // State to manage the dropdown open state
