@@ -7,14 +7,16 @@ import { GuestSearch } from '@/components/guests/GuestSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Guest } from '@/lib/types';
+import { useGuestActions } from '@/hooks/guests/useGuestActions';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'grid' | 'calendar';
 
 export function GuestContent() {
-  const { guests, deleteGuest, isDataLoading } = useAuth();
+  const { guests, isDataLoading } = useAuth();
+  const { handleDelete } = useGuestActions();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   
   // Filter guests based on status
@@ -25,8 +27,8 @@ export function GuestContent() {
     }
     
     // Then, apply search filter if search term exists
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
       const nameMatch = guest.name?.toLowerCase().includes(searchLower) || false;
       const titleMatch = guest.title?.toLowerCase().includes(searchLower) || false;
       const companyMatch = guest.company?.toLowerCase().includes(searchLower) || false;
@@ -39,11 +41,15 @@ export function GuestContent() {
   
   const handleDeleteGuest = async (guestId: string) => {
     try {
-      await deleteGuest(guestId);
-      toast({
-        title: "Success",
-        description: "Guest deleted successfully"
-      });
+      const result = await handleDelete(guestId);
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Guest deleted successfully"
+        });
+      } else {
+        throw new Error("Failed to delete guest");
+      }
     } catch (error) {
       console.error("Error deleting guest:", error);
       toast({
@@ -54,33 +60,18 @@ export function GuestContent() {
     }
   };
   
-  const actionButtons = [
-    {
-      label: "List View",
-      onClick: () => setViewMode('list')
-    },
-    {
-      label: "Grid View",
-      onClick: () => setViewMode('grid')
-    },
-    {
-      label: "Calendar View",
-      onClick: () => setViewMode('calendar')
-    }
-  ];
-  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <GuestSearch 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm}
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery}
         />
         
         <div className="flex flex-col sm:flex-row gap-2">
           <GuestViewToggle 
-            viewMode={viewMode}
-            setViewMode={setViewMode}
+            viewMode={viewMode as 'list' | 'card'}
+            setViewMode={(mode: 'list' | 'card') => setViewMode(mode as ViewMode)}
           />
           
           <GuestFilter 
