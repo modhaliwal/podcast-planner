@@ -98,7 +98,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     console.log("Successfully generated markdown content with Perplexity");
     console.log("Markdown preview:", markdown.substring(0, 100) + "...");
     
-    // Convert markdown to HTML
+    // Convert markdown to HTML - using the imported converter that works in Deno
     try {
       const html = await convertMarkdownToHtml(markdown);
       console.log("Successfully converted markdown to HTML");
