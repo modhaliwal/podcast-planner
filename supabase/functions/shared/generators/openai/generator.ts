@@ -1,4 +1,3 @@
-
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
 
 /**
@@ -18,26 +17,6 @@ export const DEFAULT_OPENAI_CONFIG: OpenAIConfig = {
   temperature: 0.7,
   maxTokens: 1500
 };
-
-/**
- * List of valid OpenAI models
- */
-export const VALID_OPENAI_MODELS = [
-  'gpt-3.5-turbo',
-  'gpt-3.5-turbo-1106',
-  'gpt-4',
-  'gpt-4-turbo',
-  'gpt-4o',
-  'gpt-4o-mini',
-  'o1'
-];
-
-/**
- * Validates that the provided model is a valid OpenAI model
- */
-export function validateOpenAIModel(model: string): boolean {
-  return VALID_OPENAI_MODELS.includes(model);
-}
 
 /**
  * Generates content using OpenAI API
@@ -68,13 +47,8 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
-    // Use the requested model directly without fallback
+    // Use the requested model or fall back to default
     const model = config.model_name || DEFAULT_OPENAI_CONFIG.model;
-    
-    // Validate the model for OpenAI
-    if (!validateOpenAIModel(model)) {
-      throw new Error(`Unsupported OpenAI model: "${model}". Valid models are: ${VALID_OPENAI_MODELS.join(', ')}`);
-    }
     
     console.log(`Using OpenAI model: ${model}`);
     
