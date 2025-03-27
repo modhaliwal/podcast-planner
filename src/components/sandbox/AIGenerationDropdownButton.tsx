@@ -84,7 +84,7 @@ export function AIGenerationDropdownButton({
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuContent align="end" className="w-auto min-w-[240px]">
           <ScrollArea className="h-72">
             {options.map(option => (
               <DropdownMenuItem
@@ -101,17 +101,19 @@ export function AIGenerationDropdownButton({
                       {option.version}
                     </span>
                   )}
+                </div>
+                <div className="flex items-center justify-between w-full gap-2">
                   {option.date && (
                     <span className="font-medium text-sm">
                       {option.date}
                     </span>
                   )}
+                  {option.source && (
+                    <span className="text-xs text-muted-foreground italic">
+                      {option.source}
+                    </span>
+                  )}
                 </div>
-                {option.source && (
-                  <span className="text-xs text-muted-foreground mt-1 italic">
-                    {option.source}
-                  </span>
-                )}
               </DropdownMenuItem>
             ))}
           </ScrollArea>
