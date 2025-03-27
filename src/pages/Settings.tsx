@@ -6,7 +6,7 @@ import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfileSettings } from '@/components/settings/ProfileSettings';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
-import { AIPromptsSettings } from '@/components/settings/AIPromptsSettings';
+import { AIGeneratorsSettings } from '@/components/settings/AIGeneratorsSettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings as SettingsIcon, User, Sparkles } from 'lucide-react';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
@@ -49,7 +49,7 @@ export default function Settings() {
             </TabsTrigger>
             <TabsTrigger value="ai-prompts" className="flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
-              <span>AI Prompts</span>
+              <span>AI Generators</span>
             </TabsTrigger>
           </TabsList>
           
@@ -62,7 +62,7 @@ export default function Settings() {
           </TabsContent>
           
           <TabsContent value="ai-prompts">
-            <AIPromptsSettings />
+            <AIGeneratorsSettings />
           </TabsContent>
         </Tabs>
       </PageLayout>
