@@ -52,7 +52,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     const model = config.model_name || DEFAULT_OPENAI_CONFIG.model;
     console.log(`Using OpenAI model: ${model}`);
     
-    // Build the request body based on the model
+    // Build the request body
     const requestBody: any = {
       model: model,
       messages: [
@@ -68,7 +68,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
       temperature: DEFAULT_OPENAI_CONFIG.temperature,
     };
     
-    // New GPT models use max_completion_tokens instead of max_tokens
+    // Only newer models use max_completion_tokens instead of max_tokens
     if (model.includes('gpt-4o')) {
       requestBody.max_completion_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
     } else {

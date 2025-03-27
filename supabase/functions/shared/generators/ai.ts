@@ -44,13 +44,17 @@ export async function generateContent(
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   const claudeApiKey = Deno.env.get('ANTHROPIC_API_KEY');
   
-  // Determine which provider to use based on the AI generator's settings
-  // The ai_model field should contain the provider name
-  let provider = config.ai_model || preferredProvider;
+  // First priority: Specific provider in the configuration's ai_model field
+  let provider = config.ai_model;
+  
+  // Second priority: Preferred provider specified in the request
+  if (!provider && preferredProvider) {
+    provider = preferredProvider;
+  }
   
   console.log(`Generator specifies AI model: ${provider}, model_name: ${config.model_name || 'default'}`);
   
-  // If no provider is specified in the config or as a preference, use the first available one
+  // Third priority: Fall back to the first available API key
   if (!provider) {
     if (openaiApiKey) {
       provider = 'openai';
