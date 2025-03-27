@@ -5,18 +5,11 @@ import { Shell } from '@/components/layout/Shell';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { GuestHeader } from '@/components/guests/GuestHeader';
-import { GuestControls } from '@/components/guests/GuestControls';
 import { GuestContent } from '@/components/guests/GuestContent';
 
-type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
-type ViewMode = 'list' | 'card';
-
 const Guests = () => {
-  const { guests, isDataLoading, refreshGuests, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const hasInitializedRef = useRef(false);
   
   // Load guests data once on component mount
@@ -24,31 +17,12 @@ const Guests = () => {
     const loadData = async () => {
       if (!hasInitializedRef.current && user?.id) {
         console.log("Initial Guests page mount, refreshing guest data");
-        await refreshGuests();
         hasInitializedRef.current = true;
       }
     };
     
     loadData();
-  }, [refreshGuests, user]);
-
-  // Filter guests based on search query and status filter
-  const filteredGuests = guests.filter(guest => {
-    const matchesSearch = 
-      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.title.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = 
-      statusFilter === 'all' || 
-      guest.status === statusFilter || 
-      (statusFilter === 'potential' && !guest.status);
-    
-    return matchesSearch && matchesStatus;
-  });
-
-  const handleRefresh = () => {
-    refreshGuests();
-  };
+  }, [user]);
 
   const handleAddGuest = () => {
     if (!user) {
@@ -66,26 +40,10 @@ const Guests = () => {
     <Shell>
       <div className="page-container">
         <GuestHeader 
-          onRefresh={handleRefresh} 
           onAddGuest={handleAddGuest}
-          isLoading={isDataLoading}
         />
         
-        <GuestControls
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-        />
-        
-        <GuestContent
-          isLoading={isDataLoading}
-          filteredGuests={filteredGuests}
-          viewMode={viewMode}
-          handleAddGuest={handleAddGuest}
-        />
+        <GuestContent />
       </div>
     </Shell>
   );

@@ -16,13 +16,19 @@ interface GuestFilterProps {
 }
 
 export function GuestFilter({ statusFilter, setStatusFilter }: GuestFilterProps) {
+  // Format the status text with first letter capitalized
+  const formatStatusText = (status: GuestStatus) => {
+    if (status === 'all') return 'All Guests';
+    if (!status) return 'All Guests'; // Fallback if status is undefined
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="w-full md:w-auto">
           <Filter className="h-4 w-4 mr-2" />
-          {statusFilter === 'all' ? 'All Guests' : 
-            statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+          {formatStatusText(statusFilter)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
