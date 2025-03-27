@@ -16,7 +16,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Editor } from '@/components/editor/Editor';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -446,30 +445,25 @@ export function AIGenerationDropdownButton({
       {showEditor && (
         <div>
           {currentEditorType === 'rich' ? (
-            // Rich Text Editor with Preview
-            <ResizablePanelGroup direction="vertical" className="border rounded-md">
-              <ResizablePanel minSize={20} defaultSize={80} className="min-h-[300px]">
-                <div className="h-full w-full">
-                  <Editor
-                    value={onEditorChange ? editorContent : internalEditorContent}
-                    onChange={handleEditorChange}
-                    placeholder={editorPlaceholder}
-                  />
-                </div>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel minSize={5} defaultSize={20}>
-                <div className="p-4 bg-muted/30 h-full">
-                  <h4 className="text-sm font-medium mb-2">Preview</h4>
-                  <div 
-                    className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ 
-                      __html: onEditorChange ? editorContent : internalEditorContent 
-                    }}
-                  />
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            // Rich Text Editor with simple preview 
+            <div className="border rounded-md">
+              <div className="min-h-[300px]">
+                <Editor
+                  value={onEditorChange ? editorContent : internalEditorContent}
+                  onChange={handleEditorChange}
+                  placeholder={editorPlaceholder}
+                />
+              </div>
+              <div className="p-4 bg-muted/30 border-t">
+                <h4 className="text-sm font-medium mb-2">Preview</h4>
+                <div 
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ 
+                    __html: onEditorChange ? editorContent : internalEditorContent 
+                  }}
+                />
+              </div>
+            </div>
           ) : (
             // Plain Text Editor
             <Textarea
@@ -484,3 +478,4 @@ export function AIGenerationDropdownButton({
     </div>
   );
 }
+
