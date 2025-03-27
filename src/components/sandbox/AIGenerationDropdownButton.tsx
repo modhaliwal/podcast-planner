@@ -112,41 +112,42 @@ export function AIGenerationDropdownButton({
           </Button>
         </HoverCardTrigger>
         {hoverCardConfig && (
-          <HoverCardContent className="w-80 p-4">
+          <HoverCardContent className="w-auto min-w-[280px] p-4" side="top">
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">AI Generation Configuration</h4>
               
               {hoverCardConfig.promptKey && (
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="text-muted-foreground">Prompt Key:</span>
-                  <span className="col-span-2 font-medium">{hoverCardConfig.promptKey}</span>
+                  <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptKey}</span>
                 </div>
               )}
               
               {hoverCardConfig.promptTitle && (
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="text-muted-foreground">Prompt Title:</span>
-                  <span className="col-span-2 font-medium">{hoverCardConfig.promptTitle}</span>
+                  <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptTitle}</span>
                 </div>
               )}
               
               {hoverCardConfig.aiProvider && (
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="text-muted-foreground">AI Provider:</span>
-                  <span className="col-span-2 font-medium">{hoverCardConfig.aiProvider}</span>
+                  <span className="col-span-2 font-medium break-words">{hoverCardConfig.aiProvider}</span>
                 </div>
               )}
               
               {hoverCardConfig.edgeFunctionName && (
                 <div className="grid grid-cols-3 gap-2 text-sm">
                   <span className="text-muted-foreground">Edge Function:</span>
-                  <span className="col-span-2 font-medium">{hoverCardConfig.edgeFunctionName}</span>
+                  <span className="col-span-2 font-medium break-words">{hoverCardConfig.edgeFunctionName}</span>
                 </div>
               )}
             </div>
           </HoverCardContent>
         )}
       </HoverCard>
+      
       <DropdownMenu open={open} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
