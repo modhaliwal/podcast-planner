@@ -32,7 +32,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
       
       <div className="relative flex items-center gap-2">
         <div className={cn(
-          "h-8 w-8 rounded-full flex items-center justify-center",
+          "h-8 w-8 shrink-0 rounded-full flex items-center justify-center",
           statusColors[episode.status] || "bg-gray-100 text-gray-600"
         )}>
           <Calendar className="h-4 w-4" />

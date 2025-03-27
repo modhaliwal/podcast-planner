@@ -158,8 +158,8 @@ export function GuestList({ guests }: GuestListProps) {
                 {/* Flexible spacer - grows to fill available space */}
                 <div className="hidden md:block flex-1"></div>
                 
-                {/* Latest episode info - visible at larger breakpoints, hidden before it would wrap */}
-                <div className="hidden lg:block shrink-0 min-w-[200px] w-auto">
+                {/* Latest episode info - visible at larger breakpoints, with fixed width (1/3 of card) */}
+                <div className="hidden lg:block w-1/3 max-w-[200px] shrink-0">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
