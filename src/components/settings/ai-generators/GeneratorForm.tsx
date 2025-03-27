@@ -76,10 +76,13 @@ export function GeneratorForm({
                     className="w-full rounded-md border p-2 text-sm font-mono"
                     placeholder="Enter system instructions for this generator..."
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    System instructions that guide the AI's behavior and capabilities
+                  </p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Parameters (JSON)</label>
+                  <label className="block text-sm font-medium mb-1">Parameters (JSON Schema)</label>
                   <textarea
                     name="parameters"
                     value={editedPrompt.parameters || "{}"}
@@ -88,6 +91,9 @@ export function GeneratorForm({
                     className="w-full rounded-md border p-2 text-sm font-mono"
                     placeholder="{}"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Define the expected parameters schema for this generator
+                  </p>
                 </div>
               </div>
             </div>

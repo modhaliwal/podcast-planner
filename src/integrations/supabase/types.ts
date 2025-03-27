@@ -11,11 +11,14 @@ export type Database = {
     Tables: {
       ai_generators: {
         Row: {
+          ai_model: string | null
           context_instructions: string | null
           created_at: string
           example_output: string | null
           id: string
           key: string | null
+          model_name: string | null
+          parameters: string | null
           prompt_text: string
           slug: string
           system_prompt: string | null
@@ -23,11 +26,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_model?: string | null
           context_instructions?: string | null
           created_at?: string
           example_output?: string | null
           id?: string
           key?: string | null
+          model_name?: string | null
+          parameters?: string | null
           prompt_text: string
           slug: string
           system_prompt?: string | null
@@ -35,11 +41,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_model?: string | null
           context_instructions?: string | null
           created_at?: string
           example_output?: string | null
           id?: string
           key?: string | null
+          model_name?: string | null
+          parameters?: string | null
           prompt_text?: string
           slug?: string
           system_prompt?: string | null

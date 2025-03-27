@@ -37,7 +37,8 @@ export function GeneratorEditor({
   const modelOptions = [
     { value: "openai", label: "OpenAI" },
     { value: "perplexity", label: "Perplexity AI" },
-    { value: "anthropic", label: "Anthropic" }
+    { value: "claude", label: "Anthropic" },
+    { value: "gemini", label: "Google Gemini" }
   ];
   
   const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -108,9 +109,15 @@ export function GeneratorEditor({
                 name="model_name"
                 value={editedPrompt.model_name || ''}
                 onChange={onInputChange}
-                placeholder="e.g., gpt-4-turbo"
+                placeholder={editedPrompt.ai_model === 'openai' ? 'gpt-4o' : 
+                  editedPrompt.ai_model === 'perplexity' ? 'llama-3.1-sonar-small-128k' : 
+                  editedPrompt.ai_model === 'claude' ? 'claude-3-opus' :
+                  'gemini-pro'}
                 className="mt-1"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                The specific model from the selected provider
+              </p>
             </div>
           </div>
         </div>
@@ -141,7 +148,7 @@ export function GeneratorEditor({
               onChange={onInputChange}
               rows={6}
               className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1 font-mono"
-              placeholder="Enter the prompt template with {{variables}}..."
+              placeholder="Enter the prompt template with {variables}..."
             />
           </div>
           
