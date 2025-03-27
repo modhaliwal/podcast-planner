@@ -83,6 +83,14 @@ export function AIButtonDemo() {
   const [selectedOptionId, setSelectedOptionId] = useState<string | undefined>(undefined);
   const [options, setOptions] = useState<DropdownOption[]>(mockPromptOptions);
   
+  // Example configuration for hover card to demonstrate its functionality
+  const hoverCardConfig = {
+    aiProvider: "OpenAI GPT-4o",
+    promptKey: "content_generation_professional",
+    promptTitle: "Professional Content Generation",
+    edgeFunctionName: "generate-content"
+  };
+  
   const handleGenerate = () => {
     setIsGenerating(true);
     
@@ -130,7 +138,8 @@ export function AIButtonDemo() {
       <h3 className="text-lg font-medium">AI Generation with Options</h3>
       <p className="text-muted-foreground mb-4">
         This component demonstrates an AI generation button with dropdown options. 
-        Click the main button for default generation or select an option from the dropdown and then click generate.
+        Hover over the button to see configuration details, click the main button for default generation, 
+        or select an option from the dropdown and then click generate.
       </p>
       
       <div className="flex flex-col gap-4">
@@ -144,6 +153,7 @@ export function AIButtonDemo() {
           onClearAllVersions={handleClearAllVersions}
           showNotification={showNotification}
           selectedOptionId={selectedOptionId}
+          hoverCardConfig={hoverCardConfig}
         />
         
         <div className="flex items-center gap-2">

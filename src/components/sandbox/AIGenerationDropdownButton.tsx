@@ -7,10 +7,14 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 // Types for the dropdown options
 export type DropdownOption = {
@@ -35,6 +39,13 @@ export interface AIGenerationDropdownButtonProps {
   className?: string;
   showNotification?: boolean;
   selectedOptionId?: string;
+  // New configuration props for hover card
+  hoverCardConfig?: {
+    aiProvider?: string;
+    promptKey?: string;
+    promptTitle?: string;
+    edgeFunctionName?: string;
+  };
 }
 
 /**
@@ -54,6 +65,7 @@ export function AIGenerationDropdownButton({
   className,
   showNotification = false,
   selectedOptionId,
+  hoverCardConfig,
 }: AIGenerationDropdownButtonProps) {
   // State to manage the dropdown open state
   const [open, setOpen] = useState(false);
@@ -85,17 +97,56 @@ export function AIGenerationDropdownButton({
 
   return (
     <div className={cn("flex", className)}>
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        onClick={onButtonClick}
-        disabled={disabled || isGenerating}
-        className="flex items-center gap-1 rounded-r-none border-r-0"
-      >
-        <Sparkles className="h-4 w-4" />
-        {isGenerating ? loadingLabel : buttonLabel}
-      </Button>
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onButtonClick}
+            disabled={disabled || isGenerating}
+            className="flex items-center gap-1 rounded-r-none border-r-0"
+          >
+            <Sparkles className="h-4 w-4" />
+            {isGenerating ? loadingLabel : buttonLabel}
+          </Button>
+        </HoverCardTrigger>
+        {hoverCardConfig && (
+          <HoverCardContent className="w-80 p-4">
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">AI Generation Configuration</h4>
+              
+              {hoverCardConfig.promptKey && (
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">Prompt Key:</span>
+                  <span className="col-span-2 font-medium">{hoverCardConfig.promptKey}</span>
+                </div>
+              )}
+              
+              {hoverCardConfig.promptTitle && (
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">Prompt Title:</span>
+                  <span className="col-span-2 font-medium">{hoverCardConfig.promptTitle}</span>
+                </div>
+              )}
+              
+              {hoverCardConfig.aiProvider && (
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">AI Provider:</span>
+                  <span className="col-span-2 font-medium">{hoverCardConfig.aiProvider}</span>
+                </div>
+              )}
+              
+              {hoverCardConfig.edgeFunctionName && (
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">Edge Function:</span>
+                  <span className="col-span-2 font-medium">{hoverCardConfig.edgeFunctionName}</span>
+                </div>
+              )}
+            </div>
+          </HoverCardContent>
+        )}
+      </HoverCard>
       <DropdownMenu open={open} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
