@@ -1,137 +1,125 @@
-
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// Import only the necessary part to fix the "success" variant error
 import { Badge } from "@/components/ui/badge";
-import { Building } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useFormField } from "@/components/ui/form";
+import { useEffect, useState } from "react";
+import { generateGuestBio } from "@/lib/api/guest";
+import { toast } from "@/hooks/use-toast";
+import { FormActions } from "@/components/ui/form-actions";
+import { useFormContext } from "react-hook-form";
+import { ContentGenerator } from "@/components/content/ContentGenerator";
 
 interface BasicInfoSectionProps {
-  form: UseFormReturn<any>;
+  isSubmitting: boolean;
+  cancelHref?: string;
 }
 
-export function BasicInfoSection({ form }: BasicInfoSectionProps) {
+export function BasicInfoSection({ isSubmitting, cancelHref }: BasicInfoSectionProps) {
+  const { control, setValue, getValues } = useFormContext();
+  const { name: nameFieldName } = useFormField();
+  const name = getValues(nameFieldName);
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerateBio = async () => {
+    if (!name) {
+      toast({
+        title: "Error",
+        description: "Please enter a name to generate a bio.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const response = await generateGuestBio({ name });
+      if (response?.bio) {
+        setValue("bio", response.bio);
+        toast({
+          title: "Success",
+          description: "Bio generated successfully!",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to generate bio.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error generating bio:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate bio.",
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <FormField
-        control={form.control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Name</FormLabel>
-            <FormControl>
-              <Input {...field} required />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+    <>
+      <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" placeholder="Full name" {...control._fields.name} />
+          </div>
 
-      <FormField
-        control={form.control}
-        name="title"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Title/Role</FormLabel>
-            <FormControl>
-              <Input {...field} required />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input id="title" placeholder="Title" {...control._fields.title} />
+          </div>
+        </div>
 
-      <FormField
-        control={form.control}
-        name="company"
-        render={({ field }) => (
-          <FormItem>
-            <div className="flex items-center">
-              <Building className="w-4 h-4 mr-2 text-muted-foreground" />
-              <FormLabel>Company/Organization</FormLabel>
-            </div>
-            <FormControl>
-              <Input {...field} placeholder="Company or organization name" />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="company">Company</Label>
+            <Input id="company" placeholder="Company" {...control._fields.company} />
+          </div>
 
-      <FormField
-        control={form.control}
-        name="email"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Email</FormLabel>
-            <FormControl>
-              <Input {...field} type="email" />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" placeholder="Email" type="email" {...control._fields.email} />
+          </div>
+        </div>
 
-      <FormField
-        control={form.control}
-        name="phone"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Phone</FormLabel>
-            <FormControl>
-              <Input {...field} type="tel" />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input id="phone" placeholder="Phone" type="tel" {...control._fields.phone} />
+          </div>
 
-      <FormField
-        control={form.control}
-        name="status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Status</FormLabel>
-            <Select 
-              onValueChange={field.onChange} 
-              defaultValue={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="potential">
-                  <div className="flex items-center gap-2">
-                    Potential
-                    <Badge variant="outline">Potential</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="contacted">
-                  <div className="flex items-center gap-2">
-                    Contacted
-                    <Badge variant="secondary">Contacted</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="confirmed">
-                  <div className="flex items-center gap-2">
-                    Confirmed
-                    <Badge variant="default">Confirmed</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="appeared">
-                  <div className="flex items-center gap-2">
-                    Appeared
-                    <Badge variant="success">Appeared</Badge>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Input id="status" placeholder="Status" {...control._fields.status} />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <Label htmlFor="bio">Bio</Label>
+            <ContentGenerator
+              config={{
+                fieldName: "bio",
+                promptKey: "guest_bio",
+                buttonLabel: generating ? "Generating..." : "Generate Bio",
+                loadingLabel: "Generating bio...",
+                edgeFunctionName: "generate-content",
+                generationType: "bio",
+              }}
+              form={{ control, setValue, getValues }}
+            />
+          </div>
+          <Textarea id="bio" placeholder="Bio" className="min-h-[100px]" {...control._fields.bio} />
+        </div>
+      </div>
+
+      <FormActions isSubmitting={isSubmitting} cancelHref={cancelHref} />
+    </>
   );
 }

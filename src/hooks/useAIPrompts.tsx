@@ -8,7 +8,6 @@ export type AIPrompt = {
   key?: string;
   title: string;
   prompt_text: string;
-  description?: string;
   created_at: string;
   updated_at: string;
   system_prompt?: string;
@@ -49,8 +48,15 @@ export function useAIPrompts() {
     try {
       const { data, error } = await supabase
         .from('ai_prompts')
-        .insert({ 
-          ...promptData,
+        .insert({
+          title: promptData.title || "",
+          prompt_text: promptData.prompt_text || "",
+          system_prompt: promptData.system_prompt,
+          context_instructions: promptData.context_instructions,
+          example_output: promptData.example_output,
+          ai_model: promptData.ai_model,
+          model_name: promptData.model_name,
+          parameters: promptData.parameters,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })

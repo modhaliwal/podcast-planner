@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAIPrompts, AIPrompt } from "@/hooks/useAIPrompts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,7 +69,6 @@ export function AIGeneratorsSettings() {
       const success = await createPrompt({
         title: editedPrompt.title || "New Generator",
         prompt_text: editedPrompt.prompt_text || "",
-        description: editedPrompt.description || "",
         example_output: editedPrompt.example_output || "",
         context_instructions: editedPrompt.context_instructions || "",
         system_prompt: editedPrompt.system_prompt || "",
@@ -90,7 +88,6 @@ export function AIGeneratorsSettings() {
       const success = await updatePrompt(activePromptId, {
         title: editedPrompt.title,
         prompt_text: editedPrompt.prompt_text,
-        description: editedPrompt.description,
         example_output: editedPrompt.example_output,
         context_instructions: editedPrompt.context_instructions,
         system_prompt: editedPrompt.system_prompt,
@@ -153,7 +150,6 @@ export function AIGeneratorsSettings() {
     setEditedPrompt({
       title: "New Generator",
       prompt_text: "",
-      description: "",
       example_output: "",
       context_instructions: "",
       system_prompt: "",

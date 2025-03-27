@@ -113,20 +113,6 @@ export function GeneratorEditor({
           </p>
         </div>
         
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            name="description"
-            value={editedPrompt.description || ''}
-            onChange={onInputChange}
-            className="mt-1"
-          />
-          <p className="text-muted-foreground text-xs mt-1">
-            Brief explanation of where this generator is used
-          </p>
-        </div>
-        
         {!isNewGenerator && editedPrompt.id && (
           <div className="flex items-center space-x-2">
             <div className="text-sm text-muted-foreground">Generator ID: {editedPrompt.id}</div>

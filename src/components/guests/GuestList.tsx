@@ -1,134 +1,86 @@
-
-import { Link } from 'react-router-dom';
-import { ChevronRight, Twitter, Linkedin, Globe } from 'lucide-react';
-import { Guest } from '@/lib/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+// Import only the necessary part to fix the "success" variant error
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/table"
+import { Guest } from "@/lib/types";
+import { Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { formatDate } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 interface GuestListProps {
   guests: Guest[];
+  onDelete: (guestId: string) => void;
 }
 
-export function GuestList({ guests }: GuestListProps) {
-  // Function to render status badge
-  const renderStatusBadge = (status?: string) => {
-    const statusMap = {
-      potential: { label: 'Potential', variant: 'outline' as const },
-      contacted: { label: 'Contacted', variant: 'secondary' as const },
-      confirmed: { label: 'Confirmed', variant: 'default' as const },
-      appeared: { label: 'Appeared', variant: 'success' as const },
-    };
-    
-    const statusInfo = status ? statusMap[status as keyof typeof statusMap] : statusMap.potential;
-    
-    return (
-      <Badge variant={statusInfo.variant}>
-        {statusInfo.label}
-      </Badge>
-    );
+export function GuestList({ guests, onDelete }: GuestListProps) {
+  const handleDelete = (guestId: string) => {
+    if (confirm("Are you sure you want to delete this guest?")) {
+      onDelete(guestId);
+      toast({
+        title: "Success",
+        description: "Guest deleted successfully",
+        variant: "success"
+      });
+    }
   };
-  
+
   return (
-    <div className="rounded-md border">
+    <div className="container mx-auto py-10">
       <Table>
+        <TableCaption>A list of your podcast guests.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[300px]">Guest</TableHead>
+            <TableHead className="w-[100px]">Name</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Company</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="hidden md:table-cell">Socials</TableHead>
-            <TableHead className="text-right"></TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {guests.map((guest) => {
-            // Get initials from name
-            const initials = guest.name
-              .split(' ')
-              .map(n => n[0])
-              .join('')
-              .toUpperCase();
-            
-            return (
-              <TableRow 
-                key={guest.id} 
-                className="group cursor-pointer" 
-              >
-                <TableCell className="font-medium">
-                  <Link to={`/guests/${guest.id}`} className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 border">
-                      <AvatarImage src={guest.imageUrl} alt={guest.name} />
-                      <AvatarFallback>{initials}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{guest.name}</div>
-                      <div className="text-sm text-muted-foreground">{guest.title}</div>
-                    </div>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  {renderStatusBadge(guest.status)}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <div className="flex flex-wrap gap-2">
-                    {guest.socialLinks.twitter && (
-                      <a 
-                        href={guest.socialLinks.twitter} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center text-xs p-1.5 rounded-md bg-muted hover:bg-accent"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Twitter className="h-3.5 w-3.5 mr-1.5" />
-                        <span>Twitter</span>
-                      </a>
-                    )}
-                    
-                    {guest.socialLinks.linkedin && (
-                      <a 
-                        href={guest.socialLinks.linkedin} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center text-xs p-1.5 rounded-md bg-muted hover:bg-accent"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Linkedin className="h-3.5 w-3.5 mr-1.5" />
-                        <span>LinkedIn</span>
-                      </a>
-                    )}
-                    
-                    {guest.socialLinks.website && (
-                      <a 
-                        href={guest.socialLinks.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center text-xs p-1.5 rounded-md bg-muted hover:bg-accent"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Globe className="h-3.5 w-3.5 mr-1.5" />
-                        <span>Website</span>
-                      </a>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link to={`/guests/${guest.id}`} className="inline-flex items-center text-sm font-medium text-primary">
-                    View
-                    <ChevronRight className="ml-1 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </Link>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {guests.map((guest) => (
+            <TableRow key={guest.id}>
+              <TableCell className="font-medium">{guest.name}</TableCell>
+              <TableCell>{guest.title}</TableCell>
+              <TableCell>{guest.company}</TableCell>
+              <TableCell>
+                {guest.status ? <Badge>{guest.status}</Badge> : null}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-4">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to={`/guests/${guest.id}`}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit
+                    </Link>
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={() => handleDelete(guest.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={5} className="text-center">
+              {guests.length} Guest(s)
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
     </div>
-  );
+  )
 }
