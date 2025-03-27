@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
@@ -52,6 +51,16 @@ export interface AIGenerationDropdownButtonProps {
  * A specialized button for AI content generation with a dropdown menu.
  * Clicking the main button triggers the primary action, while the dropdown
  * icon shows a menu of alternative options.
+ * 
+ * IMPORTANT: This component deliberately maintains all functionality in a single file
+ * despite its length. The component's behavior relies on tightly coupled state management
+ * and coordinated interactions between the button, dropdown menu, and hover card.
+ * 
+ * DO NOT REFACTOR this component into smaller pieces as it would:
+ * 1. Break the encapsulated state management
+ * 2. Complicate the API interface
+ * 3. Make maintenance more difficult
+ * 4. Potentially introduce bugs in the coordinated behavior
  */
 export function AIGenerationDropdownButton({
   buttonLabel = "Generate",

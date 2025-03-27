@@ -27,3 +27,18 @@ This directory contains experimental components that are used exclusively in the
 2. Test and iterate within the Sandbox page
 3. Once finalized, refactor and move to the appropriate location in the main codebase
 4. Remove the experimental version from the sandbox
+
+## Component Refactoring Exceptions
+
+Some components in this directory are intentionally kept as single files despite their length, due to tightly coupled functionality. The following components should NOT be split into smaller components:
+
+### AIGenerationDropdownButton
+
+This component combines a button, dropdown menu, and hover card with shared state and coordinated interactions. Splitting it would break its encapsulated functionality and complicate maintenance. Specific reasons include:
+
+- The dropdown state affects multiple parts of the component
+- The clear confirmation state is tightly coupled with the dropdown menu
+- The hover card configuration is directly related to the button's primary action
+- The coordinated appearance of notifications and selected items relies on shared props
+
+When making changes to these components, maintain the single-file architecture to preserve their functionality.
