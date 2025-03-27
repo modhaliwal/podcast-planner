@@ -10,7 +10,7 @@ export async function callPerplexityAPI(
   config: PerplexityConfig,
   apiKey: string
 ) {
-  console.log(`Calling Perplexity API to generate research using model: ${config.model}`);
+  console.log(`Calling Perplexity API to generate content using model: ${config.model}`);
   
   // Prepare request body
   const requestBody: any = {
@@ -25,10 +25,12 @@ export async function callPerplexityAPI(
     return_related_questions: config.returnRelatedQuestions
   };
   
-  // Only add response_format if using newer models that support it
-  if (config.model.includes("llama-3") || config.model.includes("sonar")) {
+  // Only add response_format for models that support it
+  // llama-3 models support "text" format
+  if (config.model.includes("llama-3")) {
     requestBody.response_format = { type: "text" };
-  }
+  } 
+  // sonar models don't need response_format specified
   
   const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',

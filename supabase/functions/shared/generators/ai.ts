@@ -88,6 +88,12 @@ export async function generateContent(
     // Import the appropriate generator dynamically
     if (provider === 'perplexity') {
       const { generateWithPerplexity } = await import('./perplexity/generator.ts');
+      
+      // Pass the model_name to the generator if specified
+      if (config.model_name) {
+        config.perplexityConfig = { model: config.model_name };
+      }
+      
       return await generateWithPerplexity(config);
     } else if (provider === 'claude') {
       const { generateWithClaude } = await import('./claude/generator.ts');

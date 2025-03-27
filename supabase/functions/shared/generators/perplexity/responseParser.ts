@@ -2,7 +2,6 @@
 /**
  * Functions for parsing raw Perplexity API responses
  */
-import { formatMarkdownWithMedia } from "./markdownFormatter.ts";
 
 /**
  * Processes the raw API response from Perplexity
@@ -56,7 +55,7 @@ export function processApiResponse(data: any): any {
     };
   } catch (error) {
     console.error("Error parsing response:", error);
-    return { content: messageContent };
+    return { content: String(messageContent) };
   }
 }
 

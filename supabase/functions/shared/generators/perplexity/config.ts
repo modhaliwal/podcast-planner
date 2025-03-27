@@ -5,7 +5,7 @@ import { PerplexityConfig } from './types.ts';
  * Default configuration for Perplexity API
  */
 export const DEFAULT_CONFIG: PerplexityConfig = {
-  model: 'llama-3.1-sonar-small-128k',
+  model: 'sonar-small-chat',  // Updated to use a model that doesn't require response_format
   temperature: 0.7,
   maxTokens: 4000,
   returnImages: false,

@@ -65,6 +65,7 @@ export const useContentGeneration = (
       }
       
       console.log(`Generating content for ${fieldName} using ${edgeFunctionName}`);
+      console.log(`Using preferred provider: ${preferredProvider || 'not specified'}`);
       
       // Prepare the request body
       const requestBody = prepareRequestBody(
