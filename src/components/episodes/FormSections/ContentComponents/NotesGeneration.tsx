@@ -17,27 +17,25 @@ export function NotesGeneration({ guests, onNotesGenerated, form }: NotesGenerat
   // Find selected guests from the full guests array
   const selectedGuests = guests.filter(g => selectedGuestIds.includes(g.id));
   
-  return (
-    <ContentGenerator 
-      config={{
-        fieldName: "notes",
-        promptKey: "episode_notes",
-        buttonLabel: "Generate Notes",
-        loadingLabel: "Generating notes...",
-        onContentGenerated: onNotesGenerated,
-        guests: selectedGuests,
-        additionalContext: {
-          episode: {
-            title: form.watch('title') || '',
-            topic: topic,
-          },
-          topic
-        },
-        edgeFunctionName: 'generate-episode-notes',
-        generationType: "notes",
-        preferredProvider: "perplexity" // Prefer Perplexity for notes
-      }}
-      form={form}
-    />
-  );
+  // Create the content generation config
+  const config: ContentGenerationConfig = {
+    fieldName: "notes",
+    promptKey: "episode_notes",
+    buttonLabel: "Generate Notes",
+    loadingLabel: "Generating notes...",
+    onContentGenerated: onNotesGenerated,
+    guests: selectedGuests,
+    additionalContext: {
+      episode: {
+        title: form.watch('title') || '',
+        topic: topic,
+      },
+      topic
+    },
+    edgeFunctionName: 'generate-episode-notes',
+    generationType: "notes",
+    preferredProvider: "perplexity" // Explicitly set to use Perplexity
+  };
+  
+  return <ContentGenerator config={config} form={form} />;
 }

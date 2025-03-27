@@ -56,7 +56,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
         ],
         temperature: DEFAULT_CONFIG.temperature,
         max_tokens: DEFAULT_CONFIG.maxTokens,
-        return_images: DEFAULT_CONFIG.returnImages && hasJsonResponseSupport(),
+        // Remove document references which was causing errors
         return_related_questions: DEFAULT_CONFIG.returnRelatedQuestions && hasJsonResponseSupport(),
         ...(responseFormat && hasJsonResponseSupport() ? { response_format: responseFormat } : {})
       }),

@@ -17,7 +17,8 @@ serve(async (req) => {
       prompt, 
       systemPrompt,
       contextInstructions,
-      exampleOutput
+      exampleOutput,
+      preferredProvider
     } = requestData;
     
     if (!episode) {
@@ -77,7 +78,7 @@ serve(async (req) => {
     
     // Import and use the AI generator
     const { generateContent } = await import("../shared/generators/ai.ts");
-    const result = await generateContent(config, 'perplexity');
+    const result = await generateContent(config, preferredProvider || 'perplexity');
 
     console.log("Successfully generated notes, returning response");
     console.log("Generated note preview:", result.content.substring(0, 200) + "...");
