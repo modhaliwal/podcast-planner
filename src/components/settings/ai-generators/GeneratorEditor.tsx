@@ -12,6 +12,7 @@ import { FormActions } from "@/components/ui/form-actions";
 interface GeneratorEditorProps {
   editedPrompt: Partial<AIPrompt> | null;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSlugChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onJsonParametersChange: (json: string) => void;
   onSave: () => void;
   onReset: () => void;
@@ -22,7 +23,8 @@ interface GeneratorEditorProps {
 
 export function GeneratorEditor({ 
   editedPrompt, 
-  onInputChange, 
+  onInputChange,
+  onSlugChange,
   onJsonParametersChange,
   onSave, 
   onReset, 
@@ -59,6 +61,26 @@ export function GeneratorEditor({
               placeholder="Enter generator name"
               className="mt-1"
             />
+          </div>
+          
+          <div>
+            <Label htmlFor="slug">
+              Slug
+              {!isNewGenerator && <span className="text-xs text-muted-foreground ml-2">(read-only after creation)</span>}
+            </Label>
+            <Input
+              id="slug"
+              name="slug"
+              value={editedPrompt.slug || ''}
+              onChange={onSlugChange}
+              placeholder="generator-slug"
+              className="mt-1"
+              readOnly={!isNewGenerator}
+              disabled={!isNewGenerator}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              The slug is used in URLs and as a unique identifier
+            </p>
           </div>
           
           <div className="grid grid-cols-2 gap-4">

@@ -3,20 +3,20 @@ import { useState } from "react";
 import { useAIPrompts, AIPrompt } from "@/hooks/useAIPrompts";
 
 export function useGeneratorForm() {
-  const { prompts, updatePrompt, createPrompt, deletePrompt } = useAIPrompts();
-  const [activePromptId, setActivePromptId] = useState<string | null>(null);
+  const { prompts, updatePrompt, createPrompt, deletePrompt, generateSlug } = useAIPrompts();
+  const [activePromptSlug, setActivePromptSlug] = useState<string | null>(null);
   const [editedPrompt, setEditedPrompt] = useState<Partial<AIPrompt> | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSelectPrompt = (promptId: string) => {
+  const handleSelectPrompt = (promptSlug: string) => {
     if (showAddForm) {
       setShowAddForm(false);
     }
     
-    const selectedPrompt = prompts.find(p => p.id === promptId);
+    const selectedPrompt = prompts.find(p => p.slug === promptSlug);
     if (selectedPrompt) {
-      setActivePromptId(promptId);
+      setActivePromptSlug(promptSlug);
       setEditedPrompt(selectedPrompt);
     }
   };
@@ -24,9 +24,30 @@ export function useGeneratorForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!editedPrompt) return;
     
+    const { name, value } = e.target;
+    
+    // Update slug when title changes, but only in add mode
+    if (name === 'title' && showAddForm) {
+      setEditedPrompt({
+        ...editedPrompt,
+        [name]: value,
+        slug: generateSlug(value)
+      });
+    } else {
+      setEditedPrompt({
+        ...editedPrompt,
+        [name]: value
+      });
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editedPrompt || !showAddForm) return;
+    
+    // Only allow slug edits during creation
     setEditedPrompt({
       ...editedPrompt,
-      [e.target.name]: e.target.value
+      slug: e.target.value
     });
   };
 
@@ -55,6 +76,7 @@ export function useGeneratorForm() {
     if (showAddForm) {
       const success = await createPrompt({
         title: editedPrompt.title || "New Generator",
+        slug: editedPrompt.slug || generateSlug(editedPrompt.title || "New Generator"),
         prompt_text: editedPrompt.prompt_text || "",
         example_output: editedPrompt.example_output || "",
         context_instructions: editedPrompt.context_instructions || "",
@@ -67,8 +89,8 @@ export function useGeneratorForm() {
       if (success) {
         setShowAddForm(false);
       }
-    } else if (activePromptId) {
-      await updatePrompt(activePromptId, {
+    } else if (activePromptSlug) {
+      await updatePrompt(activePromptSlug, {
         title: editedPrompt.title,
         prompt_text: editedPrompt.prompt_text,
         example_output: editedPrompt.example_output,
@@ -84,15 +106,15 @@ export function useGeneratorForm() {
   };
 
   const handleDelete = async () => {
-    if (!activePromptId) return;
+    if (!activePromptSlug) return;
     
     if (confirm("Are you sure you want to delete this generator?")) {
       setIsSaving(true);
-      const success = await deletePrompt(activePromptId);
+      const success = await deletePrompt(activePromptSlug);
       setIsSaving(false);
       
       if (success) {
-        setActivePromptId(null);
+        setActivePromptSlug(null);
         setEditedPrompt(null);
       }
     }
@@ -105,18 +127,20 @@ export function useGeneratorForm() {
       return;
     }
     
-    if (!activePromptId) return;
+    if (!activePromptSlug) return;
     
-    const originalPrompt = prompts.find(p => p.id === activePromptId);
+    const originalPrompt = prompts.find(p => p.slug === activePromptSlug);
     if (originalPrompt) {
       setEditedPrompt(originalPrompt);
     }
   };
 
   const handleAddNew = () => {
-    setActivePromptId(null);
+    setActivePromptSlug(null);
+    const title = "New Generator";
     setEditedPrompt({
-      title: "New Generator",
+      title,
+      slug: generateSlug(title),
       prompt_text: "",
       example_output: "",
       context_instructions: "",
@@ -130,12 +154,13 @@ export function useGeneratorForm() {
 
   return {
     prompts,
-    activePromptId,
+    activePromptSlug,
     editedPrompt,
     showAddForm,
     isSaving,
     handleSelectPrompt,
     handleInputChange,
+    handleSlugChange,
     handleJsonParametersChange,
     handleSave,
     handleDelete,

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type AIPrompt = {
   id: string;
+  slug: string;
   key?: string;
   title: string;
   prompt_text: string;
@@ -46,16 +47,22 @@ export function useAIPrompts() {
 
   const createPrompt = useCallback(async (promptData: Partial<AIPrompt>) => {
     try {
-      // Fix: Ensure we're passing a single object, not an array
+      // Generate slug from title if not provided
+      const slug = promptData.slug || generateSlug(promptData.title || "");
+      
       const { data, error } = await supabase
         .from('ai_generators')
         .insert({
           title: promptData.title || "",
           prompt_text: promptData.prompt_text || "",
+          slug: slug,
           key: promptData.key || undefined,
           system_prompt: promptData.system_prompt,
           context_instructions: promptData.context_instructions,
           example_output: promptData.example_output,
+          ai_model: promptData.ai_model,
+          model_name: promptData.model_name,
+          parameters: promptData.parameters,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -76,15 +83,18 @@ export function useAIPrompts() {
     }
   }, [fetchPrompts]);
 
-  const updatePrompt = useCallback(async (id: string, updates: Partial<AIPrompt>) => {
+  const updatePrompt = useCallback(async (slug: string, updates: Partial<AIPrompt>) => {
     try {
+      // Remove slug from updates since it shouldn't be editable after creation
+      const { slug: _, ...updatesWithoutSlug } = updates;
+      
       const { error } = await supabase
         .from('ai_generators')
         .update({ 
-          ...updates,
+          ...updatesWithoutSlug,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('slug', slug);
       
       if (error) throw error;
       
@@ -101,12 +111,12 @@ export function useAIPrompts() {
     }
   }, [fetchPrompts]);
 
-  const deletePrompt = useCallback(async (id: string) => {
+  const deletePrompt = useCallback(async (slug: string) => {
     try {
       const { error } = await supabase
         .from('ai_generators')
         .delete()
-        .eq('id', id);
+        .eq('slug', slug);
       
       if (error) throw error;
       
@@ -130,6 +140,18 @@ export function useAIPrompts() {
   const getPromptById = useCallback((id: string) => {
     return prompts.find(prompt => prompt.id === id);
   }, [prompts]);
+  
+  const getPromptBySlug = useCallback((slug: string) => {
+    return prompts.find(prompt => prompt.slug === slug);
+  }, [prompts]);
+
+  // Helper function to generate a slug from a title
+  const generateSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
 
   useEffect(() => {
     fetchPrompts();
@@ -143,6 +165,8 @@ export function useAIPrompts() {
     updatePrompt,
     deletePrompt,
     getPromptByKey,
-    getPromptById
+    getPromptById,
+    getPromptBySlug,
+    generateSlug
   };
 }

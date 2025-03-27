@@ -15,8 +15,9 @@ export type Database = {
           created_at: string
           example_output: string | null
           id: string
-          key: string
+          key: string | null
           prompt_text: string
+          slug: string
           system_prompt: string | null
           title: string
           updated_at: string
@@ -26,8 +27,9 @@ export type Database = {
           created_at?: string
           example_output?: string | null
           id?: string
-          key: string
+          key?: string | null
           prompt_text: string
+          slug: string
           system_prompt?: string | null
           title: string
           updated_at?: string
@@ -37,8 +39,9 @@ export type Database = {
           created_at?: string
           example_output?: string | null
           id?: string
-          key?: string
+          key?: string | null
           prompt_text?: string
+          slug?: string
           system_prompt?: string | null
           title?: string
           updated_at?: string

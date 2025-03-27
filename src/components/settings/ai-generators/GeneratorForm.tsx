@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 interface GeneratorFormProps {
   editedPrompt: Partial<AIPrompt> | null;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onSlugChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onJsonParametersChange: (json: string) => void;
   onSave: () => void;
   onReset: () => void;
@@ -18,7 +19,8 @@ interface GeneratorFormProps {
 
 export function GeneratorForm({ 
   editedPrompt, 
-  onInputChange, 
+  onInputChange,
+  onSlugChange,
   onJsonParametersChange,
   onSave, 
   onReset, 
@@ -51,6 +53,7 @@ export function GeneratorForm({
             <GeneratorEditor
               editedPrompt={editedPrompt}
               onInputChange={onInputChange}
+              onSlugChange={onSlugChange}
               onJsonParametersChange={onJsonParametersChange}
               onSave={onSave}
               onReset={onReset}

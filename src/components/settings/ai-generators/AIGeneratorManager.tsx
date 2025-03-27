@@ -11,12 +11,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 export function AIGeneratorManager() {
   const {
     prompts,
-    activePromptId,
+    activePromptSlug,
     editedPrompt,
     showAddForm,
     isSaving,
     handleSelectPrompt,
     handleInputChange,
+    handleSlugChange,
     handleJsonParametersChange,
     handleSave,
     handleDelete,
@@ -80,7 +81,7 @@ export function AIGeneratorManager() {
         ) : (
           <GeneratorsSidebar
             prompts={filteredPrompts}
-            activePromptId={activePromptId}
+            activePromptSlug={activePromptSlug}
             onSelectPrompt={handleSelectPrompt}
             isAdding={showAddForm}
             onAddNew={handleAddNew}
@@ -93,6 +94,7 @@ export function AIGeneratorManager() {
         <GeneratorForm
           editedPrompt={editedPrompt}
           onInputChange={handleInputChange}
+          onSlugChange={handleSlugChange}
           onJsonParametersChange={handleJsonParametersChange}
           onSave={handleSave}
           onReset={handleReset}
