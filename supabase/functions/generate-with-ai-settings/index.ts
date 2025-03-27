@@ -76,14 +76,8 @@ serve(async (req) => {
       console.log("Converting markdown to HTML...")
       finalContent = await convertMarkdownToHtml(generatedResponse.markdown)
     } else if (responseFormat === 'html' && generatedResponse.content) {
-      // Assuming content is already HTML or needs conversion
-      if (generatedResponse.content.startsWith('<')) {
-        // Content is likely already HTML
-        finalContent = generatedResponse.content
-      } else {
-        // Try to convert it from markdown
-        finalContent = await convertMarkdownToHtml(generatedResponse.content)
-      }
+      // If content is already HTML, use it directly
+      finalContent = generatedResponse.content
     } else {
       // Return markdown or plain content as is
       finalContent = generatedResponse.markdown || generatedResponse.content

@@ -1,6 +1,6 @@
 
 /**
- * Configuration for Perplexity API requests
+ * Configuration type for Perplexity API
  */
 export interface PerplexityConfig {
   model: string;
@@ -11,10 +11,12 @@ export interface PerplexityConfig {
 }
 
 /**
- * Response format for Perplexity API
+ * Response format from Perplexity API
  */
 export interface PerplexityResponse {
-  Body: string;
-  References: string[];
-  Images: string[];
+  Body?: string;
+  content?: string;
+  References?: string[];
+  Images?: string[];
+  [key: string]: any;
 }

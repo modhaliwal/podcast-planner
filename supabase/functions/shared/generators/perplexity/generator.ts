@@ -1,6 +1,6 @@
 
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
-import { DEFAULT_CONFIG, createResponseFormat } from './config.ts';
+import { DEFAULT_CONFIG, createConfig } from './config.ts';
 import { processApiResponse } from './responseParser.ts';
 import { convertMarkdownToHtml } from '../../utils/markdownConverter.ts';
 
@@ -36,14 +36,14 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     const model = config.model_name || DEFAULT_CONFIG.model;
     console.log(`Using Perplexity model: ${model}`);
     
-    // Determine if we should use JSON response format
-    let responseFormat;
-    try {
-      responseFormat = createResponseFormat();
-    } catch (error) {
-      console.warn("Could not create JSON response format, using plain text", error);
-      responseFormat = undefined;
-    }
+    // Configure the Perplexity API request
+    const perplexityConfig = createConfig({
+      model: model,
+      temperature: DEFAULT_CONFIG.temperature,
+      maxTokens: DEFAULT_CONFIG.maxTokens,
+      returnImages: DEFAULT_CONFIG.returnImages,
+      returnRelatedQuestions: DEFAULT_CONFIG.returnRelatedQuestions
+    });
     
     // Make the API call
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -53,16 +53,16 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: model,
+        model: perplexityConfig.model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        temperature: DEFAULT_CONFIG.temperature,
-        max_tokens: DEFAULT_CONFIG.maxTokens,
-        // Remove document references which was causing errors
-        return_related_questions: DEFAULT_CONFIG.returnRelatedQuestions && hasJsonResponseSupport(),
-        ...(responseFormat && hasJsonResponseSupport() ? { response_format: responseFormat } : {})
+        temperature: perplexityConfig.temperature,
+        max_tokens: perplexityConfig.maxTokens,
+        return_images: perplexityConfig.returnImages,
+        return_related_questions: perplexityConfig.returnRelatedQuestions,
+        response_format: { type: "json_object" }
       }),
     });
     
@@ -75,28 +75,24 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     const data = await response.json();
     
     // Process the response
-    let markdown;
+    let markdown = "";
     let metadata: any = {
       provider: 'perplexity',
       model: model
     };
     
-    if (responseFormat && hasJsonResponseSupport()) {
-      try {
-        // Process structured response
-        const parsed = processApiResponse(data);
-        markdown = parsed.content || parsed.Body || data.choices[0].message.content;
-        
-        // Add references and images to metadata if available
-        if (parsed.references) metadata.references = parsed.references;
-        if (parsed.images) metadata.images = parsed.images;
-      } catch (e) {
-        console.error("Error processing structured response:", e);
-        markdown = data.choices[0].message.content;
-      }
-    } else {
-      // Simple text response
-      markdown = data.choices[0].message.content;
+    try {
+      // Process structured response
+      const result = processApiResponse(data);
+      markdown = result.content || '';
+      
+      // Add references and images to metadata if available
+      if (result.references) metadata.references = result.references;
+      if (result.images) metadata.images = result.images;
+    } catch (e) {
+      console.error("Error processing structured response:", e);
+      // Fallback to direct content extraction
+      markdown = data.choices?.[0]?.message?.content || '';
     }
     
     console.log("Successfully generated markdown content with Perplexity");
@@ -114,7 +110,12 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
       };
     } catch (error) {
       console.error("Error converting markdown to HTML:", error);
-      throw new Error(`Failed to convert markdown to HTML: ${error.message}`);
+      // Return markdown as content in case of HTML conversion failure
+      return {
+        content: markdown,
+        markdown: markdown,
+        metadata
+      };
     }
   } catch (error) {
     console.error("Error generating content with Perplexity:", error);
@@ -167,14 +168,4 @@ function getDefaultUserPrompt(
     default:
       return `Generate professional content about ${name}, who works as ${title} ${companyInfo}.`;
   }
-}
-
-/**
- * Determines if JSON response format is supported
- * This is a workaround for Perplexity API tier limitations
- */
-function hasJsonResponseSupport(): boolean {
-  // In a real implementation, you might check the API key's tier
-  // For now, we'll assume false to ensure compatibility
-  return false;
 }

@@ -1,6 +1,5 @@
 
 import { PerplexityConfig } from "./types.ts";
-import { createResponseFormat } from "./config.ts";
 
 /**
  * Makes the API request to Perplexity
@@ -29,7 +28,7 @@ export async function callPerplexityAPI(
       max_tokens: config.maxTokens,
       return_images: config.returnImages,
       return_related_questions: config.returnRelatedQuestions,
-      response_format: createResponseFormat()
+      response_format: { type: "json_object" }
     }),
   });
 
