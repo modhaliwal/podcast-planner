@@ -28,7 +28,7 @@ export type DropdownOption = {
   description?: string;
   version?: string;
   date?: string;
-  source?: 'Manual Input' | 'AI Generated' | 'Imported';
+  source?: string;
 };
 
 export interface AIGenerationDropdownButtonProps {
