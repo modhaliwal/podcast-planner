@@ -39,7 +39,8 @@ const TestComponent = () => {
       
       <h3 className="text-lg font-medium mb-2">Resizable Rich Text Editor Component</h3>
       <p className="text-muted-foreground mb-4">
-        This demonstrates the AIGenerationDropdownButton with a resizable rich text editor
+        This demonstrates the AIGenerationDropdownButton with a resizable rich text editor.
+        The editor starts larger by default now and can be further resized using the handle.
       </p>
       
       {/* This usage should be allowed - with resizable rich text editor */}

@@ -270,7 +270,7 @@ export function AIGenerationDropdownButton({
       {showEditor && (
         <div className="mt-4">
           <ResizablePanelGroup direction="vertical" className="border rounded-md">
-            <ResizablePanel minSize={20} defaultSize={80}>
+            <ResizablePanel minSize={20} defaultSize={80} className="min-h-[300px]">
               <div className="h-full w-full">
                 <Editor
                   value={onEditorChange ? editorContent : internalEditorContent}
