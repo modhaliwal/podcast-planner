@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
-import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodesHeader } from '@/components/episodes/EpisodesHeader';
 import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter';
-import { EpisodesList } from '@/components/episodes/EpisodesList';
+import { EpisodesContent } from '@/components/episodes/EpisodesContent';
 
 const Episodes = () => {
   const { episodes, guests, refreshEpisodes, isDataLoading } = useAuth();
@@ -35,20 +35,14 @@ const Episodes = () => {
     refreshEpisodes();
   };
   
-  const actions = (
-    <EpisodesHeader 
-      onRefresh={handleRefresh} 
-      isLoading={isDataLoading} 
-    />
-  );
-  
   return (
     <Shell>
-      <PageLayout
-        title="Episodes"
-        subtitle="Manage your podcast episodes"
-        actions={actions}
-      >
+      <div className="page-container">
+        <EpisodesHeader 
+          onRefresh={handleRefresh} 
+          isLoading={isDataLoading} 
+        />
+        
         <EpisodesSearchFilter 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -56,13 +50,13 @@ const Episodes = () => {
           onStatusChange={setStatusFilter}
         />
         
-        <EpisodesList 
-          episodes={sortedEpisodes}
-          guests={guests}
+        <EpisodesContent
           isLoading={isDataLoading}
+          filteredEpisodes={sortedEpisodes}
+          guests={guests}
           searchQuery={searchQuery}
         />
-      </PageLayout>
+      </div>
     </Shell>
   );
 };
