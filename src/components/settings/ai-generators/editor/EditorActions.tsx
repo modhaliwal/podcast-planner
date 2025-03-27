@@ -19,7 +19,7 @@ export function EditorActions({
   isNewGenerator 
 }: EditorActionsProps) {
   return (
-    <div className="flex justify-between space-x-2 pt-4">
+    <div className="flex justify-between space-x-2 pt-4 py-3 px-4 border-t bg-background sticky bottom-0 z-10">
       <div>
         {!isNewGenerator && (
           <Button
