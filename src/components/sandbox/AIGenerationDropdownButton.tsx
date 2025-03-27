@@ -102,15 +102,12 @@ export function AIGenerationDropdownButton({
                     </span>
                   )}
                   {option.date && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
                       {option.date}
                     </span>
                   )}
                 </div>
                 <span className="font-medium">{option.label}</span>
-                {option.description && (
-                  <span className="text-xs text-muted-foreground mt-1">{option.description}</span>
-                )}
                 {option.source && (
                   <span className="text-xs text-muted-foreground mt-1 italic">
                     {option.source}

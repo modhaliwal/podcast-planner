@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { AIGenerationDropdownButton, DropdownOption } from './AIGenerationDropdownButton';
@@ -8,7 +7,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'professional', 
     label: 'Professional Style', 
-    description: 'Generate content in a formal, professional tone suitable for business applications.',
     version: 'v1.0',
     date: 'May 12, 2024',
     source: 'AI Generated'
@@ -16,7 +14,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'casual', 
     label: 'Casual Style', 
-    description: 'Generate content with a relaxed, conversational tone.',
     version: 'v2.3',
     date: 'May 14, 2024',
     source: 'Manual Input'
@@ -24,7 +21,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'technical', 
     label: 'Technical Style', 
-    description: 'Generate content with specialized terminology and technical explanations.',
     version: 'v1.2',
     date: 'May 9, 2024',
     source: 'AI Generated'
@@ -32,7 +28,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'creative', 
     label: 'Creative Style', 
-    description: 'Generate expressive, imaginative content with colorful language.',
     version: 'v3.0',
     date: 'May 1, 2024',
     source: 'Imported'
@@ -40,7 +35,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'concise', 
     label: 'Concise Style', 
-    description: 'Generate brief, to-the-point content with minimal elaboration.',
     version: 'v1.0',
     date: 'Apr 25, 2024',
     source: 'Manual Input'
@@ -48,7 +42,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'descriptive', 
     label: 'Descriptive Style', 
-    description: 'Generate rich, detailed content with vivid descriptions.',
     version: 'v2.1',
     date: 'May 3, 2024',
     source: 'AI Generated'
@@ -56,7 +49,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'persuasive', 
     label: 'Persuasive Style', 
-    description: 'Generate content designed to convince and influence the reader.',
     version: 'v1.5',
     date: 'Apr 30, 2024',
     source: 'Manual Input'
@@ -64,7 +56,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'instructional', 
     label: 'Instructional Style', 
-    description: 'Generate how-to content with clear step-by-step guidance.',
     version: 'v2.0',
     date: 'May 7, 2024',
     source: 'Imported'
@@ -72,7 +63,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'narrative', 
     label: 'Narrative Style', 
-    description: 'Generate content that tells a story or follows a narrative structure.',
     version: 'v1.3',
     date: 'May 10, 2024',
     source: 'AI Generated'
@@ -80,7 +70,6 @@ const mockPromptOptions: DropdownOption[] = [
   { 
     id: 'academic', 
     label: 'Academic Style', 
-    description: 'Generate scholarly content with formal language and citations.',
     version: 'v2.2',
     date: 'May 5, 2024',
     source: 'Manual Input'
