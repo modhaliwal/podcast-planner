@@ -20,10 +20,6 @@ export function GeneratorsSidebar({
 }: GeneratorsSidebarProps) {
   return (
     <div className="border rounded-md overflow-hidden">
-      <div className="p-3 bg-muted/30 border-b">
-        <h3 className="text-sm font-medium">Available Generators</h3>
-      </div>
-      
       <ScrollArea className="h-[calc(100vh-300px)]">
         <div className="p-2">
           <GeneratorsList 
