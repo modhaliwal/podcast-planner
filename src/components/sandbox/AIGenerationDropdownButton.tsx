@@ -219,13 +219,14 @@ export function AIGenerationDropdownButton({
         return;
       }
       
+      // Create a new version with the active version's content AND version number
       const newVersion: ContentVersionType = {
         id: `version-${Date.now()}`,
         content: activeVersion.content,
         timestamp: new Date().toISOString(),
         source: activeVersion.source,
         active: true,
-        versionNumber: 1 // Reset to version 1
+        versionNumber: activeVersion.versionNumber // Retain the original version number
       };
       
       if (onContentVersionsChange) {
