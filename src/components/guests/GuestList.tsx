@@ -87,9 +87,9 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links section - aligned to the left with better responsiveness */}
-                <div className="hidden md:block shrink ml-auto">
-                  <div className="flex items-center justify-start space-x-1">
+                {/* Social links section - directly adjacent to guest info */}
+                <div className="hidden md:flex items-center shrink-0 ml-0">
+                  <div className="flex items-center gap-1">
                     {guest.socialLinks.twitter && (
                       <a 
                         href={guest.socialLinks.twitter} 
@@ -157,8 +157,11 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </div>
                 
+                {/* Flexible spacing to push episode card to the right */}
+                <div className="flex-1"></div>
+                
                 {/* Latest episode info - shrinkable with limits */}
-                <div className="hidden lg:block shrink-0 lg:max-w-[280px] lg:min-w-[180px] w-full ml-3">
+                <div className="hidden lg:block shrink-0 lg:max-w-[280px] lg:min-w-[180px] w-auto">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
