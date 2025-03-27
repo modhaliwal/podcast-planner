@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 // This import should trigger our ESLint rule because it's destructuring from the protected component
 import { AIGenerationDropdownButton, DropdownOption } from './AIGenerationDropdownButton';
 
@@ -17,19 +17,42 @@ const TestComponent = () => {
     { id: 'test', label: 'Test Option' }
   ];
   
+  const [editorContent, setEditorContent] = useState('');
+  
   return (
     <div className="p-4">
-      <h2>ESLint Rule Test</h2>
+      <h2 className="text-xl font-semibold mb-4">ESLint Rule Test</h2>
       
-      {/* This usage should be allowed */}
+      <h3 className="text-lg font-medium mb-2">Component with Rich Text Editor</h3>
+      <p className="text-muted-foreground mb-4">
+        This demonstrates the AIGenerationDropdownButton with an integrated rich text editor
+      </p>
+      
+      {/* This usage should be allowed - now with rich text editor */}
       <AIGenerationDropdownButton 
         options={options}
         onButtonClick={() => console.log('Button clicked')}
         onOptionSelect={(option) => console.log('Option selected', option)}
+        showEditor={true}
+        editorContent={editorContent}
+        onEditorChange={setEditorContent}
+        editorPlaceholder="Try typing some content here..."
       />
 
-      {/* This should trigger the rule because we're creating a component that includes the protected name */}
-      <AIGenerationDropdownButtonHeader />
+      <div className="mt-6">
+        <h4 className="font-medium mb-2">Editor Content Preview:</h4>
+        <div 
+          className="p-4 border rounded bg-secondary/20 min-h-[100px]"
+          dangerouslySetInnerHTML={{ __html: editorContent }}
+        />
+      </div>
+
+      <div className="mt-6 pt-6 border-t">
+        <h3 className="text-lg font-medium mb-2">ESLint Rule Violation Examples</h3>
+        
+        {/* This should trigger the rule because we're creating a component that includes the protected name */}
+        <AIGenerationDropdownButtonHeader />
+      </div>
     </div>
   );
 };
