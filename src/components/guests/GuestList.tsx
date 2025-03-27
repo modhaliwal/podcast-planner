@@ -57,8 +57,8 @@ export function GuestList({ guests }: GuestListProps) {
                   <AvatarFallback className="text-lg">{initials}</AvatarFallback>
                 </Avatar>
                 
-                {/* Guest info section - non-shrinking with fixed min-width */}
-                <div className="flex-1 min-w-[180px] space-y-1">
+                {/* Guest info section - grows with content */}
+                <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-medium truncate">{guest.name}</h3>
                     
@@ -87,81 +87,79 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links section - flex grow and wrap with responsive sizing */}
-                <div className="hidden sm:block flex-grow-0 flex-shrink-1 ml-0 min-w-0">
-                  <div className="flex flex-wrap items-center gap-1">
-                    {guest.socialLinks.twitter && (
-                      <a 
-                        href={guest.socialLinks.twitter} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Twitter className="h-4 w-4" />
-                        <span className="sr-only">Twitter</span>
-                      </a>
-                    )}
-                    
-                    {guest.socialLinks.linkedin && (
-                      <a 
-                        href={guest.socialLinks.linkedin} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Linkedin className="h-4 w-4" />
-                        <span className="sr-only">LinkedIn</span>
-                      </a>
-                    )}
-                    
-                    {guest.socialLinks.instagram && (
-                      <a 
-                        href={guest.socialLinks.instagram} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Instagram className="h-4 w-4" />
-                        <span className="sr-only">Instagram</span>
-                      </a>
-                    )}
-                    
-                    {guest.socialLinks.youtube && (
-                      <a 
-                        href={guest.socialLinks.youtube} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Youtube className="h-4 w-4" />
-                        <span className="sr-only">YouTube</span>
-                      </a>
-                    )}
-                    
-                    {guest.socialLinks.website && (
-                      <a 
-                        href={guest.socialLinks.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Globe className="h-4 w-4" />
-                        <span className="sr-only">Website</span>
-                      </a>
-                    )}
-                  </div>
+                {/* Social links section - allows horizontal growth but wraps when needed */}
+                <div className="hidden sm:flex items-center flex-wrap shrink-0 gap-1">
+                  {guest.socialLinks.twitter && (
+                    <a 
+                      href={guest.socialLinks.twitter} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Twitter className="h-4 w-4" />
+                      <span className="sr-only">Twitter</span>
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.linkedin && (
+                    <a 
+                      href={guest.socialLinks.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Linkedin className="h-4 w-4" />
+                      <span className="sr-only">LinkedIn</span>
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.instagram && (
+                    <a 
+                      href={guest.socialLinks.instagram} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Instagram className="h-4 w-4" />
+                      <span className="sr-only">Instagram</span>
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.youtube && (
+                    <a 
+                      href={guest.socialLinks.youtube} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Youtube className="h-4 w-4" />
+                      <span className="sr-only">YouTube</span>
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.website && (
+                    <a 
+                      href={guest.socialLinks.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Globe className="h-4 w-4" />
+                      <span className="sr-only">Website</span>
+                    </a>
+                  )}
                 </div>
                 
                 {/* Flexible spacer - grows to fill available space */}
                 <div className="hidden md:block flex-1"></div>
                 
-                {/* Latest episode info - visible at sm breakpoint and up, but will collapse as needed */}
-                <div className="hidden sm:block flex-shrink-1 min-w-0 md:min-w-[180px] w-auto ml-auto">
+                {/* Latest episode info - visible at larger breakpoints, hidden before it would wrap */}
+                <div className="hidden lg:block shrink-0 min-w-[200px] w-auto">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
