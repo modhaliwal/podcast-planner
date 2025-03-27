@@ -1,7 +1,8 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { ContentVersion } from '@/lib/types';
-import { ContentGenerator, ContentGenerationConfig } from '@/components/content/ContentGenerator';
+import { ContentGenerator } from '@/components/content/ContentGenerator';
+import { ContentGenerationConfig } from '@/components/content/types';
 
 interface BioGenerationProps {
   form: UseFormReturn<any>;

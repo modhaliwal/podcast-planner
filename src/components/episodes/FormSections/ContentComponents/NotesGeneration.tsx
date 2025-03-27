@@ -2,7 +2,8 @@
 import { UseFormReturn } from "react-hook-form";
 import { EpisodeFormValues } from "../../EpisodeFormSchema";
 import { Guest } from "@/lib/types";
-import { ContentGenerator, ContentGenerationConfig } from "@/components/content/ContentGenerator";
+import { ContentGenerator } from "@/components/content/ContentGenerator";
+import { ContentGenerationConfig } from "@/components/content/types";
 
 interface NotesGenerationProps {
   guests: Guest[];

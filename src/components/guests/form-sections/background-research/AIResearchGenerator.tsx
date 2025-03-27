@@ -1,7 +1,8 @@
 
 import { Guest } from '@/lib/types';
-import { ContentGenerator, ContentGenerationConfig } from '@/components/content/ContentGenerator';
 import { UseFormReturn } from 'react-hook-form';
+import { ContentGenerator } from '@/components/content/ContentGenerator';
+import { ContentGenerationConfig } from '@/components/content/types';
 
 interface AIResearchGeneratorProps {
   guest?: Guest;
