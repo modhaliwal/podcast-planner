@@ -22,7 +22,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
       {/* Cover art as background image */}
       {episode.coverArt && (
         <div 
-          className="absolute top-0 right-0 h-full w-1/2 bg-cover bg-right-top" 
+          className="absolute top-0 right-0 h-full w-1/2 bg-contain bg-no-repeat bg-right-top" 
           style={{ 
             backgroundImage: `url(${episode.coverArt})`,
             opacity: 0.15
