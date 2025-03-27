@@ -1,10 +1,9 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Guest, ContentVersion } from '@/lib/types';
+import { Guest } from '@/lib/types';
 import { deleteImage, isBlobUrl, uploadImage } from '@/lib/imageUpload';
 import { toast } from '@/hooks/toast';
-import { ensureVersionNumbers } from '@/hooks/versions';
 
 interface UseGuestFormProps {
   guest: Guest;
@@ -42,7 +41,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
     setIsImageRemoved(file === null);
   };
 
-  const handleSubmit = async (formData: any, bioVersions: ContentVersion[], backgroundResearchVersions: ContentVersion[], notes: string, backgroundResearch: string) => {
+  const handleSubmit = async (formData: any, notes: string) => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
@@ -80,10 +79,6 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         imageUrl = null;
       }
       
-      // Ensure versions have active flag and version numbers
-      const processedBioVersions = ensureVersionNumbers(bioVersions);
-      const processedBackgroundVersions = ensureVersionNumbers(backgroundResearchVersions);
-      
       const updatedGuest: Guest = {
         ...guest,
         name: formData.name,
@@ -92,10 +87,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         bio: formData.bio,
-        bioVersions: processedBioVersions,
         notes: notes || undefined,
-        backgroundResearch: backgroundResearch || undefined,
-        backgroundResearchVersions: processedBackgroundVersions,
         status: formData.status,
         imageUrl: imageUrl as string | undefined,
         socialLinks: {

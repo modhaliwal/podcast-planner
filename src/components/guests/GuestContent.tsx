@@ -1,63 +1,49 @@
 
-import { Guest } from "@/lib/types";
-import { GuestList } from "./GuestList";
-import { GuestSearch } from "./GuestSearch";
-import { GuestFilter } from "./GuestFilter";
-import { useState } from "react";
-import { GuestViewToggle } from "./GuestViewToggle";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { Link } from "react-router-dom";
-import { EmptyState } from "@/components/ui/empty-state";
-import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { GuestFilter } from '@/components/guests/GuestFilter';
+import { GuestList } from '@/components/guests/GuestList';
+import { GuestViewToggle } from '@/components/guests/GuestViewToggle';
+import { GuestSearch } from '@/components/guests/GuestSearch';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { Guest } from '@/lib/types';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
+type ViewMode = 'list' | 'grid' | 'calendar';
 
 export function GuestContent() {
-  const { guests, isDataLoading, refreshGuests } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { guests, deleteGuest, isDataLoading } = useAuth();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
-  const [viewMode, setViewMode] = useState<"list" | "card">("list");
-
-  if (isDataLoading) {
-    return <LoadingIndicator message="Loading guests..." />;
-  }
-
-  // Apply filters
-  const filteredGuests = guests.filter((guest) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (guest.company &&
-        guest.company.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesStatus =
-      statusFilter === 'all' || 
-      guest.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  
+  // Filter guests based on status
+  const filteredGuests = guests.filter(guest => {
+    // First, apply status filter
+    if (statusFilter && statusFilter !== 'all') {
+      if (guest.status !== statusFilter) return false;
+    }
+    
+    // Then, apply search filter if search term exists
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const nameMatch = guest.name?.toLowerCase().includes(searchLower) || false;
+      const titleMatch = guest.title?.toLowerCase().includes(searchLower) || false;
+      const companyMatch = guest.company?.toLowerCase().includes(searchLower) || false;
+      
+      return nameMatch || titleMatch || companyMatch;
+    }
+    
+    return true;
   });
-
+  
   const handleDeleteGuest = async (guestId: string) => {
     try {
-      // Call the delete service from AuthContext
-      const result = await fetch(`/api/guests/${guestId}`, {
-        method: 'DELETE'
+      await deleteGuest(guestId);
+      toast({
+        title: "Success",
+        description: "Guest deleted successfully"
       });
-      
-      if (result.ok) {
-        toast({
-          title: "Success",
-          description: "Guest deleted successfully"
-        });
-        
-        // Refresh the guests list
-        await refreshGuests(true);
-      } else {
-        throw new Error("Failed to delete guest");
-      }
     } catch (error) {
       console.error("Error deleting guest:", error);
       toast({
@@ -67,80 +53,61 @@ export function GuestContent() {
       });
     }
   };
-
-  const renderEmptyState = () => (
-    <div>
-      <div className="flex justify-between mb-6">
-        <div className="flex space-x-4">
-          <GuestSearch 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
-          />
-          <GuestFilter
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <GuestViewToggle 
-            viewMode={viewMode} 
-            setViewMode={setViewMode} 
-          />
-          <Button asChild>
-            <Link to="/guests/new">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Guest
-            </Link>
-          </Button>
-        </div>
-      </div>
-      <EmptyState
-        title="No guests found"
-        description="Try adjusting your search or filters, or add a new guest."
-        action={
-          <Button asChild>
-            <Link to="/guests/new">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Guest
-            </Link>
-          </Button>
-        }
-      />
-    </div>
-  );
-
-  if (filteredGuests.length === 0) {
-    return renderEmptyState();
-  }
-
+  
+  const actionButtons = [
+    {
+      label: "List View",
+      onClick: () => setViewMode('list')
+    },
+    {
+      label: "Grid View",
+      onClick: () => setViewMode('grid')
+    },
+    {
+      label: "Calendar View",
+      onClick: () => setViewMode('calendar')
+    }
+  ];
+  
   return (
-    <div>
-      <div className="flex justify-between mb-6">
-        <div className="flex space-x-4">
-          <GuestSearch 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <GuestSearch 
+          searchTerm={searchTerm} 
+          setSearchTerm={setSearchTerm}
+        />
+        
+        <div className="flex flex-col sm:flex-row gap-2">
+          <GuestViewToggle 
+            viewMode={viewMode}
+            setViewMode={setViewMode}
           />
-          <GuestFilter
-            statusFilter={statusFilter}
+          
+          <GuestFilter 
+            statusFilter={statusFilter} 
             setStatusFilter={setStatusFilter}
           />
         </div>
-        <div className="flex items-center gap-4">
-          <GuestViewToggle 
-            viewMode={viewMode} 
-            setViewMode={setViewMode} 
-          />
-          <Button asChild>
-            <Link to="/guests/new">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Guest
-            </Link>
-          </Button>
-        </div>
       </div>
 
-      <GuestList guests={filteredGuests} onDelete={handleDeleteGuest} />
+      {viewMode === 'list' && (
+        <GuestList 
+          guests={filteredGuests} 
+          onDelete={handleDeleteGuest} 
+        />
+      )}
+      
+      {viewMode === 'grid' && (
+        <div className="py-4 text-center text-muted-foreground">
+          Grid view will be implemented in a future update.
+        </div>
+      )}
+      
+      {viewMode === 'calendar' && (
+        <div className="py-4 text-center text-muted-foreground">
+          Calendar view will be implemented in a future update.
+        </div>
+      )}
     </div>
   );
 }

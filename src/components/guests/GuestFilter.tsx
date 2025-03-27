@@ -27,7 +27,7 @@ export function GuestFilter({ statusFilter, setStatusFilter }: GuestFilterProps)
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="w-full md:w-auto">
           <Filter className="h-4 w-4 mr-2" />
-          {formatStatusText(statusFilter)}
+          {formatStatusText(statusFilter || 'all')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

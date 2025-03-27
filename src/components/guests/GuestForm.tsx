@@ -14,14 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
 import { BasicInfoSection } from "./form-sections/BasicInfoSection";
-import { ContentSection } from "./form-sections/ContentSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { HeadshotSection } from "./form-sections/HeadshotSection";
 import { NotesSection } from "./form-sections/NotesSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { FormProvider } from "react-hook-form";
-import { ContentVersion } from "@/lib/types";
 
 // Import your schema
 const GuestFormSchema = z.object({
@@ -47,11 +45,6 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
   const [activeTab, setActiveTab] = useState("basic");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState(defaultValues?.notes || "");
-  const [backgroundResearch, setBackgroundResearch] = useState(defaultValues?.backgroundResearch || "");
-  const [bioVersions, setBioVersions] = useState<ContentVersion[]>(defaultValues?.bioVersions || []);
-  const [backgroundResearchVersions, setBackgroundResearchVersions] = useState<ContentVersion[]>(
-    defaultValues?.backgroundResearchVersions || []
-  );
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const form = useForm<GuestFormValues>({
@@ -83,9 +76,6 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
       const finalData = {
         ...values,
         notes,
-        backgroundResearch,
-        bioVersions,
-        backgroundResearchVersions,
         imageFile
       };
       
@@ -115,7 +105,6 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-8">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="content">Bio & Content</TabsTrigger>
             <TabsTrigger value="social">Social Links</TabsTrigger>
             <TabsTrigger value="headshot">Headshot</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -123,21 +112,6 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
 
           <TabsContent value="basic">
             <BasicInfoSection isSubmitting={isSubmitting} cancelHref={cancelHref} />
-          </TabsContent>
-
-          <TabsContent value="content">
-            <ContentSection 
-              form={form}
-              notes={notes}
-              setNotes={setNotes}
-              backgroundResearch={backgroundResearch}
-              setBackgroundResearch={setBackgroundResearch}
-              bioVersions={bioVersions}
-              backgroundResearchVersions={backgroundResearchVersions}
-              onBioVersionsChange={setBioVersions}
-              onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
-              guest={defaultValues}
-            />
           </TabsContent>
 
           <TabsContent value="social">

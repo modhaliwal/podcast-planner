@@ -46,20 +46,19 @@ export function useAIPrompts() {
 
   const createPrompt = useCallback(async (promptData: Partial<AIPrompt>) => {
     try {
+      // Fix: Ensure we're passing a single object, not an array
       const { data, error } = await supabase
         .from('ai_prompts')
-        .insert([{
+        .insert({
           title: promptData.title || "",
           prompt_text: promptData.prompt_text || "",
+          key: promptData.key || undefined,
           system_prompt: promptData.system_prompt,
           context_instructions: promptData.context_instructions,
           example_output: promptData.example_output,
-          ai_model: promptData.ai_model,
-          model_name: promptData.model_name,
-          parameters: promptData.parameters,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }])
+        })
         .select();
       
       if (error) throw error;

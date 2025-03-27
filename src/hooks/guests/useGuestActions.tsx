@@ -30,13 +30,6 @@ export function useGuestActions() {
       
       console.log("Final image URL to save to database:", imageUrl);
       
-      // Stringify the versions for database storage
-      const bioVersionsString = updatedGuest.bioVersions ? 
-        JSON.stringify(updatedGuest.bioVersions) : null;
-      
-      const backgroundResearchVersionsString = updatedGuest.backgroundResearchVersions ? 
-        JSON.stringify(updatedGuest.backgroundResearchVersions) : null;
-      
       const { error } = await supabase
         .from('guests')
         .update({
@@ -46,12 +39,9 @@ export function useGuestActions() {
           email: updatedGuest.email,
           phone: updatedGuest.phone,
           bio: updatedGuest.bio,
-          bio_versions: bioVersionsString,
           image_url: imageUrl,
           social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
-          background_research: updatedGuest.backgroundResearch,
-          background_research_versions: backgroundResearchVersionsString,
           status: updatedGuest.status,
           updated_at: new Date().toISOString()
         })
