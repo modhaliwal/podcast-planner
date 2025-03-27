@@ -1,16 +1,15 @@
 
 import { Form } from '@/components/ui/form';
 import { Episode, Guest } from '@/lib/types';
-import { ScheduleSection } from './FormSections/ScheduleSection';
-import { GuestsSection } from './FormSections/GuestsSection';
 import { ContentSection } from './FormSections/ContentSection';
 import { FormActions } from './FormSections/FormActions';
 import { useAuth } from '@/contexts/AuthContext';
-import { CombinedBasicInfoSection } from './FormSections/CombinedBasicInfoSection';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
 import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 import { useMemo } from 'react';
+import { PlanningSection } from './FormSections/PlanningSection';
+import { CoverArtSection } from './FormSections/CoverArtSection';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -43,11 +42,9 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
     <Form {...form}>
       <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 gap-6">
-          <CombinedBasicInfoSection form={form} />
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ScheduleSection form={form} />
-            <GuestsSection form={form} guests={guests} />
+            <PlanningSection form={form} guests={guests} />
+            <CoverArtSection form={form} />
           </div>
           
           <ContentSection form={form} guests={guests} />

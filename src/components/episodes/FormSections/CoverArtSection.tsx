@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
@@ -81,7 +82,10 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cover Art</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Image className="h-5 w-5 text-primary" />
+          Cover Art
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <FormField
@@ -89,7 +93,6 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
           name="coverArt"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Episode Cover Art</FormLabel>
               <div className="flex flex-col items-center gap-4">
                 <div className="w-full max-w-[240px]">
                   <AspectRatio ratio={1} className="bg-muted rounded-md overflow-hidden border">
