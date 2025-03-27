@@ -10,7 +10,6 @@ import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -41,25 +40,18 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
   
   return (
     <Form {...form}>
-      <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid grid-cols-1 gap-6">
-          {/* Using ResizablePanelGroup for the top row */}
-          <ResizablePanelGroup direction="horizontal" className="min-h-[300px]">
-            <ResizablePanel defaultSize={50} minSize={40}>
-              <PlanningSection form={form} guests={guests} />
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={50} minSize={40}>
-              <CoverArtSection form={form} />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-          
-          <ContentSection form={form} guests={guests} />
-          
-          <ResourcesSection form={form} />
-          
-          <PodcastUrlsSection form={form} />
+      <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
+        {/* Grid layout for the top sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <PlanningSection form={form} guests={guests} />
+          <CoverArtSection form={form} />
         </div>
+        
+        <ContentSection form={form} guests={guests} />
+        
+        <ResourcesSection form={form} />
+        
+        <PodcastUrlsSection form={form} />
         
         <FormActions 
           episodeId={episode?.id} 

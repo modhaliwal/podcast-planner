@@ -46,7 +46,7 @@ const EditEpisode = () => {
   if (isLoading) {
     return (
       <Shell>
-        <div className="page-container">
+        <div className="w-full max-w-[1400px] mx-auto px-4">
           <LoadingIndicator message="Loading episode information..." fullPage />
         </div>
       </Shell>
@@ -56,7 +56,7 @@ const EditEpisode = () => {
   if (!episode) {
     return (
       <Shell>
-        <div className="page-container">
+        <div className="w-full max-w-[1400px] mx-auto px-4">
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <h1 className="text-2xl font-semibold mb-2">Episode not found</h1>
             <p className="text-muted-foreground mb-6">The episode you're looking for doesn't exist or has been removed.</p>
@@ -78,10 +78,10 @@ const EditEpisode = () => {
   
   return (
     <Shell>
-      <div className="page-container">
-        <div className="page-header mb-6">
-          <h1 className="section-title">Edit Episode</h1>
-          <p className="section-subtitle">Update episode details and information</p>
+      <div className="w-full max-w-[1400px] mx-auto px-4">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Edit Episode</h1>
+          <p className="text-muted-foreground">Update episode details and information</p>
         </div>
         
         <EpisodeForm
