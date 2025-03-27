@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Guest, Episode } from '@/lib/types';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { episodeStatusColors } from '@/lib/statusColors';
 
 interface GuestEpisodesListProps {
   guest: Guest;
@@ -30,34 +31,48 @@ export function GuestEpisodesList({ guest, episodes }: GuestEpisodesListProps) {
       <CardContent>
         {sortedEpisodes.length > 0 ? (
           <div className="space-y-4">
-            {sortedEpisodes.map((episode) => (
-              <Link key={episode.id} to={`/episodes/${episode.id}`} className="block">
-                <div className="flex items-start space-x-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <div className={cn(
-                    "h-10 w-10 rounded-full flex items-center justify-center",
-                    episode.status === 'published' ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" :
-                    episode.status === 'recorded' ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" :
-                    "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
-                  )}>
-                    <Calendar className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">
-                      {episode.title} 
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        (Episode #{episode.episodeNumber})
-                      </span>
-                    </h4>
-                    <div className="flex items-center text-sm text-muted-foreground mb-2">
-                      <span className="capitalize">{episode.status}</span>
-                      <span className="mx-2">•</span>
-                      <span>{format(new Date(episode.scheduled), 'MMM d, yyyy')}</span>
+            {sortedEpisodes.map((episode) => {
+              // Get status colors
+              const statusKey = episode.status.toLowerCase() as keyof typeof episodeStatusColors;
+              const statusColor = episodeStatusColors[statusKey] || episodeStatusColors.scheduled;
+              
+              return (
+                <Link key={episode.id} to={`/episodes/${episode.id}`} className="block">
+                  <div className="flex items-start space-x-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center",
+                      statusColor.bg,
+                      statusColor.text,
+                      statusColor.darkBg,
+                      statusColor.darkText
+                    )}>
+                      <Calendar className="h-5 w-5" />
                     </div>
-                    <p className="text-sm line-clamp-2">{episode.introduction}</p>
+                    <div className="flex-1">
+                      <h4 className="font-medium">
+                        {episode.title} 
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          (Episode #{episode.episodeNumber})
+                        </span>
+                      </h4>
+                      <div className="flex items-center text-sm text-muted-foreground mb-2">
+                        <span className={cn(
+                          "capitalize px-1.5 py-0.5 rounded-sm text-xs mr-2",
+                          statusColor.bg,
+                          statusColor.text,
+                          statusColor.darkBg,
+                          statusColor.darkText
+                        )}>
+                          {episode.status}
+                        </span>
+                        <span>{format(new Date(episode.scheduled), 'MMM d, yyyy')}</span>
+                      </div>
+                      <p className="text-sm line-clamp-2">{episode.introduction}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-8">

@@ -68,7 +68,6 @@ const EditGuest = () => {
       <PageLayout
         title={`Edit ${guest.name}`}
         subtitle="Update guest information"
-        backLink="/guests"
         actions={headerActions}
       >
         <GuestForm

@@ -1,12 +1,15 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Guest, Episode } from "@/lib/types";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Twitter, Linkedin, Globe, Instagram, Youtube, Calendar } from "lucide-react";
+import { Twitter, Linkedin, Globe, Instagram, Youtube } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
+import { guestStatusColors } from "@/lib/statusColors";
 
 interface GuestListProps {
   guests: Guest[];
@@ -38,10 +41,14 @@ export function GuestList({ guests }: GuestListProps) {
         // Get the most recent episode if available
         const latestEpisode = sortedEpisodes.length > 0 ? sortedEpisodes[0] : null;
 
+        // Get status colors
+        const statusKey = (guest.status || 'potential').toLowerCase() as keyof typeof guestStatusColors;
+        const statusColor = guestStatusColors[statusKey] || guestStatusColors.potential;
+
         return (
           <Link to={`/guests/${guest.id}`} key={guest.id}>
             <Card className="p-4 hover:bg-muted/40 transition-colors">
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 {/* Avatar section */}
                 <Avatar className="h-16 w-16 border">
                   <AvatarImage src={guest.imageUrl} alt={guest.name} />
@@ -55,7 +62,18 @@ export function GuestList({ guests }: GuestListProps) {
                     
                     {/* Status badge */}
                     {guest.status && (
-                      <Badge variant="outline" className="text-xs capitalize">
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-xs capitalize px-2 py-0.5",
+                          statusColor.bg,
+                          statusColor.text,
+                          statusColor.border,
+                          statusColor.darkBg,
+                          statusColor.darkText,
+                          statusColor.darkBorder
+                        )}
+                      >
                         {guest.status}
                       </Badge>
                     )}
@@ -136,22 +154,15 @@ export function GuestList({ guests }: GuestListProps) {
                 </div>
                 
                 {/* Latest episode info */}
-                {latestEpisode ? (
-                  <div className="min-w-[220px] flex flex-col justify-center">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Calendar className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-xs font-medium text-primary">Latest Episode</span>
+                <div className="min-w-[280px]">
+                  {latestEpisode ? (
+                    <GuestEpisodeMiniCard episode={latestEpisode} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground italic">No episodes yet</p>
                     </div>
-                    <p className="font-medium text-sm truncate">{latestEpisode.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(latestEpisode.scheduled), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="min-w-[220px] flex items-center">
-                    <p className="text-sm text-muted-foreground italic">No episodes yet</p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </Card>
           </Link>

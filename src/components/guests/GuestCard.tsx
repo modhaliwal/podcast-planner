@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { Guest } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { guestStatusColors } from '@/lib/statusColors';
 
 interface GuestCardProps {
   guest: Guest;
@@ -18,6 +20,10 @@ export function GuestCard({ guest, className }: GuestCardProps) {
     .map(n => n[0])
     .join('')
     .toUpperCase();
+  
+  // Get status colors
+  const statusKey = (guest.status || 'potential').toLowerCase() as keyof typeof guestStatusColors;
+  const statusColor = guestStatusColors[statusKey] || guestStatusColors.potential;
   
   return (
     <Card className={cn(
@@ -33,7 +39,28 @@ export function GuestCard({ guest, className }: GuestCardProps) {
             </Avatar>
             
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-lg truncate">{guest.name}</h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-medium text-lg truncate">{guest.name}</h3>
+                
+                {/* Status badge */}
+                {guest.status && (
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-xs capitalize px-2 py-0.5",
+                      statusColor.bg,
+                      statusColor.text,
+                      statusColor.border,
+                      statusColor.darkBg,
+                      statusColor.darkText,
+                      statusColor.darkBorder
+                    )}
+                  >
+                    {guest.status}
+                  </Badge>
+                )}
+              </div>
+              
               <p className="text-muted-foreground text-sm mb-3">{guest.title}</p>
               
               <div className="flex flex-wrap gap-2">
