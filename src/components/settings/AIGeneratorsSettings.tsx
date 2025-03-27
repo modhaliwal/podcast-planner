@@ -75,6 +75,7 @@ export function AIGeneratorsSettings() {
         context_instructions: editedPrompt.context_instructions || "",
         system_prompt: editedPrompt.system_prompt || "",
         ai_model: editedPrompt.ai_model || "openai",
+        model_name: editedPrompt.model_name || "",
         parameters: editedPrompt.parameters || "{}"
       });
       
@@ -94,6 +95,7 @@ export function AIGeneratorsSettings() {
         context_instructions: editedPrompt.context_instructions,
         system_prompt: editedPrompt.system_prompt,
         ai_model: editedPrompt.ai_model,
+        model_name: editedPrompt.model_name,
         parameters: editedPrompt.parameters
       });
       
@@ -156,6 +158,7 @@ export function AIGeneratorsSettings() {
       context_instructions: "",
       system_prompt: "",
       ai_model: "openai",
+      model_name: "",
       parameters: "{}"
     });
     setShowAddForm(true);

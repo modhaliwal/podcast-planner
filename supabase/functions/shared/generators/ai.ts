@@ -34,11 +34,12 @@ export interface AIGeneratorResponse {
  */
 export async function generateContent(
   config: AIGeneratorConfig, 
-  preferredProvider?: 'openai' | 'perplexity'
+  preferredProvider?: 'openai' | 'perplexity' | 'claude'
 ): Promise<AIGeneratorResponse> {
   // Get API keys for available providers
   const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+  const claudeApiKey = Deno.env.get('ANTHROPIC_API_KEY');
   
   // Determine which provider to use based on preference, keys available, and task type
   let provider = preferredProvider;
@@ -51,6 +52,8 @@ export async function generateContent(
       provider = 'openai';
     } else if (perplexityApiKey) {
       provider = 'perplexity';
+    } else if (claudeApiKey) {
+      provider = 'claude';
     } else {
       throw new Error("No API keys available for AI content generation");
     }
@@ -65,10 +68,15 @@ export async function generateContent(
     console.log("OpenAI API key not available, falling back to Perplexity");
     provider = 'perplexity';
   }
+  if (provider === 'claude' && !claudeApiKey) {
+    console.log("Claude API key not available, falling back to OpenAI");
+    provider = 'openai';
+  }
   
   // If still no valid provider, throw an error
   if ((provider === 'perplexity' && !perplexityApiKey) || 
-      (provider === 'openai' && !openaiApiKey)) {
+      (provider === 'openai' && !openaiApiKey) ||
+      (provider === 'claude' && !claudeApiKey)) {
     throw new Error("No API keys available for AI content generation");
   }
   
@@ -77,6 +85,9 @@ export async function generateContent(
     if (provider === 'perplexity') {
       const { generateWithPerplexity } = await import('./perplexity/generator.ts');
       return await generateWithPerplexity(config);
+    } else if (provider === 'claude') {
+      const { generateWithClaude } = await import('./claude/generator.ts');
+      return await generateWithClaude(config);
     } else {
       const { generateWithOpenAI } = await import('./openai/generator.ts');
       return await generateWithOpenAI(config);
@@ -93,6 +104,10 @@ export async function generateContent(
       console.log("Falling back to Perplexity after OpenAI failure");
       const { generateWithPerplexity } = await import('./perplexity/generator.ts');
       return await generateWithPerplexity(config);
+    } else if ((provider === 'openai' || provider === 'perplexity') && claudeApiKey) {
+      console.log(`Falling back to Claude after ${provider} failure`);
+      const { generateWithClaude } = await import('./claude/generator.ts');
+      return await generateWithClaude(config);
     }
     
     throw error;

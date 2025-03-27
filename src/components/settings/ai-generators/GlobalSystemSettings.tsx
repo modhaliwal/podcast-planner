@@ -16,18 +16,20 @@ export function GlobalSystemSettings() {
     async function loadSystemSettings() {
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
-          .from('system_settings')
+        
+        // First check if the table exists by querying it
+        const { data: settings, error } = await supabase
+          .from('ai_prompts')
           .select('*')
-          .eq('key', 'global_ai_instructions')
+          .eq('key', 'global_system_instructions')
           .single();
 
         if (error && error.code !== 'PGRST116') {
-          throw error;
+          console.error("Error fetching system settings:", error);
         }
 
-        if (data) {
-          setSystemInstructions(data.value || "");
+        if (settings) {
+          setSystemInstructions(settings.system_prompt || "");
         }
       } catch (error) {
         console.error("Error loading system settings:", error);
@@ -48,19 +50,42 @@ export function GlobalSystemSettings() {
     try {
       setIsSaving(true);
       
-      const { data, error } = await supabase
-        .from('system_settings')
-        .upsert(
-          {
-            key: 'global_ai_instructions',
-            value: systemInstructions,
-            updated_at: new Date().toISOString()
-          },
-          { onConflict: 'key' }
-        );
+      // Check if the global_system_instructions entry exists
+      const { data: existing, error: fetchError } = await supabase
+        .from('ai_prompts')
+        .select('id')
+        .eq('key', 'global_system_instructions')
+        .single();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
 
-      if (error) {
-        throw error;
+      if (existing) {
+        // Update the existing entry
+        const { error: updateError } = await supabase
+          .from('ai_prompts')
+          .update({
+            system_prompt: systemInstructions,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create a new entry
+        const { error: insertError } = await supabase
+          .from('ai_prompts')
+          .insert({
+            key: 'global_system_instructions',
+            title: 'Global System Instructions',
+            prompt_text: 'Global system instructions for all AI generators',
+            system_prompt: systemInstructions,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (insertError) throw insertError;
       }
 
       toast({

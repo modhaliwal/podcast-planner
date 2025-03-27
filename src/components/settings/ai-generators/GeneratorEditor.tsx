@@ -75,7 +75,7 @@ export function GeneratorEditor({
           </div>
           
           <div className="ml-4 w-1/3">
-            <Label htmlFor="ai_model">AI Model</Label>
+            <Label htmlFor="ai_model">AI Provider</Label>
             <Select
               value={editedPrompt.ai_model || 'openai'}
               onValueChange={(value) => {
@@ -85,7 +85,7 @@ export function GeneratorEditor({
               }}
             >
               <SelectTrigger id="ai_model">
-                <SelectValue placeholder="Select model" />
+                <SelectValue placeholder="Select provider" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="openai">OpenAI</SelectItem>
@@ -94,6 +94,23 @@ export function GeneratorEditor({
               </SelectContent>
             </Select>
           </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="model_name">Model Name</Label>
+          <Input
+            id="model_name"
+            name="model_name"
+            value={editedPrompt.model_name || ''}
+            onChange={onInputChange}
+            className="mt-1"
+            placeholder={editedPrompt.ai_model === 'openai' ? 'gpt-4o' : 
+              editedPrompt.ai_model === 'perplexity' ? 'llama-3.1-sonar-small-128k-online' : 
+              'claude-3-opus-20240229'}
+          />
+          <p className="text-muted-foreground text-xs mt-1">
+            Specific model to use with the selected AI provider
+          </p>
         </div>
         
         <div>

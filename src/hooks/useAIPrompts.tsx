@@ -15,6 +15,7 @@ export type AIPrompt = {
   context_instructions?: string;
   example_output?: string;
   ai_model?: string;
+  model_name?: string;
   parameters?: string;
 };
 
