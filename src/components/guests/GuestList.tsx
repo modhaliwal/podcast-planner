@@ -87,9 +87,9 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links section - allow to wrap onto two lines as needed */}
+                {/* Social links section - allow to wrap onto lines as needed, but start with a larger width */}
                 <div className="hidden sm:flex items-center shrink-0 ml-0">
-                  <div className="flex flex-wrap items-center gap-1 max-w-[150px]">
+                  <div className="flex flex-wrap items-center gap-1 w-[220px] sm:max-w-[220px] md:max-w-[250px] lg:max-w-[300px]">
                     {guest.socialLinks.twitter && (
                       <a 
                         href={guest.socialLinks.twitter} 
