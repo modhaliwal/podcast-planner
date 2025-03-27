@@ -53,6 +53,7 @@ const TestComponent = () => {
         onEditorChange={setEditorContent}
         editorPlaceholder="Try typing some content here..."
         onClearAllVersions={() => console.log('Clear all versions')}
+        contentName="Episode Introduction"
         hoverCardConfig={{
           aiProvider: "OpenAI",
           promptKey: "content-generation",
@@ -72,3 +73,4 @@ const TestComponent = () => {
 };
 
 export default TestComponent;
+
