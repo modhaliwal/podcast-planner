@@ -9,7 +9,7 @@ import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
-import { FormActions } from '@/components/ui/form-actions';
+import { FormActions } from './FormSections/FormActions';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -54,7 +54,7 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
         <PodcastUrlsSection form={form} />
         
         <FormActions 
-          cancelHref={`/episodes/${episode?.id}`}
+          episodeId={episode?.id}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
         />

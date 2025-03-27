@@ -1,3 +1,3 @@
 
-export * from './ScheduleSection';
-export * from './GuestSelectionSection';
+export { ScheduleSection } from './ScheduleSection';
+export { GuestSelectionSection } from './GuestSelectionSection';

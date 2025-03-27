@@ -4,11 +4,11 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
-import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
+import { useEpisodeData } from '@/hooks/episodes';
 import { useGuestsData } from '@/hooks/guests';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useMemo } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
