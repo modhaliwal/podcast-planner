@@ -19,7 +19,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
 
   return (
     <div className="flex flex-col bg-card border rounded-md p-2.5 shadow-sm">
-      <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex items-center gap-2">
         <div className={cn(
           "h-8 w-8 rounded-full flex items-center justify-center",
           statusColors[episode.status] || "bg-gray-100 text-gray-600"
@@ -40,8 +40,6 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
           </div>
         </div>
       </div>
-      
-      <p className="text-sm line-clamp-2 mt-1">{episode.introduction}</p>
     </div>
   );
 }
