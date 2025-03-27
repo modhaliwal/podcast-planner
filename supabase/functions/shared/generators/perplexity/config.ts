@@ -13,13 +13,6 @@ export const DEFAULT_CONFIG: PerplexityConfig = {
 };
 
 /**
- * Creates a response format object for Perplexity API
- */
-export function createResponseFormat() {
-  return { type: "json_object" };
-}
-
-/**
  * Creates a configuration object with custom settings
  */
 export function createConfig(customConfig: Partial<PerplexityConfig> = {}): PerplexityConfig {

@@ -23,57 +23,40 @@ export function processApiResponse(data: any): any {
   const messageContent = data.choices[0].message.content;
   console.log("Raw message content type:", typeof messageContent);
   
-  return parseResponseContent(messageContent);
-}
-
-/**
- * Parses the content from API response
- */
-export function parseResponseContent(messageContent: any): any {
-  let bodyContent = "";
-  let references: string[] = [];
-  let images: string[] = [];
-  
   try {
-    if (typeof messageContent === 'string') {
-      if (messageContent.trim().startsWith('{')) {
-        try {
-          // Try to parse as JSON if it looks like JSON
-          const parsedContent = JSON.parse(messageContent);
-          bodyContent = parsedContent.Body || messageContent;
-          references = parsedContent.References || [];
-          images = parsedContent.Images || [];
-          console.log("Successfully parsed JSON string from content");
-        } catch (e) {
-          console.log("Failed to parse as JSON, using as plain text:", e);
-          bodyContent = messageContent;
-        }
-      } else {
-        // Not JSON format, use as is
-        bodyContent = messageContent;
-        console.log("Using content as plain text (not JSON)");
+    // Basic extraction of content
+    let content = messageContent;
+    let references: string[] = [];
+    let images: string[] = [];
+    
+    // Try to parse as JSON if it looks like JSON
+    if (typeof messageContent === 'string' && messageContent.trim().startsWith('{')) {
+      try {
+        const parsedContent = JSON.parse(messageContent);
+        if (parsedContent.Body) content = parsedContent.Body;
+        if (parsedContent.References) references = parsedContent.References;
+        if (parsedContent.Images) images = parsedContent.Images;
+      } catch (e) {
+        console.log("Content is not valid JSON, using as plain text");
       }
     } else if (typeof messageContent === 'object') {
-      // It's already a parsed object
-      bodyContent = messageContent.Body || JSON.stringify(messageContent);
-      references = messageContent.References || [];
-      images = messageContent.Images || [];
-      console.log("Using pre-parsed object content");
-    } else {
-      throw new Error("Unexpected content format");
+      // Direct access to object fields
+      if (messageContent.Body) content = messageContent.Body;
+      if (messageContent.References) references = messageContent.References;
+      if (messageContent.Images) images = messageContent.Images;
     }
     
     // Clean up the content to ensure it's valid markdown
-    bodyContent = cleanupMarkdown(bodyContent);
+    content = cleanupMarkdown(content);
     
     return {
-      content: bodyContent,
+      content,
       references,
       images
     };
   } catch (error) {
-    console.error("Error parsing response content:", error);
-    throw new Error(`Failed to parse response: ${error.message}`);
+    console.error("Error parsing response:", error);
+    return { content: messageContent };
   }
 }
 
@@ -81,6 +64,11 @@ export function parseResponseContent(messageContent: any): any {
  * Cleans up markdown to ensure it can be properly converted to HTML
  */
 function cleanupMarkdown(markdown: string): string {
+  if (typeof markdown !== 'string') {
+    console.warn("Expected markdown string but got:", typeof markdown);
+    return String(markdown);
+  }
+  
   // Remove any HTML tags that might be in the content already
   let cleaned = markdown.replace(/<\/?[^>]+(>|$)/g, "");
   
@@ -89,15 +77,6 @@ function cleanupMarkdown(markdown: string): string {
   
   // Ensure proper spacing for lists
   cleaned = cleaned.replace(/^(-|\*|\+)(?!\s)/gm, "$1 ");
-  cleaned = cleaned.replace(/^(\d+\.)(?!\s)/gm, "$1 ");
-  
-  // Fix common markdown issues with line breaks
-  cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
-  
-  // Ensure proper link format
-  cleaned = cleaned.replace(/\[(.*?)\]\s*\((.*?)\)/g, "[$1]($2)");
-  
-  console.log("Cleaned markdown preview:", cleaned.substring(0, 100) + "...");
   
   return cleaned;
 }

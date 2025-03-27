@@ -12,24 +12,31 @@ export async function callPerplexityAPI(
 ) {
   console.log(`Calling Perplexity API to generate research using model: ${config.model}`);
   
+  // Prepare request body
+  const requestBody: any = {
+    model: config.model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    temperature: config.temperature,
+    max_tokens: config.maxTokens,
+    return_images: config.returnImages,
+    return_related_questions: config.returnRelatedQuestions
+  };
+  
+  // Only add response_format if using newer models that support it
+  if (config.model.includes("llama-3") || config.model.includes("sonar")) {
+    requestBody.response_format = { type: "text" };
+  }
+  
   const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      temperature: config.temperature,
-      max_tokens: config.maxTokens,
-      return_images: config.returnImages,
-      return_related_questions: config.returnRelatedQuestions,
-      response_format: { type: "json_object" }
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

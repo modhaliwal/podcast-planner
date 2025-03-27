@@ -45,6 +45,24 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
       returnRelatedQuestions: DEFAULT_CONFIG.returnRelatedQuestions
     });
     
+    // Prepare request body
+    const requestBody: any = {
+      model: perplexityConfig.model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: perplexityConfig.temperature,
+      max_tokens: perplexityConfig.maxTokens,
+      return_images: perplexityConfig.returnImages,
+      return_related_questions: perplexityConfig.returnRelatedQuestions
+    };
+    
+    // Only add response_format for newer models that support it properly
+    if (perplexityConfig.model.includes("llama-3") || perplexityConfig.model.includes("sonar")) {
+      requestBody.response_format = { type: "text" };
+    }
+    
     // Make the API call
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -52,18 +70,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
         'Authorization': `Bearer ${perplexityApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: perplexityConfig.model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: perplexityConfig.temperature,
-        max_tokens: perplexityConfig.maxTokens,
-        return_images: perplexityConfig.returnImages,
-        return_related_questions: perplexityConfig.returnRelatedQuestions,
-        response_format: { type: "json_object" }
-      }),
+      body: JSON.stringify(requestBody),
     });
     
     if (!response.ok) {
@@ -82,13 +89,20 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     };
     
     try {
-      // Process structured response
-      const result = processApiResponse(data);
-      markdown = result.content || '';
+      // Extract content from the response
+      const messageContent = data.choices?.[0]?.message?.content;
+      
+      if (!messageContent) {
+        throw new Error("No content received from Perplexity API");
+      }
+      
+      // Process structured response or use raw content
+      const processedResponse = processApiResponse(data);
+      markdown = processedResponse.content || messageContent;
       
       // Add references and images to metadata if available
-      if (result.references) metadata.references = result.references;
-      if (result.images) metadata.images = result.images;
+      if (processedResponse.references) metadata.references = processedResponse.references;
+      if (processedResponse.images) metadata.images = processedResponse.images;
     } catch (e) {
       console.error("Error processing structured response:", e);
       // Fallback to direct content extraction

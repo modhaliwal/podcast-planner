@@ -67,35 +67,41 @@ serve(async (req) => {
 
     // Generate content
     console.log("Generating content using AI...")
-    const generatedResponse = await generateContent(config)
     
-    let finalContent = ''
-    
-    // Process response based on requested format
-    if (responseFormat === 'html' && generatedResponse.markdown) {
-      console.log("Converting markdown to HTML...")
-      finalContent = await convertMarkdownToHtml(generatedResponse.markdown)
-    } else if (responseFormat === 'html' && generatedResponse.content) {
-      // If content is already HTML, use it directly
-      finalContent = generatedResponse.content
-    } else {
-      // Return markdown or plain content as is
-      finalContent = generatedResponse.markdown || generatedResponse.content
-    }
-
-    return new Response(
-      JSON.stringify({
-        content: finalContent,
-        metadata: generatedResponse.metadata || {},
-        format: responseFormat
-      }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+    try {
+      const generatedResponse = await generateContent(config)
+      
+      let finalContent = ''
+      
+      // Process response based on requested format
+      if (responseFormat === 'html' && generatedResponse.markdown) {
+        console.log("Converting markdown to HTML...")
+        finalContent = await convertMarkdownToHtml(generatedResponse.markdown)
+      } else if (responseFormat === 'html' && generatedResponse.content) {
+        // If content is already HTML, use it directly
+        finalContent = generatedResponse.content
+      } else {
+        // Return markdown or plain content as is
+        finalContent = generatedResponse.markdown || generatedResponse.content
       }
-    )
+
+      return new Response(
+        JSON.stringify({
+          content: finalContent,
+          metadata: generatedResponse.metadata || {},
+          format: responseFormat
+        }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      )
+    } catch (generationError) {
+      console.error("Error generating content:", generationError)
+      throw new Error(`Failed to generate content: ${generationError.message}`)
+    }
   } catch (error) {
     console.error("Error in generate-with-ai-settings:", error)
     return new Response(
