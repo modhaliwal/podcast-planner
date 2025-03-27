@@ -8,7 +8,7 @@ import { GuestHeader } from '@/components/guests/GuestHeader';
 import { GuestContent } from '@/components/guests/GuestContent';
 
 const Guests = () => {
-  const { user } = useAuth();
+  const { user, refreshGuests, isDataLoading } = useAuth();
   const navigate = useNavigate();
   const hasInitializedRef = useRef(false);
   
@@ -17,12 +17,13 @@ const Guests = () => {
     const loadData = async () => {
       if (!hasInitializedRef.current && user?.id) {
         console.log("Initial Guests page mount, refreshing guest data");
+        await refreshGuests(true);
         hasInitializedRef.current = true;
       }
     };
     
     loadData();
-  }, [user]);
+  }, [user, refreshGuests]);
 
   const handleAddGuest = () => {
     if (!user) {
@@ -36,11 +37,17 @@ const Guests = () => {
     navigate('/guests/new');
   };
   
+  const handleRefresh = async () => {
+    await refreshGuests(true);
+  };
+  
   return (
     <Shell>
       <div className="page-container">
         <GuestHeader 
           onAddGuest={handleAddGuest}
+          onRefresh={handleRefresh}
+          isLoading={isDataLoading}
         />
         
         <GuestContent />

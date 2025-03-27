@@ -21,6 +21,7 @@ import { NotesSection } from "./form-sections/NotesSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { FormProvider } from "react-hook-form";
+import { ContentVersion } from "@/lib/types";
 
 // Import your schema
 const GuestFormSchema = z.object({
@@ -45,6 +46,13 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("basic");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notes, setNotes] = useState(defaultValues?.notes || "");
+  const [backgroundResearch, setBackgroundResearch] = useState(defaultValues?.backgroundResearch || "");
+  const [bioVersions, setBioVersions] = useState<ContentVersion[]>(defaultValues?.bioVersions || []);
+  const [backgroundResearchVersions, setBackgroundResearchVersions] = useState<ContentVersion[]>(
+    defaultValues?.backgroundResearchVersions || []
+  );
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const form = useForm<GuestFormValues>({
     resolver: zodResolver(GuestFormSchema),
@@ -65,17 +73,31 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
     },
   });
 
+  const handleImageChange = (file: File | null, previewUrl?: string) => {
+    setImageFile(file);
+  };
+
   const handleSubmit = async (values: GuestFormValues) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(values);
+      const finalData = {
+        ...values,
+        notes,
+        backgroundResearch,
+        bioVersions,
+        backgroundResearchVersions,
+        imageFile
+      };
+      
+      await onSubmit(finalData);
+      
       toast({
         title: "Success",
         description: defaultValues
           ? "Guest updated successfully!"
           : "Guest created successfully!",
       });
-      navigate("/guests"); // Navigate back to guests list
+      navigate("/guests");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -104,19 +126,37 @@ export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
           </TabsContent>
 
           <TabsContent value="content">
-            <ContentSection />
+            <ContentSection 
+              form={form}
+              notes={notes}
+              setNotes={setNotes}
+              backgroundResearch={backgroundResearch}
+              setBackgroundResearch={setBackgroundResearch}
+              bioVersions={bioVersions}
+              backgroundResearchVersions={backgroundResearchVersions}
+              onBioVersionsChange={setBioVersions}
+              onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
+              guest={defaultValues}
+            />
           </TabsContent>
 
           <TabsContent value="social">
-            <SocialLinksSection />
+            <SocialLinksSection form={form} />
           </TabsContent>
 
           <TabsContent value="headshot">
-            <HeadshotSection />
+            <HeadshotSection 
+              initialImageUrl={defaultValues?.imageUrl} 
+              guestName={defaultValues?.name || 'New Guest'}
+              onImageChange={handleImageChange} 
+            />
           </TabsContent>
 
           <TabsContent value="notes">
-            <NotesSection />
+            <NotesSection 
+              notes={notes}
+              setNotes={setNotes}
+            />
           </TabsContent>
         </Tabs>
       </form>

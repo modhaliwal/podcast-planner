@@ -14,7 +14,17 @@ import { Guest } from "@/lib/types";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface GuestListProps {
   guests: Guest[];
@@ -22,15 +32,21 @@ interface GuestListProps {
 }
 
 export function GuestList({ guests, onDelete }: GuestListProps) {
-  const handleDelete = (guestId: string) => {
-    if (confirm("Are you sure you want to delete this guest?")) {
-      onDelete(guestId);
-      toast({
-        title: "Success",
-        description: "Guest deleted successfully",
-        variant: "default"
-      });
+  const [guestToDelete, setGuestToDelete] = useState<string | null>(null);
+
+  const handleDeleteClick = (guestId: string) => {
+    setGuestToDelete(guestId);
+  };
+
+  const confirmDelete = () => {
+    if (guestToDelete) {
+      onDelete(guestToDelete);
+      setGuestToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setGuestToDelete(null);
   };
 
   return (
@@ -63,7 +79,11 @@ export function GuestList({ guests, onDelete }: GuestListProps) {
                       Edit
                     </Link>
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(guest.id)}>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={() => handleDeleteClick(guest.id)}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
@@ -80,6 +100,21 @@ export function GuestList({ guests, onDelete }: GuestListProps) {
           </TableRow>
         </TableFooter>
       </Table>
+
+      <AlertDialog open={!!guestToDelete} onOpenChange={() => setGuestToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the guest and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
+  );
 }

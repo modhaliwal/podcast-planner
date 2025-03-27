@@ -11,16 +11,17 @@ import { Link } from "react-router-dom";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 
 export function GuestContent() {
-  const { guests, isLoadingGuests, refreshGuests } = useAuth();
+  const { guests, isDataLoading, refreshGuests } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [viewMode, setViewMode] = useState<"list" | "card">("list");
 
-  if (isLoadingGuests) {
+  if (isDataLoading) {
     return <LoadingIndicator message="Loading guests..." />;
   }
 
@@ -39,47 +40,77 @@ export function GuestContent() {
     return matchesSearch && matchesStatus;
   });
 
-  if (filteredGuests.length === 0) {
-    return (
-      <div>
-        <div className="flex justify-between mb-6">
-          <div className="flex space-x-4">
-            <GuestSearch 
-              searchQuery={searchQuery} 
-              setSearchQuery={setSearchQuery} 
-            />
-            <GuestFilter
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <GuestViewToggle 
-              viewMode={viewMode} 
-              setViewMode={setViewMode} 
-            />
-            <Button asChild>
-              <Link to="/guests/new">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Guest
-              </Link>
-            </Button>
-          </div>
+  const handleDeleteGuest = async (guestId: string) => {
+    try {
+      // Call the delete service from AuthContext
+      const result = await fetch(`/api/guests/${guestId}`, {
+        method: 'DELETE'
+      });
+      
+      if (result.ok) {
+        toast({
+          title: "Success",
+          description: "Guest deleted successfully"
+        });
+        
+        // Refresh the guests list
+        await refreshGuests(true);
+      } else {
+        throw new Error("Failed to delete guest");
+      }
+    } catch (error) {
+      console.error("Error deleting guest:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete guest",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const renderEmptyState = () => (
+    <div>
+      <div className="flex justify-between mb-6">
+        <div className="flex space-x-4">
+          <GuestSearch 
+            searchQuery={searchQuery} 
+            setSearchQuery={setSearchQuery} 
+          />
+          <GuestFilter
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
         </div>
-        <EmptyState
-          title="No guests found"
-          description="Try adjusting your search or filters, or add a new guest."
-          action={
-            <Button asChild>
-              <Link to="/guests/new">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Guest
-              </Link>
-            </Button>
-          }
-        />
+        <div className="flex items-center gap-4">
+          <GuestViewToggle 
+            viewMode={viewMode} 
+            setViewMode={setViewMode} 
+          />
+          <Button asChild>
+            <Link to="/guests/new">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Guest
+            </Link>
+          </Button>
+        </div>
       </div>
-    );
+      <EmptyState
+        title="No guests found"
+        description="Try adjusting your search or filters, or add a new guest."
+        action={
+          <Button asChild>
+            <Link to="/guests/new">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Guest
+            </Link>
+          </Button>
+        }
+      />
+    </div>
+  );
+
+  if (filteredGuests.length === 0) {
+    return renderEmptyState();
   }
 
   return (
@@ -109,7 +140,7 @@ export function GuestContent() {
         </div>
       </div>
 
-      <GuestList guests={filteredGuests} />
+      <GuestList guests={filteredGuests} onDelete={handleDeleteGuest} />
     </div>
   );
 }

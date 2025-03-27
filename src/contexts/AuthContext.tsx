@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useGuestsData } from "@/hooks/guests/useGuestsData";
 import { default as useEpisodesData } from "@/hooks/episodes/useEpisodesData";
-import { User as AppUser } from "@/lib/types";
+import { User as AppUser, Guest, Episode } from "@/lib/types";
 import { getCurrentUserProfile } from "@/services/userService";
 
 type AuthContextType = {
@@ -14,10 +14,10 @@ type AuthContextType = {
   appUser: AppUser | null;
   signOut: () => Promise<void>;
   loading: boolean;
-  guests: ReturnType<typeof useGuestsData>['guests'];
-  episodes: ReturnType<typeof useEpisodesData>['episodes'];
-  refreshGuests: ReturnType<typeof useGuestsData>['refreshGuests'];
-  refreshEpisodes: ReturnType<typeof useEpisodesData>['refreshEpisodes'];
+  guests: Guest[];
+  episodes: Episode[];
+  refreshGuests: (force?: boolean) => Promise<Guest[]>;
+  refreshEpisodes: (force?: boolean) => Promise<Episode[]>;
   refreshUserProfile: () => Promise<void>;
   isDataLoading: boolean;
   refreshAllData: () => Promise<void>;

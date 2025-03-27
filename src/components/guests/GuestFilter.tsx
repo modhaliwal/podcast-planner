@@ -18,8 +18,7 @@ interface GuestFilterProps {
 export function GuestFilter({ statusFilter, setStatusFilter }: GuestFilterProps) {
   // Format the status text with first letter capitalized
   const formatStatusText = (status: GuestStatus) => {
-    if (status === 'all') return 'All Guests';
-    if (!status) return 'All Guests'; // Fallback if status is undefined
+    if (!status || status === 'all') return 'All Guests';
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 

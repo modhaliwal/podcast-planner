@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { FormActions } from "@/components/ui/form-actions";
 import { useFormContext } from "react-hook-form";
-import { ContentGenerator } from "@/components/content/ContentGenerator";
 
 interface BasicInfoSectionProps {
   isSubmitting: boolean;
@@ -14,7 +13,7 @@ interface BasicInfoSectionProps {
 }
 
 export function BasicInfoSection({ isSubmitting, cancelHref }: BasicInfoSectionProps) {
-  const { control, setValue, getValues } = useFormContext();
+  const { register, formState, setValue, getValues } = useFormContext();
   const [generating, setGenerating] = useState(false);
   const name = getValues("name");
 
@@ -24,55 +23,44 @@ export function BasicInfoSection({ isSubmitting, cancelHref }: BasicInfoSectionP
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input id="name" placeholder="Full name" {...control._fields.name} />
+            <Input id="name" placeholder="Full name" {...register("name")} />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" placeholder="Title" {...control._fields.title} />
+            <Input id="title" placeholder="Title" {...register("title")} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="company">Company</Label>
-            <Input id="company" placeholder="Company" {...control._fields.company} />
+            <Input id="company" placeholder="Company" {...register("company")} />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" placeholder="Email" type="email" {...control._fields.email} />
+            <Input id="email" placeholder="Email" type="email" {...register("email")} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" placeholder="Phone" type="tel" {...control._fields.phone} />
+            <Input id="phone" placeholder="Phone" type="tel" {...register("phone")} />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
-            <Input id="status" placeholder="Status" {...control._fields.status} />
+            <Input id="status" placeholder="Status" {...register("status")} />
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <Label htmlFor="bio">Bio</Label>
-            <ContentGenerator
-              config={{
-                fieldName: "bio",
-                promptKey: "guest_bio",
-                buttonLabel: generating ? "Generating..." : "Generate Bio",
-                loadingLabel: "Generating bio...",
-                edgeFunctionName: "generate-content",
-                generationType: "bio",
-              }}
-              form={{ control, setValue, getValues }}
-            />
           </div>
-          <Textarea id="bio" placeholder="Bio" className="min-h-[100px]" {...control._fields.bio} />
+          <Textarea id="bio" placeholder="Bio" className="min-h-[100px]" {...register("bio")} />
         </div>
       </div>
 
