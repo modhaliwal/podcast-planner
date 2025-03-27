@@ -1,4 +1,3 @@
-
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "./versionNumberUtils";
@@ -125,7 +124,7 @@ export function addNewVersionUtil<T extends Record<string, any>>(
 
 /**
  * Clears all versions except the currently active one
- * Preserves the active version's version number and the current content
+ * Preserves the active version's version number and content
  */
 export function clearAllVersionsUtil<T extends Record<string, any>>(
   form: UseFormReturn<T>,
@@ -134,30 +133,34 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
 ) {
-  // Get current content - use proper Path<T> typing
-  const currentContent = form.getValues(fieldName as Path<T>) as string;
-  
-  // Find the active version to preserve its version number
+  // Get versions from form - use proper Path<T> typing
   const versions = form.getValues(versionsFieldName as Path<T>) as ContentVersion[];
+  
+  // Find the active version to preserve its version number and content
   const activeVersion = versions.find(v => v.active);
   
-  // Create a new version with the current content but preserve the version number if available
+  if (!activeVersion) {
+    console.warn("No active version found when clearing versions");
+    return;
+  }
+  
+  // Create a new version with the active version's content (NOT the current form content)
   const newVersion: ContentVersion = {
     id: uuidv4(),
-    content: currentContent, // Critically important to use the current form content
+    content: activeVersion.content, // Use the active version's content, not the current form content
     timestamp: new Date().toISOString(),
-    source: activeVersion ? activeVersion.source : "manual",
+    source: activeVersion.source,
     active: true,
-    versionNumber: activeVersion ? activeVersion.versionNumber : 1
+    versionNumber: activeVersion.versionNumber
   };
   
   // Update state
   setVersions([newVersion]);
   setActiveVersionId(newVersion.id);
   
-  // Update form - use proper Path<T> typing
+  // Update the versions in the form, but DO NOT modify the content field
   form.setValue(versionsFieldName as Path<T>, [newVersion] as any, { shouldDirty: true });
   
-  // Do NOT modify the content field - leave it as is
-  // This is the key change that preserves the content
+  // Also update the content field to match the active version
+  form.setValue(fieldName as Path<T>, activeVersion.content as any, { shouldDirty: true });
 }

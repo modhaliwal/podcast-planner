@@ -111,11 +111,11 @@ export function AIGenerationDropdownButton({
       const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
       const activeVersion = currentVersions.find(v => v.active);
       
-      const currentContent = onEditorChange ? editorContent : internalEditorContent;
+      const activeVersionContent = activeVersion?.content || "";
       
       const newVersion: ContentVersion = {
         id: `version-${Date.now()}`,
-        content: currentContent,
+        content: activeVersionContent,
         timestamp: new Date().toISOString(),
         source: activeVersion?.source || 'manual',
         active: true,

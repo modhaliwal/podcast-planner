@@ -49,7 +49,8 @@ export function VersionTest() {
         }}
         onOptionSelect={() => {}}
         onClearAllVersions={() => {
-          console.log("Clear all versions called. Current content:", content);
+          console.log("Clear all versions called. Currently active version content:", 
+            versions.find(v => v.active)?.content || "No active version found");
         }}
         showEditor={true}
         contentName="Test Content"

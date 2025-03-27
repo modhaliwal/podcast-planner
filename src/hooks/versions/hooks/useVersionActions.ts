@@ -119,28 +119,34 @@ export function useVersionActions(
     return addNewVersion(newContent, "ai");
   }, [addNewVersion]);
 
-  // Clear all versions except the currently active one, preserving its version number and current editor content
+  // Clear all versions except the currently active one, preserving its version number and content
   const clearAllVersions = useCallback(() => {
     // Find the active version
     const activeVersion = versions.find(v => v.id === activeVersionId);
     
-    // Create a new version with the current content but preserve version number
+    if (!activeVersion) {
+      console.warn("No active version found when clearing versions");
+      return;
+    }
+    
+    // Create a new version with the active version's content (not the current content)
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: content, // Always use the current content to preserve what's displayed
+      content: activeVersion.content, // Use active version's content, not current content
       timestamp: new Date().toISOString(),
-      source: activeVersion ? activeVersion.source : "manual",
+      source: activeVersion.source,
       active: true,
-      versionNumber: activeVersion ? activeVersion.versionNumber : 1
+      versionNumber: activeVersion.versionNumber
     };
     
     // Update state with just this single version
     onVersionsChange([newVersion]);
     setActiveVersionId(newVersion.id);
-    setPreviousContent(content);
+    setPreviousContent(activeVersion.content);
     
-    // No need to call onContentChange since we're preserving the existing content
-  }, [content, versions, activeVersionId, onVersionsChange, setActiveVersionId, setPreviousContent]);
+    // Update the editor content to match the active version
+    onContentChange(activeVersion.content);
+  }, [versions, activeVersionId, onVersionsChange, setActiveVersionId, setPreviousContent, onContentChange]);
 
   return {
     selectVersion,
