@@ -1,11 +1,10 @@
-
 import { EpisodeStatus } from './enums';
 
 export interface ContentVersion {
   id: string;
   content: string;
   timestamp: string;
-  source: 'manual' | 'ai' | 'import';
+  source: 'manual' | 'ai' | 'imported';
   active?: boolean; // Active flag to track which version is active
   versionNumber: number; // Sequential version number
 }

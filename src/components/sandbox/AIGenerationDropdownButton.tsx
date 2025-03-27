@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Sparkles, ChevronDown, Check, Trash2, Type, AlignLeft } from "lucide-react";
+import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +16,11 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Editor } from '@/components/editor/Editor';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Textarea } from '@/components/ui/textarea';
-import { ContentVersion } from '@/lib/types';
+import { ContentVersion as ContentVersionType } from '@/lib/types';
+
+// Making ContentVersion available for import by other components
+export type ContentVersion = ContentVersionType;
 
 export type DropdownOption = {
   id: string;
@@ -54,8 +56,8 @@ export interface AIGenerationDropdownButtonProps {
   editorMinHeight?: number;
   contentName?: string;
   editorType?: 'rich' | 'plain';
-  editorContentVersions?: ContentVersion[];
-  onContentVersionsChange?: (versions: ContentVersion[]) => void;
+  editorContentVersions?: ContentVersionType[];
+  onContentVersionsChange?: (versions: ContentVersionType[]) => void;
 }
 
 export function AIGenerationDropdownButton({
@@ -84,8 +86,7 @@ export function AIGenerationDropdownButton({
   const [open, setOpen] = useState(false);
   const [clearConfirmationState, setClearConfirmationState] = useState(false);
   const [internalEditorContent, setInternalEditorContent] = useState(editorContent);
-  const [currentEditorType, setCurrentEditorType] = useState<'rich' | 'plain'>(editorType);
-  const [internalContentVersions, setInternalContentVersions] = useState<ContentVersion[]>(editorContentVersions);
+  const [internalContentVersions, setInternalContentVersions] = useState<ContentVersionType[]>(editorContentVersions);
 
   useEffect(() => {
     if (editorContentVersions.length > 0) {
@@ -111,7 +112,7 @@ export function AIGenerationDropdownButton({
         return;
       }
       
-      const newVersion: ContentVersion = {
+      const newVersion: ContentVersionType = {
         id: `version-${Date.now()}`,
         content: activeVersion.content, // Use active version's content, not current editor content
         timestamp: new Date().toISOString(),
@@ -154,13 +155,7 @@ export function AIGenerationDropdownButton({
     setInternalEditorContent(content);
   };
 
-  const handleEditorTypeChange = (value: string) => {
-    if (value) {
-      setCurrentEditorType(value as 'rich' | 'plain');
-    }
-  };
-
-  const handleSelectVersion = (version: ContentVersion) => {
+  const handleSelectVersion = (version: ContentVersionType) => {
     const newContent = version.content;
     handleEditorChange(newContent);
     
@@ -186,7 +181,7 @@ export function AIGenerationDropdownButton({
       0
     );
     
-    const newVersion: ContentVersion = {
+    const newVersion: ContentVersionType = {
       id: `version-${Date.now()}`,
       content,
       timestamp: new Date().toISOString(),
@@ -261,20 +256,6 @@ export function AIGenerationDropdownButton({
         <div className="flex justify-between items-center mb-2">
           {contentName && <h3 className="font-medium text-base">{contentName}</h3>}
           <div className="flex items-center gap-2">
-            <ToggleGroup 
-              type="single" 
-              value={currentEditorType} 
-              onValueChange={handleEditorTypeChange}
-              className="border rounded-md"
-            >
-              <ToggleGroupItem value="rich" aria-label="Rich Text Editor" title="Rich Text Editor">
-                <Type className="h-4 w-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="plain" aria-label="Plain Text Editor" title="Plain Text Editor">
-                <AlignLeft className="h-4 w-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
-            
             <div className="flex">
               <HoverCard>
                 <HoverCardTrigger asChild>
@@ -550,7 +531,7 @@ export function AIGenerationDropdownButton({
       
       {showEditor && (
         <div>
-          {currentEditorType === 'rich' ? (
+          {editorType === 'rich' ? (
             <div className="border rounded-md">
               <div className="min-h-[300px]">
                 <Editor
