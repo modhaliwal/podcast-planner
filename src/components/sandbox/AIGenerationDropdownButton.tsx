@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2, Type, AlignLeft } from "lucide-react";
@@ -17,6 +18,7 @@ import {
 import { Editor } from '@/components/editor/Editor';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Textarea } from '@/components/ui/textarea';
+import { ContentVersion } from '@/lib/types';
 
 export type DropdownOption = {
   id: string;
@@ -27,24 +29,15 @@ export type DropdownOption = {
   source?: 'Manual Input' | 'AI Generated' | 'Imported';
 };
 
-export interface ContentVersion {
-  id: string;
-  content: string;
-  timestamp: string;
-  source: 'manual' | 'ai' | 'imported';
-  active: boolean;
-  versionNumber: number;
-}
-
 export interface AIGenerationDropdownButtonProps {
   buttonLabel?: string;
   loadingLabel?: string;
   isGenerating?: boolean;
   disabled?: boolean;
-  options: DropdownOption[];
-  onButtonClick: () => void;
-  onOptionSelect: (option: DropdownOption) => void;
-  onClearAllVersions?: () => void;
+  options?: DropdownOption[];
+  onButtonClick?: () => void;  // Optional now, component has default behavior
+  onOptionSelect?: (option: DropdownOption) => void;
+  onClearAllVersions?: () => void; // Optional callback for external notification
   className?: string;
   showNotification?: boolean;
   selectedOptionId?: string;
@@ -70,7 +63,7 @@ export function AIGenerationDropdownButton({
   loadingLabel = "Generating...",
   isGenerating = false,
   disabled = false,
-  options,
+  options = [],
   onButtonClick,
   onOptionSelect,
   onClearAllVersions,
@@ -111,15 +104,20 @@ export function AIGenerationDropdownButton({
       const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
       const activeVersion = currentVersions.find(v => v.active);
       
-      const activeVersionContent = activeVersion?.content || "";
+      if (!activeVersion) {
+        console.warn("No active version found when clearing versions");
+        setClearConfirmationState(false);
+        setOpen(false);
+        return;
+      }
       
       const newVersion: ContentVersion = {
         id: `version-${Date.now()}`,
-        content: activeVersionContent,
+        content: activeVersion.content, // Use active version's content, not current editor content
         timestamp: new Date().toISOString(),
-        source: activeVersion?.source || 'manual',
+        source: activeVersion.source,
         active: true,
-        versionNumber: activeVersion?.versionNumber || 1
+        versionNumber: activeVersion.versionNumber
       };
       
       if (onContentVersionsChange) {
@@ -127,6 +125,9 @@ export function AIGenerationDropdownButton({
       } else {
         setInternalContentVersions([newVersion]);
       }
+      
+      // Make sure the editor content matches the active version content
+      handleEditorChange(activeVersion.content);
       
       if (onClearAllVersions) {
         onClearAllVersions();
@@ -149,9 +150,8 @@ export function AIGenerationDropdownButton({
   const handleEditorChange = (content: string) => {
     if (onEditorChange) {
       onEditorChange(content);
-    } else {
-      setInternalEditorContent(content);
     }
+    setInternalEditorContent(content);
   };
 
   const handleEditorTypeChange = (value: string) => {
@@ -210,6 +210,23 @@ export function AIGenerationDropdownButton({
     
     return newVersion;
   };
+  
+  // Default button click handler that's used if none is provided
+  const defaultButtonClickHandler = () => {
+    const currentContent = onEditorChange ? editorContent : internalEditorContent;
+    if (currentContent.trim()) {
+      addVersion(currentContent);
+      
+      // Create an AI version as a simulation
+      const aiVersion = {
+        ...addVersion(currentContent, "ai"),
+        content: `<p>AI-generated content based on: "${currentContent.substring(0, 30)}..."</p>`
+      };
+      
+      // Update the editor with the AI content
+      handleEditorChange(aiVersion.content);
+    }
+  };
 
   const getContentVersionOptions = (): DropdownOption[] => {
     const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
@@ -234,6 +251,9 @@ export function AIGenerationDropdownButton({
     const activeVersion = versions.find(v => v.active);
     return activeVersion?.id;
   };
+  
+  // Use the provided handler or fall back to the default one
+  const handleButtonClick = onButtonClick || defaultButtonClickHandler;
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -262,13 +282,7 @@ export function AIGenerationDropdownButton({
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                      const currentContent = onEditorChange ? editorContent : internalEditorContent;
-                      if (currentContent.trim()) {
-                        addVersion(currentContent);
-                      }
-                      onButtonClick();
-                    }}
+                    onClick={handleButtonClick}
                     disabled={disabled || isGenerating}
                     className="flex items-center gap-1 rounded-r-none border-r-0"
                   >
@@ -406,7 +420,7 @@ export function AIGenerationDropdownButton({
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={onButtonClick}
+                onClick={handleButtonClick}
                 disabled={disabled || isGenerating}
                 className="flex items-center gap-1 rounded-r-none border-r-0"
               >

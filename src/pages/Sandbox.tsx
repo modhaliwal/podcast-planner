@@ -42,28 +42,6 @@ const Sandbox = () => {
                 editorContentVersions={versions}
                 onContentVersionsChange={setVersions}
                 options={[]}
-                onButtonClick={() => {
-                  const newVersion = {
-                    id: `version-${Date.now()}`,
-                    content: content,
-                    timestamp: new Date().toISOString(),
-                    source: "ai" as const,
-                    active: true,
-                    versionNumber: versions.length + 1
-                  };
-                  
-                  const updatedVersions = versions.map(v => ({
-                    ...v,
-                    active: false
-                  }));
-                  
-                  setVersions([...updatedVersions, newVersion]);
-                }}
-                onOptionSelect={() => {}}
-                onClearAllVersions={() => {
-                  console.log("Clear all versions called. Content before clearing:", content);
-                  console.log("Active version content:", versions.find(v => v.active)?.content);
-                }}
                 showEditor={true}
                 contentName="Test Content"
               />
