@@ -1,6 +1,7 @@
 
 import { ReactNode } from 'react';
 import { Header } from './Header';
+import { FloatingToolbar } from '../toolbar/FloatingToolbar';
 
 interface ShellProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ export function Shell({ children }: ShellProps) {
       <main className="flex-1 pt-20 pb-12">
         {children}
       </main>
+      <FloatingToolbar />
     </div>
   );
 }
