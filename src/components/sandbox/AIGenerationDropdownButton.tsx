@@ -114,59 +114,62 @@ export function AIGenerationDropdownButton({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-[280px]">
-          <ScrollArea className="h-72">
-            <div className="pr-4"> {/* Added padding-right to prevent scrollbar from covering content */}
-              {options.map(option => (
-                <DropdownMenuItem
-                  key={option.id}
-                  onClick={() => {
-                    onOptionSelect(option);
-                    setOpen(false);
-                  }}
-                  className="py-2"
-                >
-                  <div className="flex items-center justify-between w-full gap-2">
-                    {selectedOptionId === option.id && (
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
-                    )}
-                    {option.version && (
-                      <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
-                        {option.version}
-                      </span>
-                    )}
-                    {option.date && (
-                      <span className="font-medium text-sm">
-                        {option.date}
-                      </span>
-                    )}
-                    {option.source && (
-                      <span className="text-xs text-muted-foreground italic ml-auto">
-                        {option.source}
-                      </span>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-              ))}
-              
-              {onClearAllVersions && options.length > 0 && (
-                <>
-                  <DropdownMenuSeparator className="my-2" />
+          <div className="flex flex-col h-72">
+            {/* Scrollable area for options */}
+            <ScrollArea className="flex-grow">
+              <div className="pr-4 py-1">
+                {options.map(option => (
                   <DropdownMenuItem
-                    onClick={handleClearAllVersions}
-                    className="py-2 text-destructive hover:bg-destructive/10"
+                    key={option.id}
+                    onClick={() => {
+                      onOptionSelect(option);
+                      setOpen(false);
+                    }}
+                    className="py-2"
                   >
-                    <div className="flex items-center w-full gap-2">
-                      <Trash2 className="h-4 w-4 flex-shrink-0" />
-                      {clearConfirmationState 
-                        ? <span className="font-medium">Yes, I am sure!</span>
-                        : <span>Clear all versions</span>
-                      }
+                    <div className="flex items-center justify-between w-full gap-2">
+                      {selectedOptionId === option.id && (
+                        <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
+                      )}
+                      {option.version && (
+                        <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
+                          {option.version}
+                        </span>
+                      )}
+                      {option.date && (
+                        <span className="font-medium text-sm">
+                          {option.date}
+                        </span>
+                      )}
+                      {option.source && (
+                        <span className="text-xs text-muted-foreground italic ml-auto">
+                          {option.source}
+                        </span>
+                      )}
                     </div>
                   </DropdownMenuItem>
-                </>
-              )}
-            </div>
-          </ScrollArea>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            {/* Fixed footer with clear option */}
+            {onClearAllVersions && options.length > 0 && (
+              <div className="border-t mt-auto sticky bottom-0 bg-popover">
+                <DropdownMenuItem
+                  onClick={handleClearAllVersions}
+                  className="py-2 text-destructive hover:bg-destructive/10"
+                >
+                  <div className="flex items-center w-full gap-2">
+                    <Trash2 className="h-4 w-4 flex-shrink-0" />
+                    {clearConfirmationState 
+                      ? <span className="font-medium">Yes, I am sure!</span>
+                      : <span>Clear all versions</span>
+                    }
+                  </div>
+                </DropdownMenuItem>
+              </div>
+            )}
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
