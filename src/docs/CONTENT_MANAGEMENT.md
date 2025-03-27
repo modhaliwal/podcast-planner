@@ -44,6 +44,43 @@ Components follow a hierarchical structure:
 - Section components organize related form fields
 - Field components are the individual input elements
 
+## List Structure Pattern
+
+We use a consistent pattern for list views (Episodes, Guests) throughout the application:
+
+### 1. Page Component
+- Acts as the main container (e.g., `Episodes.tsx`, `Guests.tsx`)
+- Manages state, filtering, and data fetching
+- Houses all other components
+
+### 2. Header Component
+- Displays the page title, subtitle, and primary actions
+- Contains refresh and create/add actions
+- Examples: `EpisodesHeader`, `GuestHeader`
+
+### 3. Controls Component
+- Manages user interactions for filtering and viewing content
+- Contains search input, status filters, and view toggles
+- Examples: `EpisodesSearchFilter`, `GuestControls`
+
+### 4. Content Component
+- Handles conditional rendering based on data state:
+  - Loading state (shows loading indicator)
+  - Empty state (shows empty state message with action)
+  - Content display (shows actual list or cards)
+- Examples: `EpisodesContent`, `GuestContent`
+
+### 5. List/Card Components
+- Pure presentational components that render the actual data
+- No conditional logic - only display the provided data
+- Examples: `EpisodesList`, `GuestList`, `GuestCard`
+
+This pattern ensures:
+- Clear separation of concerns
+- Consistent user experience across different sections
+- Reusable components for different data types
+- Easier maintenance and feature additions
+
 ## Saving Convention
 
 When saving content:
