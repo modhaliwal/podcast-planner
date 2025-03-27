@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { AIGenerationDropdownButton, DropdownOption } from './AIGenerationDropdownButton';
@@ -79,6 +80,7 @@ const mockPromptOptions: DropdownOption[] = [
 export function AIButtonDemo() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showNotification, setShowNotification] = useState(true);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | undefined>(undefined);
   
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -94,16 +96,12 @@ export function AIButtonDemo() {
   };
   
   const handleOptionSelect = (option: DropdownOption) => {
-    setIsGenerating(true);
-    
-    // Simulate generation process with selected option
-    setTimeout(() => {
-      setIsGenerating(false);
-      toast({
-        title: `${option.label} Applied`,
-        description: `Content generated using the ${option.label.toLowerCase()} approach.`,
-      });
-    }, 1500);
+    // Just update the selected option, don't generate anything yet
+    setSelectedOptionId(option.id);
+    toast({
+      title: `Option Selected`,
+      description: `${option.label} has been selected. Click Generate to apply.`,
+    });
   };
   
   return (
@@ -111,7 +109,7 @@ export function AIButtonDemo() {
       <h3 className="text-lg font-medium">AI Generation with Options</h3>
       <p className="text-muted-foreground mb-4">
         This component demonstrates an AI generation button with dropdown options. 
-        Click the main button for default generation or use the dropdown for specialized options.
+        Click the main button for default generation or select an option from the dropdown and then click generate.
       </p>
       
       <div className="flex flex-col gap-4">
@@ -123,6 +121,7 @@ export function AIButtonDemo() {
           onButtonClick={handleGenerate}
           onOptionSelect={handleOptionSelect}
           showNotification={showNotification}
+          selectedOptionId={selectedOptionId}
         />
         
         <div className="flex items-center gap-2">
@@ -136,6 +135,12 @@ export function AIButtonDemo() {
             Show notification with count
           </label>
         </div>
+        
+        {selectedOptionId && (
+          <div className="text-sm text-muted-foreground">
+            Selected option: {mockPromptOptions.find(opt => opt.id === selectedOptionId)?.label}
+          </div>
+        )}
       </div>
     </div>
   );

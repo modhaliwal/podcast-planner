@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Sparkles, ChevronDown } from "lucide-react";
+import { Sparkles, ChevronDown, Check } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ export interface AIGenerationDropdownButtonProps {
   onOptionSelect: (option: DropdownOption) => void;
   className?: string;
   showNotification?: boolean;
+  selectedOptionId?: string;
 }
 
 /**
@@ -49,6 +50,7 @@ export function AIGenerationDropdownButton({
   onOptionSelect,
   className,
   showNotification = false,
+  selectedOptionId,
 }: AIGenerationDropdownButtonProps) {
   // State to manage the dropdown open state
   const [open, setOpen] = useState(false);
@@ -95,6 +97,9 @@ export function AIGenerationDropdownButton({
                 className="py-2"
               >
                 <div className="flex items-center justify-between w-full gap-2">
+                  {selectedOptionId === option.id && (
+                    <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
+                  )}
                   {option.version && (
                     <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
                       {option.version}
