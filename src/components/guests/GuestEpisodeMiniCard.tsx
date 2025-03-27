@@ -37,7 +37,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
         )}>
           <Calendar className="h-4 w-4" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 w-full">
           <div className="font-medium text-sm truncate">#{episode.episodeNumber} {episode.title}</div>
           <div className="flex items-center text-xs text-muted-foreground">
             <span className="capitalize">{episode.status}</span>
