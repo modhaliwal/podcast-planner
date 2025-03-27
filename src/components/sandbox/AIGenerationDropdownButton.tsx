@@ -100,6 +100,8 @@ export function AIGenerationDropdownButton({
   const contentEditedAfterAIGeneration = useRef(false);
   // Reference to the last AI-generated content
   const lastAIGeneratedContent = useRef<string | null>(null);
+  // Track if we're currently processing AI generation
+  const isProcessingAIGeneration = useRef(false);
 
   useEffect(() => {
     if (editorContentVersions.length > 0) {
@@ -131,6 +133,11 @@ export function AIGenerationDropdownButton({
           setInternalContentVersions([initialVersion]);
         }
       }
+      return;
+    }
+
+    // Skip version creation during AI generation process
+    if (isProcessingAIGeneration.current) {
       return;
     }
 
@@ -287,6 +294,9 @@ export function AIGenerationDropdownButton({
 
   // Generate AI content and create a new version
   const handleAIGeneration = () => {
+    // Set flag to prevent creating duplicate versions
+    isProcessingAIGeneration.current = true;
+    
     const currentContent = onEditorChange ? editorContent : internalEditorContent;
     
     // For demo purposes, we'll just append "AI-generated" to the content
@@ -307,6 +317,11 @@ export function AIGenerationDropdownButton({
     
     // Reset the tracking flag for edits after AI generation
     contentEditedAfterAIGeneration.current = false;
+    
+    // Reset processing flag after a short delay to ensure all state updates are complete
+    setTimeout(() => {
+      isProcessingAIGeneration.current = false;
+    }, 100);
   };
   
   const defaultButtonClickHandler = () => {
