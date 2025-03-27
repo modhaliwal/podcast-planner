@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
 import { guestStatusColors } from "@/lib/statusColors";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GuestListProps {
   guests: Guest[];
@@ -17,6 +18,7 @@ interface GuestListProps {
 
 export function GuestList({ guests }: GuestListProps) {
   const { episodes } = useAuth();
+  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-4">
@@ -85,8 +87,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links - positioned in the horizontal middle */}
-                <div className="flex items-center mx-4">
+                {/* Social links - hidden on smaller screens but centered when visible */}
+                <div className="hidden md:flex items-center justify-center flex-grow mx-8">
                   <div className="flex items-center space-x-1">
                     {guest.socialLinks.twitter && (
                       <a 
@@ -155,8 +157,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </div>
                 
-                {/* Latest episode info */}
-                <div className="min-w-[280px]">
+                {/* Latest episode info - hidden on smaller screens */}
+                <div className="hidden lg:block min-w-[280px]">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (

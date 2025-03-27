@@ -18,7 +18,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
   };
 
   return (
-    <div className="flex flex-col bg-card border rounded-md p-2.5 shadow-sm">
+    <div className="flex flex-col bg-card border rounded-md p-2.5 shadow-sm w-full">
       <div className="flex items-center gap-2">
         <div className={cn(
           "h-8 w-8 rounded-full flex items-center justify-center",
@@ -26,11 +26,11 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
         )}>
           <Calendar className="h-4 w-4" />
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="font-medium text-sm">Episode #{episode.episodeNumber}</span>
             {episode.episodeNumber !== Number(episode.title.match(/#(\d+)/)?.[1]) && (
-              <span className="text-xs text-muted-foreground">({episode.title})</span>
+              <span className="text-xs text-muted-foreground truncate">({episode.title})</span>
             )}
           </div>
           <div className="flex items-center text-xs text-muted-foreground">
