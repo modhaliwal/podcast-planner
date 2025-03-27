@@ -2,7 +2,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PenLine, Calendar, Users } from 'lucide-react';
+import { PenLine, Calendar as CalendarIcon, Users } from 'lucide-react';
 import { BasicFields } from './BasicFields';
 import { FormField } from '@/components/ui/form';
 import { GuestSelector } from './GuestComponents/GuestSelector';
@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 
 interface PlanningSectionProps {
@@ -63,7 +64,7 @@ export function PlanningSection({ form, guests }: PlanningSectionProps) {
         {/* Schedule Information */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
             Schedule
           </h3>
           
@@ -88,7 +89,7 @@ export function PlanningSection({ form, guests }: PlanningSectionProps) {
                         ) : (
                           <span>Pick a date</span>
                         )}
-                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -128,7 +129,7 @@ export function PlanningSection({ form, guests }: PlanningSectionProps) {
                         ) : (
                           <span>Pick a date</span>
                         )}
-                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
