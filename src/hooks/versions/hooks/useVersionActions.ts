@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "../utils/versionNumberUtils";
+import { isSignificantChange } from "../utils/versionCreation";
 
 /**
  * Hook that provides actions for managing versions
@@ -44,7 +45,7 @@ export function useVersionActions(
     
     // Only create a new version if content has changed significantly from active version
     if (activeVersion && content !== activeVersion.content) {
-      // Check if the change is significant (more than just whitespace or minor edits)
+      // Check if the change is significant using the utility function
       const contentChanged = isSignificantChange(content, activeVersion.content);
       
       if (contentChanged) {
@@ -77,26 +78,6 @@ export function useVersionActions(
       setPreviousContent(content);
     }
   }, [content, versions, activeVersionId, previousContent, onVersionsChange, setActiveVersionId, setPreviousContent]);
-
-  // Helper function to determine if a change is significant
-  const isSignificantChange = (newContent: string, oldContent: string): boolean => {
-    // If they're identical, no change
-    if (newContent === oldContent) return false;
-    
-    // Always consider it significant if lengths differ by more than a small amount
-    const lengthDifference = Math.abs(newContent.length - oldContent.length);
-    if (lengthDifference > 10) return true;
-    
-    // Normalize whitespace
-    const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
-    const normalizedOld = oldContent.replace(/\s+/g, ' ').trim();
-    
-    // If only whitespace changed, not significant
-    if (normalizedNew === normalizedOld) return false;
-    
-    // Consider significant if more than minor whitespace changes
-    return true;
-  };
 
   // Maps content changes to handleEditorBlur for backward compatibility
   const handleContentChange = useCallback(() => {

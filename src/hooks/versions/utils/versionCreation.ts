@@ -6,6 +6,7 @@ import { UseFormReturn, Path } from "react-hook-form";
 
 /**
  * Helper function to determine if a change is significant
+ * Used across the app to prevent creating unnecessary versions
  */
 export function isSignificantChange(newContent: string, oldContent: string): boolean {
   // If they're identical, no change
