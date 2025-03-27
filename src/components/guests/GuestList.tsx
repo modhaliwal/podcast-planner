@@ -57,7 +57,7 @@ export function GuestList({ guests }: GuestListProps) {
                   <AvatarFallback className="text-lg">{initials}</AvatarFallback>
                 </Avatar>
                 
-                {/* Guest info section - give it more priority with min-width */}
+                {/* Guest info section - non-shrinking with fixed min-width */}
                 <div className="flex-1 min-w-[200px] space-y-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-medium truncate">{guest.name}</h3>
@@ -87,9 +87,9 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links section - allow this to shrink more aggressively */}
-                <div className="hidden md:flex items-center justify-center shrink flex-grow-0 mx-auto">
-                  <div className="flex items-center space-x-1">
+                {/* Social links section - aligned to the left with better responsiveness */}
+                <div className="hidden md:block shrink ml-auto">
+                  <div className="flex items-center justify-start space-x-1">
                     {guest.socialLinks.twitter && (
                       <a 
                         href={guest.socialLinks.twitter} 
@@ -157,8 +157,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </div>
                 
-                {/* Latest episode info - allow this to shrink first */}
-                <div className="hidden lg:block shrink-0 lg:max-w-[280px] lg:min-w-[200px] w-[280px]">
+                {/* Latest episode info - shrinkable with limits */}
+                <div className="hidden lg:block shrink-0 lg:max-w-[280px] lg:min-w-[180px] w-full ml-3">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
