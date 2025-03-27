@@ -1,11 +1,10 @@
-
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { GuestCard } from '@/components/guests/GuestCard';
+import { GuestCard } from '@/components/guests/GuestListCard';
 import { EpisodeCard } from '@/components/episodes/EpisodeCard';
 
 interface StatsCardProps {
@@ -82,7 +81,7 @@ export function RecentGuests({ guests, className }: RecentGuestsProps) {
       <CardContent>
         <div className="space-y-4">
           {recentGuests.map(guest => (
-            <GuestCard key={guest.id} guest={guest} />
+            <GuestCard key={guest.id} guest={guest} episodes={[]} />
           ))}
         </div>
       </CardContent>
