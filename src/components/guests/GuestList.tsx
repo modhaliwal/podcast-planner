@@ -85,8 +85,8 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links - ensuring proper vertical and horizontal centering */}
-                <div className="flex items-center justify-center h-full">
+                {/* Social links - positioned in the horizontal middle */}
+                <div className="flex items-center mx-4">
                   <div className="flex items-center space-x-1">
                     {guest.socialLinks.twitter && (
                       <a 
