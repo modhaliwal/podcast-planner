@@ -47,8 +47,8 @@ export function GeneratorEditor({
 
   return (
     <div className="relative h-[500px] flex flex-col">
-      <ScrollArea className="flex-1 pr-4 pb-16">
-        <div className="space-y-6">
+      <ScrollArea className="pr-4 flex-1">
+        <div className="space-y-6 pb-16">
           {/* Title and basic info */}
           <div className="space-y-4">
             <div>
@@ -164,19 +164,43 @@ export function GeneratorEditor({
               />
             </div>
           </div>
-          
-          <div className="h-16"></div> {/* Add space at the bottom to ensure content doesn't get hidden behind the sticky footer */}
         </div>
       </ScrollArea>
       
       {/* Sticky action buttons */}
-      <EditorActions
-        onSave={onSave}
-        onReset={onReset}
-        onDelete={onDelete}
-        isSaving={isSaving}
-        isNewGenerator={isNewGenerator}
-      />
+      <div className="sticky bottom-0 z-10 bg-background py-3 px-4 border-t">
+        <div className="flex justify-between space-x-2">
+          <div>
+            {!isNewGenerator && (
+              <Button
+                variant="destructive"
+                onClick={onDelete}
+                disabled={isSaving}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={onReset}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={onSave}
+              disabled={isSaving}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

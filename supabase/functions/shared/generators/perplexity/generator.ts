@@ -1,3 +1,4 @@
+
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
 import { makePerplexityRequest } from './api.ts';
 import { DEFAULT_CONFIG, createConfig } from './config.ts';
@@ -52,13 +53,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     if (config.perplexityConfig?.model) {
       model = config.perplexityConfig.model;
     } else if (config.model_name) {
-      // If model_name is 'o1', convert to a valid Perplexity model
-      if (config.model_name === 'o1') {
-        model = DEFAULT_CONFIG.model;
-        console.log(`Model "o1" not supported by Perplexity, using default model ${model} instead`);
-      } else {
-        model = config.model_name;
-      }
+      model = config.model_name;
     } else {
       model = DEFAULT_CONFIG.model;
     }

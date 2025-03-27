@@ -5,9 +5,10 @@ import { PerplexityConfig } from './types.ts';
  * Default configuration for Perplexity API
  */
 export const DEFAULT_CONFIG: PerplexityConfig = {
-  model: 'sonar-small-chat',  // Updated to use a model that doesn't require response_format
+  model: 'llama-3.1-sonar-small-128k',
   temperature: 0.7,
   maxTokens: 4000,
+  responseFormat: 'markdown',
   returnImages: false,
   returnRelatedQuestions: true
 };
@@ -16,9 +17,31 @@ export const DEFAULT_CONFIG: PerplexityConfig = {
  * Creates a configuration object with custom settings
  */
 export function createConfig(customConfig: Partial<PerplexityConfig> = {}): PerplexityConfig {
-  return {
+  const config = {
     ...DEFAULT_CONFIG,
     ...customConfig
+  };
+
+  // Format the messages array from system and user prompts
+  const messages = [];
+  
+  if (customConfig.systemPrompt) {
+    messages.push({
+      role: 'system',
+      content: customConfig.systemPrompt
+    });
+  }
+  
+  if (customConfig.userPrompt) {
+    messages.push({
+      role: 'user',
+      content: customConfig.userPrompt
+    });
+  }
+  
+  return {
+    ...config,
+    messages
   };
 }
 

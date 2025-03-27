@@ -6,6 +6,7 @@ import { GeneratorEditor } from "./GeneratorEditor";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Save } from "lucide-react";
+import { EditorActions } from "./editor/EditorActions";
 
 interface GeneratorFormProps {
   editedPrompt: Partial<AIPrompt> | null;
@@ -101,7 +102,7 @@ export function GeneratorForm({
                 </div>
               </div>
               
-              {/* Use the same sticky actions component for both tabs */}
+              {/* Sticky actions bar */}
               <div className="sticky bottom-0 z-10 bg-background py-3 px-4 border-t">
                 <div className="flex justify-between space-x-2">
                   <div>
