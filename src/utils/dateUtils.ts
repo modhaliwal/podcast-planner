@@ -42,7 +42,7 @@ export const getNextEpisodeDate = (episodesCount: number): Date => {
   return targetDate;
 };
 
-// Helper function to generate time options for dropdown
+// Helper function to generate time options for dropdown - 30 minute intervals
 export const generateTimeOptions = (): string[] => {
   const options = [];
   for (let hour = 0; hour < 24; hour++) {
