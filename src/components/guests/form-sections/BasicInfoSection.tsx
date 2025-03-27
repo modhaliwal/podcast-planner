@@ -1,11 +1,10 @@
-// Import only the necessary part to fix the "success" variant error
+
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormField } from "@/components/ui/form";
-import { useEffect, useState } from "react";
-import { generateGuestBio } from "@/lib/api/guest";
+import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { FormActions } from "@/components/ui/form-actions";
 import { useFormContext } from "react-hook-form";
@@ -21,45 +20,6 @@ export function BasicInfoSection({ isSubmitting, cancelHref }: BasicInfoSectionP
   const { name: nameFieldName } = useFormField();
   const name = getValues(nameFieldName);
   const [generating, setGenerating] = useState(false);
-
-  const handleGenerateBio = async () => {
-    if (!name) {
-      toast({
-        title: "Error",
-        description: "Please enter a name to generate a bio.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setGenerating(true);
-    try {
-      const response = await generateGuestBio({ name });
-      if (response?.bio) {
-        setValue("bio", response.bio);
-        toast({
-          title: "Success",
-          description: "Bio generated successfully!",
-          variant: "success",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to generate bio.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error generating bio:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate bio.",
-        variant: "destructive",
-      });
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   return (
     <>

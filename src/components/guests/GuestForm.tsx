@@ -1,97 +1,125 @@
 
 import { useState } from "react";
-import { Guest } from "@/lib/types";
-import { Form } from "@/components/ui/form";
-import { HeadshotSection } from "./form-sections/HeadshotSection";
+import { useNavigate } from "react-router-dom";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "@/hooks/use-toast";
 import { BasicInfoSection } from "./form-sections/BasicInfoSection";
-import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
-import { 
-  GuestFormVersionsState,
-} from "./form";
-import { FormActions } from "@/components/ui/form-actions";
-import { useGuestForm } from "@/hooks/guests/useGuestForm";
+import { SocialLinksSection } from "./form-sections/SocialLinksSection";
+import { HeadshotSection } from "./form-sections/HeadshotSection";
+import { NotesSection } from "./form-sections/NotesSection";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { z } from "zod";
+import { FormProvider } from "react-hook-form";
 
-interface GuestFormProps {
-  guest: Guest;
-  onSave: (updatedGuest: Guest) => void;
-  onCancel: () => void;
-}
+// Import your schema
+const GuestFormSchema = z.object({
+  name: z.string().min(2, "Name is required"),
+  title: z.string().optional(),
+  company: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional(),
+  bio: z.string().optional(),
+  status: z.enum(["potential", "contacted", "confirmed", "appeared"]).optional(),
+  twitter: z.string().optional(),
+  facebook: z.string().optional(),
+  instagram: z.string().optional(),
+  linkedin: z.string().optional(),
+  youtube: z.string().optional(),
+  website: z.string().optional(),
+});
 
-export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
-  const { form, isSubmitting, handleSubmit, handleImageChange } = useGuestForm({
-    guest,
-    onSave,
-    onCancel
+type GuestFormValues = z.infer<typeof GuestFormSchema>;
+
+export function GuestForm({ defaultValues, onSubmit, cancelHref }: any) {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("basic");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<GuestFormValues>({
+    resolver: zodResolver(GuestFormSchema),
+    defaultValues: defaultValues || {
+      name: "",
+      title: "",
+      company: "",
+      email: "",
+      phone: "",
+      bio: "",
+      status: "potential",
+      twitter: "",
+      facebook: "",
+      instagram: "",
+      linkedin: "",
+      youtube: "",
+      website: "",
+    },
   });
 
+  const handleSubmit = async (values: GuestFormValues) => {
+    setIsSubmitting(true);
+    try {
+      await onSubmit(values);
+      toast({
+        title: "Success",
+        description: defaultValues
+          ? "Guest updated successfully!"
+          : "Guest created successfully!",
+      });
+      navigate("/guests"); // Navigate back to guests list
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <GuestFormVersionsState guest={guest}>
-        {({ 
-          bioVersions, 
-          backgroundResearchVersions, 
-          notes, 
-          backgroundResearch, 
-          setBioVersions, 
-          setBackgroundResearchVersions, 
-          setNotes, 
-          setBackgroundResearch 
-        }) => (
-          <Form {...form}>
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit(
-                  form.getValues(), 
-                  bioVersions, 
-                  backgroundResearchVersions, 
-                  notes, 
-                  backgroundResearch
-                );
-              }} 
-              className="space-y-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <HeadshotSection 
-                    initialImageUrl={guest.imageUrl}
-                    guestName={form.getValues('name')}
-                    onImageChange={handleImageChange}
-                  />
-                  
-                  <BasicInfoSection form={form} />
-                </div>
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-8">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="content">Bio & Content</TabsTrigger>
+            <TabsTrigger value="social">Social Links</TabsTrigger>
+            <TabsTrigger value="headshot">Headshot</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+          </TabsList>
 
-                <div className="space-y-4">
-                  <SocialLinksSection form={form} />
-                </div>
-              </div>
+          <TabsContent value="basic">
+            <BasicInfoSection isSubmitting={isSubmitting} cancelHref={cancelHref} />
+          </TabsContent>
 
-              <ContentSection 
-                form={form}
-                notes={notes}
-                setNotes={setNotes}
-                backgroundResearch={backgroundResearch}
-                setBackgroundResearch={setBackgroundResearch}
-                bioVersions={bioVersions}
-                backgroundResearchVersions={backgroundResearchVersions}
-                onBioVersionsChange={setBioVersions}
-                onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
-                guest={guest}
-              />
+          <TabsContent value="content">
+            <ContentSection />
+          </TabsContent>
 
-              <div className="flex justify-end space-x-2 pt-4 border-t">
-                <FormActions
-                  onCancel={onCancel}
-                  isSubmitting={isSubmitting}
-                  saveText="Save Changes"
-                />
-              </div>
-            </form>
-          </Form>
-        )}
-      </GuestFormVersionsState>
-    </div>
+          <TabsContent value="social">
+            <SocialLinksSection />
+          </TabsContent>
+
+          <TabsContent value="headshot">
+            <HeadshotSection />
+          </TabsContent>
+
+          <TabsContent value="notes">
+            <NotesSection />
+          </TabsContent>
+        </Tabs>
+      </form>
+    </FormProvider>
   );
 }

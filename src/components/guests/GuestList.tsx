@@ -1,4 +1,4 @@
-// Import only the necessary part to fix the "success" variant error
+
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -14,7 +14,6 @@ import { Guest } from "@/lib/types";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { formatDate } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
 interface GuestListProps {
@@ -29,7 +28,7 @@ export function GuestList({ guests, onDelete }: GuestListProps) {
       toast({
         title: "Success",
         description: "Guest deleted successfully",
-        variant: "success"
+        variant: "default"
       });
     }
   };
