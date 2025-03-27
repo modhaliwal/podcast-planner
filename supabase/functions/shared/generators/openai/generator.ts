@@ -1,3 +1,4 @@
+
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
 
 /**
@@ -77,8 +78,12 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
           content: userPrompt,
         },
       ],
-      temperature: DEFAULT_OPENAI_CONFIG.temperature,
     };
+    
+    // The o1 model doesn't accept temperature parameter
+    if (model !== 'o1') {
+      requestBody.temperature = DEFAULT_OPENAI_CONFIG.temperature;
+    }
     
     // Determine whether to use max_tokens or max_completion_tokens based on model
     if (model === 'o1' || model.includes('gpt-4o')) {
@@ -86,6 +91,8 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     } else {
       requestBody.max_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
     }
+    
+    console.log(`Request body for OpenAI (with model ${model}):`, JSON.stringify(requestBody));
     
     // Make the API request to OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
