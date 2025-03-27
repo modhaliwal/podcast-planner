@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2, Type, AlignLeft } from "lucide-react";
 import {
@@ -29,6 +29,16 @@ export type DropdownOption = {
   source?: 'Manual Input' | 'AI Generated' | 'Imported';
 };
 
+// Types for the content versions
+export interface ContentVersion {
+  id: string;
+  content: string;
+  timestamp: string;
+  source: 'manual' | 'ai' | 'imported';
+  active: boolean;
+  versionNumber: number;
+}
+
 // Props for the AI Generation Dropdown Button
 export interface AIGenerationDropdownButtonProps {
   buttonLabel?: string;
@@ -49,7 +59,7 @@ export interface AIGenerationDropdownButtonProps {
     promptTitle?: string;
     edgeFunctionName?: string;
   };
-  // New props for rich text editor
+  // Props for rich text editor
   editorContent?: string;
   onEditorChange?: (content: string) => void;
   showEditor?: boolean;
@@ -60,6 +70,9 @@ export interface AIGenerationDropdownButtonProps {
   contentName?: string;
   // New prop for editor type (rich text or plain text)
   editorType?: 'rich' | 'plain';
+  // New prop for content versions
+  editorContentVersions?: ContentVersion[];
+  onContentVersionsChange?: (versions: ContentVersion[]) => void;
 }
 
 /**
@@ -97,6 +110,8 @@ export function AIGenerationDropdownButton({
   editorMinHeight = 200,
   contentName,
   editorType = 'rich',
+  editorContentVersions = [],
+  onContentVersionsChange,
 }: AIGenerationDropdownButtonProps) {
   // State to manage the dropdown open state
   const [open, setOpen] = useState(false);
@@ -106,6 +121,15 @@ export function AIGenerationDropdownButton({
   const [internalEditorContent, setInternalEditorContent] = useState(editorContent);
   // State to track editor type (rich text or plain text)
   const [currentEditorType, setCurrentEditorType] = useState<'rich' | 'plain'>(editorType);
+  // Internal state for content versions if no external handler is provided
+  const [internalContentVersions, setInternalContentVersions] = useState<ContentVersion[]>(editorContentVersions);
+
+  // Update internal state when external props change
+  useEffect(() => {
+    if (editorContentVersions.length > 0) {
+      setInternalContentVersions(editorContentVersions);
+    }
+  }, [editorContentVersions]);
 
   // Handler for the clear all versions option
   const handleClearAllVersions = () => {
@@ -113,6 +137,10 @@ export function AIGenerationDropdownButton({
       // User confirmed, trigger the clear action
       if (onClearAllVersions) {
         onClearAllVersions();
+      }
+      // Also clear internal versions if we're managing them
+      if (!onContentVersionsChange) {
+        setInternalContentVersions([]);
       }
       setClearConfirmationState(false);
       setOpen(false);
@@ -139,10 +167,95 @@ export function AIGenerationDropdownButton({
     }
   };
 
+  // Handle editor type change
   const handleEditorTypeChange = (value: string) => {
     if (value) {
       setCurrentEditorType(value as 'rich' | 'plain');
     }
+  };
+
+  // Select a specific version
+  const handleSelectVersion = (version: ContentVersion) => {
+    // Set the content from the selected version
+    const newContent = version.content;
+    handleEditorChange(newContent);
+    
+    // Update the active state in versions
+    const updatedVersions = (onContentVersionsChange ? editorContentVersions : internalContentVersions).map(v => ({
+      ...v,
+      active: v.id === version.id
+    }));
+    
+    if (onContentVersionsChange) {
+      onContentVersionsChange(updatedVersions);
+    } else {
+      setInternalContentVersions(updatedVersions);
+    }
+    
+    // Close the dropdown
+    setOpen(false);
+  };
+
+  // Add a new version
+  const addVersion = (content: string, source: 'manual' | 'ai' | 'imported' = 'manual') => {
+    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    
+    // Find highest version number to increment
+    const highestVersion = currentVersions.reduce(
+      (max, v) => (v.versionNumber > max ? v.versionNumber : max), 
+      0
+    );
+    
+    // Create new version
+    const newVersion: ContentVersion = {
+      id: `version-${Date.now()}`,
+      content,
+      timestamp: new Date().toISOString(),
+      source,
+      active: true,
+      versionNumber: highestVersion + 1
+    };
+    
+    // Set all other versions as inactive
+    const updatedVersions = currentVersions.map(v => ({
+      ...v,
+      active: false
+    }));
+    
+    // Add the new version to the array
+    const newVersions = [...updatedVersions, newVersion];
+    
+    if (onContentVersionsChange) {
+      onContentVersionsChange(newVersions);
+    } else {
+      setInternalContentVersions(newVersions);
+    }
+    
+    return newVersion;
+  };
+
+  // Map content versions to dropdown options for display
+  const getContentVersionOptions = (): DropdownOption[] => {
+    const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    
+    return versions.map(version => ({
+      id: version.id,
+      label: `Version ${version.versionNumber}`,
+      version: `v${version.versionNumber}`,
+      date: new Date(version.timestamp).toLocaleString(),
+      source: version.source === 'manual' 
+        ? 'Manual Input' 
+        : version.source === 'ai' 
+          ? 'AI Generated' 
+          : 'Imported'
+    }));
+  };
+
+  // Get the ID of the active version
+  const getActiveVersionId = (): string | undefined => {
+    const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const activeVersion = versions.find(v => v.active);
+    return activeVersion?.id;
   };
 
   return (
@@ -174,7 +287,14 @@ export function AIGenerationDropdownButton({
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={onButtonClick}
+                    onClick={() => {
+                      // When generating content, potentially add a new version
+                      const currentContent = onEditorChange ? editorContent : internalEditorContent;
+                      if (currentContent.trim()) {
+                        addVersion(currentContent);
+                      }
+                      onButtonClick();
+                    }}
                     disabled={disabled || isGenerating}
                     className="flex items-center gap-1 rounded-r-none border-r-0"
                   >
@@ -229,29 +349,32 @@ export function AIGenerationDropdownButton({
                     className="px-2 rounded-l-none relative"
                   >
                     <ChevronDown className="h-4 w-4" />
-                    {showNotification && options.length > 0 && (
+                    {showNotification && (
                       <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-primary text-primary-foreground text-xs font-bold rounded-full">
-                        {options.length}
+                        {getContentVersionOptions().length}
                       </span>
                     )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-auto min-w-[280px]">
                   <div className="flex flex-col h-72">
-                    {/* Scrollable area for options */}
+                    {/* Scrollable area for content versions */}
                     <ScrollArea className="flex-grow">
                       <div className="pr-4 py-1">
-                        {options.map(option => (
+                        {getContentVersionOptions().map(option => (
                           <DropdownMenuItem
                             key={option.id}
                             onClick={() => {
-                              onOptionSelect(option);
-                              setOpen(false);
+                              const version = (onContentVersionsChange ? editorContentVersions : internalContentVersions)
+                                .find(v => v.id === option.id);
+                              if (version) {
+                                handleSelectVersion(version);
+                              }
                             }}
                             className="py-2"
                           >
                             <div className="flex items-center justify-between w-full gap-2">
-                              {selectedOptionId === option.id && (
+                              {getActiveVersionId() === option.id && (
                                 <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
                               )}
                               {option.version && (
@@ -276,7 +399,7 @@ export function AIGenerationDropdownButton({
                     </ScrollArea>
                     
                     {/* Fixed footer with clear option */}
-                    {onClearAllVersions && options.length > 0 && (
+                    {getContentVersionOptions().length > 0 && (
                       <div className="border-t mt-auto sticky bottom-0 bg-popover">
                         <DropdownMenuItem
                           onClick={handleClearAllVersions}
@@ -368,9 +491,9 @@ export function AIGenerationDropdownButton({
                 className="px-2 rounded-l-none relative"
               >
                 <ChevronDown className="h-4 w-4" />
-                {showNotification && options.length > 0 && (
+                {showNotification && getContentVersionOptions().length > 0 && (
                   <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-primary text-primary-foreground text-xs font-bold rounded-full">
-                    {options.length}
+                    {getContentVersionOptions().length}
                   </span>
                 )}
               </Button>
@@ -380,17 +503,20 @@ export function AIGenerationDropdownButton({
                 {/* Scrollable area for options */}
                 <ScrollArea className="flex-grow">
                   <div className="pr-4 py-1">
-                    {options.map(option => (
+                    {getContentVersionOptions().map(option => (
                       <DropdownMenuItem
                         key={option.id}
                         onClick={() => {
-                          onOptionSelect(option);
-                          setOpen(false);
+                          const version = (onContentVersionsChange ? editorContentVersions : internalContentVersions)
+                            .find(v => v.id === option.id);
+                          if (version) {
+                            handleSelectVersion(version);
+                          }
                         }}
                         className="py-2"
                       >
                         <div className="flex items-center justify-between w-full gap-2">
-                          {selectedOptionId === option.id && (
+                          {getActiveVersionId() === option.id && (
                             <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
                           )}
                           {option.version && (
@@ -415,7 +541,7 @@ export function AIGenerationDropdownButton({
                 </ScrollArea>
                 
                 {/* Fixed footer with clear option */}
-                {onClearAllVersions && options.length > 0 && (
+                {getContentVersionOptions().length > 0 && (
                   <div className="border-t mt-auto sticky bottom-0 bg-popover">
                     <DropdownMenuItem
                       onClick={handleClearAllVersions}
@@ -470,7 +596,7 @@ export function AIGenerationDropdownButton({
               value={onEditorChange ? editorContent : internalEditorContent}
               onChange={(e) => handleEditorChange(e.target.value)}
               placeholder={editorPlaceholder}
-              className="min-h-[300px] w-full resize-vertical"
+              className="min-h-[300px] w-full resize-none"
             />
           )}
         </div>
@@ -478,4 +604,3 @@ export function AIGenerationDropdownButton({
     </div>
   );
 }
-
