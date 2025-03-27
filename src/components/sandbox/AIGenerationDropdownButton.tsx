@@ -102,7 +102,7 @@ export function AIGenerationDropdownButton({
                     </span>
                   )}
                   {option.date && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="font-medium text-sm">
                       {option.date}
                     </span>
                   )}
