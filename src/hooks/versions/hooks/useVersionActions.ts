@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
@@ -120,7 +119,7 @@ export function useVersionActions(
     return addNewVersion(newContent, "ai");
   }, [addNewVersion]);
 
-  // Clear all versions except the currently active one, preserving its version number
+  // Clear all versions except the currently active one, preserving its version number and current editor content
   const clearAllVersions = useCallback(() => {
     // Find the active version
     const activeVersion = versions.find(v => v.id === activeVersionId);

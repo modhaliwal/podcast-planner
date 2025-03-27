@@ -5,9 +5,11 @@ import { AIButtonDemo } from '@/components/sandbox/AIButtonDemo';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import EslintRuleTest from '@/components/sandbox/EslintRuleTest';
+import { VersionTest } from '@/components/sandbox/VersionTest';
 
 const Sandbox = () => {
   const [showEslintTest, setShowEslintTest] = useState(false);
+  const [showVersionTest, setShowVersionTest] = useState(false);
   
   return (
     <Shell>
@@ -38,8 +40,8 @@ const Sandbox = () => {
               Test new features and functionality without affecting the main application.
             </p>
             <div className="p-4 bg-secondary/30 rounded-md">
-              {/* Test button for ESLint rule */}
-              <div className="mb-4">
+              {/* Test buttons */}
+              <div className="flex gap-4 mb-4">
                 <Button 
                   variant="outline"
                   onClick={() => setShowEslintTest(!showEslintTest)}
@@ -47,6 +49,16 @@ const Sandbox = () => {
                   {showEslintTest ? "Hide" : "Show"} ESLint Rule Test
                 </Button>
                 
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowVersionTest(!showVersionTest)}
+                >
+                  {showVersionTest ? "Hide" : "Show"} Version Test
+                </Button>
+              </div>
+              
+              {/* ESLint Test */}
+              {showEslintTest && (
                 <div className="mt-4 p-4 border rounded-md bg-background">
                   <p className="text-sm text-muted-foreground mb-2">
                     This component contains code that should trigger our ESLint rule.
@@ -56,14 +68,23 @@ const Sandbox = () => {
                     Run <code className="bg-muted px-1 py-0.5 rounded">npx eslint src/components/sandbox/EslintRuleTest.tsx</code> to see the ESLint errors.
                   </p>
                   
-                  {showEslintTest && <EslintRuleTest />}
+                  <EslintRuleTest />
                 </div>
-              </div>
+              )}
+              
+              {/* Version Test */}
+              {showVersionTest && (
+                <div className="mt-4 p-4 border rounded-md bg-background">
+                  <VersionTest />
+                </div>
+              )}
               
               {/* Area for testing features */}
-              <div className="text-center text-muted-foreground">
-                Implement experimental features here
-              </div>
+              {!showEslintTest && !showVersionTest && (
+                <div className="text-center text-muted-foreground">
+                  Implement experimental features here
+                </div>
+              )}
             </div>
           </div>
         </div>

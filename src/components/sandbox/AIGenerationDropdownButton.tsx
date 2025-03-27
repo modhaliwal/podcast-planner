@@ -100,30 +100,36 @@ export function AIGenerationDropdownButton({
     }
   }, [editorContentVersions]);
 
+  useEffect(() => {
+    if (editorContent !== internalEditorContent) {
+      setInternalEditorContent(editorContent);
+    }
+  }, [editorContent]);
+
   const handleClearAllVersions = () => {
     if (clearConfirmationState) {
       const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
       const activeVersion = currentVersions.find(v => v.active);
       
-      const currentDisplayedContent = onEditorChange ? editorContent : internalEditorContent;
+      const currentContent = onEditorChange ? editorContent : internalEditorContent;
       
       const newVersion: ContentVersion = {
         id: `version-${Date.now()}`,
-        content: currentDisplayedContent,
+        content: currentContent,
         timestamp: new Date().toISOString(),
         source: activeVersion?.source || 'manual',
         active: true,
         versionNumber: activeVersion?.versionNumber || 1
       };
       
-      if (onClearAllVersions) {
-        onClearAllVersions();
-      }
-      
       if (onContentVersionsChange) {
         onContentVersionsChange([newVersion]);
       } else {
         setInternalContentVersions([newVersion]);
+      }
+      
+      if (onClearAllVersions) {
+        onClearAllVersions();
       }
       
       setClearConfirmationState(false);

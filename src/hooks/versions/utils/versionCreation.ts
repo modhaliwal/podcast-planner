@@ -1,3 +1,4 @@
+
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "./versionNumberUtils";
@@ -124,7 +125,7 @@ export function addNewVersionUtil<T extends Record<string, any>>(
 
 /**
  * Clears all versions except the currently active one
- * Preserves the active version's version number and its content
+ * Preserves the active version's version number and the current content
  */
 export function clearAllVersionsUtil<T extends Record<string, any>>(
   form: UseFormReturn<T>,
@@ -143,7 +144,7 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
   // Create a new version with the current content but preserve the version number if available
   const newVersion: ContentVersion = {
     id: uuidv4(),
-    content: currentContent,
+    content: currentContent, // Critically important to use the current form content
     timestamp: new Date().toISOString(),
     source: activeVersion ? activeVersion.source : "manual",
     active: true,
@@ -156,4 +157,7 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
   
   // Update form - use proper Path<T> typing
   form.setValue(versionsFieldName as Path<T>, [newVersion] as any, { shouldDirty: true });
+  
+  // Do NOT modify the content field - leave it as is
+  // This is the key change that preserves the content
 }
