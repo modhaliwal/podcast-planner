@@ -87,37 +87,39 @@ export function AIGenerationDropdownButton({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto min-w-[280px]">
           <ScrollArea className="h-72">
-            {options.map(option => (
-              <DropdownMenuItem
-                key={option.id}
-                onClick={() => {
-                  onOptionSelect(option);
-                  setOpen(false);
-                }}
-                className="py-2"
-              >
-                <div className="flex items-center justify-between w-full gap-2">
-                  {selectedOptionId === option.id && (
-                    <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
-                  )}
-                  {option.version && (
-                    <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
-                      {option.version}
-                    </span>
-                  )}
-                  {option.date && (
-                    <span className="font-medium text-sm">
-                      {option.date}
-                    </span>
-                  )}
-                  {option.source && (
-                    <span className="text-xs text-muted-foreground italic ml-auto">
-                      {option.source}
-                    </span>
-                  )}
-                </div>
-              </DropdownMenuItem>
-            ))}
+            <div className="pr-4"> {/* Added padding-right to prevent scrollbar from covering content */}
+              {options.map(option => (
+                <DropdownMenuItem
+                  key={option.id}
+                  onClick={() => {
+                    onOptionSelect(option);
+                    setOpen(false);
+                  }}
+                  className="py-2"
+                >
+                  <div className="flex items-center justify-between w-full gap-2">
+                    {selectedOptionId === option.id && (
+                      <Check className="h-4 w-4 text-green-500 flex-shrink-0 mr-1" />
+                    )}
+                    {option.version && (
+                      <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
+                        {option.version}
+                      </span>
+                    )}
+                    {option.date && (
+                      <span className="font-medium text-sm">
+                        {option.date}
+                      </span>
+                    )}
+                    {option.source && (
+                      <span className="text-xs text-muted-foreground italic ml-auto">
+                        {option.source}
+                      </span>
+                    )}
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </div>
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
