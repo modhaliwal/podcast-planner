@@ -1,16 +1,16 @@
 
 import { useState } from 'react';
-import { GuestFilter } from '@/components/guests/GuestFilter';
-import { GuestList } from '@/components/guests/GuestList';
-import { GuestViewToggle } from '@/components/guests/GuestViewToggle';
-import { GuestSearch } from '@/components/guests/GuestSearch';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
 import { Guest } from '@/lib/types';
+import { GuestList } from '@/components/guests/GuestList';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Users } from 'lucide-react';
+import { GuestControls } from '@/components/guests/GuestControls';
 import { useGuestActions } from '@/hooks/guests/useGuestActions';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
-type ViewMode = 'list' | 'grid' | 'calendar';
+type ViewMode = 'list' | 'card';
 
 export function GuestContent() {
   const { guests, isDataLoading } = useAuth();
@@ -19,7 +19,7 @@ export function GuestContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   
-  // Filter guests based on status
+  // Filter guests based on status and search query
   const filteredGuests = guests.filter(guest => {
     // First, apply status filter
     if (statusFilter && statusFilter !== 'all') {
@@ -40,46 +40,37 @@ export function GuestContent() {
   });
   
   const handleDeleteGuest = async (guestId: string) => {
-    try {
-      const result = await handleDelete(guestId);
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: "Guest deleted successfully"
-        });
-      } else {
-        throw new Error("Failed to delete guest");
-      }
-    } catch (error) {
-      console.error("Error deleting guest:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete guest",
-        variant: "destructive"
-      });
-    }
+    await handleDelete(guestId);
   };
+  
+  if (isDataLoading) {
+    return <LoadingIndicator message="Loading guests..." />;
+  }
+  
+  if (filteredGuests.length === 0) {
+    return (
+      <EmptyState 
+        icon={<Users className="h-8 w-8 text-muted-foreground" />}
+        title="No guests found"
+        description={searchQuery ? "Try adjusting your search terms" : "Get started by adding your first guest"}
+        action={{
+          label: "Add Guest",
+          onClick: () => window.location.href = "/guests/new"
+        }}
+      />
+    );
+  }
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4">
-        <GuestSearch 
-          searchQuery={searchQuery} 
-          setSearchQuery={setSearchQuery}
-        />
-        
-        <div className="flex flex-col sm:flex-row gap-2">
-          <GuestViewToggle 
-            viewMode={viewMode as 'list' | 'card'}
-            setViewMode={(mode: 'list' | 'card') => setViewMode(mode as ViewMode)}
-          />
-          
-          <GuestFilter 
-            statusFilter={statusFilter} 
-            setStatusFilter={setStatusFilter}
-          />
-        </div>
-      </div>
+      <GuestControls
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+      />
 
       {viewMode === 'list' && (
         <GuestList 
@@ -88,17 +79,16 @@ export function GuestContent() {
         />
       )}
       
-      {viewMode === 'grid' && (
-        <div className="py-4 text-center text-muted-foreground">
-          Grid view will be implemented in a future update.
-        </div>
-      )}
-      
-      {viewMode === 'calendar' && (
-        <div className="py-4 text-center text-muted-foreground">
-          Calendar view will be implemented in a future update.
+      {viewMode === 'card' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredGuests.map(guest => (
+            <GuestCard key={guest.id} guest={guest} />
+          ))}
         </div>
       )}
     </div>
   );
 }
+
+// Import this at the top of the file
+import { GuestCard } from './GuestCard';
