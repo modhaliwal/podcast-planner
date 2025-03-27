@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { GuestList } from '@/components/guests/GuestList';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
 import { GuestCard } from './GuestCard';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'card';
@@ -41,20 +41,6 @@ export function GuestContent() {
     return <LoadingIndicator message="Loading guests..." />;
   }
   
-  if (filteredGuests.length === 0) {
-    return (
-      <EmptyState 
-        icon={<Users className="h-8 w-8 text-muted-foreground" />}
-        title="No guests found"
-        description={searchQuery ? "Try adjusting your search terms" : "Get started by adding your first guest"}
-        action={{
-          label: "Add Guest",
-          onClick: () => window.location.href = "/guests/new"
-        }}
-      />
-    );
-  }
-  
   return (
     <div className="space-y-6">
       <GuestControls
@@ -67,15 +53,58 @@ export function GuestContent() {
       />
 
       {viewMode === 'list' && (
-        <GuestList guests={filteredGuests} />
+        guests.length > 0 ? (
+          <GuestList guests={filteredGuests} />
+        ) : (
+          <div className="mt-4">
+            <EmptyState 
+              icon={<Users className="h-8 w-8 text-muted-foreground" />}
+              title="No guests added yet"
+              description="Get started by adding your first guest"
+              action={{
+                label: "Add Guest",
+                onClick: () => window.location.href = "/guests/new"
+              }}
+            />
+          </div>
+        )
       )}
       
       {viewMode === 'card' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredGuests.map(guest => (
-            <GuestCard key={guest.id} guest={guest} />
-          ))}
-        </div>
+        guests.length > 0 ? (
+          filteredGuests.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredGuests.map(guest => (
+                <GuestCard key={guest.id} guest={guest} />
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center bg-muted/30 rounded-lg border border-dashed">
+              <p className="text-muted-foreground">No guests match your current filters</p>
+              <button 
+                className="mt-2 text-primary hover:underline"
+                onClick={() => {
+                  setStatusFilter('all');
+                  setSearchQuery('');
+                }}
+              >
+                Clear filters
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="mt-4">
+            <EmptyState 
+              icon={<Users className="h-8 w-8 text-muted-foreground" />}
+              title="No guests added yet"
+              description="Get started by adding your first guest"
+              action={{
+                label: "Add Guest",
+                onClick: () => window.location.href = "/guests/new"
+              }}
+            />
+          </div>
+        )
       )}
     </div>
   );
