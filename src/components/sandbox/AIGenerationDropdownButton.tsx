@@ -158,6 +158,10 @@ export function AIGenerationDropdownButton({
                 <DropdownMenuItem
                   onClick={handleClearAllVersions}
                   className="py-2 text-destructive hover:bg-destructive/10"
+                  onSelect={(e) => {
+                    // Prevent the default behavior of closing the dropdown
+                    e.preventDefault();
+                  }}
                 >
                   <div className="flex items-center w-full gap-2">
                     <Trash2 className="h-4 w-4 flex-shrink-0" />
