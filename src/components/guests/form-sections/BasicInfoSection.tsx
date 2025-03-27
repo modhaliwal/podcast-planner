@@ -3,9 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useFormField } from "@/components/ui/form";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
 import { FormActions } from "@/components/ui/form-actions";
 import { useFormContext } from "react-hook-form";
 import { ContentGenerator } from "@/components/content/ContentGenerator";
@@ -17,9 +15,8 @@ interface BasicInfoSectionProps {
 
 export function BasicInfoSection({ isSubmitting, cancelHref }: BasicInfoSectionProps) {
   const { control, setValue, getValues } = useFormContext();
-  const { name: nameFieldName } = useFormField();
-  const name = getValues(nameFieldName);
   const [generating, setGenerating] = useState(false);
+  const name = getValues("name");
 
   return (
     <>

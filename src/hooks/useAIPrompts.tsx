@@ -48,7 +48,7 @@ export function useAIPrompts() {
     try {
       const { data, error } = await supabase
         .from('ai_prompts')
-        .insert({
+        .insert([{
           title: promptData.title || "",
           prompt_text: promptData.prompt_text || "",
           system_prompt: promptData.system_prompt,
@@ -59,7 +59,7 @@ export function useAIPrompts() {
           parameters: promptData.parameters,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        })
+        }])
         .select();
       
       if (error) throw error;
