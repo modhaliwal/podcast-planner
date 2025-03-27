@@ -32,18 +32,19 @@ const TestComponent = () => {
   ];
   
   const [editorContent, setEditorContent] = useState('<p>This is some sample content for the <strong>rich text editor</strong>.</p><p>You can now <em>resize</em> this editor to make it larger or smaller!</p><ul><li>Drag the handle below to resize</li><li>Edit the content using the toolbar</li><li>See the preview in the bottom panel</li></ul>');
+  const [editorType, setEditorType] = useState<'rich' | 'plain'>('rich');
   
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">ESLint Rule Test</h2>
       
-      <h3 className="text-lg font-medium mb-2">Resizable Rich Text Editor Component</h3>
+      <h3 className="text-lg font-medium mb-2">Resizable Text Editor Component</h3>
       <p className="text-muted-foreground mb-4">
-        This demonstrates the AIGenerationDropdownButton with a resizable rich text editor.
-        The editor starts larger by default now and can be further resized using the handle.
+        This demonstrates the AIGenerationDropdownButton with a resizable text editor that can toggle between rich text and plain text.
+        The editor starts larger by default and can be further resized using the handle.
       </p>
       
-      {/* This usage should be allowed - with resizable rich text editor */}
+      {/* This usage should be allowed - with resizable text editor */}
       <AIGenerationDropdownButton 
         options={options}
         onButtonClick={() => console.log('Button clicked')}
@@ -54,6 +55,7 @@ const TestComponent = () => {
         editorPlaceholder="Try typing some content here..."
         onClearAllVersions={() => console.log('Clear all versions')}
         contentName="Episode Introduction"
+        editorType={editorType}
         hoverCardConfig={{
           aiProvider: "OpenAI",
           promptKey: "content-generation",
@@ -73,4 +75,3 @@ const TestComponent = () => {
 };
 
 export default TestComponent;
-
