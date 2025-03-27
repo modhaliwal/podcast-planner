@@ -47,7 +47,7 @@ export default function Settings() {
               <SettingsIcon className="h-4 w-4" />
               <span>Appearance</span>
             </TabsTrigger>
-            <TabsTrigger value="ai-prompts" className="flex items-center gap-2">
+            <TabsTrigger value="ai-generators" className="flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               <span>AI Generators</span>
             </TabsTrigger>
@@ -61,7 +61,7 @@ export default function Settings() {
             <AppearanceSettings />
           </TabsContent>
           
-          <TabsContent value="ai-prompts">
+          <TabsContent value="ai-generators">
             <AIGeneratorsSettings />
           </TabsContent>
         </Tabs>

@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type AIPrompt = {
   id: string;
-  key: string;
+  key?: string;
   title: string;
   prompt_text: string;
   description?: string;
@@ -14,6 +14,8 @@ export type AIPrompt = {
   system_prompt?: string;
   context_instructions?: string;
   example_output?: string;
+  ai_model?: string;
+  parameters?: string;
 };
 
 export function useAIPrompts() {
@@ -42,6 +44,32 @@ export function useAIPrompts() {
     }
   }, []);
 
+  const createPrompt = useCallback(async (promptData: Partial<AIPrompt>) => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_prompts')
+        .insert({ 
+          ...promptData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select();
+      
+      if (error) throw error;
+      
+      await fetchPrompts(); // Refresh the prompts
+      return true;
+    } catch (error: any) {
+      console.error('Error creating AI prompt:', error);
+      toast({
+        title: "Error",
+        description: `Failed to create prompt: ${error.message}`,
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [fetchPrompts]);
+
   const updatePrompt = useCallback(async (id: string, updates: Partial<AIPrompt>) => {
     try {
       const { error } = await supabase
@@ -54,10 +82,6 @@ export function useAIPrompts() {
       
       if (error) throw error;
       
-      toast({
-        title: "Success",
-        description: "Prompt updated successfully"
-      });
       await fetchPrompts(); // Refresh the prompts
       return true;
     } catch (error: any) {
@@ -71,8 +95,34 @@ export function useAIPrompts() {
     }
   }, [fetchPrompts]);
 
+  const deletePrompt = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_prompts')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      await fetchPrompts(); // Refresh the prompts
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting AI prompt:', error);
+      toast({
+        title: "Error",
+        description: `Failed to delete prompt: ${error.message}`,
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [fetchPrompts]);
+
   const getPromptByKey = useCallback((key: string) => {
     return prompts.find(prompt => prompt.key === key);
+  }, [prompts]);
+
+  const getPromptById = useCallback((id: string) => {
+    return prompts.find(prompt => prompt.id === id);
   }, [prompts]);
 
   useEffect(() => {
@@ -83,7 +133,10 @@ export function useAIPrompts() {
     prompts,
     isLoading,
     fetchPrompts,
+    createPrompt,
     updatePrompt,
-    getPromptByKey
+    deletePrompt,
+    getPromptByKey,
+    getPromptById
   };
 }
