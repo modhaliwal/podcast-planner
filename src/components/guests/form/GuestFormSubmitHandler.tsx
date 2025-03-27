@@ -1,7 +1,5 @@
 
-import { useState } from "react";
 import { Guest, ContentVersion } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { deleteImage, isBlobUrl, uploadImage } from "@/lib/imageUpload";
 import { toast } from "@/hooks/toast";
 import { ensureVersionNumbers } from "@/hooks/versions";
@@ -21,7 +19,7 @@ interface GuestFormSubmitHandlerProps {
   onCancel: () => void;
 }
 
-export function GuestFormSubmitHandler({ 
+export async function GuestFormSubmitHandler({ 
   guest,
   isSubmitting,
   setIsSubmitting,
@@ -35,94 +33,80 @@ export function GuestFormSubmitHandler({
   onSave,
   onCancel
 }: GuestFormSubmitHandlerProps) {
-  
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
+  try {
+    let imageUrl = guest.imageUrl;
     
-    try {
-      let imageUrl = guest.imageUrl;
-      
-      if (imageFile) {
-        toast({
-          title: "Info",
-          description: "Uploading image..."
-        });
-        
-        const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
-        
-        if (uploadedUrl) {
-          if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
-            await deleteImage(imageUrl);
-          }
-          
-          imageUrl = uploadedUrl;
-          toast({
-            title: "Success",
-            description: "Image uploaded successfully"
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to upload image",
-            variant: "destructive"
-          });
-        }
-      } 
-      else if (isImageRemoved) {
-        imageUrl = null;
-      }
-      
-      // Ensure versions have active flag and version numbers
-      const processedBioVersions = ensureVersionNumbers(bioVersions);
-      const processedBackgroundVersions = ensureVersionNumbers(backgroundResearchVersions);
-      
-      const updatedGuest: Guest = {
-        ...guest,
-        name: formData.name,
-        title: formData.title,
-        company: formData.company || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        bio: formData.bio,
-        bioVersions: processedBioVersions,
-        notes: notes || undefined,
-        backgroundResearch: backgroundResearch || undefined,
-        backgroundResearchVersions: processedBackgroundVersions,
-        status: formData.status,
-        imageUrl: imageUrl as string | undefined,
-        socialLinks: {
-          twitter: formData.twitter || undefined,
-          facebook: formData.facebook || undefined,
-          linkedin: formData.linkedin || undefined,
-          instagram: formData.instagram || undefined,
-          tiktok: formData.tiktok || undefined,
-          youtube: formData.youtube || undefined,
-          website: formData.website || undefined,
-        },
-        updatedAt: new Date().toISOString(),
-      };
-
-      onSave(updatedGuest);
-    } catch (error) {
-      console.error("Error submitting form:", error);
+    if (imageFile) {
       toast({
-        title: "Error",
-        description: "Failed to save guest information",
-        variant: "destructive"
+        title: "Info",
+        description: "Uploading image..."
       });
-    } finally {
-      setIsSubmitting(false);
+      
+      const uploadedUrl = await uploadImage(imageFile, 'podcast-planner', 'headshots');
+      
+      if (uploadedUrl) {
+        if (imageUrl && !isBlobUrl(imageUrl) && uploadedUrl !== imageUrl) {
+          await deleteImage(imageUrl);
+        }
+        
+        imageUrl = uploadedUrl;
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive"
+        });
+      }
+    } 
+    else if (isImageRemoved) {
+      imageUrl = null;
     }
-  };
+    
+    // Ensure versions have active flag and version numbers
+    const processedBioVersions = ensureVersionNumbers(bioVersions);
+    const processedBackgroundVersions = ensureVersionNumbers(backgroundResearchVersions);
+    
+    const updatedGuest: Guest = {
+      ...guest,
+      name: formData.name,
+      title: formData.title,
+      company: formData.company || undefined,
+      email: formData.email || undefined,
+      phone: formData.phone || undefined,
+      bio: formData.bio,
+      bioVersions: processedBioVersions,
+      notes: notes || undefined,
+      backgroundResearch: backgroundResearch || undefined,
+      backgroundResearchVersions: processedBackgroundVersions,
+      status: formData.status,
+      imageUrl: imageUrl as string | undefined,
+      socialLinks: {
+        twitter: formData.twitter || undefined,
+        facebook: formData.facebook || undefined,
+        linkedin: formData.linkedin || undefined,
+        instagram: formData.instagram || undefined,
+        tiktok: formData.tiktok || undefined,
+        youtube: formData.youtube || undefined,
+        website: formData.website || undefined,
+      },
+      updatedAt: new Date().toISOString(),
+    };
 
-  return (
-    <div className="flex justify-end space-x-2 pt-4 border-t">
-      <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-        Cancel
-      </Button>
-      <Button type="submit" disabled={isSubmitting} onClick={handleSubmit}>
-        {isSubmitting ? "Saving..." : "Save Changes"}
-      </Button>
-    </div>
-  );
+    await onSave(updatedGuest);
+    return true;
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    toast({
+      title: "Error",
+      description: "Failed to save guest information",
+      variant: "destructive"
+    });
+    return false;
+  } finally {
+    setIsSubmitting(false);
+  }
 }

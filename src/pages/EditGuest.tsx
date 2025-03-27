@@ -6,6 +6,8 @@ import { GuestForm } from '@/components/guests/GuestForm';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
 import { useGuestData } from '@/hooks/guests';
+import { Guest } from '@/lib/types';
+import { toast } from '@/hooks/toast';
 
 const EditGuest = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,10 +23,30 @@ const EditGuest = () => {
     return <GuestNotFound />;
   }
   
-  const onSave = async (updatedGuest: any) => {
-    const result = await handleSave(updatedGuest);
-    if (result.success) {
-      navigate(`/guests/${id}`);
+  const onSave = async (updatedGuest: Guest) => {
+    try {
+      console.log("Saving guest:", updatedGuest);
+      const result = await handleSave(updatedGuest);
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Guest updated successfully"
+        });
+        navigate(`/guests/${id}`);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update guest information",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error saving guest:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
     }
   };
   

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Guest } from "@/lib/types";
 import { Form } from "@/components/ui/form";
@@ -11,7 +12,8 @@ import {
   GuestFormVersionsState,
   GuestImageState
 } from "./form";
-import { FormActions } from "@/components/ui/form-actions";
+import { Button } from "@/components/ui/button";
+import { X, SaveIcon } from "lucide-react";
 
 interface GuestFormProps {
   guest: Guest;
@@ -41,10 +43,6 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
     },
   });
 
-  const handleSubmit = async (data: any) => {
-    // This function will be handled by GuestFormSubmitHandler
-  };
-
   return (
     <div className="space-y-6">
       <GuestImageState>
@@ -59,65 +57,86 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
               setBackgroundResearchVersions, 
               setNotes, 
               setBackgroundResearch 
-            }) => (
-              <Form {...form}>
-                <form 
-                  onSubmit={form.handleSubmit(handleSubmit)} 
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <HeadshotSection 
-                        initialImageUrl={guest.imageUrl}
-                        guestName={form.getValues('name')}
-                        onImageChange={handleImageChange}
-                      />
-                      
-                      <BasicInfoSection form={form} />
+            }) => {
+              const handleSubmit = async () => {
+                setIsSubmitting(true);
+                try {
+                  const formData = form.getValues();
+                  await GuestFormSubmitHandler({
+                    guest,
+                    isSubmitting,
+                    setIsSubmitting,
+                    imageFile,
+                    isImageRemoved,
+                    bioVersions,
+                    backgroundResearchVersions,
+                    formData,
+                    notes,
+                    backgroundResearch,
+                    onSave,
+                    onCancel
+                  });
+                } catch (error) {
+                  console.error("Error submitting form:", error);
+                  setIsSubmitting(false);
+                }
+              };
+              
+              return (
+                <Form {...form}>
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSubmit();
+                    }} 
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <HeadshotSection 
+                          initialImageUrl={guest.imageUrl}
+                          guestName={form.getValues('name')}
+                          onImageChange={handleImageChange}
+                        />
+                        
+                        <BasicInfoSection form={form} />
+                      </div>
+
+                      <div className="space-y-4">
+                        <SocialLinksSection form={form} />
+                      </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <SocialLinksSection form={form} />
-                    </div>
-                  </div>
-
-                  <ContentSection 
-                    form={form}
-                    notes={notes}
-                    setNotes={setNotes}
-                    backgroundResearch={backgroundResearch}
-                    setBackgroundResearch={setBackgroundResearch}
-                    bioVersions={bioVersions}
-                    backgroundResearchVersions={backgroundResearchVersions}
-                    onBioVersionsChange={setBioVersions}
-                    onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
-                    guest={guest}
-                  />
-
-                  <FormActions
-                    onCancel={onCancel}
-                    isSubmitting={isSubmitting}
-                  />
-
-                  <div className="hidden">
-                    <GuestFormSubmitHandler
-                      guest={guest}
-                      isSubmitting={isSubmitting}
-                      setIsSubmitting={setIsSubmitting}
-                      imageFile={imageFile}
-                      isImageRemoved={isImageRemoved}
+                    <ContentSection 
+                      form={form}
+                      notes={notes}
+                      setNotes={setNotes}
+                      backgroundResearch={backgroundResearch}
+                      setBackgroundResearch={setBackgroundResearch}
                       bioVersions={bioVersions}
                       backgroundResearchVersions={backgroundResearchVersions}
-                      formData={form.getValues()}
-                      notes={notes}
-                      backgroundResearch={backgroundResearch}
-                      onSave={onSave}
-                      onCancel={onCancel}
+                      onBioVersionsChange={setBioVersions}
+                      onBackgroundResearchVersionsChange={setBackgroundResearchVersions}
+                      guest={guest}
                     />
-                  </div>
-                </form>
-              </Form>
-            )}
+
+                    <div className="flex justify-end space-x-2 pt-4 border-t">
+                      <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit"
+                        disabled={isSubmitting}
+                      >
+                        <SaveIcon className="h-4 w-4 mr-2" />
+                        {isSubmitting ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              );
+            }}
           </GuestFormVersionsState>
         )}
       </GuestImageState>
