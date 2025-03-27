@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
@@ -170,6 +169,43 @@ export function AIGenerationDropdownButton({
       addVersionToState(newVersion);
     }
   }, [editorContent, internalEditorContent, editorContentVersions, internalContentVersions, onContentVersionsChange, userIdentifier]);
+
+  // Handle editor blur - update active version content
+  const handleEditorBlur = () => {
+    // Get current versions and active version
+    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const currentContent = onEditorChange ? editorContent : internalEditorContent;
+    
+    // Find the active version
+    const activeVersionIndex = currentVersions.findIndex(v => v.active);
+    
+    if (activeVersionIndex === -1) {
+      console.warn("No active version found on blur");
+      return;
+    }
+    
+    // Skip if content hasn't changed
+    if (currentVersions[activeVersionIndex].content === currentContent) {
+      return;
+    }
+    
+    // Update the active version with current content
+    const updatedVersions = [...currentVersions];
+    updatedVersions[activeVersionIndex] = {
+      ...updatedVersions[activeVersionIndex],
+      content: currentContent,
+      // Don't update timestamp to avoid creating a sort of "subversion"
+    };
+    
+    // Update versions
+    if (onContentVersionsChange) {
+      onContentVersionsChange(updatedVersions);
+    } else {
+      setInternalContentVersions(updatedVersions);
+    }
+    
+    console.log("Updated active version content on blur");
+  };
 
   const handleClearAllVersions = () => {
     if (clearConfirmationState) {
@@ -642,6 +678,7 @@ export function AIGenerationDropdownButton({
                 <Editor
                   value={onEditorChange ? editorContent : internalEditorContent}
                   onChange={handleEditorChange}
+                  onBlur={handleEditorBlur}
                   placeholder={editorPlaceholder}
                 />
               </div>
@@ -659,6 +696,7 @@ export function AIGenerationDropdownButton({
             <Textarea
               value={onEditorChange ? editorContent : internalEditorContent}
               onChange={(e) => handleEditorChange(e.target.value)}
+              onBlur={handleEditorBlur}
               placeholder={editorPlaceholder}
               className="min-h-[300px] w-full resize-none"
             />
