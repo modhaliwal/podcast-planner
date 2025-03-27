@@ -1,20 +1,18 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Guest } from '@/lib/types';
 import { GuestList } from '@/components/guests/GuestList';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
-import { useGuestActions } from '@/hooks/guests/useGuestActions';
+import { GuestCard } from './GuestCard';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'card';
 
 export function GuestContent() {
   const { guests, isDataLoading } = useAuth();
-  const { handleDelete } = useGuestActions();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -38,10 +36,6 @@ export function GuestContent() {
     
     return true;
   });
-  
-  const handleDeleteGuest = async (guestId: string) => {
-    await handleDelete(guestId);
-  };
   
   if (isDataLoading) {
     return <LoadingIndicator message="Loading guests..." />;
@@ -73,10 +67,7 @@ export function GuestContent() {
       />
 
       {viewMode === 'list' && (
-        <GuestList 
-          guests={filteredGuests} 
-          onDelete={handleDeleteGuest} 
-        />
+        <GuestList guests={filteredGuests} />
       )}
       
       {viewMode === 'card' && (
@@ -89,6 +80,3 @@ export function GuestContent() {
     </div>
   );
 }
-
-// Import this at the top of the file
-import { GuestCard } from './GuestCard';
