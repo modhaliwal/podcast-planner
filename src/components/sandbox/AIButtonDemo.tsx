@@ -81,6 +81,7 @@ export function AIButtonDemo() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showNotification, setShowNotification] = useState(true);
   const [selectedOptionId, setSelectedOptionId] = useState<string | undefined>(undefined);
+  const [options, setOptions] = useState<DropdownOption[]>(mockPromptOptions);
   
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -104,6 +105,26 @@ export function AIButtonDemo() {
     });
   };
   
+  const handleClearAllVersions = () => {
+    // Clear the options and selected option
+    setOptions([]);
+    setSelectedOptionId(undefined);
+    toast({
+      title: "Versions Cleared",
+      description: "All versions have been cleared.",
+      variant: "destructive"
+    });
+  };
+  
+  // Function to reset the options for demo purposes
+  const resetOptions = () => {
+    setOptions(mockPromptOptions);
+    toast({
+      title: "Options Reset",
+      description: "All options have been restored for demonstration.",
+    });
+  };
+  
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">AI Generation with Options</h3>
@@ -117,9 +138,10 @@ export function AIButtonDemo() {
           buttonLabel="Generate Content"
           loadingLabel="Generating..."
           isGenerating={isGenerating}
-          options={mockPromptOptions}
+          options={options}
           onButtonClick={handleGenerate}
           onOptionSelect={handleOptionSelect}
+          onClearAllVersions={handleClearAllVersions}
           showNotification={showNotification}
           selectedOptionId={selectedOptionId}
         />
@@ -138,8 +160,17 @@ export function AIButtonDemo() {
         
         {selectedOptionId && (
           <div className="text-sm text-muted-foreground">
-            Selected option: {mockPromptOptions.find(opt => opt.id === selectedOptionId)?.label}
+            Selected option: {options.find(opt => opt.id === selectedOptionId)?.label}
           </div>
+        )}
+        
+        {options.length === 0 && (
+          <button 
+            onClick={resetOptions}
+            className="text-sm text-blue-500 hover:underline"
+          >
+            Reset options for demo
+          </button>
         )}
       </div>
     </div>

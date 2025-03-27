@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Sparkles, ChevronDown, Check } from "lucide-react";
+import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ export interface AIGenerationDropdownButtonProps {
   options: DropdownOption[];
   onButtonClick: () => void;
   onOptionSelect: (option: DropdownOption) => void;
+  onClearAllVersions?: () => void;
   className?: string;
   showNotification?: boolean;
   selectedOptionId?: string;
@@ -48,12 +50,38 @@ export function AIGenerationDropdownButton({
   options,
   onButtonClick,
   onOptionSelect,
+  onClearAllVersions,
   className,
   showNotification = false,
   selectedOptionId,
 }: AIGenerationDropdownButtonProps) {
   // State to manage the dropdown open state
   const [open, setOpen] = useState(false);
+  // State to track if user has clicked "Clear all versions" once
+  const [clearConfirmationState, setClearConfirmationState] = useState(false);
+
+  // Handler for the clear all versions option
+  const handleClearAllVersions = () => {
+    if (clearConfirmationState) {
+      // User confirmed, trigger the clear action
+      if (onClearAllVersions) {
+        onClearAllVersions();
+      }
+      setClearConfirmationState(false);
+      setOpen(false);
+    } else {
+      // First click, show confirmation
+      setClearConfirmationState(true);
+    }
+  };
+
+  // Reset confirmation state when dropdown closes
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setClearConfirmationState(false);
+    }
+  };
 
   return (
     <div className={cn("flex", className)}>
@@ -68,7 +96,7 @@ export function AIGenerationDropdownButton({
         <Sparkles className="h-4 w-4" />
         {isGenerating ? loadingLabel : buttonLabel}
       </Button>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenu open={open} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
@@ -119,6 +147,24 @@ export function AIGenerationDropdownButton({
                   </div>
                 </DropdownMenuItem>
               ))}
+              
+              {onClearAllVersions && options.length > 0 && (
+                <>
+                  <DropdownMenuSeparator className="my-2" />
+                  <DropdownMenuItem
+                    onClick={handleClearAllVersions}
+                    className="py-2 text-destructive hover:bg-destructive/10"
+                  >
+                    <div className="flex items-center w-full gap-2">
+                      <Trash2 className="h-4 w-4 flex-shrink-0" />
+                      {clearConfirmationState 
+                        ? <span className="font-medium">Yes, I am sure!</span>
+                        : <span>Clear all versions</span>
+                      }
+                    </div>
+                  </DropdownMenuItem>
+                </>
+              )}
             </div>
           </ScrollArea>
         </DropdownMenuContent>
