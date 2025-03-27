@@ -50,7 +50,7 @@ export function GuestList({ guests }: GuestListProps) {
         return (
           <Link to={`/guests/${guest.id}`} key={guest.id}>
             <Card className="p-4 hover:bg-muted/40 transition-colors">
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3 flex-wrap md:flex-nowrap">
                 {/* Avatar section - fixed width */}
                 <Avatar className="h-16 w-16 shrink-0 border">
                   <AvatarImage src={guest.imageUrl} alt={guest.name} />
@@ -58,7 +58,7 @@ export function GuestList({ guests }: GuestListProps) {
                 </Avatar>
                 
                 {/* Guest info section - non-shrinking with fixed min-width */}
-                <div className="flex-1 min-w-[200px] space-y-1">
+                <div className="flex-1 min-w-[180px] space-y-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-medium truncate">{guest.name}</h3>
                     
@@ -87,9 +87,9 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links section - directly adjacent to guest info */}
-                <div className="hidden md:flex items-center shrink-0 ml-0">
-                  <div className="flex items-center gap-1">
+                {/* Social links section - allow to wrap onto two lines as needed */}
+                <div className="hidden sm:flex items-center shrink-0 ml-0">
+                  <div className="flex flex-wrap items-center gap-1 max-w-[150px]">
                     {guest.socialLinks.twitter && (
                       <a 
                         href={guest.socialLinks.twitter} 
@@ -157,11 +157,11 @@ export function GuestList({ guests }: GuestListProps) {
                   </div>
                 </div>
                 
-                {/* Flexible spacing to push episode card to the right */}
-                <div className="flex-1"></div>
+                {/* Flexible spacer - grows to fill available space */}
+                <div className="hidden md:block flex-1"></div>
                 
-                {/* Latest episode info - shrinkable with limits */}
-                <div className="hidden lg:block shrink-0 lg:max-w-[280px] lg:min-w-[180px] w-auto">
+                {/* Latest episode info - responsive with breakpoints */}
+                <div className="hidden md:block shrink-0 md:max-w-[280px] md:min-w-[180px] w-auto">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
