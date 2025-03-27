@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 
 // Types for the dropdown options
 export type DropdownOption = {
@@ -93,7 +92,7 @@ export function AIGenerationDropdownButton({
                   onOptionSelect(option);
                   setOpen(false);
                 }}
-                className="flex flex-col items-start py-2"
+                className="py-2"
               >
                 <div className="flex items-center justify-between w-full gap-2">
                   {option.version && (
