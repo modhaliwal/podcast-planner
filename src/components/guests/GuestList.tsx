@@ -48,7 +48,7 @@ export function GuestList({ guests }: GuestListProps) {
                   <AvatarFallback className="text-lg">{initials}</AvatarFallback>
                 </Avatar>
                 
-                {/* Main content section */}
+                {/* Guest info section */}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
                     <div>
@@ -57,69 +57,6 @@ export function GuestList({ guests }: GuestListProps) {
                         {guest.title}
                         {guest.company && <span>, {guest.company}</span>}
                       </p>
-                      
-                      {/* Social links - Moved here to be closer to the middle */}
-                      <div className="flex mt-2 space-x-3">
-                        {guest.socialLinks.twitter && (
-                          <a 
-                            href={guest.socialLinks.twitter} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Twitter className="h-4 w-4" />
-                          </a>
-                        )}
-                        
-                        {guest.socialLinks.linkedin && (
-                          <a 
-                            href={guest.socialLinks.linkedin} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Linkedin className="h-4 w-4" />
-                          </a>
-                        )}
-                        
-                        {guest.socialLinks.instagram && (
-                          <a 
-                            href={guest.socialLinks.instagram} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Instagram className="h-4 w-4" />
-                          </a>
-                        )}
-                        
-                        {guest.socialLinks.youtube && (
-                          <a 
-                            href={guest.socialLinks.youtube} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Youtube className="h-4 w-4" />
-                          </a>
-                        )}
-                        
-                        {guest.socialLinks.website && (
-                          <a 
-                            href={guest.socialLinks.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Globe className="h-4 w-4" />
-                          </a>
-                        )}
-                      </div>
                     </div>
                     
                     {/* Status badge */}
@@ -127,6 +64,69 @@ export function GuestList({ guests }: GuestListProps) {
                       <Badge className="ml-auto">{guest.status}</Badge>
                     )}
                   </div>
+                </div>
+                
+                {/* Social links - Moved to middle section */}
+                <div className="flex space-x-3 items-center">
+                  {guest.socialLinks.twitter && (
+                    <a 
+                      href={guest.socialLinks.twitter} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Twitter className="h-4 w-4" />
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.linkedin && (
+                    <a 
+                      href={guest.socialLinks.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Linkedin className="h-4 w-4" />
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.instagram && (
+                    <a 
+                      href={guest.socialLinks.instagram} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Instagram className="h-4 w-4" />
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.youtube && (
+                    <a 
+                      href={guest.socialLinks.youtube} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Youtube className="h-4 w-4" />
+                    </a>
+                  )}
+                  
+                  {guest.socialLinks.website && (
+                    <a 
+                      href={guest.socialLinks.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Globe className="h-4 w-4" />
+                    </a>
+                  )}
                 </div>
                 
                 {/* Latest episode info */}
