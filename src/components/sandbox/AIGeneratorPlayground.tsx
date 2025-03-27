@@ -136,6 +136,10 @@ export function AIGeneratorPlayground() {
       return;
     }
 
+    // Determine provider and model based on settings
+    const provider = determineProvider(selectedGenerator);
+    const model = determineModel(selectedGenerator);
+
     // Create preview data
     const preview = {
       request: {
@@ -150,6 +154,10 @@ export function AIGeneratorPlayground() {
         prompt_text: selectedGenerator.prompt_text,
         context_instructions: selectedGenerator.context_instructions,
       },
+      execution: {
+        provider: provider,
+        model: model,
+      },
       processedPrompt: processPromptWithParameters(selectedGenerator.prompt_text, parameters)
     };
 
@@ -160,6 +168,30 @@ export function AIGeneratorPlayground() {
       title: "Prompt preview generated",
       description: "You can see how the request will be processed"
     });
+  };
+
+  // Helper function to determine the AI provider based on generator settings
+  const determineProvider = (generator: any): string => {
+    // Logic to determine provider based on generator settings
+    if (generator.ai_model === 'perplexity') return 'Perplexity AI';
+    if (generator.ai_model === 'claude') return 'Anthropic Claude';
+    if (generator.ai_model === 'gemini') return 'Google Gemini';
+    // Default to OpenAI
+    return 'OpenAI';
+  };
+
+  // Helper function to determine the model based on generator settings
+  const determineModel = (generator: any): string => {
+    // Return specific model if defined
+    if (generator.model_name) return generator.model_name;
+    
+    // Model based on the provider
+    if (generator.ai_model === 'perplexity') return 'llama-3.1-sonar-small-128k';
+    if (generator.ai_model === 'claude') return 'claude-3-opus';
+    if (generator.ai_model === 'gemini') return 'gemini-pro';
+    
+    // Default OpenAI model
+    return 'gpt-3.5-turbo';
   };
 
   // Simple function to replace parameters in the prompt text
@@ -333,6 +365,18 @@ export function AIGeneratorPlayground() {
                             </pre>
                           </div>
                         )}
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md p-4">
+                      <h3 className="text-lg font-medium mb-2">AI Provider Information</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="font-semibold">Provider:</span> {promptPreview.execution.provider}
+                        </div>
+                        <div>
+                          <span className="font-semibold">Model:</span> {promptPreview.execution.model}
+                        </div>
                       </div>
                     </div>
                     
