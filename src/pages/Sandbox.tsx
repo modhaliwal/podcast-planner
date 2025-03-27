@@ -2,8 +2,13 @@
 import { Shell } from '@/components/layout/Shell';
 import { Beaker } from 'lucide-react';
 import { AIButtonDemo } from '@/components/sandbox/AIButtonDemo';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import EslintRuleTest from '@/components/sandbox/EslintRuleTest';
 
 const Sandbox = () => {
+  const [showEslintTest, setShowEslintTest] = useState(false);
+  
   return (
     <Shell>
       <div className="page-container">
@@ -33,6 +38,28 @@ const Sandbox = () => {
               Test new features and functionality without affecting the main application.
             </p>
             <div className="p-4 bg-secondary/30 rounded-md">
+              {/* Test button for ESLint rule */}
+              <div className="mb-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowEslintTest(!showEslintTest)}
+                >
+                  {showEslintTest ? "Hide" : "Show"} ESLint Rule Test
+                </Button>
+                
+                <div className="mt-4 p-4 border rounded-md bg-background">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    This component contains code that should trigger our ESLint rule.
+                    Open the browser console to see the errors.
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Run <code className="bg-muted px-1 py-0.5 rounded">npx eslint src/components/sandbox/EslintRuleTest.tsx</code> to see the ESLint errors.
+                  </p>
+                  
+                  {showEslintTest && <EslintRuleTest />}
+                </div>
+              </div>
+              
               {/* Area for testing features */}
               <div className="text-center text-muted-foreground">
                 Implement experimental features here
