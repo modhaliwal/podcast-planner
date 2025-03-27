@@ -128,16 +128,19 @@ export function useVersionActions(
     // Create a new version with the current content but preserve version number
     const newVersion: ContentVersion = {
       id: uuidv4(),
-      content: content, // Use the current content to preserve what's displayed
+      content: content, // Always use the current content to preserve what's displayed
       timestamp: new Date().toISOString(),
-      source: "manual",
+      source: activeVersion ? activeVersion.source : "manual",
       active: true,
       versionNumber: activeVersion ? activeVersion.versionNumber : 1
     };
     
+    // Update state with just this single version
     onVersionsChange([newVersion]);
     setActiveVersionId(newVersion.id);
     setPreviousContent(content);
+    
+    // No need to call onContentChange since we're preserving the existing content
   }, [content, versions, activeVersionId, onVersionsChange, setActiveVersionId, setPreviousContent]);
 
   return {

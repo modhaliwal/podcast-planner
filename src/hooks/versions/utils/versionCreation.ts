@@ -145,7 +145,7 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
     id: uuidv4(),
     content: currentContent,
     timestamp: new Date().toISOString(),
-    source: "manual",
+    source: activeVersion ? activeVersion.source : "manual",
     active: true,
     versionNumber: activeVersion ? activeVersion.versionNumber : 1
   };
