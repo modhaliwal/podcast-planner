@@ -15,11 +15,6 @@ export function GuestViewHeader({
 }: GuestViewHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <div>
-        <h1 className="section-title">{guest.name}</h1>
-        <p className="section-subtitle">{guest.title}</p>
-      </div>
-      
       <div className="flex space-x-2 mt-4 md:mt-0">
         <Button 
           variant="outline" 
