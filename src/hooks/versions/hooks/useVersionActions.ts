@@ -33,7 +33,7 @@ export function useVersionActions(
     setPreviousContent(version.content);
   }, [versions, onVersionsChange, onContentChange, setActiveVersionId, setPreviousContent]);
 
-  // Handle editor blur - create a new version if content has changed
+  // Handle editor blur - create a new version ONLY if content has changed significantly
   const handleEditorBlur = useCallback(() => {
     if (!content.trim()) return;
     
@@ -42,31 +42,61 @@ export function useVersionActions(
     
     const activeVersion = versions.find(v => v.id === activeVersionId);
     
-    // Only create a new version if content has changed from active version
+    // Only create a new version if content has changed significantly from active version
     if (activeVersion && content !== activeVersion.content) {
-      const nextVersionNumber = findHighestVersionNumber(versions) + 1;
+      // Check if the change is significant (more than just whitespace or minor edits)
+      const contentChanged = isSignificantChange(content, activeVersion.content);
       
-      const newVersion: ContentVersion = {
-        id: uuidv4(),
-        content: content,
-        timestamp: new Date().toISOString(),
-        source: "manual",
-        active: true,
-        versionNumber: nextVersionNumber
-      };
+      if (contentChanged) {
+        const nextVersionNumber = findHighestVersionNumber(versions) + 1;
+        
+        const newVersion: ContentVersion = {
+          id: uuidv4(),
+          content: content,
+          timestamp: new Date().toISOString(),
+          source: "manual",
+          active: true,
+          versionNumber: nextVersionNumber
+        };
+        
+        // Remove active flag from other versions
+        const updatedVersions = versions.map(v => ({
+          ...v,
+          active: false
+        }));
+        
+        const newVersions = [...updatedVersions, newVersion];
+        onVersionsChange(newVersions);
+        setActiveVersionId(newVersion.id);
+      }
       
-      // Remove active flag from other versions
-      const updatedVersions = versions.map(v => ({
-        ...v,
-        active: false
-      }));
-      
-      const newVersions = [...updatedVersions, newVersion];
-      onVersionsChange(newVersions);
-      setActiveVersionId(newVersion.id);
+      // Always update previousContent to avoid repeated version creation
+      setPreviousContent(content);
+    } else {
+      // No active version or no change, just update previous content
       setPreviousContent(content);
     }
   }, [content, versions, activeVersionId, previousContent, onVersionsChange, setActiveVersionId, setPreviousContent]);
+
+  // Helper function to determine if a change is significant
+  const isSignificantChange = (newContent: string, oldContent: string): boolean => {
+    // If they're identical, no change
+    if (newContent === oldContent) return false;
+    
+    // Always consider it significant if lengths differ by more than a small amount
+    const lengthDifference = Math.abs(newContent.length - oldContent.length);
+    if (lengthDifference > 10) return true;
+    
+    // Normalize whitespace
+    const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
+    const normalizedOld = oldContent.replace(/\s+/g, ' ').trim();
+    
+    // If only whitespace changed, not significant
+    if (normalizedNew === normalizedOld) return false;
+    
+    // Consider significant if more than minor whitespace changes
+    return true;
+  };
 
   // Maps content changes to handleEditorBlur for backward compatibility
   const handleContentChange = useCallback(() => {

@@ -5,6 +5,28 @@ import { findHighestVersionNumber } from "./versionNumberUtils";
 import { UseFormReturn, Path } from "react-hook-form";
 
 /**
+ * Helper function to determine if a change is significant
+ */
+export function isSignificantChange(newContent: string, oldContent: string): boolean {
+  // If they're identical, no change
+  if (newContent === oldContent) return false;
+  
+  // Always consider it significant if lengths differ by more than a small amount
+  const lengthDifference = Math.abs(newContent.length - oldContent.length);
+  if (lengthDifference > 10) return true;
+  
+  // Normalize whitespace
+  const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
+  const normalizedOld = oldContent.replace(/\s+/g, ' ').trim();
+  
+  // If only whitespace changed, not significant
+  if (normalizedNew === normalizedOld) return false;
+  
+  // Consider significant if more than minor whitespace changes
+  return true;
+}
+
+/**
  * Creates a new version based on the current content if it has changed
  */
 export function createVersionFromContent<T extends Record<string, any>>(
@@ -25,7 +47,7 @@ export function createVersionFromContent<T extends Record<string, any>>(
   const activeVersion = versions.find(v => v.id === activeVersionId);
   
   // Only create a new version if content has changed from active version
-  if (activeVersion && currentContent !== activeVersion.content) {
+  if (activeVersion && isSignificantChange(currentContent, activeVersion.content)) {
     const nextVersionNumber = findHighestVersionNumber(versions) + 1;
     
     const newVersion: ContentVersion = {
@@ -130,4 +152,3 @@ export function clearAllVersionsUtil<T extends Record<string, any>>(
   // Update form - use proper Path<T> typing
   form.setValue(versionsFieldName as Path<T>, [newVersion] as any, { shouldDirty: true });
 }
-
