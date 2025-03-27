@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
 import {
@@ -57,6 +58,8 @@ export interface AIGenerationDropdownButtonProps {
   editorType?: 'rich' | 'plain';
   editorContentVersions?: ContentVersionType[];
   onContentVersionsChange?: (versions: ContentVersionType[]) => void;
+  // New prop for user identifier
+  userIdentifier?: string;
 }
 
 export function AIGenerationDropdownButton({
@@ -81,11 +84,22 @@ export function AIGenerationDropdownButton({
   editorType = 'rich',
   editorContentVersions = [],
   onContentVersionsChange,
+  // Default to 'user' if no identifier provided
+  userIdentifier = 'user',
 }: AIGenerationDropdownButtonProps) {
   const [open, setOpen] = useState(false);
   const [clearConfirmationState, setClearConfirmationState] = useState(false);
   const [internalEditorContent, setInternalEditorContent] = useState(editorContent);
   const [internalContentVersions, setInternalContentVersions] = useState<ContentVersionType[]>(editorContentVersions);
+  
+  // Track if this is the initial load
+  const hasInitialized = useRef(false);
+  // Track if content has been edited after initial load
+  const contentEditedAfterInitialLoad = useRef(false);
+  // Track if content has been edited after AI generation
+  const contentEditedAfterAIGeneration = useRef(false);
+  // Reference to the last AI-generated content
+  const lastAIGeneratedContent = useRef<string | null>(null);
 
   useEffect(() => {
     if (editorContentVersions.length > 0) {
@@ -98,6 +112,57 @@ export function AIGenerationDropdownButton({
       setInternalEditorContent(editorContent);
     }
   }, [editorContent]);
+
+  // Handle initialization and track when content changes
+  useEffect(() => {
+    // Only run this once after first render
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      
+      // Initialize with an active version if none exists
+      const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+      if (currentVersions.length === 0 && editorContent.trim()) {
+        console.log("Initializing with first version");
+        const initialVersion = createNewVersion(editorContent, userIdentifier);
+        
+        if (onContentVersionsChange) {
+          onContentVersionsChange([initialVersion]);
+        } else {
+          setInternalContentVersions([initialVersion]);
+        }
+      }
+      return;
+    }
+
+    // Check for content changes after initialization
+    const currentContent = onEditorChange ? editorContent : internalEditorContent;
+    const previousContent = getActiveVersionContent();
+    
+    // Skip if content hasn't changed
+    if (currentContent === previousContent) return;
+    
+    // First edit after initialization (but not AI generation)
+    if (!contentEditedAfterInitialLoad.current && lastAIGeneratedContent.current === null) {
+      console.log("First edit after initialization");
+      contentEditedAfterInitialLoad.current = true;
+      
+      // Create a new version with user source
+      const newVersion = createNewVersion(currentContent, userIdentifier);
+      addVersionToState(newVersion);
+    }
+    
+    // First edit after AI generation
+    if (lastAIGeneratedContent.current !== null && 
+        currentContent !== lastAIGeneratedContent.current && 
+        !contentEditedAfterAIGeneration.current) {
+      console.log("First edit after AI generation");
+      contentEditedAfterAIGeneration.current = true;
+      
+      // Create a new version with user source
+      const newVersion = createNewVersion(currentContent, userIdentifier);
+      addVersionToState(newVersion);
+    }
+  }, [editorContent, internalEditorContent, editorContentVersions, internalContentVersions, onContentVersionsChange, userIdentifier]);
 
   const handleClearAllVersions = () => {
     if (clearConfirmationState) {
@@ -117,7 +182,7 @@ export function AIGenerationDropdownButton({
         timestamp: new Date().toISOString(),
         source: activeVersion.source,
         active: true,
-        versionNumber: activeVersion.versionNumber
+        versionNumber: 1 // Reset to version 1
       };
       
       if (onContentVersionsChange) {
@@ -131,6 +196,11 @@ export function AIGenerationDropdownButton({
       if (onClearAllVersions) {
         onClearAllVersions();
       }
+      
+      // Reset tracking states
+      contentEditedAfterInitialLoad.current = false;
+      contentEditedAfterAIGeneration.current = false;
+      lastAIGeneratedContent.current = null;
       
       setClearConfirmationState(false);
       setOpen(false);
@@ -171,7 +241,8 @@ export function AIGenerationDropdownButton({
     setOpen(false);
   };
 
-  const addVersion = (content: string, source: 'manual' | 'ai' | 'import' = 'manual') => {
+  // Helper to create a new version
+  const createNewVersion = (content: string, source: string): ContentVersionType => {
     const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     
     const highestVersion = currentVersions.reduce(
@@ -179,7 +250,7 @@ export function AIGenerationDropdownButton({
       0
     );
     
-    const newVersion: ContentVersionType = {
+    return {
       id: `version-${Date.now()}`,
       content,
       timestamp: new Date().toISOString(),
@@ -187,6 +258,11 @@ export function AIGenerationDropdownButton({
       active: true,
       versionNumber: highestVersion + 1
     };
+  };
+
+  // Helper to add a version to state
+  const addVersionToState = (newVersion: ContentVersionType) => {
+    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     
     const updatedVersions = currentVersions.map(v => ({
       ...v,
@@ -200,22 +276,42 @@ export function AIGenerationDropdownButton({
     } else {
       setInternalContentVersions(newVersions);
     }
+  };
+
+  // Get the content of the active version
+  const getActiveVersionContent = (): string => {
+    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const activeVersion = currentVersions.find(v => v.active);
+    return activeVersion?.content || '';
+  };
+
+  // Generate AI content and create a new version
+  const handleAIGeneration = () => {
+    const currentContent = onEditorChange ? editorContent : internalEditorContent;
     
-    return newVersion;
+    // For demo purposes, we'll just append "AI-generated" to the content
+    // In a real app, this would be replaced with an actual AI call
+    const aiGeneratedContent = `<p>AI-generated content based on: "${currentContent.substring(0, 30)}..."</p>`;
+    
+    // Create a new version with AI source
+    const aiVersion = createNewVersion(aiGeneratedContent, "AI generated");
+    
+    // Update state
+    addVersionToState(aiVersion);
+    
+    // Update editor with new content
+    handleEditorChange(aiGeneratedContent);
+    
+    // Track the AI generated content
+    lastAIGeneratedContent.current = aiGeneratedContent;
+    
+    // Reset the tracking flag for edits after AI generation
+    contentEditedAfterAIGeneration.current = false;
   };
   
   const defaultButtonClickHandler = () => {
-    const currentContent = onEditorChange ? editorContent : internalEditorContent;
-    if (currentContent.trim()) {
-      addVersion(currentContent);
-      
-      const aiVersion = {
-        ...addVersion(currentContent, "ai"),
-        content: `<p>AI-generated content based on: "${currentContent.substring(0, 30)}..."</p>`
-      };
-      
-      handleEditorChange(aiVersion.content);
-    }
+    // If no custom handler is provided, use our AI generation logic
+    handleAIGeneration();
   };
 
   const getContentVersionOptions = (): DropdownOption[] => {
@@ -228,11 +324,11 @@ export function AIGenerationDropdownButton({
         label: `Version ${version.versionNumber}`,
         version: `v${version.versionNumber}`,
         date: new Date(version.timestamp).toLocaleString(),
-        source: version.source === 'manual' 
-          ? 'Manual Input' 
-          : version.source === 'ai' 
-            ? 'AI Generated' 
-            : 'Imported'
+        source: version.source === 'AI generated' 
+          ? 'AI Generated' 
+          : version.source === 'manual' 
+            ? 'Manual Input' 
+            : version.source
       }));
   };
 
