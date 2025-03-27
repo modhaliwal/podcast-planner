@@ -85,72 +85,74 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links - centered in the row */}
-                <div className="flex items-center justify-center space-x-1 px-2">
-                  {guest.socialLinks.twitter && (
-                    <a 
-                      href={guest.socialLinks.twitter} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Twitter className="h-4 w-4" />
-                      <span className="sr-only">Twitter</span>
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.linkedin && (
-                    <a 
-                      href={guest.socialLinks.linkedin} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Linkedin className="h-4 w-4" />
-                      <span className="sr-only">LinkedIn</span>
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.instagram && (
-                    <a 
-                      href={guest.socialLinks.instagram} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Instagram className="h-4 w-4" />
-                      <span className="sr-only">Instagram</span>
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.youtube && (
-                    <a 
-                      href={guest.socialLinks.youtube} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Youtube className="h-4 w-4" />
-                      <span className="sr-only">YouTube</span>
-                    </a>
-                  )}
-                  
-                  {guest.socialLinks.website && (
-                    <a 
-                      href={guest.socialLinks.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Globe className="h-4 w-4" />
-                      <span className="sr-only">Website</span>
-                    </a>
-                  )}
+                {/* Social links - centered both horizontally and vertically */}
+                <div className="flex items-center justify-center self-center h-full">
+                  <div className="flex items-center space-x-1">
+                    {guest.socialLinks.twitter && (
+                      <a 
+                        href={guest.socialLinks.twitter} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Twitter className="h-4 w-4" />
+                        <span className="sr-only">Twitter</span>
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.linkedin && (
+                      <a 
+                        href={guest.socialLinks.linkedin} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Linkedin className="h-4 w-4" />
+                        <span className="sr-only">LinkedIn</span>
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.instagram && (
+                      <a 
+                        href={guest.socialLinks.instagram} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Instagram className="h-4 w-4" />
+                        <span className="sr-only">Instagram</span>
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.youtube && (
+                      <a 
+                        href={guest.socialLinks.youtube} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Youtube className="h-4 w-4" />
+                        <span className="sr-only">YouTube</span>
+                      </a>
+                    )}
+                    
+                    {guest.socialLinks.website && (
+                      <a 
+                        href={guest.socialLinks.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Globe className="h-4 w-4" />
+                        <span className="sr-only">Website</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Latest episode info */}
