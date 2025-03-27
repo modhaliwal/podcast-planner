@@ -5,6 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button"; 
+import { Trash2, Save } from "lucide-react";
 import { EditorActions } from "./editor/EditorActions";
 
 interface GeneratorEditorProps {

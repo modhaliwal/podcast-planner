@@ -1,22 +1,9 @@
-
 import { AIGeneratorConfig, AIGeneratorResponse } from '../ai.ts';
-import { makePerplexityRequest } from './api.ts';
+import { makePerplexityRequest, validatePerplexityModel } from './api.ts';
 import { DEFAULT_CONFIG, createConfig } from './config.ts';
 import { processApiResponse } from './responseParser.ts';
 import { convertMarkdownToHtml } from '../../utils/markdownConverter.ts';
-
-/**
- * List of valid Perplexity models
- */
-export const VALID_PERPLEXITY_MODELS = [
-  'llama-3.1-sonar-small-128k',
-  'llama-3.1-sonar-large-128k',
-  'llama-3.1-sonar-small-128k-online',
-  'llama-3.1-sonar-large-128k-online',
-  'mixtral-8x7b-instruct',
-  'sonar-small-chat',
-  'sonar-medium-chat'
-];
+import { PERPLEXITY_VALID_MODELS } from './types.ts';
 
 /**
  * Generates content using Perplexity API
@@ -58,10 +45,9 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
       model = DEFAULT_CONFIG.model;
     }
     
-    // Ensure model is valid for Perplexity
-    if (!VALID_PERPLEXITY_MODELS.includes(model)) {
-      console.log(`Model "${model}" not recognized by Perplexity, using default model ${DEFAULT_CONFIG.model} instead`);
-      model = DEFAULT_CONFIG.model;
+    // Validate the model for Perplexity
+    if (!validatePerplexityModel(model)) {
+      throw new Error(`Unsupported Perplexity model: "${model}". Valid models are: ${PERPLEXITY_VALID_MODELS.join(', ')}`);
     }
     
     console.log(`Using Perplexity model: ${model}`);

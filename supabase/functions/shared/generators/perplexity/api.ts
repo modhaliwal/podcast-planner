@@ -1,11 +1,23 @@
 
-import { PerplexityConfig } from './types.ts';
+import { PerplexityConfig, PERPLEXITY_VALID_MODELS } from './types.ts';
+
+/**
+ * Validates that the provided model is a valid Perplexity model
+ */
+export function validatePerplexityModel(model: string): boolean {
+  return PERPLEXITY_VALID_MODELS.includes(model);
+}
 
 /**
  * Makes a request to the Perplexity API
  */
 export async function makePerplexityRequest(apiKey: string, config: PerplexityConfig) {
   const url = 'https://api.perplexity.ai/chat/completions';
+  
+  // Validate the model first
+  if (!validatePerplexityModel(config.model)) {
+    throw new Error(`Unsupported Perplexity model: "${config.model}". Valid models are: ${PERPLEXITY_VALID_MODELS.join(', ')}`);
+  }
   
   try {
     // Prepare request body, transforming our config to match Perplexity API format

@@ -78,37 +78,18 @@ export async function generateContent(
   
   console.log(`Generator specifies AI model: ${provider || 'not specified'}, model_name: ${config.model_name || 'default'}`);
   
-  // Third priority: Fall back to the first available API key
+  // If no provider is specified, throw an error - no default fallback
   if (!provider) {
-    if (openaiApiKey) {
-      provider = 'openai';
-    } else if (perplexityApiKey) {
-      provider = 'perplexity';
-    } else if (claudeApiKey) {
-      provider = 'claude';
-    } else {
-      throw new Error("No API keys available for AI content generation");
-    }
+    throw new Error("No AI provider specified. Please specify an AI provider in the generator configuration or request.");
   }
   
   // Check if the selected provider's API key is available
   if (provider === 'perplexity' && !perplexityApiKey) {
-    console.log("Perplexity API key not available, falling back to OpenAI");
-    provider = openaiApiKey ? 'openai' : (claudeApiKey ? 'claude' : null);
+    throw new Error("Perplexity API key not available. Please add a valid API key to your environment.");
   } else if (provider === 'openai' && !openaiApiKey) {
-    console.log("OpenAI API key not available, falling back to Perplexity");
-    provider = perplexityApiKey ? 'perplexity' : (claudeApiKey ? 'claude' : null);
+    throw new Error("OpenAI API key not available. Please add a valid API key to your environment.");
   } else if (provider === 'claude' && !claudeApiKey) {
-    console.log("Claude API key not available, falling back to OpenAI");
-    provider = openaiApiKey ? 'openai' : (perplexityApiKey ? 'perplexity' : null);
-  }
-  
-  // If still no valid provider, throw an error
-  if (!provider || 
-      (provider === 'perplexity' && !perplexityApiKey) || 
-      (provider === 'openai' && !openaiApiKey) ||
-      (provider === 'claude' && !claudeApiKey)) {
-    throw new Error("No API keys available for AI content generation");
+    throw new Error("Claude API key not available. Please add a valid API key to your environment.");
   }
   
   console.log(`Using provider: ${provider}, model: ${config.model_name || 'default'}`);
@@ -133,55 +114,28 @@ export async function generateContent(
   try {
     // Import the appropriate generator dynamically
     if (provider === 'perplexity') {
-      try {
-        const { generateWithPerplexity } = await import('./perplexity/generator.ts');
-        
-        // Pass the model_name to the generator if specified
-        if (config.model_name) {
-          config.perplexityConfig = { 
-            model: config.model_name 
-          };
-        }
-        
-        return await generateWithPerplexity(config);
-      } catch (perplexityError) {
-        console.error("Error with Perplexity generator:", perplexityError);
-        if (openaiApiKey) {
-          console.log("Falling back to OpenAI after Perplexity failure");
-          const { generateWithOpenAI } = await import('./openai/generator.ts');
-          return await generateWithOpenAI(config);
-        }
-        throw perplexityError;
+      const { generateWithPerplexity } = await import('./perplexity/generator.ts');
+      
+      // Pass the model_name to the generator if specified
+      if (config.model_name) {
+        config.perplexityConfig = { 
+          model: config.model_name 
+        };
       }
+      
+      return await generateWithPerplexity(config);
     } else if (provider === 'claude') {
       const { generateWithClaude } = await import('./claude/generator.ts');
       return await generateWithClaude(config);
-    } else {
+    } else if (provider === 'openai') {
       // Default to OpenAI
       const { generateWithOpenAI } = await import('./openai/generator.ts');
       return await generateWithOpenAI(config);
+    } else {
+      throw new Error(`Unknown AI provider: ${provider}. Supported providers are: openai, perplexity, claude.`);
     }
   } catch (error) {
     console.error(`Error with ${provider} generator:`, error);
-    
-    // Only try fallback if the user didn't explicitly request a specific provider
-    if (!preferredProvider && !config.ai_model) {
-      // Try fallback if primary provider fails
-      if (provider === 'perplexity' && openaiApiKey) {
-        console.log("Falling back to OpenAI after Perplexity failure");
-        const { generateWithOpenAI } = await import('./openai/generator.ts');
-        return await generateWithOpenAI(config);
-      } else if (provider === 'openai' && perplexityApiKey) {
-        console.log("Falling back to Perplexity after OpenAI failure");
-        const { generateWithPerplexity } = await import('./perplexity/generator.ts');
-        return await generateWithPerplexity(config);
-      } else if ((provider === 'openai' || provider === 'perplexity') && claudeApiKey) {
-        console.log(`Falling back to Claude after ${provider} failure`);
-        const { generateWithClaude } = await import('./claude/generator.ts');
-        return await generateWithClaude(config);
-      }
-    }
-    
-    throw error;
+    throw error; // No fallback, just propagate the error
   }
 }
