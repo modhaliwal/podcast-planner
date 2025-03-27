@@ -76,7 +76,7 @@ export function useVersionActions<T extends Record<string, any>>({
   /**
    * Adds a new version with specified content and optionally marks it as active
    */
-  const addNewVersion = (content: string, source: "manual" | "ai" | "import" = "manual") => {
+  const addNewVersion = (content: string, source: string = "manual") => {
     return addNewVersionUtil(
       form,
       fieldName,

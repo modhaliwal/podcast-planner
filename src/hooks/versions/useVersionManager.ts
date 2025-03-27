@@ -10,7 +10,7 @@ interface UseVersionManagerProps {
   versions?: ContentVersion[] | null;
   onVersionsChange: (versions: ContentVersion[]) => void;
   onContentChange: (content: string) => void;
-  source?: "manual" | "ai" | "import";
+  source?: string; // Changed from union type to string
 }
 
 /**

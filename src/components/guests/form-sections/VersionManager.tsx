@@ -8,13 +8,13 @@ interface VersionManagerProps {
   versions: ContentVersion[];
   onVersionsChange: (versions: ContentVersion[]) => void;
   onContentChange: (content: string) => void;
-  source?: "manual" | "ai" | "import";
+  source?: string; // Changed from union type to string
   children: (props: {
     activeVersionId: string | null;
     handleEditorBlur: () => void;
     handleContentChange: () => void;
     selectVersion: (version: ContentVersion) => void;
-    addNewVersion: (content: string, source?: "manual" | "ai" | "import") => ContentVersion;
+    addNewVersion: (content: string, source?: string) => ContentVersion; // Changed parameter type
     addAIVersion: (content: string) => ContentVersion;
     clearAllVersions: () => void;
     versionSelectorProps: {

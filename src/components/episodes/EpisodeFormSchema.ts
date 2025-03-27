@@ -7,7 +7,7 @@ const contentVersionSchema = z.object({
   id: z.string(),
   content: z.string(),
   timestamp: z.string(),
-  source: z.enum(['manual', 'ai', 'import']),
+  source: z.string(), // Changed from enum to string
   active: z.boolean().optional(), // Add active flag to schema
   versionNumber: z.number().optional() // Add version number
 });

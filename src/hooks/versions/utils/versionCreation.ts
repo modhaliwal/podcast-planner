@@ -86,7 +86,7 @@ export function addNewVersionUtil<T extends Record<string, any>>(
   fieldName: keyof T,
   versionsFieldName: keyof T,
   content: string,
-  source: string = "manual",
+  source: string = "manual", // Changed from union type to string
   versions: ContentVersion[],
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void
