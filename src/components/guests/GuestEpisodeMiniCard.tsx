@@ -38,12 +38,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
           <Calendar className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="font-medium text-sm">Episode #{episode.episodeNumber}</span>
-            {episode.episodeNumber !== Number(episode.title.match(/#(\d+)/)?.[1]) && (
-              <span className="text-xs text-muted-foreground truncate">({episode.title})</span>
-            )}
-          </div>
+          <div className="font-medium text-sm truncate">#{episode.episodeNumber} {episode.title}</div>
           <div className="flex items-center text-xs text-muted-foreground">
             <span className="capitalize">{episode.status}</span>
             <span className="mx-1.5">•</span>
