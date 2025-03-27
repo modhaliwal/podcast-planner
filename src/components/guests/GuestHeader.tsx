@@ -12,7 +12,7 @@ export function GuestHeader({ onRefresh, onAddGuest, isLoading }: GuestHeaderPro
   return (
     <div className="page-header">
       <div>
-        <h1 className="section-title">Podcast Guests</h1>
+        <h1 className="section-title">Guests</h1>
         <p className="section-subtitle">Manage your guest profiles and information</p>
       </div>
       
