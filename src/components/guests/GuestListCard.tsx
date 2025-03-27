@@ -42,18 +42,22 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
     <Link to={`/guests/${guest.id}`} key={guest.id}>
       <Card className="p-4 hover:bg-muted/40 transition-colors">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex items-start gap-3 w-full">
-            {/* Avatar section */}
-            <Avatar className="h-16 w-16 shrink-0 border">
-              <AvatarImage src={guest.imageUrl} alt={guest.name} />
-              <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-            </Avatar>
+          <div className="flex w-full">
+            <div className="flex items-start gap-3">
+              {/* Avatar section */}
+              <Avatar className="h-16 w-16 shrink-0 border">
+                <AvatarImage src={guest.imageUrl} alt={guest.name} />
+                <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+              </Avatar>
+              
+              {/* Guest info section */}
+              <GuestInfo guest={guest} statusColor={statusColor} />
+            </div>
             
-            {/* Guest info section */}
-            <GuestInfo guest={guest} statusColor={statusColor} />
-            
-            {/* Social links section - hidden on small screens */}
-            <GuestSocialLinks socialLinks={guest.socialLinks} />
+            {/* Social links section - now visible in all views */}
+            <div className="ml-auto">
+              <GuestSocialLinks socialLinks={guest.socialLinks} />
+            </div>
           </div>
           
           {/* Latest episode info - full width on mobile, 1/3 width on desktop */}

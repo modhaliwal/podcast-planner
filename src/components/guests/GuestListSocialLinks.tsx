@@ -13,7 +13,7 @@ export function GuestSocialLinks({ socialLinks }: GuestSocialLinksProps) {
   if (!hasSocials) return null;
   
   return (
-    <div className="hidden sm:flex items-center flex-wrap shrink-0 gap-1">
+    <div className="flex items-center flex-wrap shrink-0 gap-1">
       {socialLinks.twitter && (
         <SocialLink 
           href={socialLinks.twitter}
