@@ -18,7 +18,7 @@ interface GuestInfoProps {
 export function GuestInfo({ guest, statusColor }: GuestInfoProps) {
   return (
     <div className="flex-1 min-w-0 space-y-1">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <h3 className="text-lg font-medium truncate">{guest.name}</h3>
         
         {/* Status badge */}

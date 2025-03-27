@@ -2,15 +2,11 @@
 import { Guest, Episode } from "@/lib/types";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Twitter, Linkedin, Globe, Instagram, Youtube } from "lucide-react";
-import { format } from "date-fns";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
 import { guestStatusColors } from "@/lib/statusColors";
 import { GuestSocialLinks } from "./GuestListSocialLinks";
 import { GuestInfo } from "./GuestListInfo";
+import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
 
 interface GuestCardProps {
   guest: Guest;
@@ -45,28 +41,27 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
   return (
     <Link to={`/guests/${guest.id}`} key={guest.id}>
       <Card className="p-4 hover:bg-muted/40 transition-colors">
-        <div className="flex items-start gap-3 flex-wrap md:flex-nowrap">
-          {/* Avatar section */}
-          <Avatar className="h-16 w-16 shrink-0 border">
-            <AvatarImage src={guest.imageUrl} alt={guest.name} />
-            <AvatarFallback className="text-lg">{initials}</AvatarFallback>
-          </Avatar>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex items-start gap-3 w-full">
+            {/* Avatar section */}
+            <Avatar className="h-16 w-16 shrink-0 border">
+              <AvatarImage src={guest.imageUrl} alt={guest.name} />
+              <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+            </Avatar>
+            
+            {/* Guest info section */}
+            <GuestInfo guest={guest} statusColor={statusColor} />
+            
+            {/* Social links section - hidden on small screens */}
+            <GuestSocialLinks socialLinks={guest.socialLinks} />
+          </div>
           
-          {/* Guest info section */}
-          <GuestInfo guest={guest} statusColor={statusColor} />
-          
-          {/* Social links section */}
-          <GuestSocialLinks socialLinks={guest.socialLinks} />
-          
-          {/* Flexible spacer */}
-          <div className="hidden md:block flex-1"></div>
-          
-          {/* Latest episode info - visible at larger breakpoints */}
-          <div className="hidden lg:block w-1/3 shrink-0">
+          {/* Latest episode info - full width on mobile, 1/3 width on desktop */}
+          <div className="w-full sm:w-1/3 shrink-0">
             {latestEpisode ? (
               <GuestEpisodeMiniCard episode={latestEpisode} />
             ) : (
-              <div className="flex items-center justify-center h-full">
+              <div className="flex items-center justify-center h-full border rounded-md p-2.5 bg-card">
                 <p className="text-sm text-muted-foreground italic">No episodes yet</p>
               </div>
             )}

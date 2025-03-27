@@ -1,8 +1,6 @@
 
 import { Guest } from "@/lib/types";
-import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { GuestCard } from "./GuestListCard";
 
 interface GuestListProps {
@@ -11,7 +9,6 @@ interface GuestListProps {
 
 export function GuestList({ guests }: GuestListProps) {
   const { episodes } = useAuth();
-  const isMobile = useIsMobile();
 
   return (
     <div className="space-y-4">

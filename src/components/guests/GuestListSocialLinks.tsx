@@ -9,6 +9,9 @@ interface GuestSocialLinksProps {
 export function GuestSocialLinks({ socialLinks }: GuestSocialLinksProps) {
   if (!socialLinks) return null;
   
+  const hasSocials = Object.values(socialLinks).some(Boolean);
+  if (!hasSocials) return null;
+  
   return (
     <div className="hidden sm:flex items-center flex-wrap shrink-0 gap-1">
       {socialLinks.twitter && (
