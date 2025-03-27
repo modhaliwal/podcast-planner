@@ -73,11 +73,12 @@ export function GlobalSystemSettings() {
 
         if (updateError) throw updateError;
       } else {
-        // Create a new entry
+        // Create a new entry - now including the required slug field
         const { error: insertError } = await supabase
           .from('ai_generators')
           .insert({
             key: 'global_system_instructions',
+            slug: 'global-system-instructions',
             title: 'Global System Instructions',
             prompt_text: 'Global system instructions for all AI generators',
             system_prompt: systemInstructions,
