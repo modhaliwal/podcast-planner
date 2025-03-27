@@ -1,3 +1,4 @@
+
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { findHighestVersionNumber } from "./versionNumberUtils";
@@ -85,7 +86,7 @@ export function addNewVersionUtil<T extends Record<string, any>>(
   fieldName: keyof T,
   versionsFieldName: keyof T,
   content: string,
-  source: "manual" | "ai" | "import" = "manual",
+  source: string = "manual",
   versions: ContentVersion[],
   setVersions: (versions: ContentVersion[]) => void,
   setActiveVersionId: (id: string | null) => void

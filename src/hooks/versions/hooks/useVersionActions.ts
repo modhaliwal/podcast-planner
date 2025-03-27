@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
@@ -84,7 +85,7 @@ export function useVersionActions(
   }, [handleEditorBlur]);
 
   // Add a new version with specified content
-  const addNewVersion = useCallback((newContent: string, newSource: "manual" | "ai" | "import" = "manual") => {
+  const addNewVersion = useCallback((newContent: string, newSource: string = "manual") => {
     // Skip if the content is identical to the previous content
     if (newContent === previousContent) return;
     

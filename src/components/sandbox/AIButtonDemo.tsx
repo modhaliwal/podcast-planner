@@ -4,8 +4,10 @@ import { AIGenerationDropdownButton, ContentVersion } from './AIGenerationDropdo
 
 export function AIButtonDemo() {
   const [content, setContent] = useState('');
+  const [plainTextContent, setPlainTextContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [contentVersions, setContentVersions] = useState<ContentVersion[]>([]);
+  const [plainTextVersions, setPlainTextVersions] = useState<ContentVersion[]>([]);
   
   // Mock versions for demo purposes
   const mockOptions = [
@@ -87,7 +89,7 @@ export function AIButtonDemo() {
       id: "version-8",
       content: "# Building a Podcast Community\n\nSuccessful podcasts often create communities around their content:\n\n- **Social media groups**: Dedicated spaces for listener discussion\n- **Comments and feedback**: Actively engage with listener messages\n- **Listener questions**: Incorporate audience questions into episodes\n- **Meetups**: Virtual or in-person gatherings of listeners\n\nA strong community provides both content ideas and word-of-mouth growth.",
       timestamp: "2023-08-30T15:40:00Z",
-      source: 'imported',
+      source: 'import',
       active: false,
       versionNumber: 8
     },
@@ -111,7 +113,7 @@ export function AIButtonDemo() {
       id: "version-11",
       content: "# Podcast SEO Strategies\n\nHelp potential listeners discover your podcast:\n\n- **Episode titles**: Include relevant keywords naturally\n- **Show notes**: Comprehensive, searchable text companion to audio\n- **Transcripts**: Full text versions improve accessibility and searchability\n- **Website optimization**: Apply standard SEO best practices to your podcast website\n- **Internal linking**: Connect related episodes and content\n\nThink about what your ideal listener might search for when creating content.",
       timestamp: "2023-11-07T14:50:00Z",
-      source: 'imported',
+      source: 'import',
       active: false,
       versionNumber: 11
     },
@@ -122,6 +124,26 @@ export function AIButtonDemo() {
       source: 'ai',
       active: true,
       versionNumber: 12
+    }
+  ];
+
+  // Prepopulated plaintext versions for demonstration
+  const prepopulatedPlainText: ContentVersion[] = [
+    {
+      id: "plain-1",
+      content: "PODCAST SCRIPT OUTLINE\n\nTopic: Interview with Tech Entrepreneur\n\nIntro (2 min):\n- Welcome listeners\n- Introduce today's guest and topic\n- Mention sponsor\n\nSegment 1 (10 min):\n- Guest's background and journey\n- Early inspirations and influences\n- First business ventures\n\nSegment 2 (15 min):\n- Current projects and innovations\n- Industry trends and predictions\n- Challenges and how they're overcome\n\nSegment 3 (10 min):\n- Advice for aspiring entrepreneurs\n- Resources and recommendations\n- Work-life balance strategies\n\nClosing (3 min):\n- Key takeaways\n- Where to follow the guest\n- What's coming next episode\n- Call to action for ratings and reviews",
+      timestamp: "2023-05-15T09:30:00Z",
+      source: 'manual',
+      active: true,
+      versionNumber: 1
+    },
+    {
+      id: "plain-2",
+      content: "PODCAST EPISODE CHECKLIST\n\n□ Schedule recording date/time\n□ Send guest prep materials\n□ Research guest background\n□ Prepare question outline\n□ Test equipment day before\n□ Set up recording space\n□ Check audio levels\n□ Record intro separately\n□ Record episode\n□ Record outro separately\n□ Back up raw files\n□ Edit audio\n□ Add music and transitions\n□ Mix and master\n□ Create show notes\n□ Design episode artwork\n□ Upload to hosting platform\n□ Schedule social media posts\n□ Send thank you to guest\n□ Monitor initial analytics",
+      timestamp: "2023-06-22T14:45:00Z",
+      source: 'import',
+      active: false,
+      versionNumber: 2
     }
   ];
 
@@ -138,6 +160,15 @@ export function AIButtonDemo() {
     const activeVersion = sortedVersions.find(v => v.active);
     if (activeVersion) {
       setContent(activeVersion.content);
+    }
+    
+    // Set plaintext versions
+    setPlainTextVersions(prepopulatedPlainText);
+    
+    // Set the plaintext content to the active version's content
+    const activePlainTextVersion = prepopulatedPlainText.find(v => v.active);
+    if (activePlainTextVersion) {
+      setPlainTextContent(activePlainTextVersion.content);
     }
   }, []);
 
@@ -170,49 +201,95 @@ export function AIButtonDemo() {
     }, 1500);
   };
 
-  const handleOptionSelect = (option: any) => {
-    console.log("Selected option:", option);
-  };
-
-  const handleContentChange = (newContent: string) => {
-    setContent(newContent);
-  };
-
-  const handleClearAllVersions = () => {
-    setContentVersions([]);
-    setContent('');
+  const handlePlainTextGenerate = () => {
+    setIsGenerating(true);
+    
+    // Simulate AI generation with a delay
+    setTimeout(() => {
+      const newContent = `Plain text generated at ${new Date().toLocaleTimeString()}.\n\nThis is a demonstration of the plain text version of the AI generation component.\n\nIt works the same way as the rich text version but with a plain text editor.`;
+      setPlainTextContent(newContent);
+      
+      // Create a new version in the versions array
+      const newVersion: ContentVersion = {
+        id: `plain-version-${Date.now()}`,
+        content: newContent,
+        timestamp: new Date().toISOString(),
+        source: 'ai',
+        active: true,
+        versionNumber: plainTextVersions.length + 1
+      };
+      
+      // Set other versions as inactive
+      const updatedVersions = plainTextVersions.map(v => ({
+        ...v,
+        active: false
+      }));
+      
+      setPlainTextVersions([...updatedVersions, newVersion]);
+      setIsGenerating(false);
+    }, 1500);
   };
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-medium">AI Generation Button with Version History</h3>
-      
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          This component demonstrates the AI generation button with content versioning.
-          Click "Generate" to create new content versions. Use the dropdown to switch between versions.
-        </p>
+    <div className="space-y-12">
+      <div className="space-y-6">
+        <h3 className="text-lg font-medium">Rich Text AI Generation</h3>
         
-        <AIGenerationDropdownButton
-          buttonLabel="Generate"
-          loadingLabel="Generating..."
-          isGenerating={isGenerating}
-          options={mockOptions}
-          onButtonClick={handleGenerate}
-          onOptionSelect={handleOptionSelect}
-          onClearAllVersions={handleClearAllVersions}
-          showNotification={true}
-          editorContent={content}
-          onEditorChange={handleContentChange}
-          contentName="AI Generated Content"
-          editorContentVersions={contentVersions}
-          onContentVersionsChange={setContentVersions}
-          hoverCardConfig={{
-            aiProvider: "OpenAI",
-            promptKey: "content-generation",
-            promptTitle: "Standard Content Generator",
-          }}
-        />
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            This component demonstrates the AI generation button with rich text content versioning.
+          </p>
+          
+          <AIGenerationDropdownButton
+            buttonLabel="Generate"
+            loadingLabel="Generating..."
+            isGenerating={isGenerating}
+            options={mockOptions}
+            onButtonClick={handleGenerate}
+            showNotification={true}
+            editorContent={content}
+            onEditorChange={setContent}
+            contentName="Rich Text Content"
+            editorContentVersions={contentVersions}
+            onContentVersionsChange={setContentVersions}
+            editorType="rich"
+            hoverCardConfig={{
+              aiProvider: "OpenAI",
+              promptKey: "content-generation",
+              promptTitle: "Rich Text Generator",
+            }}
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-6">
+        <h3 className="text-lg font-medium">Plain Text AI Generation</h3>
+        
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            This component demonstrates the AI generation button with plain text content versioning.
+          </p>
+          
+          <AIGenerationDropdownButton
+            buttonLabel="Generate Plain Text"
+            loadingLabel="Generating..."
+            isGenerating={isGenerating}
+            options={mockOptions}
+            onButtonClick={handlePlainTextGenerate}
+            showNotification={true}
+            editorContent={plainTextContent}
+            onEditorChange={setPlainTextContent}
+            contentName="Plain Text Content"
+            editorContentVersions={plainTextVersions}
+            onContentVersionsChange={setPlainTextVersions}
+            editorType="plain"
+            hoverCardConfig={{
+              aiProvider: "OpenAI",
+              promptKey: "plain-text-generation",
+              promptTitle: "Plain Text Generator",
+            }}
+          />
+        </div>
       </div>
     </div>
   );

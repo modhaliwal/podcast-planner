@@ -5,7 +5,7 @@ export interface ContentVersion {
   id: string;
   content: string;
   timestamp: string;
-  source: 'manual' | 'ai' | 'import';
+  source: string; // Changed from enum to string to allow any value
   active?: boolean; // Active flag to track which version is active
   versionNumber: number; // Sequential version number
 }
