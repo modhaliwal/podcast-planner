@@ -17,7 +17,7 @@ const TestComponent = () => {
     { id: 'test', label: 'Test Option' }
   ];
   
-  const [editorContent, setEditorContent] = useState('');
+  const [editorContent, setEditorContent] = useState('<p>This is some sample content for the rich text editor.</p>');
   
   return (
     <div className="p-4">
@@ -28,7 +28,7 @@ const TestComponent = () => {
         This demonstrates the AIGenerationDropdownButton with an integrated rich text editor
       </p>
       
-      {/* This usage should be allowed - now with rich text editor */}
+      {/* This usage should be allowed - with rich text editor visible by default */}
       <AIGenerationDropdownButton 
         options={options}
         onButtonClick={() => console.log('Button clicked')}

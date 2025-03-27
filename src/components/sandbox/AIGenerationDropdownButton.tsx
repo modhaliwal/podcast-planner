@@ -262,7 +262,7 @@ export function AIGenerationDropdownButton({
         </DropdownMenu>
       </div>
       
-      {/* Rich Text Editor */}
+      {/* Rich Text Editor - Now directly below the button */}
       {showEditor && (
         <div className="mt-4 border rounded-md">
           <Editor
