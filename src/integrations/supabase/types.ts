@@ -9,11 +9,10 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      ai_prompts: {
+      ai_generators: {
         Row: {
           context_instructions: string | null
           created_at: string
-          description: string | null
           example_output: string | null
           id: string
           key: string
@@ -25,7 +24,6 @@ export type Database = {
         Insert: {
           context_instructions?: string | null
           created_at?: string
-          description?: string | null
           example_output?: string | null
           id?: string
           key: string
@@ -37,7 +35,6 @@ export type Database = {
         Update: {
           context_instructions?: string | null
           created_at?: string
-          description?: string | null
           example_output?: string | null
           id?: string
           key?: string
