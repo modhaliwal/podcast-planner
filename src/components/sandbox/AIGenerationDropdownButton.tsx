@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2, Type, AlignLeft } from "lucide-react";
@@ -52,25 +51,19 @@ export interface AIGenerationDropdownButtonProps {
   className?: string;
   showNotification?: boolean;
   selectedOptionId?: string;
-  // New configuration props for hover card
   hoverCardConfig?: {
     aiProvider?: string;
     promptKey?: string;
     promptTitle?: string;
     edgeFunctionName?: string;
   };
-  // Props for rich text editor
   editorContent?: string;
   onEditorChange?: (content: string) => void;
   showEditor?: boolean;
   editorPlaceholder?: string;
-  // New prop for configuring initial editor height
   editorMinHeight?: number;
-  // New prop for content name
   contentName?: string;
-  // New prop for editor type (rich text or plain text)
   editorType?: 'rich' | 'plain';
-  // New prop for content versions
   editorContentVersions?: ContentVersion[];
   onContentVersionsChange?: (versions: ContentVersion[]) => void;
 }
@@ -238,17 +231,20 @@ export function AIGenerationDropdownButton({
   const getContentVersionOptions = (): DropdownOption[] => {
     const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     
-    return versions.map(version => ({
-      id: version.id,
-      label: `Version ${version.versionNumber}`,
-      version: `v${version.versionNumber}`,
-      date: new Date(version.timestamp).toLocaleString(),
-      source: version.source === 'manual' 
-        ? 'Manual Input' 
-        : version.source === 'ai' 
-          ? 'AI Generated' 
-          : 'Imported'
-    }));
+    // Sort versions by versionNumber in descending order (newest first)
+    return [...versions]
+      .sort((a, b) => b.versionNumber - a.versionNumber)
+      .map(version => ({
+        id: version.id,
+        label: `Version ${version.versionNumber}`,
+        version: `v${version.versionNumber}`,
+        date: new Date(version.timestamp).toLocaleString(),
+        source: version.source === 'manual' 
+          ? 'Manual Input' 
+          : version.source === 'ai' 
+            ? 'AI Generated' 
+            : 'Imported'
+      }));
   };
 
   // Get the ID of the active version

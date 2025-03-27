@@ -127,9 +127,15 @@ export function AIButtonDemo() {
 
   // Initialize with prepopulated versions
   useEffect(() => {
-    setContentVersions(prepopulatedVersions);
+    // Sort versions in descending order by versionNumber (newest first)
+    const sortedVersions = [...prepopulatedVersions].sort(
+      (a, b) => b.versionNumber - a.versionNumber
+    );
+    
+    setContentVersions(sortedVersions);
+    
     // Set the content to the active version's content
-    const activeVersion = prepopulatedVersions.find(v => v.active);
+    const activeVersion = sortedVersions.find(v => v.active);
     if (activeVersion) {
       setContent(activeVersion.content);
     }

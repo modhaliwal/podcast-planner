@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ContentVersion } from '@/lib/types';
 import { CheckIcon, ChevronDownIcon, Trash2Icon } from 'lucide-react';
@@ -50,9 +49,9 @@ export function VersionSelector({
   const [confirmClear, setConfirmClear] = useState(false);
   const [open, setOpen] = useState(false);
   
-  // Sort versions by timestamp descending (newest first)
+  // Sort versions by versionNumber descending (newest first)
   const sortedVersions = [...versions].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    (a, b) => b.versionNumber - a.versionNumber
   );
   
   // Get the active version for display
