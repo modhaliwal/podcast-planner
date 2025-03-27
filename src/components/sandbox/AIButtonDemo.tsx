@@ -59,6 +59,7 @@ const mockPromptOptions: DropdownOption[] = [
 
 export function AIButtonDemo() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showNotification, setShowNotification] = useState(true);
   
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -94,14 +95,29 @@ export function AIButtonDemo() {
         Click the main button for default generation or use the dropdown for specialized options.
       </p>
       
-      <AIGenerationDropdownButton
-        buttonLabel="Generate Content"
-        loadingLabel="Generating..."
-        isGenerating={isGenerating}
-        options={mockPromptOptions}
-        onButtonClick={handleGenerate}
-        onOptionSelect={handleOptionSelect}
-      />
+      <div className="flex flex-col gap-4">
+        <AIGenerationDropdownButton
+          buttonLabel="Generate Content"
+          loadingLabel="Generating..."
+          isGenerating={isGenerating}
+          options={mockPromptOptions}
+          onButtonClick={handleGenerate}
+          onOptionSelect={handleOptionSelect}
+          showNotification={showNotification}
+        />
+        
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-muted-foreground">
+            <input 
+              type="checkbox" 
+              className="mr-2" 
+              checked={showNotification} 
+              onChange={(e) => setShowNotification(e.target.checked)} 
+            />
+            Show notification with count
+          </label>
+        </div>
+      </div>
     </div>
   );
 }
