@@ -27,6 +27,13 @@ import {
   Youtube,
   Facebook,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Import your schema
 const GuestFormSchema = z.object({
@@ -122,17 +129,22 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <FormControl>
-                        <select
-                          {...field}
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
-                        >
-                          <option value="potential">Potential</option>
-                          <option value="contacted">Contacted</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="appeared">Appeared</option>
-                        </select>
-                      </FormControl>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="potential">Potential</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
+                          <SelectItem value="appeared">Appeared</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
