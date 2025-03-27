@@ -65,9 +65,6 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
             {latestEpisode ? (
               <GuestEpisodeMiniCard episode={latestEpisode} />
             ) : (
-              <div className="flex items-center justify-center h-full border rounded-md p-2.5 bg-card">
-                <p className="text-sm text-muted-foreground italic">No episodes yet</p>
-              </div>
             )}
           </div>
         </div>
