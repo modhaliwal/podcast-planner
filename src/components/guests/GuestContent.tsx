@@ -7,6 +7,7 @@ import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
 import { GuestCard } from './GuestCard';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 type ViewMode = 'list' | 'card';
@@ -41,6 +42,14 @@ export function GuestContent() {
     return <LoadingIndicator message="Loading guests..." />;
   }
   
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setSearchQuery('');
+  };
+  
+  const hasGuests = guests.length > 0;
+  const hasFilteredGuests = filteredGuests.length > 0;
+  
   return (
     <div className="space-y-6">
       <GuestControls
@@ -52,59 +61,66 @@ export function GuestContent() {
         setViewMode={setViewMode}
       />
 
+      {/* List View */}
       {viewMode === 'list' && (
-        guests.length > 0 ? (
-          <GuestList guests={filteredGuests} />
-        ) : (
-          <div className="mt-4">
-            <EmptyState 
-              icon={<Users className="h-8 w-8 text-muted-foreground" />}
-              title="No guests added yet"
-              description="Get started by adding your first guest"
-              action={{
-                label: "Add Guest",
-                onClick: () => window.location.href = "/guests/new"
-              }}
-            />
-          </div>
-        )
+        <>
+          {hasGuests ? (
+            hasFilteredGuests ? (
+              <GuestList guests={filteredGuests} />
+            ) : (
+              <div className="bg-muted/30 rounded-lg border border-dashed p-16 text-center">
+                <div className="flex flex-col items-center justify-center">
+                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No guests match your filters</h3>
+                  <p className="text-muted-foreground mb-6">Try adjusting your search terms or filters</p>
+                  <Button onClick={clearFilters}>Clear Filters</Button>
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="bg-muted/30 rounded-lg border border-dashed p-16 text-center">
+              <div className="flex flex-col items-center justify-center">
+                <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No guests found</h3>
+                <p className="text-muted-foreground mb-6">Get started by creating your first guest</p>
+                <Button onClick={() => window.location.href = "/guests/new"}>Add Guest</Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
       
+      {/* Card View */}
       {viewMode === 'card' && (
-        guests.length > 0 ? (
-          filteredGuests.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredGuests.map(guest => (
-                <GuestCard key={guest.id} guest={guest} />
-              ))}
-            </div>
+        <>
+          {hasGuests ? (
+            hasFilteredGuests ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredGuests.map(guest => (
+                  <GuestCard key={guest.id} guest={guest} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-muted/30 rounded-lg border border-dashed p-16 text-center">
+                <div className="flex flex-col items-center justify-center">
+                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No guests match your filters</h3>
+                  <p className="text-muted-foreground mb-6">Try adjusting your search terms or filters</p>
+                  <Button onClick={clearFilters}>Clear Filters</Button>
+                </div>
+              </div>
+            )
           ) : (
-            <div className="p-8 text-center bg-muted/30 rounded-lg border border-dashed">
-              <p className="text-muted-foreground">No guests match your current filters</p>
-              <button 
-                className="mt-2 text-primary hover:underline"
-                onClick={() => {
-                  setStatusFilter('all');
-                  setSearchQuery('');
-                }}
-              >
-                Clear filters
-              </button>
+            <div className="bg-muted/30 rounded-lg border border-dashed p-16 text-center">
+              <div className="flex flex-col items-center justify-center">
+                <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No guests found</h3>
+                <p className="text-muted-foreground mb-6">Get started by creating your first guest</p>
+                <Button onClick={() => window.location.href = "/guests/new"}>Add Guest</Button>
+              </div>
             </div>
-          )
-        ) : (
-          <div className="mt-4">
-            <EmptyState 
-              icon={<Users className="h-8 w-8 text-muted-foreground" />}
-              title="No guests added yet"
-              description="Get started by adding your first guest"
-              action={{
-                label: "Add Guest",
-                onClick: () => window.location.href = "/guests/new"
-              }}
-            />
-          </div>
-        )
+          )}
+        </>
       )}
     </div>
   );
