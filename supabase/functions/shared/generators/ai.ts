@@ -13,6 +13,7 @@ export interface AIGeneratorConfig {
   exampleOutput?: string;
   ai_model?: string;
   model_name?: string;
+  perplexityConfig?: any;
   [key: string]: any; // Allow for additional fields
 }
 
@@ -43,14 +44,15 @@ export async function generateContent(
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   const claudeApiKey = Deno.env.get('ANTHROPIC_API_KEY');
   
-  // Determine which provider to use based on preference, config setting, or available keys
-  let provider = preferredProvider || config.ai_model;
+  // Determine which provider to use based on the AI generator's settings
+  // The ai_model field should contain the provider name
+  let provider = config.ai_model || preferredProvider;
   
+  console.log(`Generator specifies AI model: ${provider}, model_name: ${config.model_name || 'default'}`);
+  
+  // If no provider is specified in the config or as a preference, use the first available one
   if (!provider) {
-    // If no preference, use Perplexity for research (if key available)
-    if ((config.type === 'research' || config.type === 'notes') && perplexityApiKey) {
-      provider = 'perplexity';
-    } else if (openaiApiKey) {
+    if (openaiApiKey) {
       provider = 'openai';
     } else if (perplexityApiKey) {
       provider = 'perplexity';
@@ -64,19 +66,18 @@ export async function generateContent(
   // Check if the selected provider's API key is available
   if (provider === 'perplexity' && !perplexityApiKey) {
     console.log("Perplexity API key not available, falling back to OpenAI");
-    provider = 'openai';
-  }
-  if (provider === 'openai' && !openaiApiKey) {
+    provider = openaiApiKey ? 'openai' : (claudeApiKey ? 'claude' : null);
+  } else if (provider === 'openai' && !openaiApiKey) {
     console.log("OpenAI API key not available, falling back to Perplexity");
-    provider = 'perplexity';
-  }
-  if (provider === 'claude' && !claudeApiKey) {
+    provider = perplexityApiKey ? 'perplexity' : (claudeApiKey ? 'claude' : null);
+  } else if (provider === 'claude' && !claudeApiKey) {
     console.log("Claude API key not available, falling back to OpenAI");
-    provider = 'openai';
+    provider = openaiApiKey ? 'openai' : (perplexityApiKey ? 'perplexity' : null);
   }
   
   // If still no valid provider, throw an error
-  if ((provider === 'perplexity' && !perplexityApiKey) || 
+  if (!provider || 
+      (provider === 'perplexity' && !perplexityApiKey) || 
       (provider === 'openai' && !openaiApiKey) ||
       (provider === 'claude' && !claudeApiKey)) {
     throw new Error("No API keys available for AI content generation");
@@ -91,7 +92,9 @@ export async function generateContent(
       
       // Pass the model_name to the generator if specified
       if (config.model_name) {
-        config.perplexityConfig = { model: config.model_name };
+        config.perplexityConfig = { 
+          model: config.model_name 
+        };
       }
       
       return await generateWithPerplexity(config);
@@ -99,25 +102,29 @@ export async function generateContent(
       const { generateWithClaude } = await import('./claude/generator.ts');
       return await generateWithClaude(config);
     } else {
+      // Default to OpenAI
       const { generateWithOpenAI } = await import('./openai/generator.ts');
       return await generateWithOpenAI(config);
     }
   } catch (error) {
     console.error(`Error with ${provider} generator:`, error);
     
-    // Try fallback if primary provider fails
-    if (provider === 'perplexity' && openaiApiKey) {
-      console.log("Falling back to OpenAI after Perplexity failure");
-      const { generateWithOpenAI } = await import('./openai/generator.ts');
-      return await generateWithOpenAI(config);
-    } else if (provider === 'openai' && perplexityApiKey) {
-      console.log("Falling back to Perplexity after OpenAI failure");
-      const { generateWithPerplexity } = await import('./perplexity/generator.ts');
-      return await generateWithPerplexity(config);
-    } else if ((provider === 'openai' || provider === 'perplexity') && claudeApiKey) {
-      console.log(`Falling back to Claude after ${provider} failure`);
-      const { generateWithClaude } = await import('./claude/generator.ts');
-      return await generateWithClaude(config);
+    // Only try fallback if the user didn't explicitly request a specific provider
+    if (!preferredProvider && !config.ai_model) {
+      // Try fallback if primary provider fails
+      if (provider === 'perplexity' && openaiApiKey) {
+        console.log("Falling back to OpenAI after Perplexity failure");
+        const { generateWithOpenAI } = await import('./openai/generator.ts');
+        return await generateWithOpenAI(config);
+      } else if (provider === 'openai' && perplexityApiKey) {
+        console.log("Falling back to Perplexity after OpenAI failure");
+        const { generateWithPerplexity } = await import('./perplexity/generator.ts');
+        return await generateWithPerplexity(config);
+      } else if ((provider === 'openai' || provider === 'perplexity') && claudeApiKey) {
+        console.log(`Falling back to Claude after ${provider} failure`);
+        const { generateWithClaude } = await import('./claude/generator.ts');
+        return await generateWithClaude(config);
+      }
     }
     
     throw error;

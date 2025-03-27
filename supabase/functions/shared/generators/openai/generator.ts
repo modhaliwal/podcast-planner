@@ -52,6 +52,29 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     const model = config.model_name || DEFAULT_OPENAI_CONFIG.model;
     console.log(`Using OpenAI model: ${model}`);
     
+    // Build the request body based on the model
+    const requestBody: any = {
+      model: model,
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: userPrompt,
+        },
+      ],
+      temperature: DEFAULT_OPENAI_CONFIG.temperature,
+    };
+    
+    // New GPT models use max_completion_tokens instead of max_tokens
+    if (model.includes('gpt-4o')) {
+      requestBody.max_completion_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
+    } else {
+      requestBody.max_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
+    }
+    
     // Make the API request to OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -59,21 +82,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt,
-          },
-          {
-            role: "user",
-            content: userPrompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1500,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -88,6 +97,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     
     return {
       content: generatedContent,
+      markdown: generatedContent,
       metadata: {
         provider: 'openai',
         model: model

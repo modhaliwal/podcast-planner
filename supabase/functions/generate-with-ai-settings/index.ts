@@ -17,7 +17,7 @@ serve(async (req) => {
 
   try {
     // Get the request body
-    const { slug, parameters, responseFormat = 'markdown' } = await req.json()
+    const { slug, parameters, responseFormat = 'markdown', preferredProvider } = await req.json()
 
     if (!slug) {
       throw new Error("Missing required parameter: slug")
@@ -69,7 +69,8 @@ serve(async (req) => {
     console.log("Generating content using AI...")
     
     try {
-      const generatedResponse = await generateContent(config)
+      // Pass along preferred provider if it was specified in the request
+      const generatedResponse = await generateContent(config, preferredProvider)
       
       let finalContent = ''
       
