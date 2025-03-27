@@ -27,7 +27,8 @@ export function ensureVersionNumbers(versions: ContentVersion[]): ContentVersion
       active: typeof version.active === 'boolean' ? version.active : false,
       content: version.content || '',
       timestamp: version.timestamp || new Date().toISOString(),
-      source: version.source || 'manual'
+      // Convert 'imported' to 'import' for backward compatibility
+      source: version.source === 'imported' ? 'import' : (version.source || 'manual')
     }));
   } catch (error) {
     console.error("Error in ensureVersionNumbers:", error);
@@ -94,7 +95,8 @@ export function processVersions(versions: any[]): ContentVersion[] {
         id: v.id || `generated-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         content: typeof v.content === 'string' ? v.content : '',
         timestamp: v.timestamp || new Date().toISOString(),
-        source: v.source || 'manual',
+        // Convert 'imported' to 'import' for backward compatibility
+        source: v.source === 'imported' ? 'import' : (v.source || 'manual'),
         active: Boolean(v.active),
         versionNumber: Number(v.versionNumber) || 0
       };

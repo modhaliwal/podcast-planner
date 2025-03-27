@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
@@ -37,9 +36,9 @@ export interface AIGenerationDropdownButtonProps {
   isGenerating?: boolean;
   disabled?: boolean;
   options?: DropdownOption[];
-  onButtonClick?: () => void;  // Optional now, component has default behavior
+  onButtonClick?: () => void;
   onOptionSelect?: (option: DropdownOption) => void;
-  onClearAllVersions?: () => void; // Optional callback for external notification
+  onClearAllVersions?: () => void;
   className?: string;
   showNotification?: boolean;
   selectedOptionId?: string;
@@ -114,7 +113,7 @@ export function AIGenerationDropdownButton({
       
       const newVersion: ContentVersionType = {
         id: `version-${Date.now()}`,
-        content: activeVersion.content, // Use active version's content, not current editor content
+        content: activeVersion.content,
         timestamp: new Date().toISOString(),
         source: activeVersion.source,
         active: true,
@@ -127,7 +126,6 @@ export function AIGenerationDropdownButton({
         setInternalContentVersions([newVersion]);
       }
       
-      // Make sure the editor content matches the active version content
       handleEditorChange(activeVersion.content);
       
       if (onClearAllVersions) {
@@ -173,7 +171,7 @@ export function AIGenerationDropdownButton({
     setOpen(false);
   };
 
-  const addVersion = (content: string, source: 'manual' | 'ai' | 'imported' = 'manual') => {
+  const addVersion = (content: string, source: 'manual' | 'ai' | 'import' = 'manual') => {
     const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     
     const highestVersion = currentVersions.reduce(
@@ -206,19 +204,16 @@ export function AIGenerationDropdownButton({
     return newVersion;
   };
   
-  // Default button click handler that's used if none is provided
   const defaultButtonClickHandler = () => {
     const currentContent = onEditorChange ? editorContent : internalEditorContent;
     if (currentContent.trim()) {
       addVersion(currentContent);
       
-      // Create an AI version as a simulation
       const aiVersion = {
         ...addVersion(currentContent, "ai"),
         content: `<p>AI-generated content based on: "${currentContent.substring(0, 30)}..."</p>`
       };
       
-      // Update the editor with the AI content
       handleEditorChange(aiVersion.content);
     }
   };
@@ -247,7 +242,6 @@ export function AIGenerationDropdownButton({
     return activeVersion?.id;
   };
   
-  // Use the provided handler or fall back to the default one
   const handleButtonClick = onButtonClick || defaultButtonClickHandler;
 
   return (
