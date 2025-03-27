@@ -2,27 +2,33 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { ContentGeneratorProps } from "./types";
-import { useContentGeneration } from "./hooks/useContentGeneration";
+import { toast } from "@/hooks/toast";
 
-export function ContentGenerator({ config, form }: ContentGeneratorProps) {
+export function ContentGenerator({ config }: ContentGeneratorProps) {
   const {
     buttonLabel = "Generate",
     loadingLabel = "Generating..."
   } = config;
   
-  const { isGenerating, shouldDisable, generateContent } = useContentGeneration(config, form);
+  const handleClick = () => {
+    toast({
+      title: "AI Generation Unavailable",
+      description: "AI Generators are currently being reworked. This feature will be available soon.",
+      variant: "destructive"
+    });
+  };
 
   return (
     <Button
       type="button"
       size="sm"
       variant="outline"
-      onClick={generateContent}
-      disabled={shouldDisable()}
+      onClick={handleClick}
+      disabled={true}
       className="flex items-center gap-1"
     >
       <Sparkles className="h-4 w-4" />
-      {isGenerating ? loadingLabel : buttonLabel}
+      {buttonLabel}
     </Button>
   );
 }
