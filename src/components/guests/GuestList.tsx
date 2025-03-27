@@ -1,4 +1,3 @@
-
 import { Guest, Episode } from "@/lib/types";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -159,7 +158,7 @@ export function GuestList({ guests }: GuestListProps) {
                 <div className="hidden md:block flex-1"></div>
                 
                 {/* Latest episode info - visible at larger breakpoints, with fixed width (1/3 of card) */}
-                <div className="hidden lg:block w-1/3 max-w-[200px] shrink-0">
+                <div className="hidden lg:block w-1/3 shrink-0">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
