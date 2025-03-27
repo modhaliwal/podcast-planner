@@ -17,6 +17,9 @@ export type DropdownOption = {
   id: string;
   label: string;
   description?: string;
+  version?: string;
+  date?: string;
+  source?: 'Manual Input' | 'AI Generated' | 'Imported';
 };
 
 // Props for the AI Generation Dropdown Button
@@ -81,7 +84,7 @@ export function AIGenerationDropdownButton({
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-84">
           <ScrollArea className="h-72">
             {options.map(option => (
               <DropdownMenuItem
@@ -92,9 +95,26 @@ export function AIGenerationDropdownButton({
                 }}
                 className="flex flex-col items-start py-2"
               >
+                <div className="flex items-center gap-2 mb-1">
+                  {option.version && (
+                    <span className="bg-secondary px-2 py-0.5 rounded text-xs font-medium">
+                      {option.version}
+                    </span>
+                  )}
+                  {option.date && (
+                    <span className="text-xs text-muted-foreground">
+                      {option.date}
+                    </span>
+                  )}
+                </div>
                 <span className="font-medium">{option.label}</span>
                 {option.description && (
                   <span className="text-xs text-muted-foreground mt-1">{option.description}</span>
+                )}
+                {option.source && (
+                  <span className="text-xs text-muted-foreground mt-1 italic">
+                    {option.source}
+                  </span>
                 )}
               </DropdownMenuItem>
             ))}
