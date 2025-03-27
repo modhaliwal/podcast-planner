@@ -61,7 +61,7 @@ export function GuestContent() {
         setViewMode={setViewMode}
       />
 
-      {/* List View */}
+      {/* List View - New card-style layout */}
       {viewMode === 'list' && (
         <>
           {hasGuests ? (
