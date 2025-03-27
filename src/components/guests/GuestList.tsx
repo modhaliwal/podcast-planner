@@ -87,9 +87,9 @@ export function GuestList({ guests }: GuestListProps) {
                   </p>
                 </div>
                 
-                {/* Social links section - allow to wrap onto lines as needed, but start with a larger width */}
-                <div className="hidden sm:flex items-center shrink-0 ml-0">
-                  <div className="flex flex-wrap items-center gap-1 w-[220px] sm:max-w-[220px] md:max-w-[250px] lg:max-w-[300px]">
+                {/* Social links section - flex grow and wrap with responsive sizing */}
+                <div className="hidden sm:block flex-grow-0 flex-shrink-1 ml-0 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1">
                     {guest.socialLinks.twitter && (
                       <a 
                         href={guest.socialLinks.twitter} 
@@ -160,8 +160,8 @@ export function GuestList({ guests }: GuestListProps) {
                 {/* Flexible spacer - grows to fill available space */}
                 <div className="hidden md:block flex-1"></div>
                 
-                {/* Latest episode info - responsive with breakpoints */}
-                <div className="hidden md:block shrink-0 md:max-w-[280px] md:min-w-[180px] w-auto">
+                {/* Latest episode info - visible at sm breakpoint and up, but will collapse as needed */}
+                <div className="hidden sm:block flex-shrink-1 min-w-0 md:min-w-[180px] w-auto ml-auto">
                   {latestEpisode ? (
                     <GuestEpisodeMiniCard episode={latestEpisode} />
                   ) : (
