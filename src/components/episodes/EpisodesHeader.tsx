@@ -12,11 +12,6 @@ interface EpisodesHeaderProps {
 export function EpisodesHeader({ onRefresh, isLoading }: EpisodesHeaderProps) {
   return (
     <div className="page-header">
-      <div>
-        <h1 className="section-title">Podcast Episodes</h1>
-        <p className="section-subtitle">Manage your episode schedule and content</p>
-      </div>
-      
       <div className="flex gap-2">
         <Button 
           variant="outline" 
