@@ -14,13 +14,9 @@ import { toast } from '@/hooks/toast';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   // Use the episode data hook with the ID from URL params
   const { isLoading: isEpisodeLoading, episode, handleSave } = useEpisodeData(id);
-  
-  // Use guests data hook to fetch guests with the user ID
-  const { guests, isLoadingGuests } = useGuestsData(user?.id);
   
   // Combine loading states
   const isLoading = isEpisodeLoading || isLoadingGuests;
