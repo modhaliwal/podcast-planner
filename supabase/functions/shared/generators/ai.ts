@@ -52,7 +52,7 @@ export async function generateContent(
     provider = preferredProvider;
   }
   
-  console.log(`Generator specifies AI model: ${provider}, model_name: ${config.model_name || 'default'}`);
+  console.log(`Generator specifies AI model: ${provider || 'not specified'}, model_name: ${config.model_name || 'default'}`);
   
   // Third priority: Fall back to the first available API key
   if (!provider) {

@@ -20,6 +20,18 @@ export const DEFAULT_OPENAI_CONFIG: OpenAIConfig = {
 };
 
 /**
+ * List of valid OpenAI models
+ */
+export const VALID_OPENAI_MODELS = [
+  'gpt-3.5-turbo',
+  'gpt-3.5-turbo-1106',
+  'gpt-4',
+  'gpt-4-turbo',
+  'gpt-4o',
+  'gpt-4o-mini'
+];
+
+/**
  * Generates content using OpenAI API
  */
 export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIGeneratorResponse> {
@@ -48,9 +60,11 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
-    // Determine which model to use - use specified model or default
-    const model = config.model_name || DEFAULT_OPENAI_CONFIG.model;
-    console.log(`Using OpenAI model: ${model}`);
+    // Validate and normalize the model name
+    const requestedModel = config.model_name || DEFAULT_OPENAI_CONFIG.model;
+    let model = normalizeModelName(requestedModel);
+    
+    console.log(`Using OpenAI model: ${model} (requested: ${requestedModel})`);
     
     // Build the request body
     const requestBody: any = {
@@ -107,6 +121,30 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     console.error("Error generating content with OpenAI:", error);
     throw new Error(`Failed to generate content with OpenAI: ${error.message}`);
   }
+}
+
+/**
+ * Normalizes model name to ensure it's valid for OpenAI
+ */
+function normalizeModelName(model: string): string {
+  // Check if the model is already a valid OpenAI model
+  if (VALID_OPENAI_MODELS.includes(model)) {
+    return model;
+  }
+  
+  // Handle specific model aliases or corrections
+  if (model === 'o1') {
+    console.log('Model "o1" is not valid, using "gpt-4o" instead');
+    return 'gpt-4o';
+  }
+  
+  // For other unrecognized models, default to gpt-4o
+  if (!VALID_OPENAI_MODELS.includes(model)) {
+    console.log(`Unrecognized model "${model}", using "${DEFAULT_OPENAI_CONFIG.model}" instead`);
+    return DEFAULT_OPENAI_CONFIG.model;
+  }
+  
+  return model;
 }
 
 /**

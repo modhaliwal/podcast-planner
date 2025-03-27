@@ -5,6 +5,19 @@ import { processApiResponse } from './responseParser.ts';
 import { convertMarkdownToHtml } from '../../utils/markdownConverter.ts';
 
 /**
+ * List of valid Perplexity models
+ */
+export const VALID_PERPLEXITY_MODELS = [
+  'llama-3.1-sonar-small-128k',
+  'llama-3.1-sonar-large-128k',
+  'llama-3.1-sonar-small-128k-online',
+  'llama-3.1-sonar-large-128k-online',
+  'mixtral-8x7b-instruct',
+  'sonar-small-chat',
+  'sonar-medium-chat'
+];
+
+/**
  * Generates content using Perplexity API
  */
 export async function generateWithPerplexity(config: AIGeneratorConfig): Promise<AIGeneratorResponse> {
@@ -32,9 +45,11 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
-    // Determine which model to use - use specified model or default
-    const model = config.model_name || DEFAULT_CONFIG.model;
-    console.log(`Using Perplexity model: ${model}`);
+    // Validate and normalize the model name
+    const requestedModel = config.model_name || DEFAULT_CONFIG.model;
+    let model = normalizeModelName(requestedModel);
+    
+    console.log(`Using Perplexity model: ${model} (requested: ${requestedModel})`);
     
     // Configure the Perplexity API request
     const perplexityConfig = createConfig({
@@ -135,6 +150,30 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     console.error("Error generating content with Perplexity:", error);
     throw new Error(`Failed to generate content with Perplexity: ${error.message}`);
   }
+}
+
+/**
+ * Normalizes model name to ensure it's valid for Perplexity
+ */
+function normalizeModelName(model: string): string {
+  // Check if the model is already a valid Perplexity model
+  if (VALID_PERPLEXITY_MODELS.includes(model)) {
+    return model;
+  }
+  
+  // Handle specific model aliases or corrections
+  if (model === 'o1') {
+    console.log('Model "o1" is not valid, using default Perplexity model instead');
+    return DEFAULT_CONFIG.model;
+  }
+  
+  // For other unrecognized models, default to the DEFAULT_CONFIG
+  if (!VALID_PERPLEXITY_MODELS.includes(model)) {
+    console.log(`Unrecognized model "${model}", using "${DEFAULT_CONFIG.model}" instead`);
+    return DEFAULT_CONFIG.model;
+  }
+  
+  return model;
 }
 
 /**
