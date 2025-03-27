@@ -12,7 +12,7 @@ export function EpisodeCoverArt({ coverArt, title }: EpisodeCoverArtProps) {
   return (
     <>
       {coverArt ? (
-        <div className="h-24 w-24 rounded-md overflow-hidden shrink-0 hidden sm:block">
+        <div className="w-full rounded-md overflow-hidden shrink-0 sm:block">
           <AspectRatio ratio={1/1} className="h-full">
             <img 
               src={coverArt} 
@@ -22,7 +22,7 @@ export function EpisodeCoverArt({ coverArt, title }: EpisodeCoverArtProps) {
           </AspectRatio>
         </div>
       ) : (
-        <div className="h-24 w-24 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0 hidden sm:block">
+        <div className="w-full rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0 sm:block">
           <Image className="h-8 w-8 text-muted-foreground" />
         </div>
       )}
