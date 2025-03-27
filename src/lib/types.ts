@@ -1,6 +1,15 @@
 
 import { EpisodeStatus } from './enums';
 
+export interface ContentVersion {
+  id: string;
+  content: string;
+  timestamp: string;
+  source: 'manual' | 'ai' | 'import';
+  active?: boolean; // Active flag to track which version is active
+  versionNumber: number; // Sequential version number
+}
+
 export interface SocialLinks {
   twitter?: string; // Keeping for backward compatibility, now represents X
   facebook?: string;
@@ -10,15 +19,6 @@ export interface SocialLinks {
   website?: string;
   youtube?: string;
   other?: { label: string; url: string }[];
-}
-
-export interface ContentVersion {
-  id: string;
-  content: string;
-  timestamp: string;
-  source: 'manual' | 'ai' | 'import';
-  active?: boolean; // Active flag to track which version is active
-  versionNumber: number; // Sequential version number
 }
 
 export interface Guest {
@@ -39,6 +39,8 @@ export interface Guest {
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;
   updatedAt: string;
+  // Adding tagline property to fix the build error
+  tagline?: string;
 }
 
 export interface RecordingLinks {

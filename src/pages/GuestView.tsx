@@ -1,4 +1,3 @@
-
 import { useParams, useLocation } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -25,16 +24,13 @@ const GuestView = () => {
     handleDelete
   } = useGuestData(id);
   
-  // Refresh guests data and episodes when the page is loaded, but only once
   useEffect(() => {
     if (!hasRefreshedRef.current) {
       console.log('Initial GuestView mount, refreshing guests and episodes data');
       
-      // Small delay to avoid potential race conditions
       setTimeout(() => {
         refreshGuests();
         
-        // Another small delay before loading episodes
         setTimeout(() => {
           refreshEpisodes();
           hasRefreshedRef.current = true;
@@ -42,7 +38,6 @@ const GuestView = () => {
       }, 0);
     }
     
-    // Reset the refresh flag when the path changes
     return () => {
       if (location.pathname !== `/guests/${id}`) {
         hasRefreshedRef.current = false;
@@ -58,15 +53,12 @@ const GuestView = () => {
     return <GuestNotFound />;
   }
 
-  // Filter episodes to only include the ones this guest appears in
   const guestEpisodes = episodes.filter(episode => 
     episode.guestIds.includes(guest.id)
   );
   
-  // Create a wrapper for handleDelete that returns void
   const handleDeleteWrapper = async () => {
     await handleDelete();
-    // This function returns void
   };
   
   const actions = (

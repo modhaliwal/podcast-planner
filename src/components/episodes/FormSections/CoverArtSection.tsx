@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -19,57 +19,69 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
   const currentCoverArt = form.getValues('coverArt');
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
+  const [isRemoved, setIsRemoved] = useState(false);
   
   useEffect(() => {
+    setIsRemoved(false);
+    
     if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
       console.log("Setting initial cover art preview:", currentCoverArt);
       setImagePreview(currentCoverArt);
     }
   }, [currentCoverArt]);
   
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
-      toast.error("Please upload a valid image file (JPEG, PNG or GIF)");
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a valid image file (JPEG, PNG or GIF)",
+        variant: "destructive"
+      });
       return;
     }
 
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      toast.error("Image is too large. Maximum size is 5MB");
+      toast({
+        title: "File too large",
+        description: "Image is too large. Maximum size is 5MB",
+        variant: "destructive"
+      });
       return;
     }
 
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
     }
+
+    setIsRemoved(false);
 
     const previewUrl = URL.createObjectURL(file);
     setLocalBlobUrl(previewUrl);
     setImagePreview(previewUrl);
     
     form.setValue('coverArt', previewUrl, { shouldValidate: true });
-  };
+  }, [form, localBlobUrl]);
 
-  const resetImage = () => {
+  const removeImage = useCallback(() => {
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
     
-    if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
-      setImagePreview(currentCoverArt);
-      form.setValue('coverArt', currentCoverArt, { shouldValidate: true });
-    } else {
-      setImagePreview(undefined);
-      form.setValue('coverArt', undefined, { shouldValidate: true });
-    }
+    setImagePreview(undefined);
+    form.setValue('coverArt', undefined, { shouldValidate: true });
+    setIsRemoved(true);
     
-    toast.info("Cover art selection reset");
-  };
+    toast({
+      title: "Image removed",
+      description: "Cover art has been removed"
+    });
+  }, [form, localBlobUrl]);
 
   useEffect(() => {
     return () => {
@@ -96,7 +108,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
               <div className="flex flex-col items-center gap-4">
                 <div className="w-full max-w-[240px]">
                   <AspectRatio ratio={1} className="bg-muted rounded-md overflow-hidden border">
-                    {imagePreview ? (
+                    {imagePreview && !isRemoved ? (
                       <img
                         src={imagePreview}
                         alt="Cover art preview"
@@ -126,7 +138,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                           className="relative overflow-hidden"
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          {imagePreview ? "Change Cover Art" : "Upload Cover Art"}
+                          {imagePreview && !isRemoved ? "Change" : "Upload Cover Art"}
                           <Input
                             type="file"
                             className="absolute inset-0 opacity-0 cursor-pointer"
@@ -137,15 +149,15 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                       </div>
                     </FormControl>
                     
-                    {imagePreview && (
+                    {imagePreview && !isRemoved && (
                       <Button 
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={resetImage}
+                        onClick={removeImage}
                       >
                         <Trash className="h-4 w-4 mr-1" />
-                        Reset
+                        Remove
                       </Button>
                     )}
                   </div>

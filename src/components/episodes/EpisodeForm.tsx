@@ -9,7 +9,8 @@ import { useEpisodeForm } from '@/hooks/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
-import { FormActions } from './FormSections/FormActions';
+import { FormActions } from '@/components/ui/form-actions';
+import { useCoverArtHandler } from '@/hooks/useCoverArtHandler';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -21,12 +22,24 @@ interface EpisodeFormProps {
 export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormProps) {
   const { refreshEpisodes } = useAuth();
   
+  // Use our cover art upload handler
+  const { originalCoverArt, handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
+  
   // Use our custom hook for form handling
   const { form, isSubmitting, onSubmit } = useEpisodeForm({
     episode, 
     onSubmit: async (updatedEpisode) => {
+      // Process cover art before saving
+      const processedCoverArt = await handleCoverArtUpload(updatedEpisode.coverArt);
+      
+      // Update the episode with the processed cover art
+      const episodeToSave = {
+        ...updatedEpisode,
+        coverArt: processedCoverArt
+      };
+      
       if (onSave) {
-        await onSave(updatedEpisode);
+        await onSave(episodeToSave);
       } else {
         await refreshEpisodes();
       }
@@ -54,7 +67,7 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
         <PodcastUrlsSection form={form} />
         
         <FormActions 
-          episodeId={episode?.id}
+          cancelHref={`/episodes/${episode?.id}`}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
         />
