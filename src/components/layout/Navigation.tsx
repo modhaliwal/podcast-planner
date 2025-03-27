@@ -2,6 +2,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
+  Beaker,
   ChevronRight,
   LayoutDashboard,
   Mic2,
@@ -18,6 +19,7 @@ const navigationItems: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Guests', href: '/guests', icon: UserRound },
   { name: 'Episodes', href: '/episodes', icon: Mic2 },
+  { name: 'Sandbox', href: '/sandbox', icon: Beaker },
 ];
 
 export function Navigation() {

@@ -20,6 +20,7 @@ import EpisodeView from './pages/EpisodeView';
 import EditEpisode from './pages/EditEpisode';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
+import Sandbox from './pages/Sandbox';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
           <Route path="/episodes/:id/edit" element={<ProtectedRoute><EditEpisode /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+          <Route path="/sandbox" element={<ProtectedRoute><Sandbox /></ProtectedRoute>} />
           <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
         </Routes>
         <Toaster />
