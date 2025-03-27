@@ -26,7 +26,7 @@ export function useAIPrompts() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('ai_prompts')
+        .from('ai_generators')
         .select('*')
         .order('title');
       
@@ -48,7 +48,7 @@ export function useAIPrompts() {
     try {
       // Fix: Ensure we're passing a single object, not an array
       const { data, error } = await supabase
-        .from('ai_prompts')
+        .from('ai_generators')
         .insert({
           title: promptData.title || "",
           prompt_text: promptData.prompt_text || "",
@@ -79,7 +79,7 @@ export function useAIPrompts() {
   const updatePrompt = useCallback(async (id: string, updates: Partial<AIPrompt>) => {
     try {
       const { error } = await supabase
-        .from('ai_prompts')
+        .from('ai_generators')
         .update({ 
           ...updates,
           updated_at: new Date().toISOString()
@@ -104,7 +104,7 @@ export function useAIPrompts() {
   const deletePrompt = useCallback(async (id: string) => {
     try {
       const { error } = await supabase
-        .from('ai_prompts')
+        .from('ai_generators')
         .delete()
         .eq('id', id);
       

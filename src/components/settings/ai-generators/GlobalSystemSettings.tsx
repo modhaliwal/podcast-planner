@@ -19,7 +19,7 @@ export function GlobalSystemSettings() {
         
         // First check if the table exists by querying it
         const { data: settings, error } = await supabase
-          .from('ai_prompts')
+          .from('ai_generators')
           .select('*')
           .eq('key', 'global_system_instructions')
           .single();
@@ -52,7 +52,7 @@ export function GlobalSystemSettings() {
       
       // Check if the global_system_instructions entry exists
       const { data: existing, error: fetchError } = await supabase
-        .from('ai_prompts')
+        .from('ai_generators')
         .select('id')
         .eq('key', 'global_system_instructions')
         .single();
@@ -64,7 +64,7 @@ export function GlobalSystemSettings() {
       if (existing) {
         // Update the existing entry
         const { error: updateError } = await supabase
-          .from('ai_prompts')
+          .from('ai_generators')
           .update({
             system_prompt: systemInstructions,
             updated_at: new Date().toISOString()
@@ -75,7 +75,7 @@ export function GlobalSystemSettings() {
       } else {
         // Create a new entry
         const { error: insertError } = await supabase
-          .from('ai_prompts')
+          .from('ai_generators')
           .insert({
             key: 'global_system_instructions',
             title: 'Global System Instructions',
