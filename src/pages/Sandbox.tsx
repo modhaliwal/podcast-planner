@@ -1,6 +1,7 @@
 
 import { Shell } from '@/components/layout/Shell';
 import { Beaker } from 'lucide-react';
+import { AIButtonDemo } from '@/components/sandbox/AIButtonDemo';
 
 const Sandbox = () => {
   return (
@@ -20,11 +21,9 @@ const Sandbox = () => {
             <p className="text-muted-foreground mb-4">
               This area is for experimenting with UI components in isolation before integrating them into the application.
             </p>
-            <div className="p-4 bg-secondary/30 rounded-md">
-              {/* Playground area for components */}
-              <div className="text-center text-muted-foreground">
-                Add experimental components here
-              </div>
+            <div className="p-6 bg-secondary/30 rounded-md">
+              {/* AI Button Demo Component */}
+              <AIButtonDemo />
             </div>
           </div>
 
