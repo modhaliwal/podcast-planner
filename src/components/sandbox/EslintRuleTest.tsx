@@ -14,21 +14,35 @@ const AIGenerationDropdownButtonHeader = () => {
 // This should be fine as it's using the component as a whole
 const TestComponent = () => {
   const options: DropdownOption[] = [
-    { id: 'test', label: 'Test Option' }
+    { id: 'test', label: 'Test Option' },
+    { 
+      id: 'v1', 
+      label: 'Version 1', 
+      version: 'V1',
+      date: '2023-08-01',
+      source: 'AI Generated'
+    },
+    { 
+      id: 'v2', 
+      label: 'Version 2', 
+      version: 'V2',
+      date: '2023-08-15',
+      source: 'Manual Input'
+    },
   ];
   
-  const [editorContent, setEditorContent] = useState('<p>This is some sample content for the rich text editor.</p>');
+  const [editorContent, setEditorContent] = useState('<p>This is some sample content for the <strong>rich text editor</strong>.</p><p>You can now <em>resize</em> this editor to make it larger or smaller!</p><ul><li>Drag the handle below to resize</li><li>Edit the content using the toolbar</li><li>See the preview in the bottom panel</li></ul>');
   
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">ESLint Rule Test</h2>
       
-      <h3 className="text-lg font-medium mb-2">Component with Rich Text Editor</h3>
+      <h3 className="text-lg font-medium mb-2">Resizable Rich Text Editor Component</h3>
       <p className="text-muted-foreground mb-4">
-        This demonstrates the AIGenerationDropdownButton with an integrated rich text editor
+        This demonstrates the AIGenerationDropdownButton with a resizable rich text editor
       </p>
       
-      {/* This usage should be allowed - with rich text editor visible by default */}
+      {/* This usage should be allowed - with resizable rich text editor */}
       <AIGenerationDropdownButton 
         options={options}
         onButtonClick={() => console.log('Button clicked')}
@@ -37,15 +51,14 @@ const TestComponent = () => {
         editorContent={editorContent}
         onEditorChange={setEditorContent}
         editorPlaceholder="Try typing some content here..."
+        onClearAllVersions={() => console.log('Clear all versions')}
+        hoverCardConfig={{
+          aiProvider: "OpenAI",
+          promptKey: "content-generation",
+          promptTitle: "Generate Content",
+          edgeFunctionName: "generate-content"
+        }}
       />
-
-      <div className="mt-6">
-        <h4 className="font-medium mb-2">Editor Content Preview:</h4>
-        <div 
-          className="p-4 border rounded bg-secondary/20 min-h-[100px]"
-          dangerouslySetInnerHTML={{ __html: editorContent }}
-        />
-      </div>
 
       <div className="mt-6 pt-6 border-t">
         <h3 className="text-lg font-medium mb-2">ESLint Rule Violation Examples</h3>

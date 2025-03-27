@@ -16,6 +16,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Editor } from '@/components/editor/Editor';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 // Types for the dropdown options
 export type DropdownOption = {
@@ -52,6 +53,8 @@ export interface AIGenerationDropdownButtonProps {
   onEditorChange?: (content: string) => void;
   showEditor?: boolean;
   editorPlaceholder?: string;
+  // New prop for configuring initial editor height
+  editorMinHeight?: number;
 }
 
 /**
@@ -86,6 +89,7 @@ export function AIGenerationDropdownButton({
   onEditorChange,
   showEditor = true,
   editorPlaceholder = "Enter your content here...",
+  editorMinHeight = 200,
 }: AIGenerationDropdownButtonProps) {
   // State to manage the dropdown open state
   const [open, setOpen] = useState(false);
@@ -262,14 +266,32 @@ export function AIGenerationDropdownButton({
         </DropdownMenu>
       </div>
       
-      {/* Rich Text Editor - Now directly below the button */}
+      {/* Resizable Rich Text Editor */}
       {showEditor && (
-        <div className="mt-4 border rounded-md">
-          <Editor
-            value={onEditorChange ? editorContent : internalEditorContent}
-            onChange={handleEditorChange}
-            placeholder={editorPlaceholder}
-          />
+        <div className="mt-4">
+          <ResizablePanelGroup direction="vertical" className="border rounded-md">
+            <ResizablePanel minSize={20} defaultSize={80}>
+              <div className="h-full w-full">
+                <Editor
+                  value={onEditorChange ? editorContent : internalEditorContent}
+                  onChange={handleEditorChange}
+                  placeholder={editorPlaceholder}
+                />
+              </div>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel minSize={5} defaultSize={20}>
+              <div className="p-4 bg-muted/30 h-full">
+                <h4 className="text-sm font-medium mb-2">Preview</h4>
+                <div 
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ 
+                    __html: onEditorChange ? editorContent : internalEditorContent 
+                  }}
+                />
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       )}
     </div>
