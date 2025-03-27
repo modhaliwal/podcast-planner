@@ -11,7 +11,7 @@ export async function callPerplexityAPI(
   config: PerplexityConfig,
   apiKey: string
 ) {
-  console.log("Calling Perplexity API to generate research");
+  console.log(`Calling Perplexity API to generate research using model: ${config.model}`);
   
   const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',

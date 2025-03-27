@@ -44,6 +44,7 @@ serve(async (req) => {
     }
 
     console.log(`Using AI generator: ${generator.title}`)
+    console.log(`AI Model: ${generator.ai_model || 'not specified'}, Model Name: ${generator.model_name || 'default'}`)
 
     // Create configuration for the AI generator
     const config = {
@@ -55,6 +56,9 @@ serve(async (req) => {
       systemPrompt: generator.system_prompt,
       contextInstructions: generator.context_instructions,
       exampleOutput: generator.example_output,
+      // Pass the AI model and model name to the generator
+      ai_model: generator.ai_model,
+      model_name: generator.model_name,
       ...parameters
     }
 

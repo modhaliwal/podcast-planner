@@ -32,6 +32,10 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
+    // Determine which model to use - use specified model or default
+    const model = config.model_name || DEFAULT_CONFIG.model;
+    console.log(`Using Perplexity model: ${model}`);
+    
     // Determine if we should use JSON response format
     let responseFormat;
     try {
@@ -49,7 +53,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: DEFAULT_CONFIG.model,
+        model: model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
@@ -74,7 +78,7 @@ export async function generateWithPerplexity(config: AIGeneratorConfig): Promise
     let markdown;
     let metadata: any = {
       provider: 'perplexity',
-      model: DEFAULT_CONFIG.model
+      model: model
     };
     
     if (responseFormat && hasJsonResponseSupport()) {

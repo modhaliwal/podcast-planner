@@ -14,7 +14,7 @@ export interface OpenAIConfig {
  * Default OpenAI configuration
  */
 export const DEFAULT_OPENAI_CONFIG: OpenAIConfig = {
-  model: 'gpt-3.5-turbo',
+  model: 'gpt-4o',
   temperature: 0.7,
   maxTokens: 1500
 };
@@ -48,6 +48,10 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
     console.log(`Using ${config.systemPrompt ? 'custom' : 'default'} system prompt`);
     console.log(`Using ${config.prompt ? 'custom' : 'default'} user prompt`);
     
+    // Determine which model to use - use specified model or default
+    const model = config.model_name || DEFAULT_OPENAI_CONFIG.model;
+    console.log(`Using OpenAI model: ${model}`);
+    
     // Make the API request to OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -56,7 +60,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: model,
         messages: [
           {
             role: "system",
@@ -86,7 +90,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
       content: generatedContent,
       metadata: {
         provider: 'openai',
-        model: 'gpt-3.5-turbo'
+        model: model
       }
     };
   } catch (error) {

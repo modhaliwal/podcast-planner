@@ -65,9 +65,10 @@ export function AIGeneratorPlayground() {
     setResultMetadata(null);
 
     try {
+      const selectedGenerator = prompts.find(p => p.slug === selectedPrompt);
       toast({
         title: "Generating content",
-        description: `Using ${prompts.find(p => p.slug === selectedPrompt)?.title || "selected generator"}...`
+        description: `Using ${selectedGenerator?.title || "selected generator"}...`
       });
 
       const { data, error } = await supabase.functions.invoke('generate-with-ai-settings', {
@@ -172,7 +173,6 @@ export function AIGeneratorPlayground() {
 
   // Helper function to determine the AI provider based on generator settings
   const determineProvider = (generator: any): string => {
-    // Logic to determine provider based on generator settings
     if (generator.ai_model === 'perplexity') return 'Perplexity AI';
     if (generator.ai_model === 'claude') return 'Anthropic Claude';
     if (generator.ai_model === 'gemini') return 'Google Gemini';
@@ -185,13 +185,13 @@ export function AIGeneratorPlayground() {
     // Return specific model if defined
     if (generator.model_name) return generator.model_name;
     
-    // Model based on the provider
+    // Default models based on the provider
     if (generator.ai_model === 'perplexity') return 'llama-3.1-sonar-small-128k';
     if (generator.ai_model === 'claude') return 'claude-3-opus';
     if (generator.ai_model === 'gemini') return 'gemini-pro';
     
     // Default OpenAI model
-    return 'gpt-3.5-turbo';
+    return 'gpt-4o';
   };
 
   // Simple function to replace parameters in the prompt text

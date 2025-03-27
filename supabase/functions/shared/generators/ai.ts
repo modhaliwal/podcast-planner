@@ -11,6 +11,8 @@ export interface AIGeneratorConfig {
   systemPrompt?: string;
   contextInstructions?: string;
   exampleOutput?: string;
+  ai_model?: string;
+  model_name?: string;
   [key: string]: any; // Allow for additional fields
 }
 
@@ -41,8 +43,8 @@ export async function generateContent(
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   const claudeApiKey = Deno.env.get('ANTHROPIC_API_KEY');
   
-  // Determine which provider to use based on preference, keys available, and task type
-  let provider = preferredProvider;
+  // Determine which provider to use based on preference, config setting, or available keys
+  let provider = preferredProvider || config.ai_model;
   
   if (!provider) {
     // If no preference, use Perplexity for research (if key available)
@@ -79,6 +81,8 @@ export async function generateContent(
       (provider === 'claude' && !claudeApiKey)) {
     throw new Error("No API keys available for AI content generation");
   }
+  
+  console.log(`Using provider: ${provider}, model: ${config.model_name || 'default'}`);
   
   try {
     // Import the appropriate generator dynamically
