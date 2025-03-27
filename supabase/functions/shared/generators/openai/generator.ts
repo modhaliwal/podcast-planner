@@ -68,7 +68,7 @@ export async function generateWithOpenAI(config: AIGeneratorConfig): Promise<AIG
       temperature: DEFAULT_OPENAI_CONFIG.temperature,
     };
     
-    // Only newer models use max_completion_tokens instead of max_tokens
+    // Determine whether to use max_tokens or max_completion_tokens based on model
     if (model.includes('gpt-4o')) {
       requestBody.max_completion_tokens = DEFAULT_OPENAI_CONFIG.maxTokens;
     } else {
