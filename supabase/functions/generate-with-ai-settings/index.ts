@@ -59,6 +59,8 @@ serve(async (req) => {
       // Pass the AI model and model name to the generator
       ai_model: generator.ai_model,
       model_name: generator.model_name,
+      // Add parameters to be used for prompt variable substitution
+      parameters: parameters,
       ...parameters
     }
 

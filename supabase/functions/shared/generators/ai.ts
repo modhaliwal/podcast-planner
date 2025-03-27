@@ -14,6 +14,7 @@ export interface AIGeneratorConfig {
   ai_model?: string;
   model_name?: string;
   perplexityConfig?: any;
+  parameters?: Record<string, any>; // Added parameters field
   [key: string]: any; // Allow for additional fields
 }
 
@@ -30,6 +31,29 @@ export interface AIGeneratorResponse {
     images?: string[];
     [key: string]: any;
   };
+}
+
+/**
+ * Helper function to process prompt templates with parameters
+ * Replaces {paramName} tokens with the actual parameter values
+ */
+export function processPromptWithParameters(
+  promptText: string,
+  parameters: Record<string, any> = {}
+): string {
+  if (!promptText) return '';
+  
+  let processedText = promptText;
+  
+  // Replace all {paramName} occurrences with corresponding parameter values
+  Object.entries(parameters).forEach(([key, value]) => {
+    const placeholder = `{${key}}`;
+    // Convert objects to strings if needed
+    const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    processedText = processedText.replace(new RegExp(placeholder, 'g'), valueStr);
+  });
+  
+  return processedText;
 }
 
 /**
@@ -88,6 +112,23 @@ export async function generateContent(
   }
   
   console.log(`Using provider: ${provider}, model: ${config.model_name || 'default'}`);
+  
+  // Process prompts with parameters if they exist
+  if (config.parameters) {
+    console.log("Processing prompts with parameters");
+    
+    if (config.prompt) {
+      config.prompt = processPromptWithParameters(config.prompt, config.parameters);
+    }
+    
+    if (config.systemPrompt) {
+      config.systemPrompt = processPromptWithParameters(config.systemPrompt, config.parameters);
+    }
+    
+    if (config.contextInstructions) {
+      config.contextInstructions = processPromptWithParameters(config.contextInstructions, config.parameters);
+    }
+  }
   
   try {
     // Import the appropriate generator dynamically
