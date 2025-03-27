@@ -1,6 +1,7 @@
 
 import { useParams, useLocation } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { useAuth } from '@/contexts/AuthContext';
 import { GuestViewHeader } from '@/components/guests/GuestViewHeader';
@@ -68,14 +69,20 @@ const GuestView = () => {
     // This function returns void
   };
   
+  const actions = (
+    <GuestViewHeader 
+      guest={guest}
+      onDeleteClick={() => setIsDeleteDialogOpen(true)}
+    />
+  );
+  
   return (
     <Shell>
-      <div className="page-container">
-        <GuestViewHeader 
-          guest={guest}
-          onDeleteClick={() => setIsDeleteDialogOpen(true)}
-        />
-        
+      <PageLayout
+        title={guest.name}
+        subtitle={guest.tagline || "Guest Profile"}
+        actions={actions}
+      >
         <GuestDetail guest={guest} episodes={guestEpisodes} />
 
         <DeleteGuestDialog 
@@ -84,7 +91,7 @@ const GuestView = () => {
           onOpenChange={setIsDeleteDialogOpen}
           onConfirmDelete={handleDeleteWrapper}
         />
-      </div>
+      </PageLayout>
     </Shell>
   );
 };

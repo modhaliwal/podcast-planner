@@ -1,8 +1,8 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { GuestForm } from '@/components/guests/GuestForm';
-import { useAuth } from '@/contexts/AuthContext';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
 import { useGuestData } from '@/hooks/guests';
@@ -30,18 +30,16 @@ const EditGuest = () => {
   
   return (
     <Shell>
-      <div className="page-container">
-        <div className="page-header mb-6">
-          <h1 className="section-title">Edit Guest</h1>
-          <p className="section-subtitle">Update {guest.name}'s information</p>
-        </div>
-        
+      <PageLayout
+        title="Edit Guest"
+        subtitle={`Update ${guest.name}'s information`}
+      >
         <GuestForm
           guest={guest}
           onSave={onSave}
           onCancel={() => navigate(`/guests/${id}`)}
         />
-      </div>
+      </PageLayout>
     </Shell>
   );
 }

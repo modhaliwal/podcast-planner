@@ -1,8 +1,9 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfileSettings } from '@/components/settings/ProfileSettings';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { AIPromptsSettings } from '@/components/settings/AIPromptsSettings';
@@ -32,14 +33,10 @@ export default function Settings() {
 
   return (
     <Shell>
-      <div className="page-container">
-        <div className="page-header mb-6">
-          <div>
-            <h1 className="section-title">Settings</h1>
-            <p className="section-subtitle">Manage your account and application preferences</p>
-          </div>
-        </div>
-
+      <PageLayout
+        title="Settings"
+        subtitle="Manage your account and application preferences"
+      >
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="mb-8">
             <TabsTrigger value="profile" className="flex items-center gap-2">
@@ -68,7 +65,7 @@ export default function Settings() {
             <AIPromptsSettings />
           </TabsContent>
         </Tabs>
-      </div>
+      </PageLayout>
     </Shell>
   );
 }

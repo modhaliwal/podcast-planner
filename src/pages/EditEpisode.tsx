@@ -1,6 +1,7 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
@@ -78,12 +79,10 @@ const EditEpisode = () => {
   
   return (
     <Shell>
-      <div className="w-full max-w-[1400px] mx-auto px-4">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Edit Episode</h1>
-          <p className="text-muted-foreground">Update episode details and information</p>
-        </div>
-        
+      <PageLayout 
+        title="Edit Episode" 
+        subtitle="Update episode details and information"
+      >
         <EpisodeForm
           key={episodeKey}
           episode={episode}
@@ -91,7 +90,7 @@ const EditEpisode = () => {
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
         />
-      </div>
+      </PageLayout>
     </Shell>
   );
 };

@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { EpisodeFormCard } from '@/components/episodes/CreateEpisodeForm/EpisodeFormCard';
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
@@ -76,7 +76,6 @@ const CreateEpisode = () => {
       return;
     }
     
-    // Validation
     const hasErrors = episodes.some(ep => !ep.episodeNumber || !ep.scheduled);
     if (hasErrors) {
       toast({
@@ -90,14 +89,12 @@ const CreateEpisode = () => {
     setIsSubmitting(true);
 
     try {
-      // Save episodes using the service
       const result = await createEpisodes(episodes, user);
       
       if (!result.success) {
         throw result.error;
       }
 
-      // Refresh episodes list
       await refreshEpisodes();
       
       toast({
@@ -105,7 +102,6 @@ const CreateEpisode = () => {
         description: `Created ${episodes.length} new episodes`
       });
       
-      // Navigate back to episodes list
       navigate('/episodes');
     } catch (error: any) {
       toast({
@@ -119,18 +115,23 @@ const CreateEpisode = () => {
     }
   };
 
+  const actions = (
+    <Button 
+      type="button" 
+      variant="outline" 
+      onClick={() => navigate('/episodes')}
+    >
+      Cancel
+    </Button>
+  );
+
   return (
     <Shell>
-      <div className="page-container">
-        <div className="page-header mb-6">
-          <div>
-            <h1 className="section-title">Create New Episodes</h1>
-            <p className="section-subtitle">
-              Add one or more episodes to your schedule
-            </p>
-          </div>
-        </div>
-
+      <PageLayout
+        title="Create New Episodes"
+        subtitle="Add one or more episodes to your schedule"
+        actions={actions}
+      >
         <form onSubmit={handleSubmit}>
           <EpisodeFormCard
             episodes={episodes}
@@ -140,14 +141,7 @@ const CreateEpisode = () => {
             onUpdateTime={updateTime}
           />
 
-          <div className="flex justify-end items-center mt-6 space-x-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => navigate('/episodes')}
-            >
-              Cancel
-            </Button>
+          <div className="form-actions">
             <Button 
               type="submit"
               disabled={isSubmitting}
@@ -157,7 +151,7 @@ const CreateEpisode = () => {
             </Button>
           </div>
         </form>
-      </div>
+      </PageLayout>
     </Shell>
   );
 };

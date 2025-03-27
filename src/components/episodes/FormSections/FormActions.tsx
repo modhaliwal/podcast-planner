@@ -15,7 +15,7 @@ export function FormActions({
   onCancel
 }: FormActionsProps) {
   return (
-    <div className="flex justify-end gap-4 pt-4 border-t mt-8">
+    <div className="form-actions">
       {onCancel ? (
         <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
           <X className="h-4 w-4 mr-2" />

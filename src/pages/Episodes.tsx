@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodesHeader } from '@/components/episodes/EpisodesHeader';
 import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter';
 import { EpisodesList } from '@/components/episodes/EpisodesList';
@@ -12,7 +12,6 @@ const Episodes = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   
-  // Load episodes once on initial mount
   useEffect(() => {
     if (!initialLoadDone && !isDataLoading) {
       console.log("Episodes initial load, refreshing data");
@@ -21,14 +20,12 @@ const Episodes = () => {
     }
   }, [initialLoadDone, isDataLoading, refreshEpisodes]);
   
-  // Filter episodes based on search query and status
   const filteredEpisodes = episodes.filter(episode => {
     const matchesSearch = episode.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || episode.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
   
-  // Sort episodes by scheduled date (most recent first)
   const sortedEpisodes = [...filteredEpisodes].sort(
     (a, b) => new Date(b.scheduled).getTime() - new Date(a.scheduled).getTime()
   );
@@ -38,14 +35,20 @@ const Episodes = () => {
     refreshEpisodes();
   };
   
+  const actions = (
+    <EpisodesHeader 
+      onRefresh={handleRefresh} 
+      isLoading={isDataLoading} 
+    />
+  );
+  
   return (
     <Shell>
-      <div className="page-container">
-        <EpisodesHeader 
-          onRefresh={handleRefresh} 
-          isLoading={isDataLoading} 
-        />
-        
+      <PageLayout
+        title="Episodes"
+        subtitle="Manage your podcast episodes"
+        actions={actions}
+      >
         <EpisodesSearchFilter 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -59,7 +62,7 @@ const Episodes = () => {
           isLoading={isDataLoading}
           searchQuery={searchQuery}
         />
-      </div>
+      </PageLayout>
     </Shell>
   );
 };
