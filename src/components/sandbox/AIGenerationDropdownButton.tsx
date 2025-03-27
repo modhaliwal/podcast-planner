@@ -1,3 +1,5 @@
+// DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sparkles, ChevronDown, Check, Trash2 } from "lucide-react";
