@@ -26,27 +26,18 @@ const quillFormats = [
   'link'
 ];
 
-const quillStyles = {
-  height: '200px',
-  marginBottom: '50px',
-};
-
 export function NotesSection({ notes, setNotes }: NotesSectionProps) {
   return (
-    <div className="mt-10 pt-4">
-      <FormLabel>Personal Notes</FormLabel>
-      <div className="border rounded-md mt-2">
-        <ReactQuill 
-          value={notes} 
-          onChange={setNotes} 
-          modules={quillModules}
-          formats={quillFormats}
-          placeholder="Private notes about this guest"
-          theme="snow"
-          className="bg-background resize-vertical"
-          style={quillStyles}
-        />
-      </div>
+    <div>
+      <ReactQuill 
+        value={notes} 
+        onChange={setNotes} 
+        modules={quillModules}
+        formats={quillFormats}
+        placeholder="Private notes about this guest"
+        theme="snow"
+        className="bg-background resize-vertical h-[300px]"
+      />
     </div>
   );
 }

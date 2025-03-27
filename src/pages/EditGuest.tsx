@@ -8,6 +8,8 @@ import { GuestNotFound } from '@/components/guests/GuestNotFound';
 import { useGuestData } from '@/hooks/guests';
 import { Guest } from '@/lib/types';
 import { toast } from '@/hooks/toast';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const EditGuest = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,12 +51,25 @@ const EditGuest = () => {
       });
     }
   };
+
+  const headerActions = (
+    <Button
+      variant="ghost"
+      onClick={() => navigate(`/guests/${id}`)}
+      className="flex items-center gap-1"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Back to Guest
+    </Button>
+  );
   
   return (
     <Shell>
       <PageLayout
-        title="Edit Guest"
-        subtitle={`Update ${guest.name}'s information`}
+        title={`Edit ${guest.name}`}
+        subtitle="Update guest information"
+        backLink="/guests"
+        actions={headerActions}
       >
         <GuestForm
           guest={guest}

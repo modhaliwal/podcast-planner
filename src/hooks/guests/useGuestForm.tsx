@@ -4,10 +4,30 @@ import { useForm } from 'react-hook-form';
 import { Guest } from '@/lib/types';
 import { deleteImage, isBlobUrl, uploadImage } from '@/lib/imageUpload';
 import { toast } from '@/hooks/toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+// Form validation schema
+const GuestFormSchema = z.object({
+  name: z.string().min(2, "Name is required"),
+  title: z.string().optional().or(z.literal("")),
+  company: z.string().optional().or(z.literal("")),
+  email: z.string().email("Invalid email format").optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  bio: z.string().optional().or(z.literal("")),
+  status: z.enum(["potential", "contacted", "confirmed", "appeared"]),
+  twitter: z.string().optional().or(z.literal("")),
+  facebook: z.string().optional().or(z.literal("")),
+  linkedin: z.string().optional().or(z.literal("")),
+  instagram: z.string().optional().or(z.literal("")),
+  tiktok: z.string().optional().or(z.literal("")),
+  youtube: z.string().optional().or(z.literal("")),
+  website: z.string().optional().or(z.literal("")),
+});
 
 interface UseGuestFormProps {
   guest: Guest;
-  onSave: (updatedGuest: Guest) => void;
+  onSave: (updatedGuest: Guest) => Promise<any>;
   onCancel: () => void;
 }
 
@@ -18,13 +38,14 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
   
   // Initialize form with guest data
   const form = useForm({
+    resolver: zodResolver(GuestFormSchema),
     defaultValues: {
       name: guest.name,
       title: guest.title,
       company: guest.company || "",
       email: guest.email || "",
       phone: guest.phone || "",
-      bio: guest.bio,
+      bio: guest.bio || "",
       status: guest.status || "potential",
       twitter: guest.socialLinks.twitter || "",
       facebook: guest.socialLinks.facebook || "",
@@ -86,7 +107,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         company: formData.company || undefined,
         email: formData.email || undefined,
         phone: formData.phone || undefined,
-        bio: formData.bio,
+        bio: formData.bio || "",
         notes: notes || undefined,
         status: formData.status,
         imageUrl: imageUrl as string | undefined,
