@@ -1,16 +1,14 @@
 
 import { UseFormReturn } from "react-hook-form";
-import { ContentVersion, Guest } from "@/lib/types";
+import { Guest } from "@/lib/types";
 import { AIGenerationField } from "@/components/shared/AIGenerationField";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;
-  bioVersions: ContentVersion[];
-  onVersionsChange: (versions: ContentVersion[]) => void;
   guest?: Guest;
 }
 
-export function BioSection({ form, bioVersions = [], onVersionsChange, guest }: BioSectionProps) {
+export function BioSection({ form, guest }: BioSectionProps) {
   // Get the bio content from the form
   const bioContent = form.getValues('bio') || '';
   
@@ -41,6 +39,7 @@ export function BioSection({ form, bioVersions = [], onVersionsChange, guest }: 
   // Handle content change from editor
   const handleEditorChange = (content: string) => {
     form.setValue('bio', content, { shouldDirty: true });
+    console.log("Bio content updated:", content); // Debug logging
   };
   
   return (
@@ -59,8 +58,6 @@ export function BioSection({ form, bioVersions = [], onVersionsChange, guest }: 
         showEditor={true}
         editorType="plain" 
         editorPlaceholder="Guest biography..."
-        editorContentVersions={bioVersions}
-        onContentVersionsChange={onVersionsChange}
         userIdentifier="manual"
         contentName="Bio"
         hoverCardConfig={{

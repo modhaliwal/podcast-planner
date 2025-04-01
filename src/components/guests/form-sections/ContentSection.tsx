@@ -11,9 +11,7 @@ interface ContentSectionProps {
   setNotes: (value: string) => void;
   backgroundResearch: string;
   setBackgroundResearch: (value: string) => void;
-  bioVersions: ContentVersion[];
   backgroundResearchVersions: ContentVersion[];
-  onBioVersionsChange: (versions: ContentVersion[]) => void;
   onBackgroundResearchVersionsChange: (versions: ContentVersion[]) => void;
   guest?: Guest;
 }
@@ -24,9 +22,7 @@ export function ContentSection({
   setNotes,
   backgroundResearch,
   setBackgroundResearch,
-  bioVersions = [],
   backgroundResearchVersions = [],
-  onBioVersionsChange,
   onBackgroundResearchVersionsChange,
   guest
 }: ContentSectionProps) {
@@ -34,8 +30,6 @@ export function ContentSection({
     <div className="space-y-6">
       <BioSection 
         form={form} 
-        bioVersions={bioVersions}
-        onVersionsChange={onBioVersionsChange}
         guest={guest}
       />
       <BackgroundResearchSection 

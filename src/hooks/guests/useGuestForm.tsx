@@ -114,7 +114,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         bio: formData.bio || "",
-        bioVersions: bioVersions,
+        // bioVersions removed - AIGenerationField handles this internally
         backgroundResearch: backgroundResearch || undefined,
         backgroundResearchVersions: backgroundResearchVersions,
         notes: notes || undefined,
