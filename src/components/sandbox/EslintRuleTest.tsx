@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 // This import should trigger our ESLint rule because it's destructuring from the protected component
-import { AIGenerationDropdownButton, DropdownOption } from './AIGenerationDropdownButton';
+import { AIGenerationField, DropdownOption } from './AIGenerationField';
 
 // This component should trigger the rule because it's trying to create a component 
 // that replaces part of the protected component
-const AIGenerationDropdownButtonHeader = () => {
+const AIGenerationFieldHeader = () => {
   return (
     <div>This is a header for the dropdown button</div>
   );
@@ -40,12 +40,12 @@ const TestComponent = () => {
       
       <h3 className="text-lg font-medium mb-2">Text Editor Component</h3>
       <p className="text-muted-foreground mb-4">
-        This demonstrates the AIGenerationDropdownButton with a text editor that can toggle between rich text and plain text.
+        This demonstrates the AIGenerationField with a text editor that can toggle between rich text and plain text.
         The editor now has a fixed layout with a non-resizable preview section.
       </p>
       
-      {/* Using AIGenerationDropdownButton with fixed-size editor */}
-      <AIGenerationDropdownButton 
+      {/* Using AIGenerationField with fixed-size editor */}
+      <AIGenerationField 
         options={options}
         onButtonClick={() => console.log('Button clicked')}
         onOptionSelect={(option) => console.log('Option selected', option)}
@@ -68,11 +68,10 @@ const TestComponent = () => {
         <h3 className="text-lg font-medium mb-2">ESLint Rule Violation Examples</h3>
         
         {/* This should trigger the rule because we're creating a component that includes the protected name */}
-        <AIGenerationDropdownButtonHeader />
+        <AIGenerationFieldHeader />
       </div>
     </div>
   );
 };
 
 export default TestComponent;
-

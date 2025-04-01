@@ -1,7 +1,7 @@
 
 import { Shell } from '@/components/layout/Shell';
 import { Beaker, Sparkles } from 'lucide-react';
-import { AIGenerationDropdownButton } from '@/components/sandbox/AIGenerationDropdownButton';
+import { AIGenerationField } from '@/components/sandbox/AIGenerationField';
 import { useState, useEffect } from 'react';
 import { ContentVersion } from '@/lib/types';
 import { AIGeneratorPlayground } from '@/components/sandbox/AIGeneratorPlayground';
@@ -246,7 +246,7 @@ const Sandbox = () => {
                   This version of the component uses the rich text editor mode.
                 </p>
                 <div className="p-6 bg-secondary/30 rounded-md">
-                  <AIGenerationDropdownButton
+                  <AIGenerationField
                     buttonLabel="Generate Rich Text"
                     editorContent={richContent}
                     onEditorChange={setRichContent}
@@ -275,7 +275,7 @@ const Sandbox = () => {
                   This version of the component uses the plain text editor mode.
                 </p>
                 <div className="p-6 bg-secondary/30 rounded-md">
-                  <AIGenerationDropdownButton
+                  <AIGenerationField
                     buttonLabel="Generate Plain Text"
                     editorContent={plainContent}
                     onEditorChange={setPlainContent}

@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { AIGenerationDropdownButton, ContentVersion } from './AIGenerationDropdownButton';
+import { AIGenerationField, ContentVersion } from './AIGenerationField';
 
 export function AIButtonDemo() {
   const [content, setContent] = useState('');
@@ -240,7 +239,7 @@ export function AIButtonDemo() {
             This component demonstrates the AI generation button with rich text content versioning.
           </p>
           
-          <AIGenerationDropdownButton
+          <AIGenerationField
             buttonLabel="Generate"
             loadingLabel="Generating..."
             isGenerating={isGenerating}
@@ -270,7 +269,7 @@ export function AIButtonDemo() {
             This component demonstrates the AI generation button with plain text content versioning.
           </p>
           
-          <AIGenerationDropdownButton
+          <AIGenerationField
             buttonLabel="Generate Plain Text"
             loadingLabel="Generating..."
             isGenerating={isGenerating}
