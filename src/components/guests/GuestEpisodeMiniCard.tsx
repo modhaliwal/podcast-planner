@@ -18,7 +18,7 @@ export function GuestEpisodeMiniCard({ episode }: GuestEpisodeMiniCardProps) {
   };
 
   return (
-    <div className="relative flex flex-col bg-card border rounded-md p-2.5 shadow-sm h-full">
+    <div className="relative flex flex-col bg-card border rounded-md p-2.5 shadow-sm">
       {/* Cover art as background image */}
       {episode.coverArt && (
         <div 
