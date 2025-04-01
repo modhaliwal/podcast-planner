@@ -1,4 +1,3 @@
-
 import { Shell } from '@/components/layout/Shell';
 import { Beaker, Sparkles } from 'lucide-react';
 import { AIGenerationField } from '@/components/shared/AIGenerationField';
@@ -16,12 +15,15 @@ import { useAIPrompts } from '@/hooks/useAIPrompts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DynamicParameters } from '@/components/sandbox/DynamicParameters';
 import { Separator } from '@/components/ui/separator';
+import { TextModeSelector } from '@/components/sandbox/TextModeSelector';
+import { RichTextEditor } from '@/components/sandbox/RichTextEditor';
 
 const Sandbox = () => {
   // Fetch available AI generators
   const { prompts: generators, isLoading: loadingGenerators } = useAIPrompts();
   const [selectedGeneratorSlug, setSelectedGeneratorSlug] = useState<string>("");
   const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
+  const [textMode, setTextMode] = useState<"plain" | "rich">("plain");
   
   // State for the rich text editor version (keeping existing functionality)
   const [richContent, setRichContent] = useState("<p>Test your rich text content here!</p>");
@@ -103,12 +105,17 @@ const Sandbox = () => {
     fieldName: "content",
     form: simplifiedForm,
     parameters: parsedParameters,
-    responseFormat: 'markdown'
+    responseFormat: textMode === 'rich' ? 'html' : 'markdown'
   });
   
   // Handle generator selection
   const handleGeneratorChange = (slug: string) => {
     setSelectedGeneratorSlug(slug);
+  };
+
+  // Handle text mode change
+  const handleTextModeChange = (mode: "plain" | "rich") => {
+    setTextMode(mode);
   };
   
   return (
@@ -168,6 +175,12 @@ const Sandbox = () => {
                         )}
                       </div>
                       
+                      {/* Text Mode Selector */}
+                      <TextModeSelector 
+                        mode={textMode} 
+                        onModeChange={handleTextModeChange} 
+                      />
+                      
                       {/* Dynamic Parameters */}
                       {selectedGenerator && (
                         <DynamicParameters 
@@ -194,11 +207,19 @@ const Sandbox = () => {
                                 {generatorContent.isGenerating ? "Generating..." : "Generate"}
                               </Button>
                             </div>
-                            <Textarea 
-                              placeholder="Generated content will appear here" 
-                              className="min-h-[200px]"
-                              {...field} 
-                            />
+                            
+                            {textMode === "plain" ? (
+                              <Textarea 
+                                placeholder="Generated content will appear here" 
+                                className="min-h-[200px]"
+                                {...field} 
+                              />
+                            ) : (
+                              <RichTextEditor 
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                              />
+                            )}
                           </FormItem>
                         )}
                       />
