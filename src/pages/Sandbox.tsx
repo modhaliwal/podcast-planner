@@ -8,10 +8,10 @@ import { AIGeneratorPlayground } from '@/components/sandbox/AIGeneratorPlaygroun
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useGeneratorContent } from '@/components/content/hooks/useGeneratorContent';
-import { Form, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 const Sandbox = () => {
   // State for the rich text editor version
@@ -91,7 +91,7 @@ const Sandbox = () => {
                 </CardHeader>
                 <CardContent>
                   <Form {...simplifiedForm}>
-                    <form className="space-y-6">
+                    <div className="space-y-6">
                       <FormField
                         control={simplifiedForm.control}
                         name="name"
@@ -162,7 +162,7 @@ const Sandbox = () => {
                           </FormItem>
                         )}
                       />
-                    </form>
+                    </div>
                   </Form>
                 </CardContent>
               </Card>
