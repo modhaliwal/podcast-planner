@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -32,6 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [initialAuthComplete, setInitialAuthComplete] = useState(false);
   
+  // Tracking auth state to prevent duplicate refreshes
+  const authStateRef = useRef({
+    lastRefreshTime: 0,
+    isRefreshing: false,
+  });
+  
   // Pass the user ID directly to data hooks
   const { 
     guests, 
@@ -47,16 +53,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const isDataLoading = isLoadingGuests || isLoadingEpisodes;
 
-  // Unified data refresh function
+  // Unified data refresh function with debounce protection
   const refreshAllData = useCallback(async () => {
     if (!user?.id) {
       console.log("Cannot refresh data: No user ID available");
       return;
     }
     
-    console.log("Refreshing all data for user:", user.id);
+    // Prevent refreshing too frequently (at most once every 30 seconds)
+    const now = Date.now();
+    const timeSinceLastRefresh = now - authStateRef.current.lastRefreshTime;
+    
+    if (authStateRef.current.isRefreshing || timeSinceLastRefresh < 30000) {
+      console.log("Skipping refresh: Already refreshing or refreshed recently");
+      return;
+    }
     
     try {
+      authStateRef.current.isRefreshing = true;
+      console.log("Refreshing all data for user:", user.id);
+      
       // First refresh guests with force=true
       const refreshedGuests = await refreshGuests(true);
       console.log(`Refreshed ${refreshedGuests.length} guests`);
@@ -64,8 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Then refresh episodes with force=true
       const refreshedEpisodes = await refreshEpisodes(true);
       console.log(`Refreshed ${refreshedEpisodes.length} episodes`);
+      
+      authStateRef.current.lastRefreshTime = now;
     } catch (error) {
       console.error("Error refreshing all data:", error);
+    } finally {
+      authStateRef.current.isRefreshing = false;
     }
   }, [user, refreshGuests, refreshEpisodes]);
 
@@ -115,7 +135,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
             
             if (userChanged && newSession.user) {
-              await refreshUserProfile();
+              // Use setTimeout to avoid auth state deadlock
+              setTimeout(() => {
+                refreshUserProfile();
+              }, 0);
             }
           }
           
@@ -145,6 +168,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setInitialAuthComplete(true);
     });
 
+    // Don't refresh data on focus/visibility changes
+    // This prevents the app from refreshing when returning from another tab
+    
     return () => subscription.unsubscribe();
   }, []);
 
