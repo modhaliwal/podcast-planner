@@ -1,4 +1,3 @@
-
 // DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
 // Moved from sandbox to shared components for better reusability
 
@@ -447,6 +446,30 @@ export function AIGenerationField({
     return activeVersion?.id;
   };
 
+  // Format parameters for display in hovercard
+  const formatParametersForDisplay = () => {
+    if (!generationParameters) return null;
+    
+    return Object.entries(generationParameters).map(([key, value]) => {
+      // Format the value for display
+      let displayValue = value;
+      
+      // Convert arrays and objects to strings for display
+      if (Array.isArray(value)) {
+        displayValue = value.join(', ');
+      } else if (typeof value === 'object' && value !== null) {
+        displayValue = JSON.stringify(value);
+      }
+      
+      // Truncate long string values
+      if (typeof displayValue === 'string' && displayValue.length > 50) {
+        displayValue = `${displayValue.substring(0, 50)}...`;
+      }
+      
+      return { key, value: displayValue };
+    });
+  };
+
   return (
     <div className={cn("flex flex-col", className)}>
       {showEditor && (
@@ -468,48 +491,51 @@ export function AIGenerationField({
                     {isGenerating ? loadingLabel : buttonLabel}
                   </Button>
                 </HoverCardTrigger>
-                {hoverCardConfig && (
-                  <HoverCardContent className="w-auto min-w-[280px] p-4" side="top">
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold">AI Generation Configuration</h4>
-                      
-                      {hoverCardConfig.promptKey && (
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <span className="text-muted-foreground">Prompt Key:</span>
-                          <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptKey}</span>
+                <HoverCardContent className="w-auto min-w-[280px] p-4" side="top">
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold">AI Generation Configuration</h4>
+                    
+                    {hoverCardConfig && (
+                      <div className="space-y-2">
+                        {hoverCardConfig.promptTitle && (
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <span className="text-muted-foreground">Generator:</span>
+                            <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptTitle}</span>
+                          </div>
+                        )}
+                        
+                        {hoverCardConfig.aiProvider && (
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <span className="text-muted-foreground">AI Provider:</span>
+                            <span className="col-span-2 font-medium break-words">{hoverCardConfig.aiProvider}</span>
+                          </div>
+                        )}
+                        
+                        {hoverCardConfig.generatorSlug && (
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <span className="text-muted-foreground">Slug:</span>
+                            <span className="col-span-2 font-medium break-words">{hoverCardConfig.generatorSlug}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Display generation parameters */}
+                    {generationParameters && Object.keys(generationParameters).length > 0 && (
+                      <div className="space-y-2">
+                        <h5 className="text-xs font-semibold text-muted-foreground mt-2">Parameters</h5>
+                        <div className="bg-muted rounded-md p-2">
+                          {formatParametersForDisplay()?.map(({ key, value }) => (
+                            <div key={key} className="grid grid-cols-3 gap-2 text-sm py-1">
+                              <span className="text-muted-foreground truncate">{key}:</span>
+                              <span className="col-span-2 break-words text-xs">{String(value)}</span>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                      
-                      {hoverCardConfig.promptTitle && (
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <span className="text-muted-foreground">Prompt Title:</span>
-                          <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptTitle}</span>
-                        </div>
-                      )}
-                      
-                      {hoverCardConfig.aiProvider && (
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <span className="text-muted-foreground">AI Provider:</span>
-                          <span className="col-span-2 font-medium break-words">{hoverCardConfig.aiProvider}</span>
-                        </div>
-                      )}
-                      
-                      {hoverCardConfig.edgeFunctionName && (
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <span className="text-muted-foreground">Edge Function:</span>
-                          <span className="col-span-2 font-medium break-words">{hoverCardConfig.edgeFunctionName}</span>
-                        </div>
-                      )}
-                      
-                      {hoverCardConfig.generatorSlug && (
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <span className="text-muted-foreground">Generator:</span>
-                          <span className="col-span-2 font-medium break-words">{hoverCardConfig.generatorSlug}</span>
-                        </div>
-                      )}
-                    </div>
-                  </HoverCardContent>
-                )}
+                      </div>
+                    )}
+                  </div>
+                </HoverCardContent>
               </HoverCard>
               
               <DropdownMenu open={open} onOpenChange={handleOpenChange}>
@@ -615,41 +641,44 @@ export function AIGenerationField({
             </HoverCardTrigger>
             {hoverCardConfig && (
               <HoverCardContent className="w-auto min-w-[280px] p-4" side="top">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <h4 className="text-sm font-semibold">AI Generation Configuration</h4>
                   
-                  {hoverCardConfig.promptKey && (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <span className="text-muted-foreground">Prompt Key:</span>
-                      <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptKey}</span>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    {hoverCardConfig.promptTitle && (
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <span className="text-muted-foreground">Generator:</span>
+                        <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptTitle}</span>
+                      </div>
+                    )}
+                    
+                    {hoverCardConfig.aiProvider && (
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <span className="text-muted-foreground">AI Provider:</span>
+                        <span className="col-span-2 font-medium break-words">{hoverCardConfig.aiProvider}</span>
+                      </div>
+                    )}
+                    
+                    {hoverCardConfig.generatorSlug && (
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <span className="text-muted-foreground">Slug:</span>
+                        <span className="col-span-2 font-medium break-words">{hoverCardConfig.generatorSlug}</span>
+                      </div>
+                    )}
+                  </div>
                   
-                  {hoverCardConfig.promptTitle && (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <span className="text-muted-foreground">Prompt Title:</span>
-                      <span className="col-span-2 font-medium break-words">{hoverCardConfig.promptTitle}</span>
-                    </div>
-                  )}
-                  
-                  {hoverCardConfig.aiProvider && (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <span className="text-muted-foreground">AI Provider:</span>
-                      <span className="col-span-2 font-medium break-words">{hoverCardConfig.aiProvider}</span>
-                    </div>
-                  )}
-                  
-                  {hoverCardConfig.edgeFunctionName && (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <span className="text-muted-foreground">Edge Function:</span>
-                      <span className="col-span-2 font-medium break-words">{hoverCardConfig.edgeFunctionName}</span>
-                    </div>
-                  )}
-                  
-                  {hoverCardConfig.generatorSlug && (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <span className="text-muted-foreground">Generator:</span>
-                      <span className="col-span-2 font-medium break-words">{hoverCardConfig.generatorSlug}</span>
+                  {/* Display generation parameters */}
+                  {generationParameters && Object.keys(generationParameters).length > 0 && (
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-semibold text-muted-foreground mt-2">Parameters</h5>
+                      <div className="bg-muted rounded-md p-2">
+                        {formatParametersForDisplay()?.map(({ key, value }) => (
+                          <div key={key} className="grid grid-cols-3 gap-2 text-sm py-1">
+                            <span className="text-muted-foreground truncate">{key}:</span>
+                            <span className="col-span-2 break-words text-xs">{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
