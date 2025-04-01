@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Guest } from '@/lib/types';
-import { GuestSocialLinks } from './GuestSocialLinks';
+import { SocialIconsBar } from '@/components/shared/SocialIconsBar';
 import { GuestContactInfo } from './GuestContactInfo';
 import { useState, useEffect } from 'react';
 import { isBlobUrl } from '@/lib/imageUpload';
@@ -101,7 +101,12 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
             <p className="text-sm text-muted-foreground mb-4">{guest.company}</p>
           )}
           
-          <GuestSocialLinks socialLinks={guest.socialLinks} />
+          <SocialIconsBar 
+            socialLinks={guest.socialLinks} 
+            align="center" 
+            variant="profile" 
+            className="mb-6"
+          />
           <GuestContactInfo email={guest.email} phone={guest.phone} />
         </div>
         
