@@ -1,10 +1,9 @@
-
 import { Guest, Episode } from "@/lib/types";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { guestStatusColors } from "@/lib/statusColors";
-import { GuestSocialLinks } from "./GuestListSocialLinks";
+import { SocialIconsBar } from "./SocialIconsBar";
 import { GuestInfo } from "./GuestListInfo";
 import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
 
@@ -53,7 +52,7 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
             
             {/* Social links section - now visible in all views */}
             <div className="ml-auto">
-              <GuestSocialLinks socialLinks={guest.socialLinks} />
+              <SocialIconsBar socialLinks={guest.socialLinks} size="sm" />
             </div>
           </div>
           
