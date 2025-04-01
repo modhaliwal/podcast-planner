@@ -28,6 +28,10 @@ export function ContentSection({
 }: ContentSectionProps) {
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Guest Background</h3>
+      </div>
+
       <BioSection 
         form={form} 
         guest={guest}
