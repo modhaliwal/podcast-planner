@@ -60,7 +60,13 @@ const TestComponent = () => {
           aiProvider: "OpenAI",
           promptKey: "content-generation",
           promptTitle: "Generate Content",
-          edgeFunctionName: "generate-content"
+          edgeFunctionName: "generate-content",
+          generatorSlug: "episode-notes-generator" // Added generator slug
+        }}
+        generatorSlug="episode-notes-generator" // Added generator slug prop
+        generationParameters={{ // Added generation parameters
+          topic: "Episode content generation",
+          format: "rich-text"
         }}
       />
 
