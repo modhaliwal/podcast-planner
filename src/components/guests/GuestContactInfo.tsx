@@ -1,27 +1,27 @@
 
 import { Mail, Phone } from 'lucide-react';
+import { Guest } from '@/lib/types';
 
 interface GuestContactInfoProps {
-  email?: string;
-  phone?: string;
+  guest: Guest;
 }
 
-export function GuestContactInfo({ email, phone }: GuestContactInfoProps) {
-  if (!email && !phone) return null;
+export function GuestContactInfo({ guest }: GuestContactInfoProps) {
+  if (!guest.email && !guest.phone) return null;
   
   return (
     <div>
-      {email && (
+      {guest.email && (
         <div className="flex items-center space-x-2 text-sm mb-2">
           <Mail className="h-4 w-4 text-muted-foreground" />
-          <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+          <a href={`mailto:${guest.email}`} className="hover:underline">{guest.email}</a>
         </div>
       )}
       
-      {phone && (
+      {guest.phone && (
         <div className="flex items-center space-x-2 text-sm">
           <Phone className="h-4 w-4 text-muted-foreground" />
-          <a href={`tel:${phone}`} className="hover:underline">{phone}</a>
+          <a href={`tel:${guest.phone}`} className="hover:underline">{guest.phone}</a>
         </div>
       )}
     </div>

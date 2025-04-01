@@ -6,7 +6,7 @@ import { Guest } from '@/lib/types';
 import { SocialIconsBar } from '@/components/shared/SocialIconsBar';
 import { useState, useEffect } from 'react';
 import { isBlobUrl } from '@/lib/imageUpload';
-import { Download } from 'lucide-react';
+import { Download, Mail, Phone } from 'lucide-react';
 
 interface GuestProfileCardProps {
   guest: Guest;
@@ -84,6 +84,25 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
             variant="profile" 
             className="mb-4"
           />
+          
+          {/* Contact information after social icons */}
+          {(guest.email || guest.phone) && (
+            <div className="mt-2 w-full text-center">
+              {guest.email && (
+                <div className="flex items-center justify-center space-x-2 text-sm mb-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <a href={`mailto:${guest.email}`} className="hover:underline">{guest.email}</a>
+                </div>
+              )}
+              
+              {guest.phone && (
+                <div className="flex items-center justify-center space-x-2 text-sm">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <a href={`tel:${guest.phone}`} className="hover:underline">{guest.phone}</a>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {guest.notes && (

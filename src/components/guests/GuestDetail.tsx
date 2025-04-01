@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { GuestProfileCard } from './GuestProfileCard';
 import { GuestAboutSection } from './GuestAboutSection';
 import { GuestEpisodesList } from './GuestEpisodesList';
-import { GuestContactInfo } from './GuestContactInfo';
 
 interface GuestDetailProps {
   guest: Guest;
@@ -33,7 +32,6 @@ export function GuestDetail({ guest, episodes, className }: GuestDetailProps) {
         </div>
         
         <div className="flex-1 space-y-6">
-          <GuestContactInfo guest={guest} />
           <GuestEpisodesList guest={guest} episodes={episodes} />
           <GuestAboutSection guest={guest} />
         </div>
