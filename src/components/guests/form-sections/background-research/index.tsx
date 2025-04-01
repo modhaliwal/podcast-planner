@@ -22,9 +22,9 @@ export function BackgroundResearchSection({
     if (!guest?.socialLinks) return "";
     
     const links = [];
-    if (guest.socialLinks.twitter) links.push(guest.socialLinks.twitter);
-    if (guest.socialLinks.linkedin) links.push(guest.socialLinks.linkedin);
-    if (guest.socialLinks.website) links.push(guest.socialLinks.website);
+    if (guest.socialLinks.twitter) links.push(`Twitter: ${guest.socialLinks.twitter}`);
+    if (guest.socialLinks.linkedin) links.push(`LinkedIn: ${guest.socialLinks.linkedin}`);
+    if (guest.socialLinks.website) links.push(`Website: ${guest.socialLinks.website}`);
     
     return links.join('\n');
   };
@@ -42,7 +42,7 @@ export function BackgroundResearchSection({
       <AIGenerationField
         buttonLabel="Generate Research"
         loadingLabel="Researching..."
-        generatorSlug="guest-background-research-generator"
+        generatorSlug="guest-research-generator"
         generationParameters={generationParameters}
         editorContent={backgroundResearch}
         onEditorChange={setBackgroundResearch}
@@ -54,8 +54,8 @@ export function BackgroundResearchSection({
         userIdentifier="manual"
         contentName="Background Research"
         hoverCardConfig={{
-          promptTitle: "Guest Background Research Generator",
-          generatorSlug: "guest-background-research-generator"
+          promptTitle: "Guest Research Generator",
+          generatorSlug: "guest-research-generator"
         }}
       />
     </div>
