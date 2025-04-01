@@ -42,7 +42,7 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
         setBackgroundResearch 
       }) => (
         <FormProvider {...form}>
-          <form onSubmit={form.handleSubmit((values) => handleSubmit(values, notes, backgroundResearch, [], backgroundResearchVersions))} className="space-y-6">
+          <form onSubmit={form.handleSubmit((values) => handleSubmit(values, notes, backgroundResearch, backgroundResearchVersions))} className="space-y-6">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Left column - Profile info */}
               <div className="w-full md:w-1/3 lg:w-1/4 space-y-6">

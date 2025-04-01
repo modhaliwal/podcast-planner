@@ -55,6 +55,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
       youtube: guest.socialLinks.youtube || "",
       website: guest.socialLinks.website || "",
     },
+    mode: "onChange"
   });
 
   const handleImageChange = (file: File | null) => {
@@ -66,7 +67,6 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
     formData: any, 
     notes: string, 
     backgroundResearch: string,
-    bioVersions: ContentVersion[],
     backgroundResearchVersions: ContentVersion[]
   ) => {
     if (isSubmitting) return;
@@ -114,7 +114,6 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         bio: formData.bio || "",
-        // bioVersions removed - AIGenerationField handles this internally
         backgroundResearch: backgroundResearch || undefined,
         backgroundResearchVersions: backgroundResearchVersions,
         notes: notes || undefined,

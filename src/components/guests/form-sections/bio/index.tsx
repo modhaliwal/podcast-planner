@@ -10,7 +10,7 @@ interface BioSectionProps {
 
 export function BioSection({ form, guest }: BioSectionProps) {
   // Get the bio content from the form
-  const bioContent = form.getValues('bio') || '';
+  const bioContent = form.watch('bio') || '';
   
   // Format social links as a new-line separated string
   const formatSocialLinks = () => {
@@ -39,7 +39,6 @@ export function BioSection({ form, guest }: BioSectionProps) {
   // Handle content change from editor
   const handleEditorChange = (content: string) => {
     form.setValue('bio', content, { shouldDirty: true });
-    console.log("Bio content updated:", content); // Debug logging
   };
   
   return (
