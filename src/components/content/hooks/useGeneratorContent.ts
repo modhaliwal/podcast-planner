@@ -37,7 +37,7 @@ export const useGeneratorContent = ({
       console.log(`Generating content for ${fieldName} using generator: ${generatorSlug}`);
       console.log(`Parameters:`, parameters);
       
-      // Call the edge function with the generator slug and parameters
+      // Call the Supabase function instead of the edge API
       const response = await fetch(`/api/v1/edge/generate-with-ai-settings`, {
         method: 'POST',
         headers: {
@@ -50,13 +50,30 @@ export const useGeneratorContent = ({
         }),
       });
       
+      // Check if the response is ok before trying to parse JSON
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Edge function error for ${fieldName}:`, errorData);
-        throw new Error(errorData.error || `Failed to generate ${fieldName}`);
+        // Try to parse error response if possible
+        let errorMessage = `Failed to generate ${fieldName} (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (jsonError) {
+          // If we can't parse JSON, use the status text
+          errorMessage = `${errorMessage}: ${response.statusText}`;
+        }
+        
+        console.error(`Edge function error for ${fieldName}:`, errorMessage);
+        throw new Error(errorMessage);
       }
       
-      const data = await response.json();
+      // Make sure the response has a body before parsing
+      const text = await response.text();
+      if (!text || text.trim() === '') {
+        throw new Error(`Empty response from server for ${fieldName}`);
+      }
+      
+      // Parse the JSON text
+      const data = JSON.parse(text);
       
       if (!data.content) {
         console.error(`No content returned from edge function for ${fieldName}:`, data);
