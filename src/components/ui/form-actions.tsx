@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { SaveIcon, X } from "lucide-react";
+import { ReactNode } from "react";
 
 interface FormActionsProps {
   cancelHref?: string;
@@ -10,6 +11,7 @@ interface FormActionsProps {
   saveText?: string;
   saveIcon?: React.ReactNode;
   cancelText?: string;
+  additionalActions?: ReactNode;
 }
 
 export function FormActions({
@@ -18,7 +20,8 @@ export function FormActions({
   isSubmitting = false,
   saveText = "Save Changes",
   saveIcon = <SaveIcon className="h-4 w-4 mr-2" />,
-  cancelText = "Cancel"
+  cancelText = "Cancel",
+  additionalActions
 }: FormActionsProps) {
   return (
     <div className="flex justify-end space-x-4 pt-6 border-t">
@@ -35,6 +38,8 @@ export function FormActions({
           </Link>
         </Button>
       ) : null}
+      
+      {additionalActions}
       
       <Button 
         type="submit"
