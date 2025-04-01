@@ -26,4 +26,3 @@ The Podcast Planner application was developed to address the following key requi
 - Track episode distribution across podcast platforms
 - Manage episode release schedules
 - Store links to published episodes across platforms
-

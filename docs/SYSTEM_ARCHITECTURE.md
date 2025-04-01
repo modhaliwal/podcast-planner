@@ -29,4 +29,3 @@ The Podcast Planner system employs a modern web application architecture:
 3. Edge Functions process specialized tasks like AI content generation
 4. AI-generated content is stored in the database with version history
 5. User interface presents data in organized, task-specific views
-

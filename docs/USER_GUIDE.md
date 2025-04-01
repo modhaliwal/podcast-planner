@@ -98,4 +98,3 @@ This guide explains how to use the Podcast Planner application to create and man
    - Episode notes
 4. Test generators with sample inputs
 5. Save custom configurations for future use
-

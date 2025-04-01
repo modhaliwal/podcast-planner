@@ -111,4 +111,3 @@ Each version includes:
 - Timestamp
 - Source attribution
 - Version number
-
