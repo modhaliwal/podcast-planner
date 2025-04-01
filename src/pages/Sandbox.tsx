@@ -252,10 +252,19 @@ const Sandbox = () => {
                     onEditorChange={setRichContent}
                     editorContentVersions={richVersions}
                     onContentVersionsChange={setRichVersions}
-                    options={[]}
                     showEditor={true}
                     contentName="Rich Text Content"
                     editorType="rich"
+                    hoverCardConfig={{
+                      aiProvider: "OpenAI",
+                      promptKey: "rich_text_demo",
+                      promptTitle: "Rich Text Demo Generator",
+                      generatorSlug: "random-idea"
+                    }}
+                    generatorSlug="random-idea"
+                    generationParameters={{
+                      topic: "Rich text content generation"
+                    }}
                   />
                 </div>
               </div>
@@ -272,10 +281,19 @@ const Sandbox = () => {
                     onEditorChange={setPlainContent}
                     editorContentVersions={plainVersions}
                     onContentVersionsChange={setPlainVersions}
-                    options={[]}
                     showEditor={true}
                     contentName="Plain Text Content"
                     editorType="plain"
+                    hoverCardConfig={{
+                      aiProvider: "Perplexity",
+                      promptKey: "plain_text_demo",
+                      promptTitle: "Plain Text Demo Generator",
+                      generatorSlug: "episode-notes-generator"
+                    }}
+                    generatorSlug="episode-notes-generator"
+                    generationParameters={{
+                      topic: "Plain text content generation"
+                    }}
                   />
                 </div>
               </div>

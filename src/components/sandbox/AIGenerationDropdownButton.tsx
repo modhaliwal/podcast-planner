@@ -1,4 +1,5 @@
-// DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
+
+// DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,8 @@ import {
 import { Editor } from '@/components/editor/Editor';
 import { Textarea } from '@/components/ui/textarea';
 import { ContentVersion as ContentVersionType } from '@/lib/types';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // Making ContentVersion available for import by other components
 export type ContentVersion = ContentVersionType;
@@ -49,6 +52,7 @@ export interface AIGenerationDropdownButtonProps {
     promptKey?: string;
     promptTitle?: string;
     edgeFunctionName?: string;
+    generatorSlug?: string;
   };
   editorContent?: string;
   onEditorChange?: (content: string) => void;
@@ -61,12 +65,15 @@ export interface AIGenerationDropdownButtonProps {
   onContentVersionsChange?: (versions: ContentVersionType[]) => void;
   // New prop for user identifier
   userIdentifier?: string;
+  // New props for AI generation
+  generatorSlug?: string;
+  generationParameters?: Record<string, any>;
 }
 
 export function AIGenerationDropdownButton({
   buttonLabel = "Generate",
   loadingLabel = "Generating...",
-  isGenerating = false,
+  isGenerating: propIsGenerating = false,
   disabled = false,
   options = [],
   onButtonClick,
@@ -87,11 +94,15 @@ export function AIGenerationDropdownButton({
   onContentVersionsChange,
   // Default to 'user' if no identifier provided
   userIdentifier = 'user',
+  // New props
+  generatorSlug,
+  generationParameters,
 }: AIGenerationDropdownButtonProps) {
   const [open, setOpen] = useState(false);
   const [clearConfirmationState, setClearConfirmationState] = useState(false);
   const [internalEditorContent, setInternalEditorContent] = useState(editorContent);
   const [internalContentVersions, setInternalContentVersions] = useState<ContentVersionType[]>(editorContentVersions);
+  const [isGenerating, setIsGenerating] = useState(propIsGenerating);
   
   // Track if this is the initial load
   const hasInitialized = useRef(false);
@@ -115,6 +126,11 @@ export function AIGenerationDropdownButton({
       setInternalEditorContent(editorContent);
     }
   }, [editorContent]);
+
+  // Sync external isGenerating prop
+  useEffect(() => {
+    setIsGenerating(propIsGenerating);
+  }, [propIsGenerating]);
 
   // Handle initialization and track when content changes
   useEffect(() => {
@@ -331,8 +347,101 @@ export function AIGenerationDropdownButton({
     return activeVersion?.content || '';
   };
 
-  // Generate AI content and create a new version
-  const handleAIGeneration = () => {
+  // Generate AI content with the updated edge function
+  const generateContentWithAI = async () => {
+    if (!generatorSlug) {
+      console.warn("Cannot generate content: No generator slug provided");
+      toast({
+        title: "Error",
+        description: "No AI generator selected",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Set flags to prevent creating duplicate versions
+      isProcessingAIGeneration.current = true;
+      setIsGenerating(true);
+      
+      const currentContent = onEditorChange ? editorContent : internalEditorContent;
+      
+      toast({
+        title: "Generating content",
+        description: "Generating content with AI...",
+      });
+      
+      // Call the edge function
+      const parameters = {
+        ...(generationParameters || {}),
+        currentContent
+      };
+      
+      const { data, error } = await supabase.functions.invoke('generate-with-ai-settings', {
+        body: {
+          slug: generatorSlug,
+          parameters: parameters,
+          responseFormat: 'markdown'
+        }
+      });
+      
+      if (error) {
+        throw new Error(error.message || "Failed to generate content");
+      }
+      
+      if (!data || !data.content) {
+        throw new Error("No content returned from AI generator");
+      }
+      
+      // Create a new version with AI source
+      const aiGeneratedContent = data.content;
+      const aiVersion = createNewVersion(aiGeneratedContent, "AI generated");
+      
+      // Update state
+      addVersionToState(aiVersion);
+      
+      // Update editor with new content
+      handleEditorChange(aiGeneratedContent);
+      
+      // Track the AI generated content
+      lastAIGeneratedContent.current = aiGeneratedContent;
+      
+      // Reset the tracking flag for edits after AI generation
+      contentEditedAfterAIGeneration.current = false;
+      
+      toast({
+        title: "Content generated",
+        description: "Content has been generated successfully",
+      });
+    } catch (error: any) {
+      console.error("Error generating content:", error);
+      toast({
+        title: "Generation failed",
+        description: error.message || "Failed to generate content",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+      // Reset processing flag after a short delay to ensure all state updates are complete
+      setTimeout(() => {
+        isProcessingAIGeneration.current = false;
+      }, 100);
+    }
+  };
+  
+  const handleButtonClick = async () => {
+    if (onButtonClick) {
+      await onButtonClick();
+    } else if (generatorSlug) {
+      await generateContentWithAI();
+    } else {
+      // For demo purposes if no generator is provided
+      await handleAIGeneration();
+    }
+  };
+
+  // Legacy AI generation for backward compatibility
+  const handleAIGeneration = async () => {
     // Set flag to prevent creating duplicate versions
     isProcessingAIGeneration.current = true;
     
@@ -362,11 +471,6 @@ export function AIGenerationDropdownButton({
       isProcessingAIGeneration.current = false;
     }, 100);
   };
-  
-  const defaultButtonClickHandler = () => {
-    // If no custom handler is provided, use our AI generation logic
-    handleAIGeneration();
-  };
 
   const getContentVersionOptions = (): DropdownOption[] => {
     const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
@@ -391,8 +495,6 @@ export function AIGenerationDropdownButton({
     const activeVersion = versions.find(v => v.active);
     return activeVersion?.id;
   };
-  
-  const handleButtonClick = onButtonClick || defaultButtonClickHandler;
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -445,6 +547,13 @@ export function AIGenerationDropdownButton({
                         <div className="grid grid-cols-3 gap-2 text-sm">
                           <span className="text-muted-foreground">Edge Function:</span>
                           <span className="col-span-2 font-medium break-words">{hoverCardConfig.edgeFunctionName}</span>
+                        </div>
+                      )}
+                      
+                      {hoverCardConfig.generatorSlug && (
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <span className="text-muted-foreground">Generator:</span>
+                          <span className="col-span-2 font-medium break-words">{hoverCardConfig.generatorSlug}</span>
                         </div>
                       )}
                     </div>
@@ -583,6 +692,13 @@ export function AIGenerationDropdownButton({
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <span className="text-muted-foreground">Edge Function:</span>
                       <span className="col-span-2 font-medium break-words">{hoverCardConfig.edgeFunctionName}</span>
+                    </div>
+                  )}
+                  
+                  {hoverCardConfig.generatorSlug && (
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <span className="text-muted-foreground">Generator:</span>
+                      <span className="col-span-2 font-medium break-words">{hoverCardConfig.generatorSlug}</span>
                     </div>
                   )}
                 </div>
