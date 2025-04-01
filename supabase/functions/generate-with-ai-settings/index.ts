@@ -47,24 +47,68 @@ serve(async (req) => {
     console.log(`Using AI generator: ${generator.title}`)
     console.log(`AI Model: ${generator.ai_model || 'not specified'}, Model Name: ${generator.model_name || 'default'}`)
 
-    // Process the prompt with parameters if available
-    let processedPrompt = ""
-    if (generator.prompt_text && parameters) {
-      processedPrompt = processPromptWithParameters(generator.prompt_text, parameters)
+    // Process all prompt components with parameters if available
+    let processedPromptText = ""
+    let processedSystemPrompt = ""
+    let processedContextInstructions = ""
+    let processedExampleOutput = ""
+    
+    if (parameters) {
+      // Process each component with parameter substitution
+      if (generator.prompt_text) {
+        processedPromptText = processPromptWithParameters(generator.prompt_text, parameters)
+      }
+      
+      if (generator.system_prompt) {
+        processedSystemPrompt = processPromptWithParameters(generator.system_prompt, parameters)
+      }
+      
+      if (generator.context_instructions) {
+        processedContextInstructions = processPromptWithParameters(generator.context_instructions, parameters)
+      }
+      
+      if (generator.example_output) {
+        processedExampleOutput = processPromptWithParameters(generator.example_output, parameters)
+      }
     } else {
-      processedPrompt = generator.prompt_text || ""
+      // If no parameters, use the raw values
+      processedPromptText = generator.prompt_text || ""
+      processedSystemPrompt = generator.system_prompt || ""
+      processedContextInstructions = generator.context_instructions || ""
+      processedExampleOutput = generator.example_output || ""
     }
-
+    
+    // Construct the complete user prompt with the proper structure
+    let userPrompt = ""
+    
+    // Add context instructions if they exist
+    if (processedContextInstructions) {
+      userPrompt += `Context: ${processedContextInstructions}\n\n`
+    }
+    
+    // Add the main prompt text as instructions
+    if (processedPromptText) {
+      userPrompt += `Instructions: ${processedPromptText}\n\n`
+    }
+    
+    // Add example output if it exists
+    if (processedExampleOutput) {
+      userPrompt += `Example Output: ${processedExampleOutput}`
+    }
+    
+    // Save the complete formatted prompt for returning to the client
+    const completePrompt = userPrompt.trim()
+    
     // Create configuration for the AI generator
     const config = {
       type: generator.key || 'generic',
       name: parameters?.name || 'User',
       title: parameters?.title || '',
       company: parameters?.company || '',
-      prompt: processedPrompt, // Use the processed prompt
-      systemPrompt: generator.system_prompt,
-      contextInstructions: generator.context_instructions,
-      exampleOutput: generator.example_output,
+      prompt: completePrompt, // Use the structured prompt
+      systemPrompt: processedSystemPrompt,
+      contextInstructions: processedContextInstructions, // Keep this for backward compatibility
+      exampleOutput: processedExampleOutput, // Keep this for backward compatibility
       // Pass the AI model and model name to the generator
       ai_model: generator.ai_model,
       model_name: generator.model_name,
@@ -100,7 +144,8 @@ serve(async (req) => {
       // Create or extend metadata to include the processed prompt
       const metadata = {
         ...(generatedResponse.metadata || {}),
-        processedPrompt: processedPrompt
+        processedPrompt: completePrompt, // Store the complete formatted prompt
+        systemPrompt: processedSystemPrompt // Include the system prompt separately
       }
 
       return new Response(

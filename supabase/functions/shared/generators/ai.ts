@@ -94,23 +94,6 @@ export async function generateContent(
   
   console.log(`Using provider: ${provider}, model: ${config.model_name || 'default'}`);
   
-  // Process prompts with parameters if they exist
-  if (config.parameters) {
-    console.log("Processing prompts with parameters");
-    
-    if (config.prompt) {
-      config.prompt = processPromptWithParameters(config.prompt, config.parameters);
-    }
-    
-    if (config.systemPrompt) {
-      config.systemPrompt = processPromptWithParameters(config.systemPrompt, config.parameters);
-    }
-    
-    if (config.contextInstructions) {
-      config.contextInstructions = processPromptWithParameters(config.contextInstructions, config.parameters);
-    }
-  }
-  
   try {
     // Import the appropriate generator dynamically
     if (provider === 'perplexity') {

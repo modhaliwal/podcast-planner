@@ -15,6 +15,7 @@ import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { useAIPrompts } from '@/hooks/useAIPrompts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DynamicParameters } from '@/components/sandbox/DynamicParameters';
+import { Separator } from '@/components/ui/separator';
 
 const Sandbox = () => {
   // Fetch available AI generators
@@ -143,7 +144,7 @@ const Sandbox = () => {
                         
                         {selectedGenerator && (
                           <p className="text-sm text-muted-foreground mt-1">
-                            {selectedGenerator.prompt_text.substring(0, 100)}...
+                            {selectedGenerator.prompt_text?.substring(0, 100)}...
                           </p>
                         )}
                       </div>
@@ -183,6 +184,16 @@ const Sandbox = () => {
                         )}
                       />
                       
+                      {/* Display system prompt if available */}
+                      {generatorContent.systemPrompt && (
+                        <div className="space-y-2">
+                          <FormLabel>System Prompt</FormLabel>
+                          <div className="bg-secondary/30 p-4 rounded-md whitespace-pre-wrap">
+                            <pre className="text-sm font-mono">{generatorContent.systemPrompt}</pre>
+                          </div>
+                        </div>
+                      )}
+                      
                       {/* Display the used prompt */}
                       {generatorContent.usedPrompt && (
                         <div className="space-y-2">
@@ -190,6 +201,9 @@ const Sandbox = () => {
                           <div className="bg-secondary/30 p-4 rounded-md whitespace-pre-wrap">
                             <pre className="text-sm font-mono">{generatorContent.usedPrompt}</pre>
                           </div>
+                          <p className="text-xs text-muted-foreground">
+                            This is the formatted prompt sent to the AI model after parameter replacement.
+                          </p>
                         </div>
                       )}
                     </div>
