@@ -2,11 +2,10 @@
 import { useState, useEffect } from "react";
 import { Episode, ContentVersion } from "@/lib/types";
 import { FileText } from "lucide-react";
-import { useVersionManager } from "@/hooks/versions";
 import { Editor } from "@/components/editor/Editor";
-import { VersionSelector } from "@/components/episodes/VersionSelector";
 import { Button } from "@/components/ui/button";
 import { processVersions } from "@/lib/versionUtils";
+import { v4 as uuidv4 } from "uuid";
 
 interface EpisodeNotesTabProps {
   episode: Episode;
@@ -15,34 +14,73 @@ interface EpisodeNotesTabProps {
 
 export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabProps) {
   const [content, setContent] = useState(episode.notes || "");
+  const [versions, setVersions] = useState<ContentVersion[]>([]);
+  const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   
-  // Process versions to ensure proper structure
-  const initialVersions = processVersions(episode.notesVersions || []);
-  
-  // Use version manager hook for handling versions
-  const { 
-    versions, 
-    activeVersion, 
-    activeVersionId,
-    addVersion, 
-    selectVersion,
-    clearAllVersions,
-    handleEditorBlur,
-    versionSelectorProps
-  } = useVersionManager({
-    content,
-    versions: initialVersions,
-    onVersionsChange: async (updatedVersions) => {
-      try {
-        if (onVersionChange) {
-          await onVersionChange(updatedVersions);
+  // Initialize versions
+  useEffect(() => {
+    const initialVersions = processVersions(episode.notesVersions || []);
+    setVersions(initialVersions);
+    
+    // Set active version
+    if (initialVersions.length > 0) {
+      const active = initialVersions.find(v => v.active);
+      if (active) {
+        setActiveVersionId(active.id);
+      } else {
+        // Default to most recent
+        const sortedVersions = [...initialVersions].sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        if (sortedVersions.length > 0) {
+          setActiveVersionId(sortedVersions[0].id);
         }
-      } catch (error) {
-        console.error("Error saving versions:", error);
       }
-    },
-    onContentChange: setContent,
-  });
+    }
+  }, [episode.notesVersions]);
+  
+  // Update content when active version changes
+  useEffect(() => {
+    if (activeVersionId) {
+      const activeVersion = versions.find(v => v.id === activeVersionId);
+      if (activeVersion) {
+        setContent(activeVersion.content);
+      }
+    }
+  }, [activeVersionId, versions]);
+  
+  // Handler for editor blur - save version
+  const handleEditorBlur = async () => {
+    if (!content.trim()) return;
+    
+    // Check if content changed from active version
+    const activeVersion = versions.find(v => v.id === activeVersionId);
+    if (activeVersion && activeVersion.content === content) return;
+    
+    // Create new version
+    const newVersion: ContentVersion = {
+      id: uuidv4(),
+      content,
+      timestamp: new Date().toISOString(),
+      source: "manual",
+      active: true,
+      versionNumber: versions.length + 1
+    };
+    
+    // Mark all others as inactive
+    const updatedVersions = [
+      ...versions.map(v => ({ ...v, active: false })),
+      newVersion
+    ];
+    
+    setVersions(updatedVersions);
+    setActiveVersionId(newVersion.id);
+    
+    // Notify parent
+    if (onVersionChange) {
+      await onVersionChange(updatedVersions);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -50,12 +88,6 @@ export function EpisodeNotesTab({ episode, onVersionChange }: EpisodeNotesTabPro
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4" />
           <span className="font-medium">Episode Notes</span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {versions.length > 0 && (
-            <VersionSelector {...versionSelectorProps} />
-          )}
         </div>
       </div>
       

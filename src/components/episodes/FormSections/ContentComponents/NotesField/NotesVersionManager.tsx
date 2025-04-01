@@ -4,10 +4,11 @@ import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../../../EpisodeFormSchema';
 import { Guest, ContentVersion } from '@/lib/types';
 import { processVersions } from '@/lib/versionUtils';
-import { VersionManager } from '@/components/episodes/VersionManager';
 import { NotesFieldHeader } from './NotesFieldHeader';
 import { Editor } from '@/components/editor/Editor';
 import { toast } from '@/hooks/toast';
+import { v4 as uuidv4 } from 'uuid';
+import { ensureVersionNumbers } from '@/hooks/versions';
 
 interface NotesVersionManagerProps {
   form: UseFormReturn<EpisodeFormValues>;
@@ -18,28 +19,17 @@ export function NotesVersionManager({ form, guests }: NotesVersionManagerProps) 
   // Get the current notes content
   const [content, setContent] = useState(form.watch('notes') || '');
   
-  // Get versions safely, ensuring it's an array
-  const rawVersions = form.watch('notesVersions') || [];
+  // Track versions
+  const [versions, setVersions] = useState<ContentVersion[]>([]);
   
-  // Process versions to ensure they have all required properties
-  const formattedVersions = useCallback(() => {
-    const versions = Array.isArray(rawVersions) ? rawVersions : [];
-    return processVersions(versions as ContentVersion[]);
-  }, [rawVersions]);
+  // Initialize versions from form
+  useEffect(() => {
+    const rawVersions = form.watch('notesVersions') || [];
+    const formattedVersions = processVersions(rawVersions as ContentVersion[]);
+    setVersions(formattedVersions);
+  }, [form]);
   
-  // Update form when content changes outside the VersionManager
-  const handleContentUpdate = (newContent: string) => {
-    setContent(newContent);
-    form.setValue('notes', newContent, { shouldDirty: true });
-  };
-
-  // Update form versions when versions change
-  const handleVersionsChange = (newVersions: ContentVersion[]) => {
-    console.log("Updating form notesVersions:", newVersions);
-    form.setValue('notesVersions', newVersions, { shouldDirty: true });
-  };
-  
-  // Sync content when form value changes
+  // Update content when form value changes
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'notes') {
@@ -50,57 +40,64 @@ export function NotesVersionManager({ form, guests }: NotesVersionManagerProps) 
     return () => subscription.unsubscribe();
   }, [form]);
   
-  // Debug log for versions
-  useEffect(() => {
-    console.log("NotesField versions:", {
-      rawVersions,
-      processedVersions: formattedVersions()
-    });
-  }, [rawVersions, formattedVersions]);
+  // Create a new version
+  const addNewVersion = useCallback((newContent: string, source: string = 'manual') => {
+    const timestamp = new Date().toISOString();
+    const newVersionId = uuidv4();
+    
+    // Create new version
+    const newVersion: ContentVersion = {
+      id: newVersionId,
+      content: newContent,
+      timestamp,
+      source,
+      active: true,
+      versionNumber: versions.length + 1
+    };
+    
+    // Add the new version and mark it as active
+    const updatedVersions = ensureVersionNumbers([
+      ...versions.map(v => ({ ...v, active: false })),
+      newVersion
+    ]);
+    
+    setVersions(updatedVersions);
+    form.setValue('notesVersions', updatedVersions, { shouldDirty: true });
+  }, [versions, form]);
+  
+  // Handle editor blur - save version if content changed
+  const handleEditorBlur = useCallback(() => {
+    const activeVersion = versions.find(v => v.active);
+    
+    // Only create a new version if content has been changed and we have a previous version
+    if (versions.length > 0 && activeVersion && content !== activeVersion.content) {
+      addNewVersion(content);
+    }
+  }, [content, versions, addNewVersion]);
   
   return (
-    <VersionManager 
-      content={content}
-      versions={formattedVersions()}
-      onVersionsChange={handleVersionsChange}
-      onContentChange={handleContentUpdate}
-      source="manual"
-    >
-      {({ 
-        activeVersionId,
-        handleEditorBlur,
-        handleContentChange,
-        selectVersion,
-        addNewVersion,
-        addAIVersion,
-        clearAllVersions,
-        versionSelectorProps,
-        hasInitialized
-      }) => (
-        <div className="space-y-4">
-          <NotesFieldHeader 
-            form={form}
-            guests={guests}
-            versions={formattedVersions()}
-            versionSelectorProps={versionSelectorProps}
-            onNotesGenerated={(generatedNotes) => {
-              handleContentUpdate(generatedNotes);
-              addAIVersion(generatedNotes);
-              toast.success("AI-generated notes added");
-            }}
-          />
-          
-          <Editor
-            value={content}
-            onChange={(value) => {
-              setContent(value);
-              form.setValue('notes', value, { shouldDirty: true });
-            }}
-            onBlur={handleEditorBlur}
-            placeholder="Add episode notes here..."
-          />
-        </div>
-      )}
-    </VersionManager>
+    <div className="space-y-4">
+      <NotesFieldHeader 
+        form={form}
+        guests={guests}
+        versions={versions}
+        onNotesGenerated={(generatedNotes) => {
+          setContent(generatedNotes);
+          form.setValue('notes', generatedNotes, { shouldDirty: true });
+          addNewVersion(generatedNotes, 'ai');
+          toast.success("AI-generated notes added");
+        }}
+      />
+      
+      <Editor
+        value={content}
+        onChange={(value) => {
+          setContent(value);
+          form.setValue('notes', value, { shouldDirty: true });
+        }}
+        onBlur={handleEditorBlur}
+        placeholder="Add episode notes here..."
+      />
+    </div>
   );
 }

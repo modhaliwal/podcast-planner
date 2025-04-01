@@ -6,7 +6,6 @@ export * from "./utils/versionNumberUtils";
 export * from "./utils/versionInitialization";
 export * from "./utils/versionSelection";
 export * from "./utils/versionCreation";
-export * from "./useVersionManager";
 
 /**
  * Ensures all versions have sequential version numbers
