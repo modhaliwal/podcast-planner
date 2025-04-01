@@ -63,9 +63,7 @@ export interface AIGenerationFieldProps {
   editorType?: 'rich' | 'plain';
   editorContentVersions?: ContentVersionType[];
   onContentVersionsChange?: (versions: ContentVersionType[]) => void;
-  // New prop for user identifier
   userIdentifier?: string;
-  // New props for AI generation
   generatorSlug?: string;
   generationParameters?: Record<string, any>;
 }
@@ -93,9 +91,7 @@ export function AIGenerationField({
   editorType = 'rich',
   editorContentVersions = [],
   onContentVersionsChange,
-  // Default to 'user' if no identifier provided
   userIdentifier = 'user',
-  // New props
   generatorSlug,
   generationParameters,
 }: AIGenerationFieldProps) {
@@ -105,15 +101,10 @@ export function AIGenerationField({
   const [internalContentVersions, setInternalContentVersions] = useState<ContentVersionType[]>(editorContentVersions);
   const [isGenerating, setIsGenerating] = useState(propIsGenerating);
   
-  // Track if this is the initial load
   const hasInitialized = useRef(false);
-  // Track if content has been edited after initial load
   const contentEditedAfterInitialLoad = useRef(false);
-  // Track if content has been edited after AI generation
   const contentEditedAfterAIGeneration = useRef(false);
-  // Reference to the last AI-generated content
   const lastAIGeneratedContent = useRef<string | null>(null);
-  // Track if we're currently processing AI generation
   const isProcessingAIGeneration = useRef(false);
 
   useEffect(() => {
@@ -128,18 +119,14 @@ export function AIGenerationField({
     }
   }, [editorContent]);
 
-  // Sync external isGenerating prop
   useEffect(() => {
     setIsGenerating(propIsGenerating);
   }, [propIsGenerating]);
 
-  // Handle initialization and track when content changes
   useEffect(() => {
-    // Only run this once after first render
     if (!hasInitialized.current) {
       hasInitialized.current = true;
       
-      // Initialize with an active version if none exists
       const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
       if (currentVersions.length === 0 && editorContent.trim()) {
         console.log("Initializing with first version");
@@ -154,48 +141,36 @@ export function AIGenerationField({
       return;
     }
 
-    // Skip version creation during AI generation process
     if (isProcessingAIGeneration.current) {
       return;
     }
 
-    // Check for content changes after initialization
     const currentContent = onEditorChange ? editorContent : internalEditorContent;
     const previousContent = getActiveVersionContent();
     
-    // Skip if content hasn't changed
     if (currentContent === previousContent) return;
     
-    // First edit after initialization (but not AI generation)
     if (!contentEditedAfterInitialLoad.current && lastAIGeneratedContent.current === null) {
-      console.log("First edit after initialization");
       contentEditedAfterInitialLoad.current = true;
       
-      // Create a new version with user source
       const newVersion = createNewVersion(currentContent, userIdentifier);
       addVersionToState(newVersion);
     }
     
-    // First edit after AI generation
     if (lastAIGeneratedContent.current !== null && 
         currentContent !== lastAIGeneratedContent.current && 
         !contentEditedAfterAIGeneration.current) {
-      console.log("First edit after AI generation");
       contentEditedAfterAIGeneration.current = true;
       
-      // Create a new version with user source
       const newVersion = createNewVersion(currentContent, userIdentifier);
       addVersionToState(newVersion);
     }
   }, [editorContent, internalEditorContent, editorContentVersions, internalContentVersions, onContentVersionsChange, userIdentifier]);
 
-  // Handle editor blur - update active version content
   const handleEditorBlur = () => {
-    // Get current versions and active version
     const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     const currentContent = onEditorChange ? editorContent : internalEditorContent;
     
-    // Find the active version
     const activeVersionIndex = currentVersions.findIndex(v => v.active);
     
     if (activeVersionIndex === -1) {
@@ -203,20 +178,16 @@ export function AIGenerationField({
       return;
     }
     
-    // Skip if content hasn't changed
     if (currentVersions[activeVersionIndex].content === currentContent) {
       return;
     }
     
-    // Update the active version with current content
     const updatedVersions = [...currentVersions];
     updatedVersions[activeVersionIndex] = {
       ...updatedVersions[activeVersionIndex],
       content: currentContent,
-      // Don't update timestamp to avoid creating a sort of "subversion"
     };
     
-    // Update versions
     if (onContentVersionsChange) {
       onContentVersionsChange(updatedVersions);
     } else {
@@ -238,14 +209,13 @@ export function AIGenerationField({
         return;
       }
       
-      // Create a new version with the active version's content AND version number
       const newVersion: ContentVersionType = {
         id: `version-${Date.now()}`,
         content: activeVersion.content,
         timestamp: new Date().toISOString(),
         source: activeVersion.source,
         active: true,
-        versionNumber: activeVersion.versionNumber // Retain the original version number
+        versionNumber: activeVersion.versionNumber
       };
       
       if (onContentVersionsChange) {
@@ -260,7 +230,6 @@ export function AIGenerationField({
         onClearAllVersions();
       }
       
-      // Reset tracking states
       contentEditedAfterInitialLoad.current = false;
       contentEditedAfterAIGeneration.current = false;
       lastAIGeneratedContent.current = null;
@@ -304,7 +273,6 @@ export function AIGenerationField({
     setOpen(false);
   };
 
-  // Helper to create a new version
   const createNewVersion = (content: string, source: string): ContentVersionType => {
     const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     
@@ -323,7 +291,6 @@ export function AIGenerationField({
     };
   };
 
-  // Helper to add a version to state
   const addVersionToState = (newVersion: ContentVersionType) => {
     const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     
@@ -341,14 +308,12 @@ export function AIGenerationField({
     }
   };
 
-  // Get the content of the active version
   const getActiveVersionContent = (): string => {
     const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
     const activeVersion = currentVersions.find(v => v.active);
     return activeVersion?.content || '';
   };
 
-  // Generate AI content with the updated edge function
   const generateContentWithAI = async () => {
     if (!generatorSlug) {
       console.warn("Cannot generate content: No generator slug provided");
@@ -361,7 +326,6 @@ export function AIGenerationField({
     }
     
     try {
-      // Set flags to prevent creating duplicate versions
       isProcessingAIGeneration.current = true;
       setIsGenerating(true);
       
@@ -372,7 +336,6 @@ export function AIGenerationField({
         description: "Generating content with AI...",
       });
       
-      // Call the edge function
       const parameters = {
         ...(generationParameters || {}),
         currentContent
@@ -394,20 +357,15 @@ export function AIGenerationField({
         throw new Error("No content returned from AI generator");
       }
       
-      // Create a new version with AI source
       const aiGeneratedContent = data.content;
       const aiVersion = createNewVersion(aiGeneratedContent, "AI generated");
       
-      // Update state
       addVersionToState(aiVersion);
       
-      // Update editor with new content
       handleEditorChange(aiGeneratedContent);
       
-      // Track the AI generated content
       lastAIGeneratedContent.current = aiGeneratedContent;
       
-      // Reset the tracking flag for edits after AI generation
       contentEditedAfterAIGeneration.current = false;
       
       toast({
@@ -423,51 +381,39 @@ export function AIGenerationField({
       });
     } finally {
       setIsGenerating(false);
-      // Reset processing flag after a short delay to ensure all state updates are complete
       setTimeout(() => {
         isProcessingAIGeneration.current = false;
       }, 100);
     }
   };
-  
+
   const handleButtonClick = async () => {
     if (onButtonClick) {
       await onButtonClick();
     } else if (generatorSlug) {
       await generateContentWithAI();
     } else {
-      // For demo purposes if no generator is provided
       await handleAIGeneration();
     }
   };
 
-  // Legacy AI generation for backward compatibility
   const handleAIGeneration = async () => {
-    // Set flag to prevent creating duplicate versions
     isProcessingAIGeneration.current = true;
     
     const currentContent = onEditorChange ? editorContent : internalEditorContent;
     
-    // For demo purposes, we'll just append "AI-generated" to the content
-    // In a real app, this would be replaced with an actual AI call
     const aiGeneratedContent = `<p>AI-generated content based on: "${currentContent.substring(0, 30)}..."</p>`;
     
-    // Create a new version with AI source
     const aiVersion = createNewVersion(aiGeneratedContent, "AI generated");
     
-    // Update state
     addVersionToState(aiVersion);
     
-    // Update editor with new content
     handleEditorChange(aiGeneratedContent);
     
-    // Track the AI generated content
     lastAIGeneratedContent.current = aiGeneratedContent;
     
-    // Reset the tracking flag for edits after AI generation
     contentEditedAfterAIGeneration.current = false;
     
-    // Reset processing flag after a short delay to ensure all state updates are complete
     setTimeout(() => {
       isProcessingAIGeneration.current = false;
     }, 100);
@@ -800,15 +746,6 @@ export function AIGenerationField({
                   onChange={handleEditorChange}
                   onBlur={handleEditorBlur}
                   placeholder={editorPlaceholder}
-                />
-              </div>
-              <div className="p-4 bg-muted/30 border-t">
-                <h4 className="text-sm font-medium mb-2">Preview</h4>
-                <div 
-                  className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: onEditorChange ? editorContent : internalEditorContent 
-                  }}
                 />
               </div>
             </div>
