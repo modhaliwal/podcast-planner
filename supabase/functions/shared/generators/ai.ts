@@ -14,16 +14,16 @@ export interface AIGeneratorConfig {
   ai_model?: string;
   model_name?: string;
   perplexityConfig?: any;
-  parameters?: Record<string, any>; // Added parameters field
-  [key: string]: any; // Allow for additional fields
+  parameters?: Record<string, any>;
+  [key: string]: any;
 }
 
 /**
  * Common response structure for AI generators
  */
 export interface AIGeneratorResponse {
-  content: string;      // HTML content
-  markdown?: string;    // Original markdown content if available
+  content: string;
+  markdown?: string;
   metadata?: {
     model?: string;
     provider?: string;
