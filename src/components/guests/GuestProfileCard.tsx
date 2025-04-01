@@ -4,10 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Guest } from '@/lib/types';
 import { SocialIconsBar } from '@/components/shared/SocialIconsBar';
-import { GuestContactInfo } from './GuestContactInfo';
 import { useState, useEffect } from 'react';
 import { isBlobUrl } from '@/lib/imageUpload';
-import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 
 interface GuestProfileCardProps {
@@ -38,24 +36,6 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
   
   // Determine if we should show image or avatar
   const showAvatar = !validImageUrl || imageError;
-  
-  // Handle image download
-  const handleDownload = () => {
-    if (validImageUrl) {
-      // Create an anchor element
-      const link = document.createElement('a');
-      link.href = validImageUrl;
-      
-      // Extract filename from URL or use guest name with extension
-      const filename = validImageUrl.split('/').pop() || 
-        `${guest.name.replace(/\s+/g, '_')}_headshot.jpg`;
-      
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
   
   return (
     <Card className="sticky top-28 mb-6">
@@ -96,18 +76,14 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
           )}
           
           <h2 className="text-xl font-semibold">{guest.name}</h2>
-          <p className="text-muted-foreground mb-1">{guest.title}</p>
-          {guest.company && (
-            <p className="text-sm text-muted-foreground mb-4">{guest.company}</p>
-          )}
+          <p className="text-muted-foreground mb-4">{guest.title}</p>
           
           <SocialIconsBar 
             socialLinks={guest.socialLinks} 
             align="center" 
             variant="profile" 
-            className="mb-6"
+            className="mb-4"
           />
-          <GuestContactInfo email={guest.email} phone={guest.phone} />
         </div>
         
         {guest.notes && (
