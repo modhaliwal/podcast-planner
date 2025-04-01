@@ -1,4 +1,3 @@
-
 // DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -35,7 +34,7 @@ export type DropdownOption = {
   source?: string;
 };
 
-export interface AIGenerationDropdownButtonProps {
+export interface AIGenerationFieldProps {
   buttonLabel?: string;
   loadingLabel?: string;
   isGenerating?: boolean;
@@ -70,7 +69,8 @@ export interface AIGenerationDropdownButtonProps {
   generationParameters?: Record<string, any>;
 }
 
-export function AIGenerationDropdownButton({
+// Export the AIGenerationField component (renamed from AIGenerationDropdownButton)
+export function AIGenerationField({
   buttonLabel = "Generate",
   loadingLabel = "Generating...",
   isGenerating: propIsGenerating = false,
@@ -97,7 +97,7 @@ export function AIGenerationDropdownButton({
   // New props
   generatorSlug,
   generationParameters,
-}: AIGenerationDropdownButtonProps) {
+}: AIGenerationFieldProps) {
   const [open, setOpen] = useState(false);
   const [clearConfirmationState, setClearConfirmationState] = useState(false);
   const [internalEditorContent, setInternalEditorContent] = useState(editorContent);
