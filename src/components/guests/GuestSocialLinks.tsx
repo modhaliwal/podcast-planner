@@ -1,6 +1,6 @@
 
-import { Twitter, Linkedin, Instagram, Youtube, Globe } from 'lucide-react';
-import { SocialLinks } from '@/lib/types';
+import { SocialLinks } from "@/lib/types";
+import { SocialIconsBar } from "@/components/shared/SocialIconsBar";
 
 interface GuestSocialLinksProps {
   socialLinks: SocialLinks;
@@ -12,66 +12,11 @@ export function GuestSocialLinks({ socialLinks }: GuestSocialLinksProps) {
   if (!hasSocialLinks) return null;
   
   return (
-    <div className="flex flex-wrap justify-center gap-2 mb-6">
-      {socialLinks.twitter && (
-        <a 
-          href={socialLinks.twitter} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-          aria-label="Twitter"
-        >
-          <Twitter className="h-4 w-4" />
-        </a>
-      )}
-      
-      {socialLinks.linkedin && (
-        <a 
-          href={socialLinks.linkedin} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-          aria-label="LinkedIn"
-        >
-          <Linkedin className="h-4 w-4" />
-        </a>
-      )}
-      
-      {socialLinks.instagram && (
-        <a 
-          href={socialLinks.instagram} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-          aria-label="Instagram"
-        >
-          <Instagram className="h-4 w-4" />
-        </a>
-      )}
-      
-      {socialLinks.youtube && (
-        <a 
-          href={socialLinks.youtube} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-          aria-label="YouTube"
-        >
-          <Youtube className="h-4 w-4" />
-        </a>
-      )}
-      
-      {socialLinks.website && (
-        <a 
-          href={socialLinks.website} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="p-2 rounded-full bg-muted hover:bg-accent transition-colors"
-          aria-label="Website"
-        >
-          <Globe className="h-4 w-4" />
-        </a>
-      )}
-    </div>
+    <SocialIconsBar 
+      socialLinks={socialLinks} 
+      align="center" 
+      variant="profile" 
+      className="mb-6"
+    />
   );
 }
