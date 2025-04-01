@@ -1,5 +1,5 @@
-
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Generates content using a Supabase edge function
@@ -10,40 +10,19 @@ export async function generateContentWithEdgeFunction(
   fieldName: string
 ): Promise<string> {
   try {
-    const response = await fetch(`/api/v1/edge/${edgeFunctionName}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
+    // Use the Supabase client to invoke the function directly
+    const { data, error } = await supabase.functions.invoke(edgeFunctionName, {
+      body: requestBody
     });
     
-    // Check if the response is ok before trying to parse JSON
-    if (!response.ok) {
-      // Try to parse error response if possible
-      let errorMessage = `Failed to generate ${fieldName} (${response.status})`;
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || errorMessage;
-      } catch (jsonError) {
-        // If we can't parse JSON, use the status text
-        errorMessage = `${errorMessage}: ${response.statusText}`;
-      }
-      
-      console.error(`Edge function error for ${fieldName}:`, errorMessage);
-      throw new Error(errorMessage);
+    // Check if there was an error with the function invocation
+    if (error) {
+      console.error(`Edge function error for ${fieldName}:`, error);
+      throw new Error(error.message || `Failed to generate ${fieldName}`);
     }
     
-    // Make sure the response has a body before parsing
-    const text = await response.text();
-    if (!text || text.trim() === '') {
-      throw new Error(`Empty response from server for ${fieldName}`);
-    }
-    
-    // Parse the JSON text
-    const data = JSON.parse(text);
-    
-    if (!data.content) {
+    // Check if we have data and content
+    if (!data || !data.content) {
       console.error(`No content returned from edge function for ${fieldName}:`, data);
       throw new Error(`No content generated for ${fieldName}`);
     }
