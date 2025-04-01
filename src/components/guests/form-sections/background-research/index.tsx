@@ -47,7 +47,7 @@ export function BackgroundResearchSection({
         editorContent={backgroundResearch}
         onEditorChange={setBackgroundResearch}
         showEditor={true}
-        editorType="plain"
+        editorType="rich"
         editorPlaceholder="Background research for this guest..."
         editorContentVersions={backgroundResearchVersions}
         onContentVersionsChange={onVersionsChange}
