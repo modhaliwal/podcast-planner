@@ -86,7 +86,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
     toast.success("AI-generated notes added");
   };
 
-  // Notes generation configuration
+  // Notes generation configuration (inlined from NotesGeneration component)
   const getNotesGenerationConfig = () => {
     const selectedGuestIds = form.watch('guestIds') || [];
     const topic = form.watch('topic') || '';

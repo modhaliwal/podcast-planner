@@ -1,7 +1,8 @@
 
 import React, { memo } from 'react';
 import { Guest } from '@/lib/types';
-import { GuestMiniCard } from './GuestMiniCard';
+import { Button } from '@/components/ui/button';
+import { GuestChip } from '@/components/guests/GuestChip';
 
 interface SelectedGuestsGridProps {
   selectedGuestIds: string[];
@@ -34,11 +35,25 @@ export const SelectedGuestsGrid = memo(function SelectedGuestsGrid({
       <div className="text-sm font-medium">Selected Guests:</div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3">
         {validGuests.map((guest) => (
-          <GuestMiniCard 
-            key={guest.id} 
-            guest={guest} 
-            onRemove={onRemoveGuest} 
-          />
+          // GuestMiniCard (inlined)
+          <div key={guest.id} className="flex items-start bg-card border rounded-md group relative">
+            <GuestChip 
+              guest={guest} 
+              size="lg" 
+              showLink={false} 
+              className="flex-1 min-w-0 bg-transparent hover:bg-transparent"
+            />
+            
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 absolute top-1 right-1"
+              onClick={() => onRemoveGuest(guest.id)}
+            >
+              ×
+            </Button>
+          </div>
         ))}
       </div>
     </div>
