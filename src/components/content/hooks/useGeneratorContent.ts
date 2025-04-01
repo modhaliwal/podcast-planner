@@ -22,6 +22,7 @@ export const useGeneratorContent = ({
   onContentGenerated
 }: UseGeneratorContentProps) => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [usedPrompt, setUsedPrompt] = useState<string | null>(null);
   
   const generateContent = async () => {
     // Don't proceed if no generator slug is provided
@@ -33,6 +34,7 @@ export const useGeneratorContent = ({
     
     try {
       setIsGenerating(true);
+      setUsedPrompt(null);
       showGenerationToasts(true, fieldName);
       
       console.log(`Generating content for ${fieldName} using generator: ${generatorSlug}`);
@@ -61,6 +63,11 @@ export const useGeneratorContent = ({
       
       console.log(`Content generated successfully:`, data.content.substring(0, 100) + "...");
       
+      // Save the processed prompt if it's available in the response
+      if (data.metadata && data.metadata.processedPrompt) {
+        setUsedPrompt(data.metadata.processedPrompt);
+      }
+      
       // Set the content value in the form directly to trigger UI update
       form.setValue(fieldName, data.content, { shouldDirty: true });
       
@@ -80,6 +87,7 @@ export const useGeneratorContent = ({
 
   return {
     isGenerating,
-    generateContent
+    generateContent,
+    usedPrompt
   };
 };

@@ -22,11 +22,14 @@ export function AIGeneratorPlayground() {
   const [resultMetadata, setResultMetadata] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("result");
   const [promptPreview, setPromptPreview] = useState<any>(null);
+  const [processedPrompt, setProcessedPrompt] = useState<string | null>(null);
   
   const parsedMarkdown = useMarkdownParser(generationResult || "");
 
   const handleSelectPrompt = (slug: string) => {
     setSelectedPrompt(slug);
+    // Reset processed prompt when changing generators
+    setProcessedPrompt(null);
   };
 
   const handleParametersChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -63,6 +66,7 @@ export function AIGeneratorPlayground() {
     setIsGenerating(true);
     setGenerationResult(null);
     setResultMetadata(null);
+    setProcessedPrompt(null);
 
     try {
       const selectedGenerator = prompts.find(p => p.slug === selectedPrompt);
@@ -85,6 +89,12 @@ export function AIGeneratorPlayground() {
 
       setGenerationResult(data.content);
       setResultMetadata(data.metadata);
+      
+      // Store the processed prompt if available
+      if (data.metadata && data.metadata.processedPrompt) {
+        setProcessedPrompt(data.metadata.processedPrompt);
+      }
+      
       setActiveTab("result");
 
       toast({
@@ -296,6 +306,16 @@ export function AIGeneratorPlayground() {
           </Button>
         </div>
 
+        {/* Display Processed Prompt if available */}
+        {processedPrompt && (
+          <div className="pt-4 border-t">
+            <Label htmlFor="processed-prompt">Used Prompt</Label>
+            <div className="mt-2 bg-secondary/30 p-4 rounded-md whitespace-pre-wrap">
+              <pre className="text-sm font-mono">{processedPrompt}</pre>
+            </div>
+          </div>
+        )}
+
         {(generationResult || resultMetadata || promptPreview) && (
           <div className="pt-4 border-t">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -409,4 +429,4 @@ export function AIGeneratorPlayground() {
       </CardContent>
     </Card>
   );
-}
+};

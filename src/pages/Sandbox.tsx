@@ -1,3 +1,4 @@
+
 import { Shell } from '@/components/layout/Shell';
 import { Beaker, Sparkles } from 'lucide-react';
 import { AIGenerationDropdownButton } from '@/components/sandbox/AIGenerationDropdownButton';
@@ -181,6 +182,16 @@ const Sandbox = () => {
                           </FormItem>
                         )}
                       />
+                      
+                      {/* Display the used prompt */}
+                      {generatorContent.usedPrompt && (
+                        <div className="space-y-2">
+                          <FormLabel>Used Prompt</FormLabel>
+                          <div className="bg-secondary/30 p-4 rounded-md whitespace-pre-wrap">
+                            <pre className="text-sm font-mono">{generatorContent.usedPrompt}</pre>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </Form>
                 </CardContent>

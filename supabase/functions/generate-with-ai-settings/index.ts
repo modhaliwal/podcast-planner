@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { convertMarkdownToHtml } from "../shared/utils/markdownConverter.ts"
+import { processPromptWithParameters } from "../shared/generators/ai.ts"
 
 // CORS headers for browser requests
 const corsHeaders = {
@@ -46,13 +47,21 @@ serve(async (req) => {
     console.log(`Using AI generator: ${generator.title}`)
     console.log(`AI Model: ${generator.ai_model || 'not specified'}, Model Name: ${generator.model_name || 'default'}`)
 
+    // Process the prompt with parameters if available
+    let processedPrompt = ""
+    if (generator.prompt_text && parameters) {
+      processedPrompt = processPromptWithParameters(generator.prompt_text, parameters)
+    } else {
+      processedPrompt = generator.prompt_text || ""
+    }
+
     // Create configuration for the AI generator
     const config = {
       type: generator.key || 'generic',
       name: parameters?.name || 'User',
       title: parameters?.title || '',
       company: parameters?.company || '',
-      prompt: generator.prompt_text,
+      prompt: processedPrompt, // Use the processed prompt
       systemPrompt: generator.system_prompt,
       contextInstructions: generator.context_instructions,
       exampleOutput: generator.example_output,
@@ -88,10 +97,16 @@ serve(async (req) => {
         finalContent = generatedResponse.markdown || generatedResponse.content
       }
 
+      // Create or extend metadata to include the processed prompt
+      const metadata = {
+        ...(generatedResponse.metadata || {}),
+        processedPrompt: processedPrompt
+      }
+
       return new Response(
         JSON.stringify({
           content: finalContent,
-          metadata: generatedResponse.metadata || {},
+          metadata: metadata,
           format: responseFormat
         }),
         { 
