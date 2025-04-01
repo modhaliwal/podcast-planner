@@ -8,6 +8,7 @@ interface DynamicParametersProps {
   generator: {
     parameters?: string;
     title: string;
+    prompt_text?: string; // Make prompt_text optional
   };
   form: UseFormReturn<any>;
 }
@@ -35,7 +36,7 @@ export function DynamicParameters({ generator, form }: DynamicParametersProps) {
           // Update the form's parameters field with empty JSON
           form.setValue('parameters', JSON.stringify(initialValues));
         }
-      } else {
+      } else if (generator.prompt_text) {
         // Look for parameter placeholders in the prompt text using regex {paramName}
         const regex = /{([a-zA-Z0-9_]+)}/g;
         const matches = Array.from(generator.prompt_text.matchAll(regex));
@@ -61,6 +62,11 @@ export function DynamicParameters({ generator, form }: DynamicParametersProps) {
           setParamValues({});
           form.setValue('parameters', '{}');
         }
+      } else {
+        // No parameters or prompt_text available
+        setParameterFields([]);
+        setParamValues({});
+        form.setValue('parameters', '{}');
       }
     } catch (error) {
       console.error('Error parsing parameters:', error);
