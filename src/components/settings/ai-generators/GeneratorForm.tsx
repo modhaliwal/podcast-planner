@@ -4,8 +4,6 @@ import { AIPrompt } from "@/hooks/useAIPrompts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneratorEditor } from "./GeneratorEditor";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trash2, Save } from "lucide-react";
 import { EditorActions } from "./editor/EditorActions";
 
 interface GeneratorFormProps {
@@ -103,39 +101,13 @@ export function GeneratorForm({
               </div>
               
               {/* Sticky actions bar */}
-              <div className="sticky bottom-0 z-10 bg-background py-3 px-4 border-t">
-                <div className="flex justify-between space-x-2">
-                  <div>
-                    {!isNewGenerator && (
-                      <Button
-                        variant="destructive"
-                        onClick={onDelete}
-                        disabled={isSaving}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      onClick={onReset}
-                      disabled={isSaving}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={onSave}
-                      disabled={isSaving}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      {isSaving ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <EditorActions
+                onSave={onSave}
+                onReset={onReset}
+                onDelete={onDelete}
+                isSaving={isSaving}
+                isNewGenerator={isNewGenerator}
+              />
             </div>
           </TabsContent>
         </Tabs>

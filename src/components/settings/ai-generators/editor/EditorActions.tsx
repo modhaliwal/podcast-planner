@@ -1,7 +1,7 @@
 
-import React from "react";
+import { FormActions } from "@/components/ui/form-actions";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Save } from "lucide-react";
 
 interface EditorActionsProps {
   onSave: () => void;
@@ -33,22 +33,11 @@ export function EditorActions({
         )}
       </div>
       
-      <div className="flex space-x-2">
-        <Button
-          variant="outline"
-          onClick={onReset}
-          disabled={isSaving}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={onSave}
-          disabled={isSaving}
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Saving..." : "Save Changes"}
-        </Button>
-      </div>
+      <FormActions
+        onCancel={onReset}
+        isSubmitting={isSaving}
+        saveText="Save Changes"
+      />
     </div>
   );
 }

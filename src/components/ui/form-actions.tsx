@@ -8,26 +8,30 @@ interface FormActionsProps {
   onCancel?: () => void;
   isSubmitting?: boolean;
   saveText?: string;
+  saveIcon?: React.ReactNode;
+  cancelText?: string;
 }
 
 export function FormActions({
   cancelHref,
   onCancel,
   isSubmitting = false,
-  saveText = "Save Changes"
+  saveText = "Save Changes",
+  saveIcon = <SaveIcon className="h-4 w-4 mr-2" />,
+  cancelText = "Cancel"
 }: FormActionsProps) {
   return (
-    <div className="form-actions">
+    <div className="flex justify-end space-x-4 pt-6 border-t">
       {onCancel ? (
         <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
           <X className="h-4 w-4 mr-2" />
-          Cancel
+          {cancelText}
         </Button>
       ) : cancelHref ? (
         <Button variant="outline" type="button" asChild disabled={isSubmitting}>
           <Link to={cancelHref}>
             <X className="h-4 w-4 mr-2" />
-            Cancel
+            {cancelText}
           </Link>
         </Button>
       ) : null}
@@ -36,7 +40,7 @@ export function FormActions({
         type="submit"
         disabled={isSubmitting}
       >
-        <SaveIcon className="h-4 w-4 mr-2" />
+        {saveIcon}
         {isSubmitting ? "Saving..." : saveText}
       </Button>
     </div>

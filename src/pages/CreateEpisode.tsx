@@ -1,8 +1,8 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,7 @@ import { EpisodeFormCard } from '@/components/episodes/CreateEpisodeForm/Episode
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 import { getUpcomingFriday, getNextEpisodeDate } from '@/utils/dateUtils';
 import { createEpisodes } from '@/services/episodeService';
+import { FormActions } from '@/components/ui/form-actions';
 
 const CreateEpisode = () => {
   const navigate = useNavigate();
@@ -115,22 +116,13 @@ const CreateEpisode = () => {
     }
   };
 
-  const actions = (
-    <Button 
-      type="button" 
-      variant="outline" 
-      onClick={() => navigate('/episodes')}
-    >
-      Cancel
-    </Button>
-  );
+  const handleCancel = () => navigate('/episodes');
 
   return (
     <Shell>
       <PageLayout
         title="Create New Episodes"
         subtitle="Add one or more episodes to your schedule"
-        actions={actions}
       >
         <form onSubmit={handleSubmit}>
           <EpisodeFormCard
@@ -141,15 +133,12 @@ const CreateEpisode = () => {
             onUpdateTime={updateTime}
           />
 
-          <div className="form-actions">
-            <Button 
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Creating...' : 'Create Episodes'}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+          <FormActions 
+            onCancel={handleCancel}
+            isSubmitting={isSubmitting}
+            saveText="Create Episodes"
+            saveIcon={<ArrowRight className="h-4 w-4 mr-2" />}
+          />
         </form>
       </PageLayout>
     </Shell>

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { FormProvider } from "react-hook-form";
@@ -14,6 +13,7 @@ import { BasicInfoSection } from "./form-sections/BasicInfoSection";
 import { ContactSection } from "./form-sections/ContactSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { BioSection } from "./form-sections/BioSection";
+import { FormActions } from "@/components/ui/form-actions";
 
 interface GuestFormProps {
   guest: Guest;
@@ -72,22 +72,11 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           </div>
         </div>
         
-        <div className="flex justify-end space-x-4 pt-6 border-t">
-          <Button
-            type="button"
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : "Save Guest"}
-          </Button>
-        </div>
+        <FormActions
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          saveText="Save Guest"
+        />
       </form>
     </FormProvider>
   );
