@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Episode, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
@@ -11,6 +11,9 @@ function useEpisodesData(userId: string | undefined) {
   const refreshTimerRef = useRef<number>(0);
   const isInitialMountRef = useRef(true);
   const hasLoadedInitialDataRef = useRef(false);
+  const cacheTTL = 60000; // 1 minute cache TTL
+  const lastFetchTimeRef = useRef<number>(0);
+  const refreshPromiseRef = useRef<Promise<Episode[]> | null>(null);
 
   // Load episodes on initial mount
   useEffect(() => {
@@ -34,101 +37,131 @@ function useEpisodesData(userId: string | undefined) {
       return episodes;
     }
     
-    // Prevent rapid refreshes unless forced
-    const now = Date.now();
-    if (!force && now - refreshTimerRef.current < 2000) {
-      console.log("Skipping episodes refresh, too soon since last refresh");
-      return episodes;
-    }
-    
-    setIsLoadingEpisodes(true);
-    refreshTimerRef.current = now;
-    
-    try {
-      console.log("Fetching episodes from database for user:", userId);
+    // Check cache validity unless forced
+    if (!force) {
+      const now = Date.now();
+      const cacheAge = now - lastFetchTimeRef.current;
       
-      // Fetch episodes - no user_id filter
-      const { data: episodesData, error: episodesError } = await supabase
-        .from('episodes')
-        .select('*');
-      
-      if (episodesError) throw episodesError;
-      
-      if (!episodesData || episodesData.length === 0) {
-        console.log("No episodes found in database");
-        setEpisodes([]);
-        setIsLoadingEpisodes(false);
+      // If cache is still valid and we have data, return existing data
+      if (cacheAge < cacheTTL && episodes.length > 0) {
+        console.log("Using cached episode data, age:", Math.round(cacheAge / 1000), "seconds");
         return episodes;
       }
       
-      // Fetch guest relationships
-      const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
-        .from('episode_guests')
-        .select('episode_id, guest_id');
-      
-      if (episodeGuestsError) throw episodeGuestsError;
-      
-      // Organize guest IDs by episode
-      const guestsByEpisode: Record<string, string[]> = {};
-      
-      episodeGuestsData?.forEach(({ episode_id, guest_id }) => {
-        if (!guestsByEpisode[episode_id]) {
-          guestsByEpisode[episode_id] = [];
-        }
-        guestsByEpisode[episode_id].push(guest_id);
-      });
-      
-      // Format episodes data
-      const formattedEpisodes: Episode[] = episodesData.map(episode => {
-        // Parse resources safely
-        let typedResources: Resource[] = [];
-        if (episode.resources && Array.isArray(episode.resources)) {
-          typedResources = episode.resources.map((resource: any) => ({
-            label: resource.label || '',
-            url: resource.url || '',
-            description: resource.description || undefined
-          }));
+      // Prevent rapid refreshes unless forced
+      if (now - refreshTimerRef.current < 2000) {
+        console.log("Skipping episodes refresh, too soon since last refresh");
+        
+        // If we have an in-flight refresh, return that promise
+        if (refreshPromiseRef.current) {
+          console.log("Using in-flight episodes refresh promise");
+          return refreshPromiseRef.current;
         }
         
-        return {
-          id: episode.id,
-          episodeNumber: episode.episode_number,
-          title: episode.title,
-          topic: episode.topic, 
-          scheduled: episode.scheduled,
-          publishDate: episode.publish_date || undefined,
-          status: episode.status as EpisodeStatus,
-          coverArt: episode.cover_art || undefined,
-          guestIds: guestsByEpisode[episode.id] || [],
-          introduction: episode.introduction,
-          notes: episode.notes || '',
-          recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
-          podcastUrls: episode.podcast_urls ? (episode.podcast_urls as PodcastUrls) : {},
-          resources: typedResources,
-          createdAt: episode.created_at,
-          updatedAt: episode.updated_at
-        };
-      });
-      
-      console.log(`Loaded ${formattedEpisodes.length} episodes`);
-      setEpisodes(formattedEpisodes);
-      return formattedEpisodes;
-      
-    } catch (error: any) {
-      console.error("Error fetching episodes:", error);
-      toast({
-        title: "Error fetching episodes",
-        description: error.message,
-        variant: "destructive"
-      });
-      return episodes;
-    } finally {
-      setIsLoadingEpisodes(false);
+        return episodes;
+      }
     }
+    
+    setIsLoadingEpisodes(true);
+    refreshTimerRef.current = Date.now();
+    lastFetchTimeRef.current = Date.now();
+    
+    // Create a new refresh promise
+    const fetchPromise = (async () => {
+      try {
+        console.log("Fetching episodes from database for user:", userId);
+        
+        // Fetch episodes - no user_id filter
+        const { data: episodesData, error: episodesError } = await supabase
+          .from('episodes')
+          .select('*');
+        
+        if (episodesError) throw episodesError;
+        
+        if (!episodesData || episodesData.length === 0) {
+          console.log("No episodes found in database");
+          setEpisodes([]);
+          return [];
+        }
+        
+        // Fetch guest relationships
+        const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
+          .from('episode_guests')
+          .select('episode_id, guest_id');
+        
+        if (episodeGuestsError) throw episodeGuestsError;
+        
+        // Organize guest IDs by episode
+        const guestsByEpisode: Record<string, string[]> = {};
+        
+        episodeGuestsData?.forEach(({ episode_id, guest_id }) => {
+          if (!guestsByEpisode[episode_id]) {
+            guestsByEpisode[episode_id] = [];
+          }
+          guestsByEpisode[episode_id].push(guest_id);
+        });
+        
+        // Format episodes data
+        const formattedEpisodes: Episode[] = episodesData.map(episode => {
+          // Parse resources safely
+          let typedResources: Resource[] = [];
+          if (episode.resources && Array.isArray(episode.resources)) {
+            typedResources = episode.resources.map((resource: any) => ({
+              label: resource.label || '',
+              url: resource.url || '',
+              description: resource.description || undefined
+            }));
+          }
+          
+          return {
+            id: episode.id,
+            episodeNumber: episode.episode_number,
+            title: episode.title,
+            topic: episode.topic, 
+            scheduled: episode.scheduled,
+            publishDate: episode.publish_date || undefined,
+            status: episode.status as EpisodeStatus,
+            coverArt: episode.cover_art || undefined,
+            guestIds: guestsByEpisode[episode.id] || [],
+            introduction: episode.introduction,
+            notes: episode.notes || '',
+            recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
+            podcastUrls: episode.podcast_urls ? (episode.podcast_urls as PodcastUrls) : {},
+            resources: typedResources,
+            createdAt: episode.created_at,
+            updatedAt: episode.updated_at
+          };
+        });
+        
+        console.log(`Loaded ${formattedEpisodes.length} episodes`);
+        setEpisodes(formattedEpisodes);
+        return formattedEpisodes;
+        
+      } catch (error: any) {
+        console.error("Error fetching episodes:", error);
+        toast({
+          title: "Error fetching episodes",
+          description: error.message,
+          variant: "destructive"
+        });
+        return episodes;
+      } finally {
+        setIsLoadingEpisodes(false);
+        refreshPromiseRef.current = null;
+      }
+    })();
+    
+    // Store the promise so we can reuse it for duplicate calls
+    refreshPromiseRef.current = fetchPromise;
+    
+    return fetchPromise;
   }, [userId, episodes]);
 
+  // Memoize episodes to prevent unnecessary re-renders
+  const memoizedEpisodes = useMemo(() => episodes, [episodes]);
+
   return {
-    episodes,
+    episodes: memoizedEpisodes,
     isLoadingEpisodes,
     refreshEpisodes,
     isInitialMount: isInitialMountRef.current,

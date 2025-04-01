@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Textarea } from "@/components/ui/textarea";
+import { memo } from "react";
 
 interface BasicFieldsProps {
   form: UseFormReturn<EpisodeFormValues>;
 }
 
-export function BasicFields({ form }: BasicFieldsProps) {
+// Memoize the component to prevent unnecessary re-renders
+export const BasicFields = memo(function BasicFields({ form }: BasicFieldsProps) {
   return (
     <div className="space-y-4">
       <FormField
@@ -64,4 +66,4 @@ export function BasicFields({ form }: BasicFieldsProps) {
       />
     </div>
   );
-}
+});

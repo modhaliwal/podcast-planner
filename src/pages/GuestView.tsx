@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestViewLoading } from '@/components/guests/GuestViewLoading';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import { useGuestData } from '@/hooks/guests';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
@@ -15,9 +15,7 @@ import { Link } from 'react-router-dom';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
-  const location = useLocation();
-  const { episodes, refreshGuests, refreshEpisodes } = useAuth();
-  const hasRefreshedRef = useRef(false);
+  const { episodes } = useAuth();
   
   const {
     isLoading,
@@ -27,26 +25,13 @@ const GuestView = () => {
     handleDelete
   } = useGuestData(id);
   
-  useEffect(() => {
-    if (!hasRefreshedRef.current) {
-      console.log('Initial GuestView mount, refreshing guests and episodes data');
-      
-      setTimeout(() => {
-        refreshGuests();
-        
-        setTimeout(() => {
-          refreshEpisodes();
-          hasRefreshedRef.current = true;
-        }, 100);
-      }, 0);
-    }
-    
-    return () => {
-      if (location.pathname !== `/guests/${id}`) {
-        hasRefreshedRef.current = false;
-      }
-    };
-  }, [id, location.pathname, refreshGuests, refreshEpisodes]);
+  // Memoize filtered episodes to prevent unnecessary recalculations
+  const guestEpisodes = useMemo(() => {
+    if (!guest) return [];
+    return episodes.filter(episode => 
+      episode.guestIds.includes(guest.id)
+    );
+  }, [guest, episodes]);
   
   if (isLoading) {
     return <GuestViewLoading />;
@@ -55,16 +40,12 @@ const GuestView = () => {
   if (!guest) {
     return <GuestNotFound />;
   }
-
-  const guestEpisodes = episodes.filter(episode => 
-    episode.guestIds.includes(guest.id)
-  );
   
   const handleDeleteWrapper = async () => {
     await handleDelete();
   };
   
-  // Inline GuestViewHeader
+  // Guest view header action buttons
   const actions = (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
       <div className="flex space-x-2">

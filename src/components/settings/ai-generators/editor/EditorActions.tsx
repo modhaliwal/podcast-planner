@@ -2,6 +2,7 @@
 import { FormActions } from "@/components/ui/form-actions";
 import { Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { memo } from "react";
 
 interface EditorActionsProps {
   onSave: () => void;
@@ -13,7 +14,8 @@ interface EditorActionsProps {
   isNewGenerator?: boolean;
 }
 
-export function EditorActions({ 
+// Use memo to prevent unnecessary re-renders
+export const EditorActions = memo(function EditorActions({ 
   onSave, 
   onReset, 
   onCancel,
@@ -58,4 +60,4 @@ export function EditorActions({
       />
     </div>
   );
-}
+});

@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Guest } from "@/lib/types";
 import { useGuestsRefresh } from "./useGuestsRefresh";
 
@@ -11,6 +11,7 @@ export function useGuestsData(userId: string | undefined) {
   const lastFetchTimeRef = useRef<number>(0);
   const isInitialMountRef = useRef(true);
   const userIdRef = useRef<string | undefined>(undefined);
+  const cacheTTL = 60000; // 1 minute cache TTL
 
   // Track changes to userId
   useEffect(() => {
@@ -37,6 +38,7 @@ export function useGuestsData(userId: string | undefined) {
           const fetchedGuests = await fetchGuestData(true);
           setGuests(fetchedGuests);
           hasLoadedInitialDataRef.current = true;
+          lastFetchTimeRef.current = Date.now();
         } catch (error) {
           console.error("Error loading guests:", error);
         } finally {
@@ -53,6 +55,18 @@ export function useGuestsData(userId: string | undefined) {
 
   // Create a function that wraps refreshGuests and updates the guests state
   const refreshGuests = useCallback(async (force = false) => {
+    // Check cache validity if not forced
+    if (!force) {
+      const now = Date.now();
+      const cacheAge = now - lastFetchTimeRef.current;
+      
+      // If cache is still valid and we have data, return existing data
+      if (cacheAge < cacheTTL && guests.length > 0) {
+        console.log("Using cached guest data, age:", Math.round(cacheAge / 1000), "seconds");
+        return guests;
+      }
+    }
+    
     // Throttle refreshes to prevent too many calls
     const now = Date.now();
     if (!force && now - lastFetchTimeRef.current < 2000) {
@@ -82,8 +96,11 @@ export function useGuestsData(userId: string | undefined) {
     }
   }, [fetchGuestData, guests, userId]);
 
+  // Memoize guests to prevent unnecessary re-renders
+  const memoizedGuests = useMemo(() => guests, [guests]);
+
   return {
-    guests,
+    guests: memoizedGuests,
     isLoadingGuests: isLoadingGuests || isRefreshing,
     refreshGuests,
     isInitialMount: isInitialMountRef.current,

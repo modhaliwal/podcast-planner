@@ -2,12 +2,14 @@
 import { Guest } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GuestCard } from "./GuestListCard";
+import { memo } from "react";
 
 interface GuestListProps {
   guests: Guest[];
 }
 
-export function GuestList({ guests }: GuestListProps) {
+// Memoize the component to prevent unnecessary re-renders
+export const GuestList = memo(function GuestList({ guests }: GuestListProps) {
   const { episodes } = useAuth();
 
   return (
@@ -24,4 +26,4 @@ export function GuestList({ guests }: GuestListProps) {
       </div>
     </div>
   );
-}
+});
