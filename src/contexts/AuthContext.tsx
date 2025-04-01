@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialAuthComplete, setInitialAuthComplete] = useState(false);
   
   // Pass the user ID directly to data hooks
   const { 
@@ -82,44 +83,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Track if this is the first auth state change
+    let isFirstAuthEvent = true;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event, newSession) => {
         console.log("Auth state changed:", event);
-        setSession(session);
-        setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN' && session) {
-          await refreshUserProfile();
-          // Data loading will happen in the useEffect hooks of the data hooks
-          toast({
-            title: "Success",
-            description: "Signed in successfully"
-          });
+        // Only update state if there's an actual change needed
+        const sessionChanged = JSON.stringify(newSession) !== JSON.stringify(session);
+        const userChanged = newSession?.user?.id !== user?.id;
+        
+        if (sessionChanged) {
+          setSession(newSession);
         }
         
-        if (event === 'SIGNED_OUT') {
-          setAppUser(null);
-          toast({
-            title: "Info",
-            description: "Signed out successfully"
-          });
+        if (userChanged) {
+          setUser(newSession?.user ?? null);
         }
-
-        setLoading(false);
+        
+        // Only show toasts and trigger profile refresh for actual sign in/out events
+        // and only after the initial auth check has completed
+        if (initialAuthComplete) {
+          if (event === 'SIGNED_IN' && newSession) {
+            // Only show toast on actual sign-in events, not token refreshes
+            if (isFirstAuthEvent || !session) {
+              toast({
+                title: "Success",
+                description: "Signed in successfully"
+              });
+            }
+            
+            if (userChanged && newSession.user) {
+              await refreshUserProfile();
+            }
+          }
+          
+          if (event === 'SIGNED_OUT') {
+            setAppUser(null);
+            toast({
+              title: "Info",
+              description: "Signed out successfully"
+            });
+          }
+        }
+        
+        isFirstAuthEvent = false;
       }
     );
 
     // Get the initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
       
-      if (session?.user) {
+      if (initialSession?.user) {
         await refreshUserProfile();
-        // Data loading will happen in the useEffect hooks of the data hooks
       }
       
       setLoading(false);
+      setInitialAuthComplete(true);
     });
 
     return () => subscription.unsubscribe();
