@@ -1,8 +1,7 @@
-
 import { Shell } from '@/components/layout/Shell';
 import { Beaker, Sparkles } from 'lucide-react';
 import { AIGenerationDropdownButton } from '@/components/sandbox/AIGenerationDropdownButton';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ContentVersion } from '@/lib/types';
 import { AIGeneratorPlayground } from '@/components/sandbox/AIGeneratorPlayground';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,9 +11,17 @@ import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { useAIPrompts } from '@/hooks/useAIPrompts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DynamicParameters } from '@/components/sandbox/DynamicParameters';
 
 const Sandbox = () => {
-  // State for the rich text editor version
+  // Fetch available AI generators
+  const { prompts: generators, isLoading: loadingGenerators } = useAIPrompts();
+  const [selectedGeneratorSlug, setSelectedGeneratorSlug] = useState<string>("");
+  const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
+  
+  // State for the rich text editor version (keeping existing functionality)
   const [richContent, setRichContent] = useState("<p>Test your rich text content here!</p>");
   const [richVersions, setRichVersions] = useState<ContentVersion[]>([
     {
@@ -27,7 +34,7 @@ const Sandbox = () => {
     }
   ]);
   
-  // State for the plain text editor version
+  // State for the plain text editor version (keeping existing functionality)
   const [plainContent, setPlainContent] = useState("Test your plain text content here!");
   const [plainVersions, setPlainVersions] = useState<ContentVersion[]>([
     {
@@ -40,27 +47,48 @@ const Sandbox = () => {
     }
   ]);
   
-  // New form for simplified generator approach
+  // Form for the simplified generator approach
   const simplifiedForm = useForm({
     defaultValues: {
       content: "This content will be processed by the selected AI generator.",
-      name: "John Doe",
-      company: "Acme Inc.",
-      topic: "AI and machine learning"
+      parameters: "{}"
     }
   });
   
-  // Use our new hook for simplified generator approach
+  // Set a default generator when the data loads
+  useEffect(() => {
+    if (generators.length > 0 && !selectedGeneratorSlug) {
+      const defaultGenerator = generators[0];
+      setSelectedGeneratorSlug(defaultGenerator.slug);
+      setSelectedGenerator(defaultGenerator);
+    }
+  }, [generators, selectedGeneratorSlug]);
+  
+  // Update selected generator when slug changes
+  useEffect(() => {
+    if (selectedGeneratorSlug && generators.length > 0) {
+      const generator = generators.find(g => g.slug === selectedGeneratorSlug);
+      if (generator) {
+        setSelectedGenerator(generator);
+        // Reset parameters when generator changes
+        simplifiedForm.setValue('parameters', '{}');
+      }
+    }
+  }, [selectedGeneratorSlug, generators, simplifiedForm]);
+  
+  // Use the generator content hook with the selected generator
   const generatorContent = useGeneratorContent({
-    generatorSlug: "episode-notes-generator",
+    generatorSlug: selectedGeneratorSlug,
     fieldName: "content",
     form: simplifiedForm,
-    parameters: {
-      name: simplifiedForm.watch("name"),
-      company: simplifiedForm.watch("company"),
-      topic: simplifiedForm.watch("topic")
-    }
+    parameters: JSON.parse(simplifiedForm.watch("parameters") || "{}"),
+    responseFormat: 'markdown'
   });
+  
+  // Handle generator selection
+  const handleGeneratorChange = (slug: string) => {
+    setSelectedGeneratorSlug(slug);
+  };
   
   return (
     <Shell>
@@ -86,57 +114,48 @@ const Sandbox = () => {
                 <CardHeader>
                   <CardTitle>Simplified Generator Demo</CardTitle>
                   <CardDescription>
-                    Test the direct approach using a specific generator slug and parameters
+                    Test different AI generators with their specific parameters
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Form {...simplifiedForm}>
                     <div className="space-y-6">
-                      <FormField
-                        control={simplifiedForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Name</FormLabel>
-                            <Textarea 
-                              placeholder="Enter name" 
-                              className="h-10"
-                              {...field} 
-                            />
-                          </FormItem>
+                      {/* Generator Selector */}
+                      <div className="space-y-2">
+                        <FormLabel>Select Generator</FormLabel>
+                        <Select
+                          value={selectedGeneratorSlug}
+                          onValueChange={handleGeneratorChange}
+                          disabled={loadingGenerators}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={loadingGenerators ? "Loading generators..." : "Select a generator"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {generators.map((generator) => (
+                              <SelectItem key={generator.slug} value={generator.slug}>
+                                {generator.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        {selectedGenerator && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {selectedGenerator.prompt_text.substring(0, 100)}...
+                          </p>
                         )}
-                      />
+                      </div>
                       
-                      <FormField
-                        control={simplifiedForm.control}
-                        name="company"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Company</FormLabel>
-                            <Textarea 
-                              placeholder="Enter company" 
-                              className="h-10"
-                              {...field} 
-                            />
-                          </FormItem>
-                        )}
-                      />
+                      {/* Dynamic Parameters */}
+                      {selectedGenerator && (
+                        <DynamicParameters 
+                          generator={selectedGenerator} 
+                          form={simplifiedForm} 
+                        />
+                      )}
                       
-                      <FormField
-                        control={simplifiedForm.control}
-                        name="topic"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Topic</FormLabel>
-                            <Textarea 
-                              placeholder="Enter topic" 
-                              className="h-10"
-                              {...field} 
-                            />
-                          </FormItem>
-                        )}
-                      />
-                      
+                      {/* Generated Content Field */}
                       <FormField
                         control={simplifiedForm.control}
                         name="content"
@@ -148,7 +167,7 @@ const Sandbox = () => {
                                 type="button"
                                 size="sm"
                                 onClick={() => generatorContent.generateContent()}
-                                disabled={generatorContent.isGenerating}
+                                disabled={generatorContent.isGenerating || !selectedGeneratorSlug}
                               >
                                 <Sparkles className="h-4 w-4 mr-2" />
                                 {generatorContent.isGenerating ? "Generating..." : "Generate"}

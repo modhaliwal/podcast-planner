@@ -23,6 +23,13 @@ export const useGeneratorContent = ({
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   
   const generateContent = async () => {
+    // Don't proceed if no generator slug is provided
+    if (!generatorSlug) {
+      console.error("No generator slug provided");
+      showGenerationToasts(false, fieldName, false, "Please select a generator first");
+      return;
+    }
+    
     try {
       setIsGenerating(true);
       showGenerationToasts(true, fieldName);
