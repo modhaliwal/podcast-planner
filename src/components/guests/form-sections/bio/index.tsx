@@ -1,87 +1,72 @@
 
-import { useState, useEffect } from "react";
-import { FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { ContentVersion } from "@/lib/types";
-import { VersionSelector } from "../VersionSelector";
-import { BioGeneration } from "./BioGeneration";
-import { BioEditor } from "./BioEditor";
-import { useVersionManager } from "@/hooks/versions";
-import { Button } from "@/components/ui/button";
+import { ContentVersion, Guest } from "@/lib/types";
+import { AIGenerationField } from "@/components/shared/AIGenerationField";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;
   bioVersions: ContentVersion[];
   onVersionsChange: (versions: ContentVersion[]) => void;
+  guest?: Guest;
 }
 
-export function BioSection({ form, bioVersions = [], onVersionsChange }: BioSectionProps) {
-  // Get the current bio content from the form
-  const [bio, setBio] = useState<string>(form.getValues('bio') || '');
+export function BioSection({ form, bioVersions = [], onVersionsChange, guest }: BioSectionProps) {
+  // Get the bio content from the form
+  const bioContent = form.getValues('bio') || '';
   
-  // Update local state when form value changes
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'bio') {
-        setBio(value.bio as string);
-      }
-    });
+  // Format social links as a new-line separated string
+  const formatSocialLinks = () => {
+    if (!guest?.socialLinks) return "";
     
-    return () => subscription.unsubscribe();
-  }, [form]);
-  
-  // Handle content changes without directly updating form in the render
-  const handleContentChange = (newContent: string) => {
-    setBio(newContent);
-    form.setValue('bio', newContent, { shouldDirty: true });
+    const links = [];
+    if (guest.socialLinks.twitter) links.push(guest.socialLinks.twitter);
+    if (guest.socialLinks.linkedin) links.push(guest.socialLinks.linkedin);
+    if (guest.socialLinks.facebook) links.push(guest.socialLinks.facebook);
+    if (guest.socialLinks.instagram) links.push(guest.socialLinks.instagram);
+    if (guest.socialLinks.tiktok) links.push(guest.socialLinks.tiktok);
+    if (guest.socialLinks.youtube) links.push(guest.socialLinks.youtube);
+    if (guest.socialLinks.website) links.push(guest.socialLinks.website);
+    
+    return links.join('\n');
   };
   
-  // Use the version manager to handle version control
-  const {
-    activeVersionId,
-    handleEditorBlur,
-    addAIVersion,
-    selectVersion,
-    clearAllVersions,
-    versionSelectorProps
-  } = useVersionManager({
-    content: bio,
-    versions: bioVersions,
-    onVersionsChange,
-    onContentChange: handleContentChange
-  });
-  
-  const handleBioChange = () => {
-    handleEditorBlur();
+  // Generate parameters for the AI generator
+  const generationParameters = {
+    name: guest?.name || '',
+    title: guest?.title || '',
+    company: guest?.company || '',
+    links: formatSocialLinks()
   };
   
-  const handleNewVersionCreated = (content: string) => {
-    handleContentChange(content);
-    addAIVersion(content);
+  // Handle content change from editor
+  const handleEditorChange = (content: string) => {
+    form.setValue('bio', content, { shouldDirty: true });
   };
-
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <FormLabel>Bio</FormLabel>
-        <div className="flex items-center gap-2">
-          {bioVersions.length > 0 && (
-            <VersionSelector {...versionSelectorProps} />
-          )}
-          <BioGeneration 
-            form={form}
-            bio={bio}
-            setBio={handleNewVersionCreated}
-            versions={bioVersions}
-            onVersionsChange={onVersionsChange}
-          />
-        </div>
+        <h3 className="text-lg font-medium">Bio</h3>
       </div>
       
-      <BioEditor 
-        form={form} 
-        activeVersionId={activeVersionId || undefined}
-        onBioChange={handleBioChange}
+      <AIGenerationField
+        buttonLabel="Generate Bio"
+        loadingLabel="Generating Bio..."
+        generatorSlug="guest-bio-generator"
+        generationParameters={generationParameters}
+        editorContent={bioContent}
+        onEditorChange={handleEditorChange}
+        showEditor={true}
+        editorType="rich"
+        editorPlaceholder="Guest biography..."
+        editorContentVersions={bioVersions}
+        onContentVersionsChange={onVersionsChange}
+        userIdentifier="manual"
+        contentName="Bio"
+        hoverCardConfig={{
+          promptTitle: "Guest Bio Generator",
+          generatorSlug: "guest-bio-generator"
+        }}
       />
     </div>
   );

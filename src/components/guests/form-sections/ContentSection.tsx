@@ -36,6 +36,7 @@ export function ContentSection({
         form={form} 
         bioVersions={bioVersions}
         onVersionsChange={onBioVersionsChange}
+        guest={guest}
       />
       <BackgroundResearchSection 
         backgroundResearch={backgroundResearch}
