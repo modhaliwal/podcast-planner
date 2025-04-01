@@ -34,19 +34,10 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit((values) => handleSubmit(values, notes))} className="space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Column 1: Basic Info */}
-          <div className="space-y-6">
-            <BasicInfoSection form={form} />
-            <ContactSection form={form} />
-            <SocialLinksSection form={form} />
-          </div>
-          
-          {/* Column 2: Bio and Headshot */}
-          <div className="space-y-6">
-            <BioSection form={form} />
-            
+      <form onSubmit={form.handleSubmit((values) => handleSubmit(values, notes))} className="space-y-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left column - Profile info */}
+          <div className="w-full md:w-1/3 lg:w-1/4 space-y-6">
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Profile Image</h3>
               <HeadshotSection 
@@ -55,10 +46,16 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
                 onImageChange={handleImageChange}
               />
             </Card>
+            
+            <BasicInfoSection form={form} />
+            <ContactSection form={form} />
+            <SocialLinksSection form={form} />
           </div>
           
-          {/* Column 3: Notes */}
-          <div>
+          {/* Right column - Content */}
+          <div className="flex-1 space-y-6">
+            <BioSection form={form} />
+            
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Personal Notes</h3>
               <p className="text-sm text-muted-foreground mb-4">
