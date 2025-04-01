@@ -1,22 +1,15 @@
 
-import { Guest, ContentVersion } from "@/lib/types";
+import { Guest } from "@/lib/types";
 import { AIGenerationField } from "@/components/shared/AIGenerationField";
+import { UseFormReturn } from "react-hook-form";
+import { Card } from "@/components/ui/card";
 
 interface BackgroundResearchSectionProps {
-  backgroundResearch: string;
-  setBackgroundResearch: (value: string) => void;
-  backgroundResearchVersions: ContentVersion[];
-  onVersionsChange: (versions: ContentVersion[]) => void;
+  form: UseFormReturn<any>;
   guest?: Guest;
 }
 
-export function BackgroundResearchSection({ 
-  backgroundResearch, 
-  setBackgroundResearch,
-  backgroundResearchVersions,
-  onVersionsChange,
-  guest 
-}: BackgroundResearchSectionProps) {
+export function BackgroundResearchSection({ form, guest }: BackgroundResearchSectionProps) {
   // Format social links as a string for the AI parameters
   const formatSocialLinks = () => {
     if (!guest?.socialLinks) return "";
@@ -38,26 +31,25 @@ export function BackgroundResearchSection({
   };
   
   return (
-    <div className="space-y-4">
+    <Card className="p-6">
       <AIGenerationField
         buttonLabel="Generate Research"
         loadingLabel="Researching..."
         generatorSlug="guest-research-generator"
         generationParameters={generationParameters}
-        editorContent={backgroundResearch}
-        onEditorChange={setBackgroundResearch}
         showEditor={true}
         editorType="rich"
         editorPlaceholder="Background research for this guest..."
-        editorContentVersions={backgroundResearchVersions}
-        onContentVersionsChange={onVersionsChange}
         userIdentifier="manual"
         contentName="Background Research"
+        // Form integration - directly connect to form fields
+        formField="backgroundResearch"
+        versionsField="backgroundResearchVersions"
         hoverCardConfig={{
           promptTitle: "Guest Research Generator",
           generatorSlug: "guest-research-generator"
         }}
       />
-    </div>
+    </Card>
   );
 }

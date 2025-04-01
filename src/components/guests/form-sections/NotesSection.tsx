@@ -2,10 +2,10 @@
 import { FormLabel } from "@/components/ui/form";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { UseFormReturn } from "react-hook-form";
 
 interface NotesSectionProps {
-  notes: string;
-  setNotes: (value: string) => void;
+  form: UseFormReturn<any>;
 }
 
 // Quill editor configuration
@@ -26,13 +26,19 @@ const quillFormats = [
   'link'
 ];
 
-export function NotesSection({ notes, setNotes }: NotesSectionProps) {
+export function NotesSection({ form }: NotesSectionProps) {
+  const notes = form.watch('notes') || '';
+  
+  const handleNotesChange = (content: string) => {
+    form.setValue('notes', content, { shouldDirty: true });
+  };
+  
   return (
     <div>
       <h3 className="font-medium text-base">Notes</h3>
       <ReactQuill 
         value={notes} 
-        onChange={setNotes} 
+        onChange={handleNotesChange} 
         modules={quillModules}
         formats={quillFormats}
         placeholder="Private notes about this guest"

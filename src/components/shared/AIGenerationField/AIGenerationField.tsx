@@ -1,3 +1,4 @@
+
 // DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
 // Moved from sandbox to shared components for better reusability
 
@@ -22,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ContentVersion as ContentVersionType } from '@/lib/types';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useFormContext } from "react-hook-form";
 
 // Making ContentVersion available for import by other components
 export type ContentVersion = ContentVersionType;
@@ -66,6 +68,9 @@ export interface AIGenerationFieldProps {
   userIdentifier?: string;
   generatorSlug?: string;
   generationParameters?: Record<string, any>;
+  // New props for form integration
+  formField?: string;
+  versionsField?: string;
 }
 
 // Export the AIGenerationField component
@@ -94,11 +99,52 @@ export function AIGenerationField({
   userIdentifier = 'user',
   generatorSlug,
   generationParameters,
+  // Form integration
+  formField,
+  versionsField,
 }: AIGenerationFieldProps) {
+  // Get form context if available
+  const formContext = useFormContext();
+  const hasFormContext = !!formContext && (!!formField || !!versionsField);
+
+  // Get values from form context if available
+  const getFormContent = () => {
+    if (hasFormContext && formField) {
+      return formContext.watch(formField) || "";
+    }
+    return editorContent;
+  };
+
+  const getFormVersions = () => {
+    if (hasFormContext && versionsField) {
+      return formContext.watch(versionsField) || [];
+    }
+    return editorContentVersions;
+  };
+
+  // Set values in form context
+  const setFormContent = (content: string) => {
+    if (hasFormContext && formField) {
+      formContext.setValue(formField, content, { shouldDirty: true });
+    }
+    if (onEditorChange) {
+      onEditorChange(content);
+    }
+  };
+
+  const setFormVersions = (versions: ContentVersionType[]) => {
+    if (hasFormContext && versionsField) {
+      formContext.setValue(versionsField, versions, { shouldDirty: true });
+    }
+    if (onContentVersionsChange) {
+      onContentVersionsChange(versions);
+    }
+  };
+
   const [open, setOpen] = useState(false);
   const [clearConfirmationState, setClearConfirmationState] = useState(false);
-  const [internalEditorContent, setInternalEditorContent] = useState(editorContent);
-  const [internalContentVersions, setInternalContentVersions] = useState<ContentVersionType[]>(editorContentVersions);
+  const [internalEditorContent, setInternalEditorContent] = useState(getFormContent());
+  const [internalContentVersions, setInternalContentVersions] = useState<ContentVersionType[]>(getFormVersions());
   const [isGenerating, setIsGenerating] = useState(propIsGenerating);
   
   const hasInitialized = useRef(false);
@@ -107,17 +153,28 @@ export function AIGenerationField({
   const lastAIGeneratedContent = useRef<string | null>(null);
   const isProcessingAIGeneration = useRef(false);
 
+  // Subscribe to form changes if using form context
   useEffect(() => {
-    if (editorContentVersions.length > 0) {
-      setInternalContentVersions(editorContentVersions);
+    if (hasFormContext) {
+      const currentContent = getFormContent();
+      const currentVersions = getFormVersions();
+      
+      setInternalEditorContent(currentContent);
+      setInternalContentVersions(currentVersions);
     }
-  }, [editorContentVersions]);
+  }, [hasFormContext, formContext?.watch]);
 
   useEffect(() => {
-    if (editorContent !== internalEditorContent) {
+    if (editorContentVersions.length > 0 && !hasFormContext) {
+      setInternalContentVersions(editorContentVersions);
+    }
+  }, [editorContentVersions, hasFormContext]);
+
+  useEffect(() => {
+    if (editorContent !== internalEditorContent && !hasFormContext) {
       setInternalEditorContent(editorContent);
     }
-  }, [editorContent]);
+  }, [editorContent, hasFormContext]);
 
   useEffect(() => {
     setIsGenerating(propIsGenerating);
@@ -127,12 +184,16 @@ export function AIGenerationField({
     if (!hasInitialized.current) {
       hasInitialized.current = true;
       
-      const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
-      if (currentVersions.length === 0 && editorContent.trim()) {
+      const currentContent = getFormContent();
+      const currentVersions = getFormVersions();
+      
+      if (currentVersions.length === 0 && currentContent.trim()) {
         console.log("Initializing with first version");
-        const initialVersion = createNewVersion(editorContent, userIdentifier);
+        const initialVersion = createNewVersion(currentContent, userIdentifier);
         
-        if (onContentVersionsChange) {
+        if (hasFormContext) {
+          setFormVersions([initialVersion]);
+        } else if (onContentVersionsChange) {
           onContentVersionsChange([initialVersion]);
         } else {
           setInternalContentVersions([initialVersion]);
@@ -145,7 +206,7 @@ export function AIGenerationField({
       return;
     }
 
-    const currentContent = onEditorChange ? editorContent : internalEditorContent;
+    const currentContent = getFormContent();
     const previousContent = getActiveVersionContent();
     
     if (currentContent === previousContent) return;
@@ -165,11 +226,11 @@ export function AIGenerationField({
       const newVersion = createNewVersion(currentContent, userIdentifier);
       addVersionToState(newVersion);
     }
-  }, [editorContent, internalEditorContent, editorContentVersions, internalContentVersions, onContentVersionsChange, userIdentifier]);
+  }, [editorContent, internalEditorContent, editorContentVersions, internalContentVersions, onContentVersionsChange, userIdentifier, hasFormContext, formContext?.watch]);
 
   const handleEditorBlur = () => {
-    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
-    const currentContent = onEditorChange ? editorContent : internalEditorContent;
+    const currentContent = getFormContent();
+    const currentVersions = getFormVersions();
     
     const activeVersionIndex = currentVersions.findIndex(v => v.active);
     
@@ -188,7 +249,9 @@ export function AIGenerationField({
       content: currentContent,
     };
     
-    if (onContentVersionsChange) {
+    if (hasFormContext) {
+      setFormVersions(updatedVersions);
+    } else if (onContentVersionsChange) {
       onContentVersionsChange(updatedVersions);
     } else {
       setInternalContentVersions(updatedVersions);
@@ -199,7 +262,8 @@ export function AIGenerationField({
 
   const handleClearAllVersions = () => {
     if (clearConfirmationState) {
-      const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+      const currentContent = getFormContent();
+      const currentVersions = getFormVersions();
       const activeVersion = currentVersions.find(v => v.active);
       
       if (!activeVersion) {
@@ -218,7 +282,9 @@ export function AIGenerationField({
         versionNumber: activeVersion.versionNumber
       };
       
-      if (onContentVersionsChange) {
+      if (hasFormContext) {
+        setFormVersions([newVersion]);
+      } else if (onContentVersionsChange) {
         onContentVersionsChange([newVersion]);
       } else {
         setInternalContentVersions([newVersion]);
@@ -249,7 +315,9 @@ export function AIGenerationField({
   };
 
   const handleEditorChange = (content: string) => {
-    if (onEditorChange) {
+    if (hasFormContext) {
+      setFormContent(content);
+    } else if (onEditorChange) {
       onEditorChange(content);
     }
     setInternalEditorContent(content);
@@ -259,12 +327,15 @@ export function AIGenerationField({
     const newContent = version.content;
     handleEditorChange(newContent);
     
-    const updatedVersions = (onContentVersionsChange ? editorContentVersions : internalContentVersions).map(v => ({
+    const currentVersions = getFormVersions();
+    const updatedVersions = currentVersions.map(v => ({
       ...v,
       active: v.id === version.id
     }));
     
-    if (onContentVersionsChange) {
+    if (hasFormContext) {
+      setFormVersions(updatedVersions);
+    } else if (onContentVersionsChange) {
       onContentVersionsChange(updatedVersions);
     } else {
       setInternalContentVersions(updatedVersions);
@@ -274,7 +345,7 @@ export function AIGenerationField({
   };
 
   const createNewVersion = (content: string, source: string): ContentVersionType => {
-    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const currentVersions = getFormVersions();
     
     const highestVersion = currentVersions.reduce(
       (max, v) => (v.versionNumber > max ? v.versionNumber : max), 
@@ -292,7 +363,7 @@ export function AIGenerationField({
   };
 
   const addVersionToState = (newVersion: ContentVersionType) => {
-    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const currentVersions = getFormVersions();
     
     const updatedVersions = currentVersions.map(v => ({
       ...v,
@@ -301,7 +372,9 @@ export function AIGenerationField({
     
     const newVersions = [...updatedVersions, newVersion];
     
-    if (onContentVersionsChange) {
+    if (hasFormContext) {
+      setFormVersions(newVersions);
+    } else if (onContentVersionsChange) {
       onContentVersionsChange(newVersions);
     } else {
       setInternalContentVersions(newVersions);
@@ -309,7 +382,7 @@ export function AIGenerationField({
   };
 
   const getActiveVersionContent = (): string => {
-    const currentVersions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const currentVersions = getFormVersions();
     const activeVersion = currentVersions.find(v => v.active);
     return activeVersion?.content || '';
   };
@@ -329,7 +402,7 @@ export function AIGenerationField({
       isProcessingAIGeneration.current = true;
       setIsGenerating(true);
       
-      const currentContent = onEditorChange ? editorContent : internalEditorContent;
+      const currentContent = getFormContent();
       
       toast({
         title: "Generating content",
@@ -403,7 +476,7 @@ export function AIGenerationField({
   const handleAIGeneration = async () => {
     isProcessingAIGeneration.current = true;
     
-    const currentContent = onEditorChange ? editorContent : internalEditorContent;
+    const currentContent = getFormContent();
     
     const aiGeneratedContent = `<p>AI-generated content based on: "${currentContent.substring(0, 30)}..."</p>`;
     
@@ -423,7 +496,7 @@ export function AIGenerationField({
   };
 
   const getContentVersionOptions = (): DropdownOption[] => {
-    const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const versions = getFormVersions();
     
     return [...versions]
       .sort((a, b) => b.versionNumber - a.versionNumber)
@@ -441,7 +514,7 @@ export function AIGenerationField({
   };
 
   const getActiveVersionId = (): string | undefined => {
-    const versions = onContentVersionsChange ? editorContentVersions : internalContentVersions;
+    const versions = getFormVersions();
     const activeVersion = versions.find(v => v.active);
     return activeVersion?.id;
   };
@@ -469,6 +542,9 @@ export function AIGenerationField({
       return { key, value: displayValue };
     });
   };
+
+  // Use form content if available, otherwise use internal state
+  const displayContent = hasFormContext ? getFormContent() : internalEditorContent;
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -563,7 +639,7 @@ export function AIGenerationField({
                           <DropdownMenuItem
                             key={option.id}
                             onClick={() => {
-                              const version = (onContentVersionsChange ? editorContentVersions : internalContentVersions)
+                              const version = getFormVersions()
                                 .find(v => v.id === option.id);
                               if (version) {
                                 handleSelectVersion(version);
@@ -711,7 +787,7 @@ export function AIGenerationField({
                       <DropdownMenuItem
                         key={option.id}
                         onClick={() => {
-                          const version = (onContentVersionsChange ? editorContentVersions : internalContentVersions)
+                          const version = getFormVersions()
                             .find(v => v.id === option.id);
                           if (version) {
                             handleSelectVersion(version);
@@ -775,7 +851,7 @@ export function AIGenerationField({
             <div className="border rounded-md">
               <div className="min-h-[300px]">
                 <Editor
-                  value={onEditorChange ? editorContent : internalEditorContent}
+                  value={displayContent}
                   onChange={handleEditorChange}
                   onBlur={handleEditorBlur}
                   placeholder={editorPlaceholder}
@@ -784,7 +860,7 @@ export function AIGenerationField({
             </div>
           ) : (
             <Textarea
-              value={onEditorChange ? editorContent : internalEditorContent}
+              value={displayContent}
               onChange={(e) => handleEditorChange(e.target.value)}
               onBlur={handleEditorBlur}
               placeholder={editorPlaceholder}

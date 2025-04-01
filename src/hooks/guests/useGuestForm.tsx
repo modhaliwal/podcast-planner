@@ -15,6 +15,10 @@ const GuestFormSchema = z.object({
   email: z.string().email("Invalid email format").optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   bio: z.string().optional().or(z.literal("")),
+  bioVersions: z.array(z.any()).optional(),
+  backgroundResearch: z.string().optional().or(z.literal("")),
+  backgroundResearchVersions: z.array(z.any()).optional(),
+  notes: z.string().optional().or(z.literal("")),
   status: z.enum(["potential", "contacted", "confirmed", "appeared"]),
   twitter: z.string().optional().or(z.literal("")),
   facebook: z.string().optional().or(z.literal("")),
@@ -46,6 +50,10 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
       email: guest.email || "",
       phone: guest.phone || "",
       bio: guest.bio || "",
+      bioVersions: guest.bioVersions || [],
+      backgroundResearch: guest.backgroundResearch || "",
+      backgroundResearchVersions: guest.backgroundResearchVersions || [],
+      notes: guest.notes || "",
       status: guest.status || "potential",
       twitter: guest.socialLinks.twitter || "",
       facebook: guest.socialLinks.facebook || "",
@@ -63,12 +71,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
     setIsImageRemoved(file === null);
   };
 
-  const handleSubmit = async (
-    formData: any, 
-    notes: string, 
-    backgroundResearch: string,
-    backgroundResearchVersions: ContentVersion[]
-  ) => {
+  const handleSubmit = async (formData: any) => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
@@ -114,9 +117,10 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         bio: formData.bio || "",
-        backgroundResearch: backgroundResearch || undefined,
-        backgroundResearchVersions: backgroundResearchVersions,
-        notes: notes || undefined,
+        bioVersions: formData.bioVersions || [],
+        backgroundResearch: formData.backgroundResearch || undefined,
+        backgroundResearchVersions: formData.backgroundResearchVersions || [],
+        notes: formData.notes || undefined,
         status: formData.status,
         imageUrl: imageUrl as string | undefined,
         socialLinks: {

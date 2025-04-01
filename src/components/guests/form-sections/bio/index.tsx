@@ -2,6 +2,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { Guest } from "@/lib/types";
 import { AIGenerationField } from "@/components/shared/AIGenerationField";
+import { Card } from "@/components/ui/card";
 
 interface BioSectionProps {
   form: UseFormReturn<any>;
@@ -9,9 +10,6 @@ interface BioSectionProps {
 }
 
 export function BioSection({ form, guest }: BioSectionProps) {
-  // Get the bio content from the form
-  const bioContent = form.watch('bio') || '';
-  
   // Format social links as a new-line separated string
   const formatSocialLinks = () => {
     if (!guest?.socialLinks) return "";
@@ -36,31 +34,28 @@ export function BioSection({ form, guest }: BioSectionProps) {
     links: formatSocialLinks()
   };
   
-  // Handle content change from editor
-  const handleEditorChange = (content: string) => {
-    form.setValue('bio', content, { shouldDirty: true });
-  };
-  
   return (
-    <div className="space-y-4">
+    <Card className="p-6">
+      <h3 className="text-lg font-medium mb-4">Bio</h3>
       
       <AIGenerationField
         buttonLabel="Generate Bio"
         loadingLabel="Generating Bio..."
         generatorSlug="guest-bio-generator"
         generationParameters={generationParameters}
-        editorContent={bioContent}
-        onEditorChange={handleEditorChange}
         showEditor={true}
         editorType="plain" 
         editorPlaceholder="Guest biography..."
         userIdentifier="manual"
         contentName="Bio"
+        // Form integration - directly connect to form fields
+        formField="bio"
+        versionsField="bioVersions"
         hoverCardConfig={{
           promptTitle: "Guest Bio Generator",
           generatorSlug: "guest-bio-generator"
         }}
       />
-    </div>
+    </Card>
   );
 }
