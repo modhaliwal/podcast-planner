@@ -2,7 +2,24 @@
 import { useState, useEffect } from "react";
 import { Guest, ContentVersion } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
-import { ensureVersionNumbers } from "@/hooks/versions";
+
+// Ensure version numbers are set correctly
+const ensureVersionNumbers = (versions: ContentVersion[]): ContentVersion[] => {
+  if (!versions || !Array.isArray(versions) || versions.length === 0) {
+    return [];
+  }
+  
+  // Sort by timestamp (oldest first)
+  const sortedVersions = [...versions].sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+  
+  // Ensure each version has a sequential version number
+  return sortedVersions.map((version, index) => ({
+    ...version,
+    versionNumber: index + 1
+  }));
+};
 
 interface GuestFormVersionsStateProps {
   guest: Guest;

@@ -1,10 +1,5 @@
 
-import { useVersionState } from "./useVersionState";
-import { useVersionActions } from "./useVersionActions";
-import { useSelectorProps } from "./useSelectorProps";
-import { UseFormReturn } from "react-hook-form";
 import { ContentVersion } from "@/lib/types";
-import { useVersionManager } from "./useVersionManager";
 
 // Export utility functions
 export * from "./utils/versionNumberUtils";
@@ -12,41 +7,22 @@ export * from "./utils/versionInitialization";
 export * from "./utils/versionSelection";
 export * from "./utils/versionCreation";
 
-interface UseContentVersionsProps<T extends Record<string, any>> {
-  form: UseFormReturn<T>;
-  fieldName: keyof T;
-  versionsFieldName: keyof T;
-}
-
 /**
- * Hook to manage content versions for form fields
- * This hook uses the consolidated version manager
+ * Ensures all versions have sequential version numbers
  */
-export function useContentVersions<T extends Record<string, any>>({
-  form,
-  fieldName,
-  versionsFieldName
-}: UseContentVersionsProps<T>) {
-  // Get current values
-  const content = form.getValues(fieldName as any) || '';
-  const versions = form.getValues(versionsFieldName as any) || [];
+export const ensureVersionNumbers = (versions: ContentVersion[]): ContentVersion[] => {
+  if (!versions || !Array.isArray(versions) || versions.length === 0) {
+    return [];
+  }
   
-  // Use the consolidated version manager
-  const versionManager = useVersionManager({
-    content,
-    versions,
-    onVersionsChange: (newVersions) => {
-      form.setValue(versionsFieldName as any, newVersions as any, { shouldDirty: true });
-    },
-    onContentChange: (newContent) => {
-      form.setValue(fieldName as any, newContent as any, { shouldDirty: true });
-    }
-  });
+  // Sort by timestamp (oldest first)
+  const sortedVersions = [...versions].sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
   
-  return versionManager;
-}
-
-export * from "./useVersionState";
-export * from "./useVersionActions";
-export * from "./useSelectorProps";
-export * from "./useVersionManager";
+  // Ensure each version has a sequential version number
+  return sortedVersions.map((version, index) => ({
+    ...version,
+    versionNumber: index + 1
+  }));
+};
