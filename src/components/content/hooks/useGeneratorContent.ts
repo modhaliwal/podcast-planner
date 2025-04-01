@@ -42,11 +42,14 @@ export const useGeneratorContent = ({
       console.log(`Generating content for ${fieldName} using generator: ${generatorSlug}`);
       console.log(`Parameters:`, parameters);
       
+      // Ensure parameters is a valid object, default to empty object if undefined
+      const safeParameters = parameters || {};
+      
       // Use the Supabase client to invoke the function directly
       const { data, error } = await supabase.functions.invoke('generate-with-ai-settings', {
         body: {
           slug: generatorSlug,
-          parameters,
+          parameters: safeParameters, 
           responseFormat
         }
       });

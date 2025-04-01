@@ -57,6 +57,25 @@ const Sandbox = () => {
     }
   });
   
+  // Parse parameters from JSON string
+  const [parsedParameters, setParsedParameters] = useState<Record<string, any>>({});
+
+  // Update parsed parameters when form parameters change
+  useEffect(() => {
+    try {
+      const paramsString = simplifiedForm.watch("parameters");
+      if (paramsString) {
+        const params = JSON.parse(paramsString);
+        setParsedParameters(params);
+      } else {
+        setParsedParameters({});
+      }
+    } catch (error) {
+      console.error("Error parsing parameters:", error);
+      setParsedParameters({});
+    }
+  }, [simplifiedForm.watch("parameters")]);
+  
   // Set a default generator when the data loads
   useEffect(() => {
     if (generators.length > 0 && !selectedGeneratorSlug) {
@@ -83,7 +102,7 @@ const Sandbox = () => {
     generatorSlug: selectedGeneratorSlug,
     fieldName: "content",
     form: simplifiedForm,
-    parameters: JSON.parse(simplifiedForm.watch("parameters") || "{}"),
+    parameters: parsedParameters,
     responseFormat: 'markdown'
   });
   

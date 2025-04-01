@@ -18,7 +18,15 @@ serve(async (req) => {
 
   try {
     // Get the request body
-    const { slug, parameters, responseFormat = 'markdown', preferredProvider } = await req.json()
+    const requestData = await req.json();
+    const { slug, parameters = {}, responseFormat = 'markdown', preferredProvider } = requestData;
+
+    console.log("Request payload:", JSON.stringify({ 
+      slug, 
+      parametersProvided: !!parameters, 
+      responseFormat, 
+      preferredProvider 
+    }));
 
     if (!slug) {
       throw new Error("Missing required parameter: slug")
@@ -53,29 +61,21 @@ serve(async (req) => {
     let processedContextInstructions = ""
     let processedExampleOutput = ""
     
-    if (parameters) {
-      // Process each component with parameter substitution
-      if (generator.prompt_text) {
-        processedPromptText = processPromptWithParameters(generator.prompt_text, parameters)
-      }
-      
-      if (generator.system_prompt) {
-        processedSystemPrompt = processPromptWithParameters(generator.system_prompt, parameters)
-      }
-      
-      if (generator.context_instructions) {
-        processedContextInstructions = processPromptWithParameters(generator.context_instructions, parameters)
-      }
-      
-      if (generator.example_output) {
-        processedExampleOutput = processPromptWithParameters(generator.example_output, parameters)
-      }
-    } else {
-      // If no parameters, use the raw values
-      processedPromptText = generator.prompt_text || ""
-      processedSystemPrompt = generator.system_prompt || ""
-      processedContextInstructions = generator.context_instructions || ""
-      processedExampleOutput = generator.example_output || ""
+    // Process each component with parameter substitution
+    if (generator.prompt_text) {
+      processedPromptText = processPromptWithParameters(generator.prompt_text, parameters)
+    }
+    
+    if (generator.system_prompt) {
+      processedSystemPrompt = processPromptWithParameters(generator.system_prompt, parameters)
+    }
+    
+    if (generator.context_instructions) {
+      processedContextInstructions = processPromptWithParameters(generator.context_instructions, parameters)
+    }
+    
+    if (generator.example_output) {
+      processedExampleOutput = processPromptWithParameters(generator.example_output, parameters)
     }
     
     // Construct the complete user prompt with the proper structure
@@ -114,7 +114,7 @@ serve(async (req) => {
       model_name: generator.model_name,
       // Add parameters to be used for prompt variable substitution
       parameters: parameters,
-      ...parameters
+      ...parameters // Spread parameters to support older usage pattern
     }
 
     // Import the AI generator factory to create the right generator

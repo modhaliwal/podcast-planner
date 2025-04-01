@@ -46,10 +46,10 @@ export function processPromptWithParameters(
   let processedText = promptText;
   
   // Replace all {paramName} occurrences with corresponding parameter values
-  Object.entries(parameters).forEach(([key, value]) => {
+  Object.entries(parameters || {}).forEach(([key, value]) => {
     const placeholder = `{${key}}`;
     // Convert objects to strings if needed
-    const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value || '');
     processedText = processedText.replace(new RegExp(placeholder, 'g'), valueStr);
   });
   
