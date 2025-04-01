@@ -33,7 +33,7 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">Bio</h4>
+            <h4 className="text-sm font-medium">Guest Background</h4>
             {bioVersion && (
               <TooltipProvider>
                 <Tooltip>
@@ -62,7 +62,6 @@ export function GuestAboutSection({ guest }: GuestAboutSectionProps) {
         {guest.backgroundResearch && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-medium">Background Research</h4>
               {researchVersion && (
                 <TooltipProvider>
                   <Tooltip>
