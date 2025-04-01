@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { guestStatusColors } from "@/lib/statusColors";
-import { SocialIconsBar } from "./SocialIconsBar";
+import { SocialIconsBar } from "@/components/shared/SocialIconsBar";
 import { GuestInfo } from "./GuestListInfo";
 import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
 
