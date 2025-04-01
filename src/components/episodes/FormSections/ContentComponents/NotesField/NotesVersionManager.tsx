@@ -4,7 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../../../EpisodeFormSchema';
 import { Guest, ContentVersion } from '@/lib/types';
 import { processVersions } from '@/lib/versionUtils';
-import { VersionManager } from '@/components/guests/form-sections/VersionManager';
+import { VersionManager } from '@/components/episodes/VersionManager';
 import { NotesFieldHeader } from './NotesFieldHeader';
 import { Editor } from '@/components/editor/Editor';
 import { toast } from '@/hooks/toast';

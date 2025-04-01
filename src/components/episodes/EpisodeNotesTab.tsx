@@ -4,7 +4,7 @@ import { Episode, ContentVersion } from "@/lib/types";
 import { FileText } from "lucide-react";
 import { useVersionManager } from "@/hooks/versions";
 import { Editor } from "@/components/editor/Editor";
-import { VersionSelector } from "@/components/guests/form-sections/VersionSelector";
+import { VersionSelector } from "@/components/episodes/VersionSelector";
 import { Button } from "@/components/ui/button";
 import { processVersions } from "@/lib/versionUtils";
 

@@ -3,7 +3,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../../../EpisodeFormSchema';
 import { Guest, ContentVersion } from '@/lib/types';
 import { NotesGeneration } from '../NotesGeneration';
-import { VersionSelector } from '@/components/guests/form-sections/VersionSelector';
+import { VersionSelector } from '@/components/episodes/VersionSelector';
 
 interface NotesFieldHeaderProps {
   form: UseFormReturn<EpisodeFormValues>;
