@@ -5,25 +5,30 @@ import { Button } from "@/components/ui/button";
 
 interface EditorActionsProps {
   onSave: () => void;
-  onReset: () => void;
-  onDelete: () => void;
+  onCancel?: () => void; // Make this optional
+  onReset?: () => void;  // Add this optional prop
+  onDelete?: () => void;
   onPreview?: () => void;
-  isSaving: boolean;
-  isNewGenerator: boolean;
+  isSaving?: boolean;
+  isNewGenerator?: boolean;
 }
 
 export function EditorActions({ 
   onSave, 
   onReset, 
+  onCancel,
   onDelete, 
   onPreview,
-  isSaving, 
-  isNewGenerator 
+  isSaving = false, 
+  isNewGenerator = false
 }: EditorActionsProps) {
+  // Use onReset or onCancel, whichever is provided
+  const handleCancel = onCancel || onReset;
+  
   return (
     <div className="flex justify-between space-x-2 py-3 px-4 border-t bg-background sticky bottom-0 z-10">
       <div className="flex gap-2">
-        {!isNewGenerator && (
+        {!isNewGenerator && onDelete && (
           <Button
             variant="destructive"
             onClick={onDelete}
@@ -47,7 +52,7 @@ export function EditorActions({
       </div>
       
       <FormActions
-        onCancel={onReset}
+        onCancel={handleCancel}
         isSubmitting={isSaving}
         saveText="Save Changes"
       />

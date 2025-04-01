@@ -28,7 +28,7 @@ export function BasicFields({ form }: BasicFieldsProps) {
       
       <FormField
         control={form.control}
-        name="number"
+        name="episodeNumber"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Episode Number</FormLabel>

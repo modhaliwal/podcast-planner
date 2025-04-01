@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { GeneratorHeader } from "./GeneratorHeader";
 import { EditorActions } from "./EditorActions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface GeneratorEditorProps {
   generator: {
@@ -16,6 +17,8 @@ interface GeneratorEditorProps {
     promptText: string;
     exampleOutput: string;
     parameters: string;
+    aiModel?: string;
+    modelName?: string;
   };
   onSave: (generator: any) => Promise<void>;
   onCancel: () => void;
@@ -34,6 +37,9 @@ export function GeneratorEditor({
   const [exampleOutput, setExampleOutput] = useState(generator?.exampleOutput || '');
   const [parameters, setParameters] = useState(generator?.parameters || '');
   const [showJson, setShowJson] = useState(false);
+  const [aiModel, setAiModel] = useState(generator?.aiModel || 'openai');
+  const [modelName, setModelName] = useState(generator?.modelName || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (generator) {
@@ -44,6 +50,8 @@ export function GeneratorEditor({
       setPromptText(generator.promptText || '');
       setExampleOutput(generator.exampleOutput || '');
       setParameters(generator.parameters || '');
+      setAiModel(generator.aiModel || 'openai');
+      setModelName(generator.modelName || '');
     }
   }, [generator]);
 
@@ -68,9 +76,16 @@ export function GeneratorEditor({
       case 'example_output':
         setExampleOutput(value);
         break;
+      case 'model_name':
+        setModelName(value);
+        break;
       default:
         break;
     }
+  };
+
+  const handleModelChange = (value: string) => {
+    setAiModel(value);
   };
 
   const onParametersChange = (value: string) => {
@@ -78,6 +93,7 @@ export function GeneratorEditor({
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     const updatedGenerator = {
       id: generator.id,
       name,
@@ -86,9 +102,72 @@ export function GeneratorEditor({
       contextInstructions,
       promptText,
       exampleOutput,
-      parameters
+      parameters,
+      aiModel,
+      modelName
     };
-    await onSave(updatedGenerator);
+    
+    try {
+      await onSave(updatedGenerator);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isNewGenerator = !generator.id;
+
+  // Inlined GeneratorHeader component
+  const renderHeader = () => {
+    return (
+      <div className="space-y-4 mb-6">
+        <div className="flex justify-between items-center">
+          <div className="flex-1">
+            <Label htmlFor="name">Generator Name</Label>
+            <Input
+              id="name"
+              name="name"
+              value={name || ''}
+              onChange={handleInputChange}
+              className="mt-1"
+            />
+          </div>
+          
+          <div className="ml-4 w-1/3">
+            <Label htmlFor="ai_model">AI Provider</Label>
+            <Select
+              value={aiModel || 'openai'}
+              onValueChange={handleModelChange}
+            >
+              <SelectTrigger id="ai_model">
+                <SelectValue placeholder="Select provider" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="perplexity">Perplexity</SelectItem>
+                <SelectItem value="claude">Claude</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="model_name">Model Name</Label>
+          <Input
+            id="model_name"
+            name="model_name"
+            value={modelName || ''}
+            onChange={handleInputChange}
+            className="mt-1"
+            placeholder={aiModel === 'openai' ? 'gpt-4o' : 
+              aiModel === 'perplexity' ? 'llama-3.1-sonar-small-128k-online' : 
+              'claude-3-opus-20240229'}
+          />
+          <p className="text-muted-foreground text-xs mt-1">
+            Specific model to use with the selected AI provider
+          </p>
+        </div>
+      </div>
+    );
   };
 
   // Inlined ParametersSection
@@ -174,25 +253,9 @@ export function GeneratorEditor({
 
   return (
     <div className="space-y-6">
-      <GeneratorHeader
-        title={generator.name || "New Generator"}
-      />
+      {renderHeader()}
 
       <div className="space-y-6">
-        <div>
-          <Label htmlFor="name" className="text-base font-semibold">Name</Label>
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            value={name}
-            onChange={handleInputChange}
-          />
-          <p className="text-muted-foreground text-xs mt-1">
-            A descriptive name for this generator
-          </p>
-        </div>
-
         <div>
           <Label htmlFor="slug" className="text-base font-semibold">Slug</Label>
           <Input
@@ -229,6 +292,8 @@ export function GeneratorEditor({
       <EditorActions
         onSave={handleSave}
         onCancel={onCancel}
+        isSaving={isSaving}
+        isNewGenerator={isNewGenerator}
       />
     </div>
   );
