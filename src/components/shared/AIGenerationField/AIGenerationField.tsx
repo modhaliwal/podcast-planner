@@ -1,3 +1,4 @@
+
 // DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
 // Moved from sandbox to shared components for better reusability
 
@@ -341,11 +342,14 @@ export function AIGenerationField({
         currentContent
       };
       
+      // Determine the response format based on the editor type
+      const responseFormat = editorType === 'rich' ? 'html' : 'markdown';
+      
       const { data, error } = await supabase.functions.invoke('generate-with-ai-settings', {
         body: {
           slug: generatorSlug,
           parameters: parameters,
-          responseFormat: 'markdown'
+          responseFormat: responseFormat
         }
       });
       
