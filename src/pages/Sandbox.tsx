@@ -1,7 +1,7 @@
 
 import { Shell } from '@/components/layout/Shell';
 import { Beaker, Sparkles } from 'lucide-react';
-import { AIGenerationField } from '@/components/sandbox/AIGenerationField';
+import { AIGenerationField } from '@/components/shared/AIGenerationField';
 import { useState, useEffect } from 'react';
 import { ContentVersion } from '@/lib/types';
 import { AIGeneratorPlayground } from '@/components/sandbox/AIGeneratorPlayground';

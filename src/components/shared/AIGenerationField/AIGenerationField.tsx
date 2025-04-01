@@ -1,4 +1,5 @@
 // DO NOT REFACTOR THIS FILE – UNDER ANY CIRCUMSTANCES
+// Moved from sandbox to shared components for better reusability
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,7 @@ export interface AIGenerationFieldProps {
   generationParameters?: Record<string, any>;
 }
 
-// Export the AIGenerationField component (renamed from AIGenerationDropdownButton)
+// Export the AIGenerationField component
 export function AIGenerationField({
   buttonLabel = "Generate",
   loadingLabel = "Generating...",

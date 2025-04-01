@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 // This import should trigger our ESLint rule because it's destructuring from the protected component
-import { AIGenerationField, DropdownOption } from './AIGenerationField';
+import { AIGenerationField, DropdownOption } from '@/components/shared/AIGenerationField';
 
 // This component should trigger the rule because it's trying to create a component 
 // that replaces part of the protected component
@@ -61,10 +61,10 @@ const TestComponent = () => {
           promptKey: "content-generation",
           promptTitle: "Generate Content",
           edgeFunctionName: "generate-content",
-          generatorSlug: "episode-notes-generator" // Added generator slug
+          generatorSlug: "episode-notes-generator"
         }}
-        generatorSlug="episode-notes-generator" // Added generator slug prop
-        generationParameters={{ // Added generation parameters
+        generatorSlug="episode-notes-generator"
+        generationParameters={{
           topic: "Episode content generation",
           format: "rich-text"
         }}
