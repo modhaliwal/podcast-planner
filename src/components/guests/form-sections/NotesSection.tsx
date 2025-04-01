@@ -29,6 +29,7 @@ const quillFormats = [
 export function NotesSection({ notes, setNotes }: NotesSectionProps) {
   return (
     <div>
+      <h3 className="font-medium text-base">Notes</h3>
       <ReactQuill 
         value={notes} 
         onChange={setNotes} 
