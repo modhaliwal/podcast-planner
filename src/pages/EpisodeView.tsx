@@ -20,7 +20,7 @@ import { useEpisodeData } from '@/hooks/episodes';
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
-  const { episodes, guests, refreshEpisodes } = useAuth();
+  const { episodes, guests, refreshEpisodes, refreshGuests } = useAuth();
   
   const { 
     isLoading, 
@@ -32,8 +32,23 @@ const EpisodeView = () => {
   
   // Refresh data on initial mount
   useEffect(() => {
-    refreshEpisodes();
-  }, [refreshEpisodes]);
+    const loadData = async () => {
+      console.log("EpisodeView: refreshing data");
+      await refreshEpisodes(true); // Force refresh episodes
+      await refreshGuests(); // Also refresh guests
+    };
+    
+    loadData();
+  }, [refreshEpisodes, refreshGuests]);
+
+  // Debug logging
+  useEffect(() => {
+    if (episode) {
+      console.log("Current episode:", episode);
+      console.log("Guest IDs:", episode.guestIds);
+      console.log("Available guests:", guests);
+    }
+  }, [episode, guests]);
   
   if (!episode) {
     return (
