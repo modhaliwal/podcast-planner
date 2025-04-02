@@ -18,13 +18,7 @@ export async function generateWithClaude(config: AIGeneratorConfig): Promise<AIG
     // Prepare the messages for Claude
     const messages = [];
     
-    if (systemPrompt) {
-      messages.push({
-        role: "system",
-        content: systemPrompt
-      });
-    }
-    
+    // Claude API requires system prompt as a top-level parameter, not in the messages array
     messages.push({
       role: "user",
       content: prompt
@@ -44,6 +38,7 @@ export async function generateWithClaude(config: AIGeneratorConfig): Promise<AIG
       body: JSON.stringify({
         model: model,
         messages: messages,
+        system: systemPrompt, // System prompt is passed as a top-level parameter
         max_tokens: 4000
       })
     });
