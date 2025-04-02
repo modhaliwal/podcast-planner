@@ -76,6 +76,7 @@ export interface Episode {
   introduction: string;
   notes: string;
   notesVersions?: ContentVersion[]; // Added notesVersions field
+  introductionVersions?: ContentVersion[]; // Added introductionVersions field
   recordingLinks?: RecordingLinks;
   podcastUrls?: PodcastUrls;
   resources?: Resource[]; // Added resources field

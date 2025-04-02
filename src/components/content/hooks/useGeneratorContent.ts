@@ -84,14 +84,6 @@ export const useGeneratorContent = ({
       // Set the content value in the form directly
       form.setValue(fieldName, data.content, { shouldDirty: true });
       
-      // If versionsFieldName is provided, let AIGenerationField handle versions
-      if (versionsFieldName && data.metadata?.provider) {
-        // Simply update the value, AIGenerationField will handle versions internally
-        // when it detects content changes
-        const source = data.metadata.provider || generatorSlug;
-        console.log(`Generated from source: ${source} - AIGenerationField will handle versioning`);
-      }
-      
       // Call the callback with generated content
       if (onContentGenerated) {
         onContentGenerated(data.content);

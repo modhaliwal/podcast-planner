@@ -1,7 +1,7 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EpisodeFormValues } from '../EpisodeFormSchema';
+import { EpisodeFormValues } from '@/hooks/episodes/useEpisodeForm';
 import { BookText, PenLine, Tag, Info, FileText } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';

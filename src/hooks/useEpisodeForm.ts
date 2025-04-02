@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Episode } from "@/lib/types";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { EpisodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
+import { episodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export const useEpisodeForm = (initialData?: Episode) => {
@@ -11,7 +11,7 @@ export const useEpisodeForm = (initialData?: Episode) => {
   const navigate = useNavigate();
   
   const form = useForm({
-    resolver: zodResolver(EpisodeFormSchema),
+    resolver: zodResolver(episodeFormSchema),
     defaultValues: {
       title: initialData?.title || "",
       episodeNumber: initialData?.episodeNumber || 0,
@@ -21,6 +21,7 @@ export const useEpisodeForm = (initialData?: Episode) => {
       introduction: initialData?.introduction || "",
       notes: initialData?.notes || "",
       notesVersions: initialData?.notesVersions || [],
+      introductionVersions: initialData?.introductionVersions || [],
       topic: initialData?.topic || "",
       guestIds: initialData?.guestIds || [],
       coverArt: initialData?.coverArt || "",

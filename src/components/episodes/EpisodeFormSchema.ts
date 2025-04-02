@@ -27,6 +27,7 @@ export const episodeFormSchema = z.object({
   introduction: z.string().optional(),
   notes: z.string().optional().default(''),
   notesVersions: z.array(contentVersionSchema).optional().default([]),
+  introductionVersions: z.array(contentVersionSchema).optional().default([]),
   status: z.nativeEnum(EpisodeStatus),
   scheduled: z.union([z.date(), z.string()]),
   publishDate: z.union([z.date(), z.string()]).nullable().optional(),
