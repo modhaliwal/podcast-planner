@@ -22,11 +22,10 @@ const EditEpisode = () => {
   } = useEpisodeData(id);
   
   const { 
-    guests,
-    isLoadingGuests
+    guests
   } = useGuestsData(user?.id);
   
-  const isLoading = isEpisodeLoading || isLoadingGuests;
+  const isLoading = isEpisodeLoading;
   
   useEffect(() => {
     if (!isEpisodeLoading && !episode) {

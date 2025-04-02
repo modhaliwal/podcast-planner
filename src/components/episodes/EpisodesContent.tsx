@@ -5,22 +5,16 @@ import { EpisodesList } from './EpisodesList';
 import { EmptyState } from '@/components/ui/empty-state';
 
 interface EpisodesContentProps {
-  isLoading: boolean;
   filteredEpisodes: Episode[];
   guests: Guest[];
   searchQuery: string;
 }
 
 export function EpisodesContent({ 
-  isLoading, 
   filteredEpisodes,
   guests,
   searchQuery
 }: EpisodesContentProps) {
-  if (isLoading) {
-    return null;
-  }
-  
   if (filteredEpisodes.length === 0) {
     return (
       <EmptyState 

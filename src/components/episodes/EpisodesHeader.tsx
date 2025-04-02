@@ -6,10 +6,9 @@ import { PlusIcon, RefreshCcw } from 'lucide-react';
 
 interface EpisodesHeaderProps {
   onRefresh: () => void;
-  isLoading: boolean;
 }
 
-export function EpisodesHeader({ onRefresh, isLoading }: EpisodesHeaderProps) {
+export function EpisodesHeader({ onRefresh }: EpisodesHeaderProps) {
   return (
     <div className="page-header">
       <div>
@@ -22,9 +21,8 @@ export function EpisodesHeader({ onRefresh, isLoading }: EpisodesHeaderProps) {
           variant="outline" 
           size="icon" 
           onClick={onRefresh} 
-          disabled={isLoading}
         >
-          <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCcw className="h-4 w-4" />
         </Button>
         <Button size="default" asChild>
           <Link to="/episodes/new">
