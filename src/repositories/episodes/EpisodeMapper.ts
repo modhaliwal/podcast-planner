@@ -3,6 +3,7 @@ import { DataMapper } from "../core/DataMapper";
 import { Episode } from "@/lib/types";
 import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from "./EpisodeDTO";
 import { EpisodeStatus } from "@/lib/enums";
+import { Json } from "@/integrations/supabase/types";
 
 /**
  * Maps between Episode domain models and database models
@@ -17,19 +18,44 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     let introductionVersions = undefined;
     
     try {
-      if (dbEpisode.notes_versions && typeof dbEpisode.notes_versions === 'string') {
-        notesVersions = JSON.parse(dbEpisode.notes_versions);
-      } else if (dbEpisode.notes_versions) {
-        notesVersions = dbEpisode.notes_versions;
+      if (dbEpisode.notes_versions) {
+        if (typeof dbEpisode.notes_versions === 'string') {
+          notesVersions = JSON.parse(dbEpisode.notes_versions as string);
+        } else {
+          notesVersions = dbEpisode.notes_versions;
+        }
       }
       
-      if (dbEpisode.introduction_versions && typeof dbEpisode.introduction_versions === 'string') {
-        introductionVersions = JSON.parse(dbEpisode.introduction_versions);
-      } else if (dbEpisode.introduction_versions) {
-        introductionVersions = dbEpisode.introduction_versions;
+      if (dbEpisode.introduction_versions) {
+        if (typeof dbEpisode.introduction_versions === 'string') {
+          introductionVersions = JSON.parse(dbEpisode.introduction_versions as string);
+        } else {
+          introductionVersions = dbEpisode.introduction_versions;
+        }
       }
     } catch (e) {
       console.error("Error parsing versions for episode", dbEpisode.id, e);
+    }
+
+    // Parse JSON fields for resources, podcast_urls, and recording_links
+    let resources = undefined;
+    let podcastUrls = undefined;
+    let recordingLinks = undefined;
+
+    try {
+      if (dbEpisode.resources) {
+        resources = dbEpisode.resources as any; // Already handled by Supabase client
+      }
+
+      if (dbEpisode.podcast_urls) {
+        podcastUrls = dbEpisode.podcast_urls as any;
+      }
+
+      if (dbEpisode.recording_links) {
+        recordingLinks = dbEpisode.recording_links as any;
+      }
+    } catch (e) {
+      console.error("Error parsing JSON fields for episode", dbEpisode.id, e);
     }
     
     return {
@@ -46,11 +72,11 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       notes: dbEpisode.notes || '',
       notesVersions: notesVersions,
       introductionVersions: introductionVersions,
-      recordingLinks: dbEpisode.recording_links || undefined,
-      podcastUrls: dbEpisode.podcast_urls || undefined,
-      resources: dbEpisode.resources || undefined,
-      createdAt: dbEpisode.created_at,
-      updatedAt: dbEpisode.updated_at
+      recordingLinks: recordingLinks,
+      podcastUrls: podcastUrls,
+      resources: resources,
+      createdAt: dbEpisode.created_at || '',
+      updatedAt: dbEpisode.updated_at || ''
     };
   }
   
@@ -69,17 +95,27 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt;
     if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction;
     if (episode.notes !== undefined) dbEpisode.notes = episode.notes;
-    if (episode.recordingLinks !== undefined) dbEpisode.recording_links = episode.recordingLinks;
-    if (episode.podcastUrls !== undefined) dbEpisode.podcast_urls = episode.podcastUrls;
-    if (episode.resources !== undefined) dbEpisode.resources = episode.resources;
+    
+    // Handle complex JSON fields
+    if (episode.recordingLinks !== undefined) {
+      dbEpisode.recording_links = episode.recordingLinks as unknown as Json;
+    }
+    
+    if (episode.podcastUrls !== undefined) {
+      dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json;
+    }
+    
+    if (episode.resources !== undefined) {
+      dbEpisode.resources = episode.resources as unknown as Json;
+    }
     
     // Stringify the versions for database storage
     if (episode.notesVersions) {
-      dbEpisode.notes_versions = JSON.stringify(episode.notesVersions);
+      dbEpisode.notes_versions = episode.notesVersions as unknown as Json;
     }
     
     if (episode.introductionVersions) {
-      dbEpisode.introduction_versions = JSON.stringify(episode.introductionVersions);
+      dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json;
     }
     
     return dbEpisode;
@@ -88,7 +124,7 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
   /**
    * Maps from CreateEpisodeDTO to database model
    */
-  createDtoToDB(dto: CreateEpisodeDTO): Partial<DBEpisode> {
+  createDtoToDB(dto: CreateEpisodeDTO): DBEpisode {
     return {
       title: dto.title,
       episode_number: dto.episodeNumber,
@@ -99,8 +135,10 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       notes: dto.notes || null,
       cover_art: dto.coverArt || null,
       publish_date: dto.publishDate || null,
-      resources: dto.resources || null,
-      podcast_urls: dto.podcastUrls || null
+      resources: dto.resources as unknown as Json || null,
+      podcast_urls: dto.podcastUrls as unknown as Json || null,
+      recording_links: dto.recordingLinks as unknown as Json || null,
+      user_id: '' // Will be set by repository
     };
   }
 }

@@ -44,7 +44,7 @@ export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO,
       
       // Format episodes
       const episodes = episodesData.map(episode => {
-        const mappedEpisode = episodeMapper.toDomain(episode as DBEpisode);
+        const mappedEpisode = episodeMapper.toDomain(episode as unknown as DBEpisode);
         mappedEpisode.guestIds = guestsByEpisode[episode.id] || [];
         return mappedEpisode;
       });
@@ -74,7 +74,7 @@ export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO,
       if (error) throw error;
       
       // Map DB episode to application episode
-      const episode = episodeMapper.toDomain(data as DBEpisode);
+      const episode = episodeMapper.toDomain(data as unknown as DBEpisode);
       
       // Get episode guests
       const { data: guestsData } = await supabase
@@ -105,18 +105,15 @@ export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO,
         throw new Error("User not authenticated");
       }
 
-      // Create a properly formatted object with all required fields
-      const episodeToInsert = {
-        ...dbEpisode,
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      // Set the user ID in the database object
+      dbEpisode.user_id = user.id;
+      dbEpisode.created_at = new Date().toISOString();
+      dbEpisode.updated_at = new Date().toISOString();
 
       // Insert episode into database
       const { data, error } = await supabase
         .from('episodes')
-        .insert(episodeToInsert)
+        .insert(dbEpisode)
         .select()
         .single();
 
@@ -141,7 +138,7 @@ export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO,
       if (!data) return { data: null, error: null };
 
       // Return the created episode
-      const createdEpisode = episodeMapper.toDomain(data as DBEpisode);
+      const createdEpisode = episodeMapper.toDomain(data as unknown as DBEpisode);
       createdEpisode.guestIds = episodeDTO.guestIds || [];
       
       return { data: createdEpisode, error: null };

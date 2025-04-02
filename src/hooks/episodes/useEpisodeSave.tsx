@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Episode } from "@/lib/types";
 import { episodeRepository } from "@/repositories";
 import { UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 

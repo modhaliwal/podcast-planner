@@ -10,11 +10,12 @@ import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
 import { FormActions } from '@/components/ui/form-actions';
 import { useCoverArtHandler } from '@/hooks/useCoverArtHandler';
+import { UpdateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
 
 interface EpisodeFormProps {
   episode: Episode;
   guests: Guest[];
-  onSave: (episode: Episode) => Promise<{success: boolean; error?: Error}>;
+  onSave: (episode: UpdateEpisodeDTO) => Promise<{success: boolean; error?: Error}>;
   onCancel?: () => void;
 }
 

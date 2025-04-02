@@ -21,7 +21,7 @@ export class GuestRepository extends BaseRepository<Guest> {
       
       if (error) throw error;
       
-      const guests = data?.map(guest => guestMapper.toDomain(guest as DBGuest)) || [];
+      const guests = data?.map(guest => guestMapper.toDomain(guest as unknown as DBGuest)) || [];
       
       return { data: guests, error: null };
     } catch (error: any) {
@@ -56,7 +56,7 @@ export class GuestRepository extends BaseRepository<Guest> {
         return { data: null, error: new Error("Guest not found") };
       }
       
-      const guest = guestMapper.toDomain(data as DBGuest);
+      const guest = guestMapper.toDomain(data as unknown as DBGuest);
       
       return { data: guest, error: null };
     } catch (error: any) {
@@ -80,20 +80,37 @@ export class GuestRepository extends BaseRepository<Guest> {
       // Prepare guest data for database
       const dbGuest = guestMapper.toDB(guest);
       
+      if (!dbGuest.bio) {
+        throw new Error("Guest bio is required");
+      }
+      if (!dbGuest.name) {
+        throw new Error("Guest name is required");
+      }
+      if (!dbGuest.title) {
+        throw new Error("Guest title is required");
+      }
+      
+      // Add required fields for database insert
+      const guestToInsert = {
+        ...dbGuest,
+        user_id: user.id,
+        bio: dbGuest.bio,
+        name: dbGuest.name,
+        title: dbGuest.title,
+        social_links: dbGuest.social_links || {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
       const { data, error } = await supabase
         .from('guests')
-        .insert({
-          ...dbGuest,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .insert(guestToInsert)
         .select()
         .single();
       
       if (error) throw error;
       
-      return { data: guestMapper.toDomain(data as DBGuest), error: null };
+      return { data: guestMapper.toDomain(data as unknown as DBGuest), error: null };
     } catch (error: any) {
       console.error("Error creating guest:", error);
       return { data: null, error };

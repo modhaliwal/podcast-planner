@@ -7,19 +7,20 @@ export interface DBGuest {
   id: string;
   name: string;
   title: string;
-  company?: string;
-  email?: string;
-  phone?: string;
+  company?: string | null;
+  email?: string | null;
+  phone?: string | null;
   bio: string;
-  bio_versions?: string | ContentVersion[];
-  image_url?: string;
-  social_links: any;
-  notes?: string;
-  background_research?: string;
-  background_research_versions?: string | ContentVersion[];
-  status?: string;
+  bio_versions?: Json | null;
+  image_url?: string | null;
+  social_links: Json;
+  notes?: string | null;
+  background_research?: string | null;
+  background_research_versions?: Json | null;
+  status?: string | null;
   created_at: string;
   updated_at: string;
+  user_id: string;
 }
 
 /**
@@ -35,18 +36,20 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     let backgroundResearchVersions: ContentVersion[] = [];
     
     try {
-      if (dbGuest.bio_versions && typeof dbGuest.bio_versions === 'string') {
-        bioVersions = JSON.parse(dbGuest.bio_versions);
-      } else if (dbGuest.bio_versions) {
-        // If it's already an object, assign directly
-        bioVersions = dbGuest.bio_versions as unknown as ContentVersion[];
+      if (dbGuest.bio_versions) {
+        if (typeof dbGuest.bio_versions === 'string') {
+          bioVersions = JSON.parse(dbGuest.bio_versions as string);
+        } else {
+          bioVersions = dbGuest.bio_versions as any;
+        }
       }
       
-      if (dbGuest.background_research_versions && typeof dbGuest.background_research_versions === 'string') {
-        backgroundResearchVersions = JSON.parse(dbGuest.background_research_versions);
-      } else if (dbGuest.background_research_versions) {
-        // If it's already an object, assign directly
-        backgroundResearchVersions = dbGuest.background_research_versions as unknown as ContentVersion[];
+      if (dbGuest.background_research_versions) {
+        if (typeof dbGuest.background_research_versions === 'string') {
+          backgroundResearchVersions = JSON.parse(dbGuest.background_research_versions as string);
+        } else {
+          backgroundResearchVersions = dbGuest.background_research_versions as any;
+        }
       }
     } catch (e) {
       console.error("Error parsing versions for guest", dbGuest.id, e);
@@ -62,7 +65,7 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       bio: dbGuest.bio,
       bioVersions: bioVersions,
       imageUrl: dbGuest.image_url || undefined,
-      socialLinks: dbGuest.social_links as SocialLinks || {},
+      socialLinks: dbGuest.social_links as unknown as SocialLinks || {},
       notes: dbGuest.notes || undefined,
       backgroundResearch: dbGuest.background_research || undefined,
       backgroundResearchVersions: backgroundResearchVersions,
@@ -90,13 +93,13 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     if (guest.backgroundResearch !== undefined) dbGuest.background_research = guest.backgroundResearch;
     if (guest.status !== undefined) dbGuest.status = guest.status;
     
-    // Stringify the versions for database storage (when provided)
+    // Convert complex JSON objects for database storage
     if (guest.bioVersions) {
-      dbGuest.bio_versions = JSON.stringify(guest.bioVersions);
+      dbGuest.bio_versions = guest.bioVersions as unknown as Json;
     }
     
     if (guest.backgroundResearchVersions) {
-      dbGuest.background_research_versions = JSON.stringify(guest.backgroundResearchVersions);
+      dbGuest.background_research_versions = guest.backgroundResearchVersions as unknown as Json;
     }
     
     return dbGuest;
