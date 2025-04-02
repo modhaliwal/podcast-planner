@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { File, Link, Plus, Trash } from 'lucide-react';
-import { useState } from 'react';
 import { EpisodeFormValues } from '@/components/episodes/EpisodeFormSchema';
 
 interface ResourcesSectionProps {
@@ -14,10 +13,14 @@ interface ResourcesSectionProps {
 }
 
 export function ResourcesSection({ form }: ResourcesSectionProps) {
-  const resources = form.watch('resources') || [];
+  // Ensure resources is always an array
+  const resources = Array.isArray(form.watch('resources')) ? form.watch('resources') : [];
   
   const addResource = () => {
-    const currentResources = form.getValues('resources') || [];
+    const currentResources = Array.isArray(form.getValues('resources')) 
+      ? form.getValues('resources') 
+      : [];
+      
     form.setValue('resources', [
       ...currentResources,
       { label: '', url: '', description: '' }
@@ -25,7 +28,10 @@ export function ResourcesSection({ form }: ResourcesSectionProps) {
   };
   
   const removeResource = (index: number) => {
-    const currentResources = form.getValues('resources') || [];
+    const currentResources = Array.isArray(form.getValues('resources')) 
+      ? form.getValues('resources') 
+      : [];
+      
     form.setValue('resources', 
       currentResources.filter((_, i) => i !== index)
     );
