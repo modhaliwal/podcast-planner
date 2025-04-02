@@ -113,7 +113,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   loadingLabel="Generating introduction..."
                   editorPlaceholder="Enter episode introduction"
                   editorType="plain"
-                  generatorSlug="episode-introduction-generator"
+                  generatorSlug="episode-intro-writer"
                   generationParameters={{
                     notes,
                     topic,
@@ -126,7 +126,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   hoverCardConfig={{
                     promptTitle: "Episode Introduction Generator",
                     aiProvider: "Perplexity",
-                    generatorSlug: "episode-introduction-generator"
+                    generatorSlug: "episode-intro-writer"
                   }}
                   contentName="Episode Introduction"
                 />
