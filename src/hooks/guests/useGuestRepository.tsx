@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { guestRepository } from '@/repositories/GuestRepository';
+import { guestRepository } from '@/repositories/guests/GuestRepository';
 import { Guest } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';

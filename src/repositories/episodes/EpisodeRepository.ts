@@ -1,15 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Repository } from "../core/Repository";
+import { BaseRepository } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
-import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from "./EpisodeDTO";
 import { episodeMapper } from "./EpisodeMapper";
 import { deleteImage } from "@/lib/imageUpload";
+import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from "./EpisodeDTO";
 
 /**
  * Repository for episode-related operations
  */
-export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, UpdateEpisodeDTO> {
+export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO, UpdateEpisodeDTO> {
   /**
    * Get all episodes
    */
@@ -94,31 +94,21 @@ export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, 
   /**
    * Create a new episode
    */
-  async create(episodeData: CreateEpisodeDTO): Promise<{ data: Episode | null; error: Error | null }> {
+  async create(episodeDTO: CreateEpisodeDTO): Promise<{ data: Episode | null; error: Error | null }> {
     try {
-      // Ensure required fields are present
-      if (!episodeData.episodeNumber || !episodeData.title || !episodeData.introduction || !episodeData.scheduled) {
-        throw new Error("Missing required fields for episode creation");
-      }
-
+      // Convert DTO to DB model
+      const dbEpisode = episodeMapper.createDtoToDB(episodeDTO);
+      
       // Get the current user from supabase auth
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not authenticated");
       }
 
-      // Map domain model to database model
-      const dbEpisode = episodeMapper.toDB(episodeData);
-
       // Create a properly formatted object with all required fields
-      const episodeToInsert: any = {
+      const episodeToInsert = {
         ...dbEpisode,
         user_id: user.id,
-        title: episodeData.title,
-        episode_number: episodeData.episodeNumber,
-        introduction: episodeData.introduction,
-        scheduled: episodeData.scheduled,
-        status: episodeData.status || 'scheduled',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -133,8 +123,8 @@ export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, 
       if (error) throw error;
       
       // Handle guest relationships if available
-      if (episodeData.guestIds && episodeData.guestIds.length > 0 && data) {
-        const episodeGuestsToInsert = episodeData.guestIds.map(guestId => ({
+      if (episodeDTO.guestIds && episodeDTO.guestIds.length > 0 && data) {
+        const episodeGuestsToInsert = episodeDTO.guestIds.map(guestId => ({
           episode_id: data.id,
           guest_id: guestId
         }));
@@ -152,7 +142,7 @@ export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, 
 
       // Return the created episode
       const createdEpisode = episodeMapper.toDomain(data as DBEpisode);
-      createdEpisode.guestIds = episodeData.guestIds || [];
+      createdEpisode.guestIds = episodeDTO.guestIds || [];
       
       return { data: createdEpisode, error: null };
     } catch (error: any) {
@@ -164,10 +154,10 @@ export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, 
   /**
    * Update an existing episode
    */
-  async update(id: string, updates: UpdateEpisodeDTO): Promise<{ success: boolean; error: Error | null }> {
+  async update(id: string, updateDTO: UpdateEpisodeDTO): Promise<{ success: boolean; error: Error | null }> {
     try {
-      // Convert application model to DB model
-      const dbUpdates = episodeMapper.toDB(updates);
+      // Convert DTO to DB model
+      const dbUpdates = episodeMapper.toDB(updateDTO);
       
       const { error } = await supabase
         .from('episodes')
@@ -180,7 +170,7 @@ export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, 
       if (error) throw error;
 
       // Handle guest relationships if provided
-      if (updates.guestIds !== undefined) {
+      if (updateDTO.guestIds !== undefined) {
         // First delete existing relationships
         const { error: deleteError } = await supabase
           .from('episode_guests')
@@ -190,8 +180,8 @@ export class EpisodeRepository implements Repository<Episode, CreateEpisodeDTO, 
         if (deleteError) throw deleteError;
         
         // Then insert new relationships if any
-        if (updates.guestIds.length > 0) {
-          const episodeGuestsToInsert = updates.guestIds.map(guestId => ({
+        if (updateDTO.guestIds.length > 0) {
+          const episodeGuestsToInsert = updateDTO.guestIds.map(guestId => ({
             episode_id: id,
             guest_id: guestId
           }));
