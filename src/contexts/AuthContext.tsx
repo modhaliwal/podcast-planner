@@ -1,25 +1,23 @@
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useGuestsData } from "@/hooks/guests/useGuestsData";
-import { default as useEpisodesData } from "@/hooks/episodes/useEpisodesData";
-import { User as AppUser, Guest, Episode } from "@/lib/types";
+import { User as AppUser } from "@/lib/types";
 import { getCurrentUserProfile } from "@/services/userService";
+import useEpisodesData from "@/hooks/episodes/useEpisodesData";
+import { useGuestsData } from "@/hooks/guests/useGuestsData";
 
 type AuthContextType = {
   session: Session | null;
   user: User | null;
   appUser: AppUser | null;
   signOut: () => Promise<void>;
-  loading: boolean;
-  guests: Guest[];
-  episodes: Episode[];
-  refreshGuests: (force?: boolean) => Promise<Guest[]>;
-  refreshEpisodes: (force?: boolean) => Promise<Episode[]>;
+  guests: any[];
+  episodes: any[];
+  refreshGuests: (force?: boolean) => Promise<any[]>;
+  refreshEpisodes: (force?: boolean) => Promise<any[]>;
   refreshUserProfile: () => Promise<void>;
-  isDataLoading: boolean;
   refreshAllData: () => Promise<void>;
 };
 
@@ -29,29 +27,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
   const [initialAuthComplete, setInitialAuthComplete] = useState(false);
-  
-  // Tracking auth state to prevent duplicate refreshes
-  const authStateRef = useRef({
-    lastRefreshTime: 0,
-    isRefreshing: false,
-  });
   
   // Pass the user ID directly to data hooks
   const { 
     guests, 
-    isLoadingGuests, 
     refreshGuests 
   } = useGuestsData(user?.id);
   
   const { 
     episodes, 
-    isLoadingEpisodes, 
     refreshEpisodes 
   } = useEpisodesData(user?.id);
-  
-  const isDataLoading = isLoadingGuests || isLoadingEpisodes;
 
   // Unified data refresh function with debounce protection
   const refreshAllData = useCallback(async () => {
@@ -60,17 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    // Prevent refreshing too frequently (at most once every 30 seconds)
-    const now = Date.now();
-    const timeSinceLastRefresh = now - authStateRef.current.lastRefreshTime;
-    
-    if (authStateRef.current.isRefreshing || timeSinceLastRefresh < 30000) {
-      console.log("Skipping refresh: Already refreshing or refreshed recently");
-      return;
-    }
-    
     try {
-      authStateRef.current.isRefreshing = true;
       console.log("Refreshing all data for user:", user.id);
       
       // First refresh guests with force=true
@@ -81,11 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const refreshedEpisodes = await refreshEpisodes(true);
       console.log(`Refreshed ${refreshedEpisodes.length} episodes`);
       
-      authStateRef.current.lastRefreshTime = now;
     } catch (error) {
       console.error("Error refreshing all data:", error);
-    } finally {
-      authStateRef.current.isRefreshing = false;
     }
   }, [user, refreshGuests, refreshEpisodes]);
 
@@ -103,9 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Track if this is the first auth state change
-    let isFirstAuthEvent = true;
-    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log("Auth state changed:", event);
@@ -126,13 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // and only after the initial auth check has completed
         if (initialAuthComplete) {
           if (event === 'SIGNED_IN' && newSession) {
-            // Only show toast on actual sign-in events, not token refreshes
-            if (isFirstAuthEvent || !session) {
-              toast({
-                title: "Success",
-                description: "Signed in successfully"
-              });
-            }
+            toast({
+              title: "Success",
+              description: "Signed in successfully"
+            });
             
             if (userChanged && newSession.user) {
               // Use setTimeout to avoid auth state deadlock
@@ -150,8 +118,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
           }
         }
-        
-        isFirstAuthEvent = false;
       }
     );
 
@@ -164,12 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await refreshUserProfile();
       }
       
-      setLoading(false);
       setInitialAuthComplete(true);
     });
-
-    // Don't refresh data on focus/visibility changes
-    // This prevents the app from refreshing when returning from another tab
     
     return () => subscription.unsubscribe();
   }, []);
@@ -211,13 +173,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     appUser,
     signOut,
-    loading,
     guests,
     episodes,
     refreshGuests,
     refreshEpisodes,
     refreshUserProfile,
-    isDataLoading,
     refreshAllData
   };
 

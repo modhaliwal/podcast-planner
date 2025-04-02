@@ -6,7 +6,7 @@ import { Guest } from "@/lib/types";
 import { mapDatabaseGuestToGuest } from "@/services/guests/guestMappers";
 
 export function useGuestsRefresh(userId: string | undefined) {
-  const [isLoadingGuests, setIsLoadingGuests] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const lastRefreshTimeRef = useRef<number>(0);
   const refreshPromiseRef = useRef<Promise<Guest[]> | null>(null);
   
@@ -30,14 +30,14 @@ export function useGuestsRefresh(userId: string | undefined) {
       return [];
     }
     
-    // Set loading state and update last refresh time
-    setIsLoadingGuests(true);
+    // Update last refresh time
     lastRefreshTimeRef.current = now;
     
     // Create a new refresh promise
     const fetchPromise = (async () => {
       try {
         console.log("Fetching guests from database for user:", userId);
+        setError(null);
         
         // Fetch all guests
         const { data, error } = await supabase
@@ -60,6 +60,7 @@ export function useGuestsRefresh(userId: string | undefined) {
         return formattedGuests;
       } catch (error: any) {
         console.error("Error fetching guests:", error);
+        setError(error);
         toast({
           title: "Error fetching guests",
           description: error.message,
@@ -67,7 +68,6 @@ export function useGuestsRefresh(userId: string | undefined) {
         });
         return [];
       } finally {
-        setIsLoadingGuests(false);
         refreshPromiseRef.current = null;
       }
     })();
@@ -79,7 +79,7 @@ export function useGuestsRefresh(userId: string | undefined) {
   }, [userId]);
 
   return {
-    isLoadingGuests,
+    error,
     refreshGuests
   };
 }

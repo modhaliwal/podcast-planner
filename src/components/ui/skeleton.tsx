@@ -1,12 +1,15 @@
+
 import { cn } from "@/lib/utils"
 
 function Skeleton({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  // Return a simple div without animation
+  // We're removing the skeleton loading behavior per requirements
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
+      className={cn("rounded-md bg-transparent", className)}
       {...props}
     />
   )
