@@ -103,11 +103,18 @@ export class EpisodeRepository extends BaseRepository<Episode> {
         throw new Error("Missing required fields for episode creation");
       }
 
+      // Get the current user from supabase auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
       // Insert episode into database with required fields
       const { data, error } = await supabase
         .from('episodes')
         .insert({
           ...dbEpisode,
+          user_id: user.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
