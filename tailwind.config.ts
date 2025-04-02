@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -119,52 +120,8 @@ export default {
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-			},
-			typography: (theme: any) => ({
-				DEFAULT: {
-					css: {
-						color: theme('colors.foreground'),
-						ul: {
-							marginTop: '1em',
-							marginBottom: '1em',
-							paddingLeft: '1.5em',
-						},
-						ol: {
-							marginTop: '1em',
-							marginBottom: '1em',
-							paddingLeft: '1.5em',
-						},
-						li: {
-							marginTop: '0.25em',
-							marginBottom: '0.25em',
-						},
-						'ul > li': {
-							position: 'relative',
-							paddingLeft: '0.375em',
-							'&::before': {
-								content: '"•"',
-								position: 'absolute',
-								left: '-0.75em',
-							},
-						},
-						'ol > li': {
-							counterIncrement: 'list-counter',
-							position: 'relative',
-							paddingLeft: '0.375em',
-							'&::before': {
-								content: 'counter(list-counter) "."',
-								position: 'absolute',
-								left: '-1.5em',
-							},
-						},
-						p: {
-							marginTop: '0.75em',
-							marginBottom: '0.75em',
-						},
-					},
-				},
-			}),
+			}
 		}
 	},
-	plugins: [require("tailwindcss-animate"), require('@tailwindcss/typography')],
+	plugins: [require("tailwindcss-animate")],
 } satisfies Config;

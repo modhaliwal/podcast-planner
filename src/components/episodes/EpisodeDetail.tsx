@@ -98,7 +98,7 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
               Introduction
             </h2>
             
-            <div className="prose dark:prose-invert">
+            <div className="rich-text">
               {episode.introduction ? (
                 <p className="whitespace-pre-line">{episode.introduction}</p>
               ) : (
@@ -117,7 +117,7 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
             </h2>
             
             <ScrollArea className="max-h-[600px]">
-              <div className="prose dark:prose-invert">
+              <div className="rich-text">
                 {episode.notes ? (
                   <div dangerouslySetInnerHTML={{ __html: episode.notes }} />
                 ) : (

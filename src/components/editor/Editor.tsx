@@ -29,7 +29,7 @@ export function Editor({
   };
 
   return (
-    <div onKeyDown={handleKeyDown}>
+    <div onKeyDown={handleKeyDown} className="rich-text-container">
       <ReactQuill
         theme="snow"
         value={value}

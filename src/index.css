@@ -96,6 +96,94 @@
   }
 }
 
+/* Rich text content styling */
+@layer components {
+  .rich-text {
+    @apply text-foreground;
+  }
+  
+  .rich-text h1 {
+    @apply text-2xl font-semibold mt-6 mb-4;
+  }
+  
+  .rich-text h2 {
+    @apply text-xl font-semibold mt-5 mb-3;
+  }
+  
+  .rich-text h3 {
+    @apply text-lg font-medium mt-4 mb-2;
+  }
+  
+  .rich-text p {
+    @apply my-3 leading-relaxed;
+  }
+  
+  .rich-text ul {
+    @apply list-disc pl-6 my-3;
+  }
+  
+  .rich-text ol {
+    @apply list-decimal pl-6 my-3;
+  }
+  
+  .rich-text li {
+    @apply my-1 pl-1;
+  }
+  
+  .rich-text a {
+    @apply text-primary hover:underline;
+  }
+  
+  .rich-text table {
+    @apply w-full my-4 border-collapse;
+  }
+  
+  .rich-text th {
+    @apply p-2 bg-muted border font-medium text-left;
+  }
+  
+  .rich-text td {
+    @apply p-2 border;
+  }
+  
+  .rich-text img {
+    @apply my-4 rounded-md max-w-full;
+  }
+  
+  .rich-text blockquote {
+    @apply pl-4 border-l-4 border-muted italic my-4;
+  }
+  
+  .rich-text code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .rich-text pre {
+    @apply bg-muted p-4 rounded-md overflow-x-auto my-4;
+  }
+  
+  .rich-text hr {
+    @apply my-6 border-t border-border;
+  }
+  
+  /* Small variant */
+  .rich-text-sm {
+    @apply text-sm;
+  }
+  
+  .rich-text-sm h1 {
+    @apply text-xl;
+  }
+  
+  .rich-text-sm h2 {
+    @apply text-lg;
+  }
+  
+  .rich-text-sm h3 {
+    @apply text-base font-medium;
+  }
+}
+
 @layer components {
   .glass-card {
     @apply bg-white/70 dark:bg-black/40 backdrop-blur-md border border-white/30 dark:border-white/10 rounded-xl shadow-glass;
