@@ -6,14 +6,18 @@ import { Episode } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
-export const useEpisodeLoader = () => {
-  const { id } = useParams<{ id: string }>();
+export const useEpisodeLoader = (episodeId?: string) => {
+  const { id: paramId } = useParams<{ id: string }>();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  
+  // Use provided episodeId or fall back to URL parameter
+  const id = episodeId || paramId;
   
   const {
     data: episode,
     isLoading,
     error,
+    refetch: refreshEpisode
   } = useQuery({
     queryKey: ["episode", id],
     queryFn: async () => {
@@ -52,5 +56,6 @@ export const useEpisodeLoader = () => {
     error,
     isRedirecting,
     setIsRedirecting,
+    refreshEpisode
   };
 };

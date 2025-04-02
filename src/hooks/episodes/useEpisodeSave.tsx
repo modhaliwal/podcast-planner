@@ -5,26 +5,22 @@ import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Episode } from "@/lib/types";
 
-export const useEpisodeSave = () => {
+export const useEpisodeSave = (episodeId?: string) => {
   const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
   
-  const saveEpisode = async (episodeId: string, data: Partial<Episode>): Promise<boolean> => {
+  const handleSave = async (data: Partial<Episode>): Promise<{ success: boolean; error?: Error }> => {
+    if (!episodeId) {
+      return { 
+        success: false, 
+        error: new Error("Episode ID is required for saving") 
+      };
+    }
+    
     setIsSaving(true);
     
     try {
-      // Prepare notes versions for storage if they exist
-      if (data.notesVersions) {
-        // AIGenerationField handles version management internally
-        // Just ensure we're sending the right format to the database
-        console.log("Saving notes versions:", data.notesVersions);
-      }
-      
-      const { success, error } = await updateEpisode(episodeId, {
-        ...data,
-        // Ensure we're sending arrays for versions
-        notes_versions: data.notesVersions || []
-      });
+      const { success, error } = await updateEpisode(episodeId, data);
       
       if (!success) {
         throw new Error(error?.message || "Failed to save episode");
@@ -39,7 +35,7 @@ export const useEpisodeSave = () => {
         description: "Your changes have been saved successfully.",
       });
       
-      return true;
+      return { success: true };
     } catch (error: any) {
       console.error("Error saving episode:", error);
       
@@ -49,14 +45,14 @@ export const useEpisodeSave = () => {
         variant: "destructive",
       });
       
-      return false;
+      return { success: false, error };
     } finally {
       setIsSaving(false);
     }
   };
   
   return {
-    saveEpisode,
     isSaving,
+    handleSave
   };
 };

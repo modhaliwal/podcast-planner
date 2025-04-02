@@ -2,11 +2,21 @@
 import { useEpisodeLoader } from './useEpisodeLoader';
 import { useEpisodeSave } from './useEpisodeSave';
 import { useEpisodeDelete } from './useEpisodeDelete';
+import { Episode } from '@/lib/types';
 
-export function useEpisodeData(episodeId: string | undefined) {
+export function useEpisodeData(episodeId?: string) {
   // Use our specialized hooks
-  const { isLoading: isLoadingEpisode, episode, refreshEpisode } = useEpisodeLoader(episodeId);
-  const { isSubmitting: isSaving, handleSave } = useEpisodeSave(episodeId);
+  const { 
+    episode, 
+    isLoading: isLoadingEpisode, 
+    refreshEpisode
+  } = useEpisodeLoader(episodeId);
+  
+  const { 
+    isSaving, 
+    handleSave 
+  } = useEpisodeSave(episodeId);
+  
   const { 
     isLoading: isDeleting, 
     isDeleteDialogOpen, 
@@ -16,14 +26,24 @@ export function useEpisodeData(episodeId: string | undefined) {
 
   // Combine loading states
   const isLoading = isLoadingEpisode || isSaving || isDeleting;
+  
+  // Define a standard save handler that accepts the updated episode
+  const onSave = async (updatedEpisode: Episode) => {
+    if (!episodeId) {
+      return { success: false, error: new Error('Episode ID is required for saving') };
+    }
+    
+    return handleSave(updatedEpisode);
+  };
 
   return {
     isLoading,
+    isSaving,
     episode,
     refreshEpisode,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
-    handleSave,
+    handleSave: onSave,
     handleDelete
   };
 }

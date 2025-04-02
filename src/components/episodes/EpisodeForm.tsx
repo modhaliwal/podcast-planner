@@ -2,10 +2,9 @@
 import { Form } from '@/components/ui/form';
 import { Episode, Guest } from '@/lib/types';
 import { ContentSection } from './FormSections/ContentSection';
-import { useAuth } from '@/contexts/AuthContext';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
-import { useEpisodeForm } from '@/hooks/useEpisodeForm';
+import { useEpisodeForm } from '@/hooks/episodes/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
@@ -15,33 +14,35 @@ import { useCoverArtHandler } from '@/hooks/useCoverArtHandler';
 interface EpisodeFormProps {
   episode: Episode;
   guests: Guest[];
-  onSave: (episode: Episode) => Promise<void>;
+  onSave: (episode: Episode) => Promise<{success: boolean; error?: Error}>;
   onCancel?: () => void;
 }
 
 export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormProps) {
-  const { refreshEpisodes } = useAuth();
-  
   // Use our cover art upload handler
   const { originalCoverArt, handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
   
-  // Use our custom hook for form handling
+  // Use our standardized episode form hook
   const { form, isSubmitting, onSubmit } = useEpisodeForm({
-    episode, 
+    episode,
     onSubmit: async (updatedEpisode) => {
-      // Process cover art before saving
-      const processedCoverArt = await handleCoverArtUpload(updatedEpisode.coverArt);
-      
-      // Update the episode with the processed cover art
-      const episodeToSave = {
-        ...updatedEpisode,
-        coverArt: processedCoverArt
-      };
-      
-      if (onSave) {
-        await onSave(episodeToSave);
-      } else {
-        await refreshEpisodes();
+      try {
+        // Process cover art before saving
+        const processedCoverArt = await handleCoverArtUpload(updatedEpisode.coverArt);
+        
+        // Update the episode with the processed cover art
+        const episodeToSave = {
+          ...updatedEpisode,
+          coverArt: processedCoverArt
+        };
+        
+        // Call the parent component's onSave function
+        return await onSave(episodeToSave);
+      } catch (error: any) {
+        return { 
+          success: false, 
+          error: new Error(error.message || "Failed to save episode") 
+        };
       }
     }
   });

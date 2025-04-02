@@ -1,22 +1,31 @@
+
 import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
-import { useEpisodeData } from '@/hooks/episodes';
-import { useGuestsData } from '@/hooks/guests';
+import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
+import { useGuestsData } from '@/hooks/guests/useGuestsData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useMemo } from 'react';
-import { toast } from '@/hooks/toast';
+import { toast } from '@/hooks/use-toast';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const { isLoading: isEpisodeLoading, episode, handleSave } = useEpisodeData(id);
-  const { guests, isLoadingGuests } = useGuestsData(user?.id);
+  const { 
+    isLoading: isEpisodeLoading, 
+    episode, 
+    handleSave 
+  } = useEpisodeData(id);
+  
+  const { 
+    guests, 
+    isLoading: isLoadingGuests 
+  } = useGuestsData(user?.id);
   
   const isLoading = isEpisodeLoading || isLoadingGuests;
   
@@ -68,6 +77,7 @@ const EditEpisode = () => {
     if (result?.success) {
       navigate(`/episodes/${id}`);
     }
+    return result;
   };
   
   return (

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { EpisodeStatus } from "@/lib/enums";
 import { User as AppUser, Episode, ContentVersion } from "@/lib/types";
@@ -13,7 +14,7 @@ interface DBEpisode {
   status: string;
   introduction: string;
   notes?: string;
-  notes_versions?: any; // Changed to any to handle various input types
+  notes_versions?: any;
   cover_art?: string;
   topic?: string;
   podcast_urls?: {
@@ -29,7 +30,7 @@ interface DBEpisode {
   }>;
   created_at: string;
   updated_at: string;
-  // These fields exist in the DB but should be mapped
+  // Legacy fields
   podcast_url?: string;
   youtube_url?: string;
   spotify_url?: string;
@@ -44,20 +45,15 @@ export function mapEpisodeFromDB(dbEpisode: any): Episode {
   
   try {
     if (dbEpisode.notes_versions) {
-      // Simply assign the versions, AIGenerationField will handle version management
+      // Handle various input formats for notes_versions
       notesVersions = Array.isArray(dbEpisode.notes_versions) 
         ? dbEpisode.notes_versions 
         : typeof dbEpisode.notes_versions === 'string'
           ? JSON.parse(dbEpisode.notes_versions)
           : [dbEpisode.notes_versions];
-      
-      console.log("Mapped notesVersions:", {
-        input: dbEpisode.notes_versions,
-        processed: notesVersions
-      });
     }
   } catch (error) {
-    console.error("Error processing notes_versions in mapEpisodeFromDB:", error);
+    console.error("Error processing notes_versions:", error);
     notesVersions = [];
   }
 
@@ -96,9 +92,30 @@ export function mapEpisodeFromDB(dbEpisode: any): Episode {
   };
 }
 
+// Map from application structure to database structure
+export function mapEpisodeToDB(episode: Partial<Episode>): Record<string, any> {
+  return {
+    title: episode.title,
+    episode_number: episode.episodeNumber,
+    scheduled: episode.scheduled,
+    publish_date: episode.publishDate,
+    status: episode.status,
+    introduction: episode.introduction,
+    notes: episode.notes,
+    notes_versions: episode.notesVersions,
+    cover_art: episode.coverArt,
+    topic: episode.topic,
+    podcast_urls: episode.podcastUrls,
+    resources: episode.resources
+  };
+}
+
 // Create a type that accepts either User type
 type UserParam = AppUser | SupabaseUser;
 
+/**
+ * Create multiple episodes
+ */
 export const createEpisodes = async (
   episodes: EpisodeFormData[],
   user: UserParam
@@ -120,7 +137,7 @@ export const createEpisodes = async (
           topic: episode.topic || null,
           scheduled: episode.scheduled.toISOString(),
           status: EpisodeStatus.SCHEDULED,
-          introduction: `Introduction for Episode #${episode.episodeNumber}`, // Default introduction
+          introduction: `Introduction for Episode #${episode.episodeNumber}`,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -135,8 +152,10 @@ export const createEpisodes = async (
   }
 };
 
-// Add function to get episodes
-export const getUserEpisodes = async (): Promise<{ data: any[] | null; error: any }> => {
+/**
+ * Get all episodes for the current user
+ */
+export const getUserEpisodes = async (): Promise<{ data: Episode[] | null; error: any }> => {
   try {
     const { data, error } = await supabase
       .from('episodes')
@@ -145,15 +164,20 @@ export const getUserEpisodes = async (): Promise<{ data: any[] | null; error: an
     
     if (error) throw error;
     
-    return { data, error: null };
+    // Map DB episodes to application episodes
+    const episodes = data.map(mapEpisodeFromDB);
+    
+    return { data: episodes, error: null };
   } catch (error) {
     console.error("Error fetching episodes:", error);
     return { data: null, error };
   }
 };
 
-// Add function to get a specific episode
-export const getEpisode = async (id: string): Promise<{ data: any | null; error: any }> => {
+/**
+ * Get a specific episode by ID
+ */
+export const getEpisode = async (id: string): Promise<{ data: Episode | null; error: any }> => {
   try {
     const { data, error } = await supabase
       .from('episodes')
@@ -163,20 +187,28 @@ export const getEpisode = async (id: string): Promise<{ data: any | null; error:
     
     if (error) throw error;
     
-    return { data, error: null };
+    // Map DB episode to application episode
+    const episode = mapEpisodeFromDB(data);
+    
+    return { data: episode, error: null };
   } catch (error) {
     console.error(`Error fetching episode with id ${id}:`, error);
     return { data: null, error };
   }
 };
 
-// Add function to update an episode
-export const updateEpisode = async (id: string, updates: any): Promise<{ success: boolean; error?: any }> => {
+/**
+ * Update an episode by ID
+ */
+export const updateEpisode = async (id: string, updates: Partial<Episode>): Promise<{ success: boolean; error?: any }> => {
   try {
+    // Convert application model to DB model
+    const dbUpdates = mapEpisodeToDB(updates);
+    
     const { error } = await supabase
       .from('episodes')
       .update({
-        ...updates,
+        ...dbUpdates,
         updated_at: new Date().toISOString()
       })
       .eq('id', id);
@@ -190,7 +222,9 @@ export const updateEpisode = async (id: string, updates: any): Promise<{ success
   }
 };
 
-// Add function to delete an episode
+/**
+ * Delete an episode by ID
+ */
 export const deleteEpisode = async (id: string): Promise<{ success: boolean; error?: any }> => {
   try {
     const { error } = await supabase
