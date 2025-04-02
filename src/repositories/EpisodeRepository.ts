@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { BaseRepository } from "./BaseRepository";
 import { Episode } from "@/lib/types";
-import { mapEpisodeFromDB } from "@/services/episodeService";
+import { mapEpisodeFromDB, mapEpisodeToDB } from "@/services/episodeService";
 import { deleteImage } from "@/lib/imageUpload";
 
 /**
@@ -91,25 +91,102 @@ export class EpisodeRepository extends BaseRepository<Episode> {
   }
   
   /**
-   * Create a new episode (simplified implementation)
+   * Create a new episode
    */
   async create(episode: Partial<Episode>): Promise<{ data: Episode | null; error: Error | null }> {
     try {
-      // Implementation would go here
-      return { data: null, error: new Error("Not implemented") };
+      // Convert application model to DB model
+      const dbEpisode = mapEpisodeToDB(episode);
+
+      // Insert episode into database
+      const { data, error } = await supabase
+        .from('episodes')
+        .insert({
+          ...dbEpisode,
+          user_id: episode.userId || '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Handle guest relationships if available
+      if (episode.guestIds && episode.guestIds.length > 0 && data) {
+        const episodeGuestsToInsert = episode.guestIds.map(guestId => ({
+          episode_id: data.id,
+          guest_id: guestId
+        }));
+        
+        const { error: guestError } = await supabase
+          .from('episode_guests')
+          .insert(episodeGuestsToInsert);
+          
+        if (guestError) {
+          console.error("Error inserting guest relationships:", guestError);
+        }
+      }
+      
+      if (!data) return { data: null, error: null };
+
+      // Return the created episode
+      const createdEpisode = mapEpisodeFromDB(data);
+      createdEpisode.guestIds = episode.guestIds || [];
+      
+      return { data: createdEpisode, error: null };
     } catch (error: any) {
+      console.error("Error creating episode:", error);
       return { data: null, error };
     }
   }
   
   /**
-   * Update an existing episode (simplified implementation)
+   * Update an existing episode
    */
   async update(id: string, updates: Partial<Episode>): Promise<{ success: boolean; error: Error | null }> {
     try {
-      // Implementation would go here
-      return { success: false, error: new Error("Not implemented") };
+      // Convert application model to DB model
+      const dbUpdates = mapEpisodeToDB(updates);
+      
+      const { error } = await supabase
+        .from('episodes')
+        .update({
+          ...dbUpdates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+
+      // Handle guest relationships if provided
+      if (updates.guestIds !== undefined) {
+        // First delete existing relationships
+        const { error: deleteError } = await supabase
+          .from('episode_guests')
+          .delete()
+          .eq('episode_id', id);
+        
+        if (deleteError) throw deleteError;
+        
+        // Then insert new relationships if any
+        if (updates.guestIds.length > 0) {
+          const episodeGuestsToInsert = updates.guestIds.map(guestId => ({
+            episode_id: id,
+            guest_id: guestId
+          }));
+          
+          const { error: insertError } = await supabase
+            .from('episode_guests')
+            .insert(episodeGuestsToInsert);
+            
+          if (insertError) throw insertError;
+        }
+      }
+      
+      return { success: true, error: null };
     } catch (error: any) {
+      console.error(`Error updating episode with id ${id}:`, error);
       return { success: false, error };
     }
   }
