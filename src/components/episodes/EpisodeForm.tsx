@@ -4,7 +4,7 @@ import { Episode, Guest } from '@/lib/types';
 import { ContentSection } from './FormSections/ContentSection';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
-import { useEpisodeForm, EpisodeFormValues } from '@/hooks/episodes/useEpisodeForm';
+import { useEpisodeForm } from '@/hooks/episodes/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';

@@ -11,7 +11,7 @@ interface UseEpisodeFormProps {
   onSubmit: (data: Episode) => Promise<{ success: boolean; error?: Error }>;
 }
 
-export interface EpisodeFormValues {
+export type EpisodeFormValues = {
   title: string;
   episodeNumber: number;
   scheduled: Date;
@@ -44,7 +44,7 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
       episodeNumber: episode.episodeNumber || 1,
       scheduled: episode.scheduled ? new Date(episode.scheduled) : new Date(),
       publishDate: episode.publishDate ? new Date(episode.publishDate) : undefined,
-      status: episode.status || EpisodeStatus.PLANNING,
+      status: episode.status || EpisodeStatus.SCHEDULED,
       guestIds: episode.guestIds || [],
       topic: episode.topic || "",
       introduction: episode.introduction || "",
