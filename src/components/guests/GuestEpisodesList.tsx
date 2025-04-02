@@ -6,6 +6,8 @@ import { Guest, Episode } from '@/lib/types';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { episodeStatusColors } from '@/lib/statusColors';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Podcast } from 'lucide-react';
 
 interface GuestEpisodesListProps {
   guest: Guest;
@@ -13,13 +15,8 @@ interface GuestEpisodesListProps {
 }
 
 export function GuestEpisodesList({ guest, episodes }: GuestEpisodesListProps) {
-  // Filter episodes that include this guest
-  const guestEpisodes = episodes.filter(
-    episode => episode.guestIds.includes(guest.id)
-  );
-  
-  const sortedEpisodes = [...guestEpisodes].sort((a, b) => {
-    // Sort by scheduled date, with most recent first
+  // Sort episodes by scheduled date, with most recent first
+  const sortedEpisodes = [...episodes].sort((a, b) => {
     return new Date(b.scheduled).getTime() - new Date(a.scheduled).getTime();
   });
   
@@ -75,9 +72,11 @@ export function GuestEpisodesList({ guest, episodes }: GuestEpisodesListProps) {
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No episodes with this guest yet</p>
-          </div>
+          <EmptyState 
+            icon={<Podcast className="h-6 w-6 text-muted-foreground" />}
+            title="No episodes yet"
+            description={`${guest.name} hasn't appeared on any episodes yet`}
+          />
         )}
       </CardContent>
     </Card>
