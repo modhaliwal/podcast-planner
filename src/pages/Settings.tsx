@@ -9,7 +9,6 @@ import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { AIGeneratorsSettings } from '@/components/settings/AIGeneratorsSettings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings as SettingsIcon, User, Sparkles } from 'lucide-react';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 export default function Settings() {
   const { user, loading } = useAuth();
@@ -24,9 +23,7 @@ export default function Settings() {
   if (loading) {
     return (
       <Shell>
-        <div className="page-container">
-          <LoadingIndicator message="Loading settings..." fullPage />
-        </div>
+        <div className="page-container"></div>
       </Shell>
     );
   }

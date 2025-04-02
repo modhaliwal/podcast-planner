@@ -4,7 +4,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { supabase } from "@/integrations/supabase/client";
 
 export function GlobalSystemSettings() {
@@ -106,7 +105,7 @@ export function GlobalSystemSettings() {
   };
 
   if (isLoading) {
-    return <LoadingIndicator message="Loading system settings..." />;
+    return null;
   }
 
   return (

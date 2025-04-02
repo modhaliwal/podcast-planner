@@ -4,7 +4,6 @@ import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 const Dashboard = () => {
   const { 
@@ -56,7 +55,7 @@ const Dashboard = () => {
         
         {isDataLoading && !isLoaded ? (
           <div className="flex justify-center items-center h-64">
-            <LoadingIndicator message="Loading dashboard data..." />
+            {/* Empty div instead of loading indicator */}
           </div>
         ) : (
           <>

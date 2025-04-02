@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
 import { useGuestsData } from '@/hooks/guests/useGuestsData';
@@ -49,9 +48,7 @@ const EditEpisode = () => {
   if (isLoading) {
     return (
       <Shell>
-        <div className="w-full max-w-[1400px] mx-auto px-4">
-          <LoadingIndicator message="Loading episode information..." fullPage />
-        </div>
+        <div className="w-full max-w-[1400px] mx-auto px-4"></div>
       </Shell>
     );
   }

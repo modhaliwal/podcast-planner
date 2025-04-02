@@ -3,7 +3,6 @@ import { MicIcon } from 'lucide-react';
 import { Episode, Guest } from '@/lib/types';
 import { EpisodesList } from './EpisodesList';
 import { EmptyState } from '@/components/ui/empty-state';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 interface EpisodesContentProps {
   isLoading: boolean;
@@ -19,7 +18,7 @@ export function EpisodesContent({
   searchQuery
 }: EpisodesContentProps) {
   if (isLoading) {
-    return <LoadingIndicator message="Loading episodes..." />;
+    return null;
   }
   
   if (filteredEpisodes.length === 0) {

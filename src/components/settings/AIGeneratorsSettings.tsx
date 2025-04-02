@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useAIPrompts } from "@/hooks/useAIPrompts";
 import { AIGeneratorManager } from "./ai-generators/AIGeneratorManager";
 
@@ -8,9 +7,7 @@ export function AIGeneratorsSettings() {
   const { isLoading } = useAIPrompts();
 
   if (isLoading) {
-    return (
-      <LoadingIndicator message="Loading AI generators..." />
-    );
+    return null;
   }
 
   return (

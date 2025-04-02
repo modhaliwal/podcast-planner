@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from './contexts/AuthContext';
-import { LoadingIndicator } from './components/ui/loading-indicator';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 // Direct imports instead of lazy loading
@@ -26,7 +25,7 @@ import NotFound from './pages/NotFound';
 function App() {
   return (
     <AuthProvider>
-      <Suspense fallback={<LoadingIndicator fullPage />}>
+      <Suspense fallback={null}>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Index />} />
