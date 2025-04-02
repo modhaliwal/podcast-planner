@@ -1,7 +1,6 @@
 
 import { Guest, SocialLinks, ContentVersion } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
-import { ensureVersionNumbers } from "@/lib/versionUtils";
 
 /**
  * Maps a guest record from the database to our application's Guest type
@@ -25,11 +24,6 @@ export const mapDatabaseGuestToGuest = (guest: any): Guest => {
       // If it's already an object, assign directly
       backgroundResearchVersions = guest.background_research_versions as unknown as ContentVersion[];
     }
-    
-    // Ensure all versions have version numbers
-    bioVersions = ensureVersionNumbers(bioVersions);
-    backgroundResearchVersions = ensureVersionNumbers(backgroundResearchVersions);
-    
   } catch (e) {
     console.error("Error parsing versions for guest", guest.id, e);
   }

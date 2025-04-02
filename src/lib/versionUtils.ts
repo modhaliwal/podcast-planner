@@ -3,32 +3,6 @@ import { ContentVersion } from './types';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Processes content versions to ensure they have proper structure and fields
- * @param versions Array of content versions (possibly in different formats)
- * @returns Properly formatted ContentVersion array
- */
-export function processVersions(versions: any[]): ContentVersion[] {
-  if (!versions || versions.length === 0) {
-    return [];
-  }
-
-  return versions.map((version, index) => {
-    // Ensure we're working with an object
-    const versionObj = typeof version === 'string' ? JSON.parse(version) : version;
-    
-    // Return a properly structured ContentVersion object
-    return {
-      id: versionObj.id || uuidv4(),
-      content: versionObj.content || '',
-      timestamp: versionObj.timestamp || new Date().toISOString(),
-      source: versionObj.source || 'manual',
-      active: versionObj.active !== undefined ? versionObj.active : (index === versions.length - 1),
-      versionNumber: versionObj.versionNumber || index + 1
-    };
-  });
-}
-
-/**
  * Adds a new version to an existing array of versions
  * @param versions Current array of versions
  * @param content The new content
