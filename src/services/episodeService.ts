@@ -2,6 +2,7 @@
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 import { episodeRepository } from '@/repositories';
 import { EpisodeStatus } from '@/lib/enums';
+import { CreateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
 
 /**
  * Create multiple episodes from form data
@@ -20,14 +21,16 @@ export const createEpisodes = async (
   try {
     // Process each episode
     for (const episodeData of episodes) {
-      const episode = {
-        title: episodeData.title,
+      // Convert form data to a proper CreateEpisodeDTO
+      const episode: CreateEpisodeDTO = {
+        title: episodeData.title || `Episode #${episodeData.episodeNumber}`,
         episodeNumber: episodeData.episodeNumber,
         introduction: episodeData.introduction || `Introduction for episode #${episodeData.episodeNumber}`,
         scheduled: episodeData.scheduled instanceof Date 
           ? episodeData.scheduled.toISOString() 
           : episodeData.scheduled,
         status: EpisodeStatus.SCHEDULED,
+        topic: episodeData.topic,
         guestIds: episodeData.guestIds || []
       };
       

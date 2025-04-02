@@ -19,7 +19,8 @@ const CreateEpisode = () => {
     { 
       episodeNumber: 1, 
       scheduled: getUpcomingFriday(),
-      title: `Episode #1` 
+      title: `Episode #1`,
+      guestIds: [] // Initialize with empty array
     }
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +35,8 @@ const CreateEpisode = () => {
       { 
         episodeNumber: nextEpisodeNumber,
         scheduled: nextDate,
-        title: `Episode #${nextEpisodeNumber}`
+        title: `Episode #${nextEpisodeNumber}`,
+        guestIds: [] // Initialize with empty array
       }
     ]);
   };

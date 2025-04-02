@@ -4,4 +4,6 @@ export interface EpisodeFormData {
   scheduled: Date;
   title?: string;
   topic?: string;
+  introduction?: string;
+  guestIds?: string[];
 }
