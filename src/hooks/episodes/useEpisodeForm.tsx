@@ -5,6 +5,7 @@ import { EpisodeStatus } from "@/lib/enums";
 import { episodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 interface UseEpisodeFormProps {
   episode: Episode;
@@ -73,11 +74,21 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
       
       if (!result.success) {
         console.error("Error submitting episode form:", result.error);
+        toast({
+          title: "Error saving episode",
+          description: result.error?.message || "Something went wrong",
+          variant: "destructive"
+        });
       }
       
       return result;
     } catch (error: any) {
       console.error("Error in episode form submission:", error);
+      toast({
+        title: "Error saving episode",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
       return { success: false, error };
     } finally {
       setIsSubmitting(false);

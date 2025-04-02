@@ -1,5 +1,5 @@
+
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useEffect } from "react";
 
 interface LoadingIndicatorProps {
   message?: string;
