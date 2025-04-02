@@ -13,14 +13,14 @@ interface CombinedBasicInfoSectionProps {
 export function CombinedBasicInfoSection({ form }: CombinedBasicInfoSectionProps) {
   return (
     <Card>
-      <CardHeader className="card-header">
+      <CardHeader className="p-3 sm:p-4 pb-2">
         <CardTitle className="flex items-center gap-2">
           <PenLine className="h-5 w-5 text-primary" />
           Basic Information
         </CardTitle>
       </CardHeader>
-      <CardContent className="card-content grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="space-y-3 sm:space-y-4">
+      <CardContent className="p-3 sm:p-4 pt-0 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        <div className="space-y-3">
           <BasicFields form={form} />
         </div>
         

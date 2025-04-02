@@ -5,6 +5,7 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodesHeader } from '@/components/episodes/EpisodesHeader';
 import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter';
 import { EpisodesContent } from '@/components/episodes/EpisodesContent';
+import { PageLayout } from '@/components/layout/PageLayout';
 
 const Episodes = () => {
   const { episodes, guests, refreshEpisodes } = useAuth();
@@ -37,11 +38,15 @@ const Episodes = () => {
   
   return (
     <Shell>
-      <div className="page-container">
-        <EpisodesHeader 
-          onRefresh={handleRefresh}
-        />
-        
+      <PageLayout
+        title="Episodes"
+        subtitle="Manage your podcast episodes"
+        actions={
+          <div className="flex gap-2">
+            <EpisodesHeader onRefresh={handleRefresh} />
+          </div>
+        }
+      >
         <EpisodesSearchFilter 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -54,7 +59,7 @@ const Episodes = () => {
           guests={guests}
           searchQuery={searchQuery}
         />
-      </div>
+      </PageLayout>
     </Shell>
   );
 };

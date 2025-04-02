@@ -25,10 +25,10 @@ export function ResponsiveContainer({
     full: "max-w-full", // No width constraint
   };
   
-  // Determine padding based on noPadding prop
+  // Determine padding based on noPadding prop - reduced padding for mobile
   const paddingClasses = noPadding 
     ? "" 
-    : "px-2 sm:px-3 md:px-4";
+    : "px-1 sm:px-2 md:px-3";
 
   return (
     <div 
