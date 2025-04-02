@@ -98,9 +98,9 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
               Introduction
             </h2>
             
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert">
               {episode.introduction ? (
-                <p className="whitespace-pre-line text-slate-700 dark:text-slate-300 leading-relaxed">{episode.introduction}</p>
+                <p className="whitespace-pre-line">{episode.introduction}</p>
               ) : (
                 <p className="text-slate-500 dark:text-slate-400 italic">No introduction added yet</p>
               )}
@@ -117,9 +117,9 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
             </h2>
             
             <ScrollArea className="max-h-[600px]">
-              <div className="prose dark:prose-invert max-w-none">
+              <div className="prose dark:prose-invert">
                 {episode.notes ? (
-                  <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: episode.notes }} />
+                  <div dangerouslySetInnerHTML={{ __html: episode.notes }} />
                 ) : (
                   <p className="text-slate-500 dark:text-slate-400 italic">No notes added yet</p>
                 )}
@@ -140,4 +140,3 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
     </div>
   );
 }
-

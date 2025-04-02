@@ -109,7 +109,7 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
           <div className="mt-6 pt-6 border-t">
             <h3 className="font-medium text-lg mb-2">Personal Notes</h3>
             <div 
-              className="prose prose-ul:list-disc prose-ol:list-decimal prose-li:ml-6 prose-p:my-2 dark:prose-invert max-w-none text-sm"
+              className="prose prose-sm dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: guest.notes }}
             />
           </div>

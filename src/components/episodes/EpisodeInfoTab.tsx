@@ -20,9 +20,9 @@ export function EpisodeInfoTab({ episode }: EpisodeInfoTabProps) {
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-400px)] max-h-[600px]">
           <div className="p-6">
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert">
               {episode.introduction ? (
-                <p className="whitespace-pre-line text-slate-700 dark:text-slate-300 leading-relaxed">{episode.introduction}</p>
+                <p className="whitespace-pre-line">{episode.introduction}</p>
               ) : (
                 <p className="text-slate-500 dark:text-slate-400 italic">No introduction added yet</p>
               )}
