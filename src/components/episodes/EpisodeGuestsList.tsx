@@ -17,13 +17,7 @@ export function EpisodeGuestsList({ guests }: EpisodeGuestsListProps) {
             <GuestChip 
               key={guest.id} 
               guest={guest} 
-              size="sm" 
-              showLink={false}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.location.href = `/guests/${guest.id}`;
-              }}
+              size="sm"
             />
           ))}
           
