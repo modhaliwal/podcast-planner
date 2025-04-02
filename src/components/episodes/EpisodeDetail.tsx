@@ -10,7 +10,6 @@ import { EpisodeGuestsList } from './EpisodeGuestsList';
 import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
 import { EpisodePodcastUrls } from './EpisodePodcastUrls';
 import { EpisodeResources } from './EpisodeResources';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useMemo } from 'react';
 
@@ -118,15 +117,13 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
               Episode Notes
             </h2>
             
-            <ScrollArea className="max-h-[600px]">
-              <div className="rich-text">
-                {episode.notes ? (
-                  <div dangerouslySetInnerHTML={{ __html: episode.notes }} />
-                ) : (
-                  <p className="text-slate-500 dark:text-slate-400 italic">No notes added yet</p>
-                )}
-              </div>
-            </ScrollArea>
+            <div className="rich-text">
+              {episode.notes ? (
+                <div dangerouslySetInnerHTML={{ __html: episode.notes }} />
+              ) : (
+                <p className="text-slate-500 dark:text-slate-400 italic">No notes added yet</p>
+              )}
+            </div>
           </CardContent>
         </Card>
         
