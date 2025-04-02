@@ -37,8 +37,29 @@ The Podcast Planner system employs a modern web application architecture:
 5. AI-generated content is stored in the database with version history
 6. User interface presents data in organized, task-specific views
 
+## Repository Pattern Implementation
+The application uses a repository pattern to abstract data access:
+
+1. **Domain Models**: Type definitions representing business entities (Episode, Guest)
+2. **Data Transfer Objects (DTOs)**: Types for creating and updating entities
+3. **Data Mappers**: Classes responsible for transforming between domain and database models
+4. **Repository Classes**:
+   - Abstract CRUD operations through a consistent interface
+   - Handle specific entity validation and relationships
+   - Manage database operations with proper error handling
+5. **Hooks Integration**:
+   - Custom hooks expose repositories to React components
+   - Provide seamless integration with React Query
+
+This layered architecture provides:
+- Clear separation of concerns
+- Type safety throughout the application
+- Consistent error handling
+- Improved testability
+- Centralized data access logic
+
 ## File Organization
 - Component-based architecture with focused, single-responsibility components
 - Custom hooks for reusable logic and state management
-- Service layer for interacting with Supabase backend
+- Repository layer for database interaction
 - Type definitions for ensuring data consistency

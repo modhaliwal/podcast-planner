@@ -30,6 +30,17 @@ Built on a modern stack with:
 - Supabase backend providing authentication, database, and storage
 - React Query for state management and data fetching
 - Multiple AI integrations for content generation
+- Repository pattern for data access abstraction and type safety
+
+## Data Access Architecture
+
+The application employs the repository pattern to provide:
+
+1. **Abstraction**: Clean separation between domain models and database structures
+2. **Type Safety**: Strong typing between database and application models through DTOs
+3. **Centralized Logic**: Business rules and data transformation in repository classes
+4. **Consistent Interface**: Standardized methods for data operations
+5. **Improved Maintainability**: Easier to modify data access without affecting business logic
 
 ## Getting Started
 

@@ -59,6 +59,8 @@ This guide explains how to use the Podcast Planner application to create and man
    - Introduction: Write an episode introduction
    - Notes: Internal production notes
    - Cover Art: Upload episode artwork
+   - Resources: Add links to related resources
+   - Recording Links: Add links to recording files once recorded
 4. Click "Save Episode" to create the episode
 
 ### AI-Generated Content for Episodes
@@ -86,6 +88,16 @@ This guide explains how to use the Podcast Planner application to create and man
    - Scheduled: Episode is planned but not yet recorded
    - Recorded: Episode has been recorded but not published
    - Published: Episode is live on podcast platforms
+
+### Podcast Distribution
+
+1. Once an episode is recorded, navigate to the episode details
+2. Update the status to "Recorded"
+3. Add recording links for audio, video, and transcript files
+4. When ready to publish:
+   - Set the status to "Published"
+   - Add podcast platform URLs (Spotify, Apple Podcasts, etc.)
+   - Set the publication date
 
 ## Settings
 
