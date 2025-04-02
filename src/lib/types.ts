@@ -1,87 +1,62 @@
-
-import { EpisodeStatus } from './enums';
-
-export interface ContentVersion {
-  id: string;
-  content: string;
-  timestamp: string;
-  source: string; // Keeping this as a string to allow any value
-  active?: boolean; // Active flag to track which version is active
-  versionNumber: number; // Sequential version number
-}
-
-export interface SocialLinks {
-  twitter?: string; // Keeping for backward compatibility, now represents X
-  facebook?: string;
-  linkedin?: string;
-  instagram?: string;
-  tiktok?: string;
-  website?: string;
-  youtube?: string;
-  other?: { label: string; url: string }[];
-}
-
 export interface Guest {
   id: string;
   name: string;
-  title: string;
-  company?: string;
-  email?: string;
-  phone?: string;
-  bio: string;
-  bioVersions?: ContentVersion[];
   imageUrl?: string;
-  socialLinks: SocialLinks;
-  notes?: string;
-  // @deprecated - Kept for backward compatibility
+  title?: string;
+  company?: string;
+  location?: string;
+  website?: string;
+  linkedin?: string;
+  twitter?: string;
+  bio?: string;
   backgroundResearch?: string;
-  backgroundResearchVersions?: ContentVersion[];
-  status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
-  createdAt: string;
-  updatedAt: string;
-  // Adding tagline property to fix the build error
-  tagline?: string;
-}
-
-export interface RecordingLinks {
-  audio?: string;
-  video?: string;
-  transcript?: string;
-  other?: { label: string; url: string }[];
-}
-
-export interface PodcastUrls {
-  spotify?: string;
-  applePodcasts?: string;
-  amazonPodcasts?: string;
-  youtube?: string;
-}
-
-export interface Resource {
-  label: string;
-  url: string;
-  description?: string;
+  notes?: string;
+  email?: string;
 }
 
 export interface Episode {
   id: string;
-  episodeNumber: number;
   title: string;
-  topic?: string;       // Added topic field
-  scheduled: string;    // Recording session date and time
-  publishDate?: string; // Date the episode will be published
-  status: EpisodeStatus;
-  coverArt?: string;    // URL to the cover art image
+  episodeNumber: number;
+  topic: string;
+  description?: string;
+  coverArt?: string;
   guestIds: string[];
-  introduction: string;
-  notes: string;
-  notesVersions?: ContentVersion[]; // Added notesVersions field
-  introductionVersions?: ContentVersion[]; // Added introductionVersions field
-  recordingLinks?: RecordingLinks;
-  podcastUrls?: PodcastUrls;
-  resources?: Resource[]; // Added resources field
   createdAt: string;
-  updatedAt: string;
+}
+
+export interface Settings {
+  id: string;
+  userId: string;
+  themeMode: 'light' | 'dark' | 'system';
+  aiProvider: 'openai' | 'perplexity' | 'none';
+}
+
+export interface AIPrompt {
+  id: string;
+  slug: string;
+  title: string;
+  prompt_text: string;
+  example_output?: string;
+  context_instructions?: string;
+  system_prompt?: string;
+  ai_model: 'openai' | 'perplexity' | 'claude' | 'gemini';
+  model_name?: string;
+  parameters?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export enum UsersRoleKey {
+  ADMIN = 'admin',
+  STANDARD = 'standard'
+}
+
+export interface UserRole {
+  id: string;
+  user_id: string;
+  role: UsersRoleKey;
+  created_at: string;
 }
 
 export interface User {
@@ -91,4 +66,5 @@ export interface User {
   avatar_url?: string;
   created_at: string;
   last_sign_in?: string;
+  roles?: UserRole[];
 }

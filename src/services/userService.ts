@@ -1,28 +1,24 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@/lib/types";
+import { User, UsersRoleKey } from "@/lib/types";
 
 // Get the current user profile
 export const getCurrentUserProfile = async (): Promise<{ user: User | null; error: any }> => {
   try {
-    // First get the Supabase authenticated user
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
     
     if (authError) throw authError;
     if (!authUser) return { user: null, error: null };
     
-    // Then get the profile data
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', authUser.id)
       .single();
     
-    if (profileError && profileError.code !== 'PGRST116') { // Not found is ok, we'll return minimal user
+    if (profileError && profileError.code !== 'PGRST116') {
       throw profileError;
     }
     
-    // Combine auth data with profile data
     const user: User = {
       id: authUser.id,
       email: authUser.email || '',
@@ -42,7 +38,6 @@ export const getCurrentUserProfile = async (): Promise<{ user: User | null; erro
 // Update the current user's profile
 export const updateUserProfile = async (updates: Partial<User>): Promise<{ success: boolean; error?: any }> => {
   try {
-    // Update auth metadata if name is provided
     if (updates.full_name) {
       const { error: authError } = await supabase.auth.updateUser({
         data: { full_name: updates.full_name }
@@ -51,7 +46,6 @@ export const updateUserProfile = async (updates: Partial<User>): Promise<{ succe
       if (authError) throw authError;
     }
     
-    // Update profile data
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -113,5 +107,170 @@ export const signOut = async (): Promise<{ error: any }> => {
   } catch (error) {
     console.error("Error during signout:", error);
     return { error };
+  }
+};
+
+// New admin user management functions
+export const hasUserRole = async (role: UsersRoleKey): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('*')
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+      .eq('role', role)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') {
+      console.error("Error checking role:", error);
+    }
+    
+    return !!data;
+  } catch (error) {
+    console.error("Error checking user role:", error);
+    return false;
+  }
+};
+
+export const listUsers = async (): Promise<{ users: User[]; error?: any }> => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionData.session?.access_token}`,
+      },
+      body: JSON.stringify({ action: 'listUsers' }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to list users');
+    }
+    
+    const { users } = await response.json();
+    return { users };
+  } catch (error) {
+    console.error("Error listing users:", error);
+    return { users: [], error };
+  }
+};
+
+export const createUser = async (userData: { 
+  email: string; 
+  password: string; 
+  full_name?: string; 
+  role?: UsersRoleKey;
+}): Promise<{ user?: User; error?: any }> => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionData.session?.access_token}`,
+      },
+      body: JSON.stringify({
+        action: 'createUser',
+        userData
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create user');
+    }
+    
+    const data = await response.json();
+    return { user: data.user };
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return { error };
+  }
+};
+
+export const deleteUser = async (userId: string): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionData.session?.access_token}`,
+      },
+      body: JSON.stringify({
+        action: 'deleteUser',
+        userData: { id: userId }
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete user');
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return { success: false, error };
+  }
+};
+
+export const assignRole = async (userId: string, role: UsersRoleKey): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionData.session?.access_token}`,
+      },
+      body: JSON.stringify({
+        action: 'assignRole',
+        userData: { userId, role }
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to assign role');
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error assigning role:", error);
+    return { success: false, error };
+  }
+};
+
+export const removeRole = async (userId: string, role: UsersRoleKey): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionData.session?.access_token}`,
+      },
+      body: JSON.stringify({
+        action: 'removeRole',
+        userData: { userId, role }
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to remove role');
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing role:", error);
+    return { success: false, error };
   }
 };
