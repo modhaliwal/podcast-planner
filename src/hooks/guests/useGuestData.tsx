@@ -25,14 +25,9 @@ export function useGuestData(guestId: string | undefined) {
     return result;
   };
 
+  // Ensure handleDelete has the correct return type
   const handleDelete = async () => {
-    const result = await deleteGuest(guestId, guest?.imageUrl);
-    
-    if (result.success) {
-      setIsDeleteDialogOpen(false);
-    }
-    
-    return result;
+    return await deleteGuest(guestId, guest?.imageUrl);
   };
 
   return {

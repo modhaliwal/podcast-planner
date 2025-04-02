@@ -14,8 +14,9 @@ export function useEpisodeData(
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
   
+  // Update return type to match other delete handlers for consistency
   const handleDeleteEpisode = useCallback(async () => {
-    if (!id) return;
+    if (!id) return { success: false };
     
     setIsLoading(true);
     try {
@@ -57,6 +58,8 @@ export function useEpisodeData(
       
       // Navigate back to episodes list
       navigate('/episodes');
+      
+      return { success: true };
     } catch (error: any) {
       toast({
         title: "Error",
@@ -64,6 +67,7 @@ export function useEpisodeData(
         variant: "destructive"
       });
       console.error("Error deleting episode:", error);
+      return { success: false, error };
     } finally {
       setIsLoading(false);
       setIsDeleteDialogOpen(false);

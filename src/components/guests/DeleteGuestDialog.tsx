@@ -13,7 +13,8 @@ interface DeleteGuestDialogProps {
   guestName?: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirmDelete: () => Promise<void>;
+  // Update the type definition to match the actual return type from useGuestActions
+  onConfirmDelete: () => Promise<{ success: boolean, error?: any }>;
 }
 
 export function DeleteGuestDialog({ 
