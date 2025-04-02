@@ -1,16 +1,13 @@
 
 import { useParams, Navigate } from 'react-router-dom';
 import { useGuestData } from '@/hooks/guests/useGuestData';
-import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
-import { Episode } from '@/lib/types';
 
 export default function GuestView() {
   const { id } = useParams<{ id: string }>();
-  const { episodes, guests } = useAuth();
   
   const { 
     isLoading, 
@@ -19,11 +16,6 @@ export default function GuestView() {
     setIsDeleteDialogOpen, 
     handleDelete 
   } = useGuestData(id);
-
-  // Get episodes that include this guest
-  const guestEpisodes = episodes.filter(episode => 
-    guest && episode.guestIds.includes(guest.id)
-  );
 
   if (isLoading) {
     return (
@@ -52,7 +44,6 @@ export default function GuestView() {
       <div className="container max-w-5xl py-8">
         <GuestDetail 
           guest={guest} 
-          episodes={guestEpisodes}
           onDelete={() => setIsDeleteDialogOpen(true)} 
         />
         
