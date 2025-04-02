@@ -1,26 +1,17 @@
 
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { UsersList } from '@/components/users/UsersList';
 
 export default function Users() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <Shell>
-        <div className="page-container"></div>
-      </Shell>
-    );
+  // Redirect to auth page if user is not authenticated
+  if (!user) {
+    navigate('/auth');
+    return null;
   }
 
   return (

@@ -4,13 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { GuestList } from '@/components/guests/GuestList';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 
 export function GuestContent() {
-  const { guests, isDataLoading } = useAuth();
+  const { guests } = useAuth();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -33,10 +32,6 @@ export function GuestContent() {
     
     return true;
   });
-  
-  if (isDataLoading) {
-    return null;
-  }
   
   const clearFilters = () => {
     setStatusFilter('all');

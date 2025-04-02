@@ -20,7 +20,7 @@ interface EpisodeFormProps {
 
 export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormProps) {
   // Use our cover art upload handler
-  const { originalCoverArt, handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
+  const { handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
   
   // Use our standardized episode form hook
   const { form, isSubmitting, onSubmit } = useEpisodeForm({

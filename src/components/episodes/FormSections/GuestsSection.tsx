@@ -13,16 +13,29 @@ interface GuestsSectionProps {
   guests: Guest[];
 }
 
+// Need to fix the prop types for the imported components
+interface SelectedGuestsGridProps {
+  selectedGuests: Guest[];
+  onRemove: (guestId: string) => void;
+}
+
+interface GuestSelectorProps {
+  availableGuests: Guest[];
+  onSelect: (guestId: string) => void;
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+}
+
 export function GuestsSection({ form, guests }: GuestsSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { isDataLoading } = useAuth();
   
-  // Get selected guests
-  const selectedGuestIds = form.watch('guestIds') || [];
-  
   if (isDataLoading) {
     return null;
   }
+  
+  // Get selected guests
+  const selectedGuestIds = form.watch('guestIds') || [];
   
   // Filter available guests (those not already selected)
   const availableGuests = guests.filter(guest => 
@@ -58,14 +71,14 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
         <div className="space-y-4">
           {/* Selected guests grid */}
           <SelectedGuestsGrid 
-            guests={selectedGuests} 
+            selectedGuests={selectedGuests} 
             onRemove={handleRemoveGuest} 
           />
           
           <ScrollArea className="h-[280px] border rounded-md">
             <div className="p-4">
               <GuestSelector 
-                guests={availableGuests}
+                availableGuests={availableGuests}
                 onSelect={handleAddGuest}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}

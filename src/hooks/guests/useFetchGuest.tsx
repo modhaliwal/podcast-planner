@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest, ContentVersion } from '@/lib/types';
@@ -37,14 +38,12 @@ export function useFetchGuest(guestId: string | undefined) {
           if (data.bio_versions && typeof data.bio_versions === 'string') {
             bioVersions = JSON.parse(data.bio_versions);
           } else if (data.bio_versions) {
-            // If it's already an object, assign directly
             bioVersions = data.bio_versions as unknown as ContentVersion[];
           }
           
           if (data.background_research_versions && typeof data.background_research_versions === 'string') {
             backgroundResearchVersions = JSON.parse(data.background_research_versions);
           } else if (data.background_research_versions) {
-            // If it's already an object, assign directly
             backgroundResearchVersions = data.background_research_versions as unknown as ContentVersion[];
           }
         } catch (e) {
@@ -73,7 +72,11 @@ export function useFetchGuest(guestId: string | undefined) {
         setGuest(formattedGuest);
       }
     } catch (error: any) {
-      toast.error(`Failed to fetch guest: ${error.message}`);
+      toast({
+        title: "Failed to fetch guest",
+        description: error.message,
+        variant: "destructive"
+      });
       console.error("Error fetching guest:", error);
     } finally {
       setIsLoading(false);
