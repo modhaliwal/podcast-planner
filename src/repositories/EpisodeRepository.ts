@@ -99,7 +99,7 @@ export class EpisodeRepository extends BaseRepository<Episode> {
       const dbEpisode = mapEpisodeToDB(episode);
       
       // Ensure required fields are present
-      if (!dbEpisode.episode_number || !dbEpisode.title || !dbEpisode.introduction || !dbEpisode.scheduled) {
+      if (!episode.episodeNumber || !episode.title || !episode.introduction || !episode.scheduled) {
         throw new Error("Missing required fields for episode creation");
       }
 
@@ -109,15 +109,22 @@ export class EpisodeRepository extends BaseRepository<Episode> {
         throw new Error("User not authenticated");
       }
 
+      // Create a properly formatted object with all required fields
+      const episodeToInsert = {
+        ...dbEpisode,
+        user_id: user.id,
+        episode_number: episode.episodeNumber,
+        title: episode.title,
+        introduction: episode.introduction,
+        scheduled: episode.scheduled,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
       // Insert episode into database with required fields
       const { data, error } = await supabase
         .from('episodes')
-        .insert({
-          ...dbEpisode,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .insert(episodeToInsert)
         .select()
         .single();
 
