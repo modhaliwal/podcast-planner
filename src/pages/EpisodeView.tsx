@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useEpisodeData } from '@/hooks/episodes';
 
 const EpisodeView = () => {
@@ -30,25 +30,17 @@ const EpisodeView = () => {
     handleDelete 
   } = useEpisodeData(id);
   
-  // Refresh data on initial mount
-  useEffect(() => {
-    const loadData = async () => {
-      console.log("EpisodeView: refreshing data");
-      await refreshEpisodes(true); // Force refresh episodes
-      await refreshGuests(); // Also refresh guests
-    };
-    
-    loadData();
-  }, [refreshEpisodes, refreshGuests]);
-
-  // Debug logging
-  useEffect(() => {
-    if (episode) {
-      console.log("Current episode:", episode);
-      console.log("Guest IDs:", episode.guestIds);
-      console.log("Available guests:", guests);
+  // Refresh data once on initial mount with a controlled approach
+  const refreshData = useCallback(async () => {
+    if (id) {
+      await refreshEpisodes();
+      await refreshGuests();
     }
-  }, [episode, guests]);
+  }, [id, refreshEpisodes, refreshGuests]);
+  
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
   
   if (!episode) {
     return (

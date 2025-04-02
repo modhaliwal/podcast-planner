@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { GuestChip } from '@/components/guests/GuestChip';
@@ -20,10 +20,13 @@ export const SelectedGuestsGrid = memo(function SelectedGuestsGrid({
     return null;
   }
   
-  // Filter available guests to only include those that are selected
-  const validGuests = selectedGuestIds
-    .map(guestId => availableGuests.find(g => g.id === guestId))
-    .filter((guest): guest is Guest => guest !== undefined);
+  // Memoize the filtered guests to prevent unnecessary recalculations
+  const validGuests = useMemo(() => 
+    selectedGuestIds
+      .map(guestId => availableGuests.find(g => g.id === guestId))
+      .filter((guest): guest is Guest => guest !== undefined),
+    [selectedGuestIds, availableGuests]
+  );
 
   // Early return if no valid guests were found (prevents rendering empty grid)
   if (validGuests.length === 0) {

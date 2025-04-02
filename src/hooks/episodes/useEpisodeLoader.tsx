@@ -4,7 +4,7 @@ import { getEpisode } from "@/services/episodeService";
 import { useParams } from "react-router-dom";
 import { Episode } from "@/lib/types";
 import { toast } from "@/hooks/use-toast";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useEpisodeLoader = (episodeId?: string) => {
@@ -44,27 +44,18 @@ export const useEpisodeLoader = (episodeId?: string) => {
         .eq('episode_id', id);
       
       if (guestError) {
-        console.error("Error fetching guest relationships:", guestError);
-      } else if (guestRelations) {
-        // Ensure guestIds is populated correctly
-        data.guestIds = guestRelations.map(rel => rel.guest_id);
-        console.log(`Loaded ${data.guestIds.length} guest IDs for episode ${id}:`, data.guestIds);
+        throw new Error(`Failed to load episode guests: ${guestError.message}`);
       }
+      
+      // Ensure guestIds is populated correctly
+      data.guestIds = guestRelations?.map(rel => rel.guest_id) || [];
       
       return data as Episode;
     },
     enabled: !!id,
+    staleTime: 60000, // Cache data for 1 minute to prevent excessive refetching
+    cacheTime: 300000, // Keep cached data for 5 minutes
   });
-  
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error loading episode",
-        description: (error as Error).message,
-        variant: "destructive",
-      });
-    }
-  }, [error]);
   
   return {
     episode,

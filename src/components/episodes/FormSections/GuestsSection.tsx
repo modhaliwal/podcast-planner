@@ -3,7 +3,7 @@ import { Guest } from '@/lib/types';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
 import { EpisodeFormValues } from '../../episodes/EpisodeFormSchema';
@@ -14,22 +14,11 @@ interface GuestsSectionProps {
 }
 
 export function GuestsSection({ form, guests }: GuestsSectionProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  
   // Get selected guests
   const selectedGuestIds = form.watch('guestIds') || [];
   
-  // Filter available guests (those not already selected)
-  const availableGuests = guests.filter(guest => 
-    !selectedGuestIds.includes(guest.id) &&
-    (searchQuery === "" || guest.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-  
-  // Log for debugging
-  useEffect(() => {
-    console.log("Selected guest IDs:", selectedGuestIds);
-    console.log("All available guests:", guests);
-  }, [selectedGuestIds, guests]);
+  // Memoize available guests list to prevent unnecessary filtering
+  const availableGuests = useMemo(() => guests, [guests]);
   
   const handleRemoveGuest = (guestId: string) => {
     const currentGuestIds = [...(form.getValues('guestIds') || [])];
@@ -50,7 +39,7 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
           {/* Selected guests grid */}
           <SelectedGuestsGrid 
             selectedGuestIds={selectedGuestIds}
-            availableGuests={guests}
+            availableGuests={availableGuests}
             onRemoveGuest={handleRemoveGuest}
           />
           
@@ -58,7 +47,7 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
             <div className="p-4">
               <GuestSelector 
                 form={form as UseFormReturn<EpisodeFormValues>}
-                availableGuests={guests}
+                availableGuests={availableGuests}
               />
             </div>
           </ScrollArea>

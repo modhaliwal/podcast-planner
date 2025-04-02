@@ -13,7 +13,8 @@ interface GuestChipProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-export function GuestChip({ 
+// Using React.memo to prevent unnecessary re-renders
+export const GuestChip = React.memo(function GuestChip({ 
   guest, 
   size = 'md', 
   showLink = true, 
@@ -78,4 +79,4 @@ export function GuestChip({
   }
 
   return <ChipContent />;
-}
+});

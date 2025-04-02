@@ -12,7 +12,7 @@ import { EpisodePodcastUrls } from './EpisodePodcastUrls';
 import { EpisodeResources } from './EpisodeResources';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 
 interface EpisodeDetailProps {
   episode: Episode;
@@ -21,18 +21,11 @@ interface EpisodeDetailProps {
 }
 
 export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps) {
-  // Get the guests for this episode
-  const episodeGuests = guests.filter(guest => 
-    episode.guestIds.includes(guest.id)
+  // Memoize episodeGuests to prevent unnecessary filtering on every render
+  const episodeGuests = useMemo(() => 
+    guests.filter(guest => episode.guestIds.includes(guest.id)),
+    [episode.guestIds, guests]
   );
-  
-  // Debug logging to help troubleshoot
-  useEffect(() => {
-    console.log("Episode detail rendering with episode:", episode);
-    console.log("Episode guestIds:", episode.guestIds);
-    console.log("Available guests:", guests);
-    console.log("Filtered episodeGuests:", episodeGuests);
-  }, [episode, guests, episodeGuests]);
   
   return (
     <div className={cn("space-y-6", className)}>

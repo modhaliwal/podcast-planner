@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -12,10 +12,8 @@ interface GuestSelectorProps {
   availableGuests: Guest[];
 }
 
-export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
+export const GuestSelector = React.memo(function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
   const guestIds = form.getValues('guestIds') || [];
-  
-  console.log("GuestSelector rendering with:", { availableGuests, guestIds });
   
   const handleValueChange = (value: string) => {
     if (value === "all") {
@@ -37,7 +35,7 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
     }
   };
 
-  const getSelectedDisplay = () => {
+  const getSelectedDisplay = useMemo(() => {
     if (guestIds.length === 0) {
       return "Select guests";
     } else if (guestIds.length === 1) {
@@ -45,7 +43,7 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
     } else {
       return `${guestIds.length} guests selected`;
     }
-  };
+  }, [guestIds, availableGuests]);
 
   return (
     <FormItem>
@@ -54,7 +52,7 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
         <FormControl>
           <SelectTrigger>
             <SelectValue placeholder="Select guests">
-              {getSelectedDisplay()}
+              {getSelectedDisplay}
             </SelectValue>
           </SelectTrigger>
         </FormControl>
@@ -84,4 +82,4 @@ export function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
       <FormMessage />
     </FormItem>
   );
-}
+});
