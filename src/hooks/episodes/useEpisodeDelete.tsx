@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/toast';
+import { toast } from '@/hooks/use-toast';
 import { useCoverArtHandler } from '../useCoverArtHandler';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -65,7 +65,7 @@ export function useEpisodeDelete(episodeId: string | undefined) {
         variant: "destructive"
       });
       console.error("Error deleting episode:", error);
-      return { success: false };
+      return { success: false, error };
     } finally {
       setIsLoading(false);
       setIsDeleteDialogOpen(false);
