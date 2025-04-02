@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 
 interface PaginationOptions {
@@ -59,8 +58,7 @@ export function usePagination({
   }, [safeCurrentPage, pageSize, totalItems]);
   
   // Helper function to get paginated data from an array
-  // Fix: Use a proper generic type parameter with a trailing comma
-  const paginateData = useCallback(<T,>(data: T[]): T[] => {
+  const paginateData = useCallback(<T>(data: T[]): T[] => {
     return data.slice(startIndex, endIndex + 1);
   }, [startIndex, endIndex]);
   

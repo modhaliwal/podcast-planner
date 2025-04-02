@@ -1,12 +1,14 @@
 
 import { useState, useCallback } from 'react';
-import { BaseRepository } from '@/repositories/BaseRepository';
+import { Repository } from '@/repositories/core/Repository';
 import { toast } from '@/hooks/use-toast';
 
 /**
  * Generic hook for working with repositories
  */
-export function useRepository<T>(repository: BaseRepository<T>) {
+export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>(
+  repository: Repository<T, CreateDTO, UpdateDTO>
+) {
   const [error, setError] = useState<Error | null>(null);
   
   /**
@@ -54,7 +56,7 @@ export function useRepository<T>(repository: BaseRepository<T>) {
   /**
    * Create a new item
    */
-  const create = useCallback(async (item: Partial<T>): Promise<T | null> => {
+  const create = useCallback(async (item: CreateDTO): Promise<T | null> => {
     try {
       setError(null);
       const { data, error } = await repository.create(item);
@@ -85,7 +87,7 @@ export function useRepository<T>(repository: BaseRepository<T>) {
   /**
    * Update an existing item
    */
-  const update = useCallback(async (id: string, item: Partial<T>): Promise<boolean> => {
+  const update = useCallback(async (id: string, item: UpdateDTO): Promise<boolean> => {
     try {
       setError(null);
       const { success, error } = await repository.update(id, item);

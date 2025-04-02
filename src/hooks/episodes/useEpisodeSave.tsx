@@ -3,13 +3,14 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Episode } from "@/lib/types";
-import { episodeRepository } from "@/repositories/EpisodeRepository";
+import { episodeRepository } from "@/repositories";
+import { UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 
 export const useEpisodeSave = (episodeId?: string) => {
   const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
   
-  const handleSave = async (data: Partial<Episode>): Promise<{ success: boolean; error?: Error }> => {
+  const handleSave = async (data: UpdateEpisodeDTO): Promise<{ success: boolean; error?: Error }> => {
     if (!episodeId) {
       return { 
         success: false, 

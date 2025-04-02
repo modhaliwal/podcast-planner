@@ -6,10 +6,11 @@ import { episodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 
 interface UseEpisodeFormProps {
   episode: Episode;
-  onSubmit: (data: Episode) => Promise<{ success: boolean; error?: Error }>;
+  onSubmit: (data: UpdateEpisodeDTO) => Promise<{ success: boolean; error?: Error }>;
 }
 
 export type EpisodeFormValues = {
@@ -63,14 +64,13 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
     
     try {
       // Convert dates to ISO strings for API compatibility
-      const formattedData = {
-        ...episode,
+      const formattedData: UpdateEpisodeDTO = {
         ...data,
         scheduled: data.scheduled ? data.scheduled.toISOString() : "",
         publishDate: data.publishDate ? data.publishDate.toISOString() : undefined
       };
       
-      const result = await onSubmit(formattedData as Episode);
+      const result = await onSubmit(formattedData);
       
       if (!result.success) {
         console.error("Error submitting episode form:", result.error);

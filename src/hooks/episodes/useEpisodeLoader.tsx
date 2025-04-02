@@ -1,9 +1,10 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { episodeRepository } from "@/repositories/EpisodeRepository";
+import { episodeRepository } from "@/repositories";
 import { useParams } from "react-router-dom";
 import { Episode } from "@/lib/types";
 import { useState, useMemo } from "react";
+import { showErrorToast } from "@/lib/errorHandling";
 
 export const useEpisodeLoader = (episodeId?: string) => {
   const { id: paramId } = useParams<{ id: string }>();
@@ -28,7 +29,8 @@ export const useEpisodeLoader = (episodeId?: string) => {
       const { data, error } = await episodeRepository.getById(id);
       
       if (error) {
-        throw new Error(`Failed to load episode: ${error.message}`);
+        showErrorToast(error);
+        throw error;
       }
       
       if (!data) {
