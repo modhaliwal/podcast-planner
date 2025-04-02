@@ -5,11 +5,11 @@ function Skeleton({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  // Return a simple div without animation
-  // We're removing the skeleton loading behavior per requirements
+  // Return a div that just passes through the className and props
+  // completely removing any loading or animation behavior
   return (
     <div
-      className={cn("rounded-md bg-transparent", className)}
+      className={cn("rounded-md", className)}
       {...props}
     />
   )

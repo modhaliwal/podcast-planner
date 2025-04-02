@@ -3,7 +3,6 @@ import { Guest } from '@/lib/types';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
@@ -16,11 +15,6 @@ interface GuestsSectionProps {
 
 export function GuestsSection({ form, guests }: GuestsSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { isDataLoading } = useAuth();
-  
-  if (isDataLoading) {
-    return null;
-  }
   
   // Get selected guests
   const selectedGuestIds = form.watch('guestIds') || [];

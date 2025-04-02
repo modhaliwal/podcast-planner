@@ -5,19 +5,17 @@ import { PlusIcon, RefreshCcw } from 'lucide-react';
 interface GuestHeaderProps {
   onRefresh: () => void;
   onAddGuest: () => void;
-  isLoading: boolean;
 }
 
-export function GuestHeader({ onRefresh, onAddGuest, isLoading }: GuestHeaderProps) {
+export function GuestHeader({ onRefresh, onAddGuest }: GuestHeaderProps) {
   return (
     <div className="flex gap-2">
       <Button 
         variant="outline" 
         size="icon" 
-        onClick={onRefresh} 
-        disabled={isLoading}
+        onClick={onRefresh}
       >
-        <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        <RefreshCcw className="h-4 w-4" />
       </Button>
       <Button size="default" onClick={onAddGuest}>
         <PlusIcon className="mr-2 h-4 w-4" />
