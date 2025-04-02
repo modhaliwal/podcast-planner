@@ -3,7 +3,7 @@ import { useState, useCallback, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Guest } from "@/lib/types";
-import { mapDatabaseGuestToGuest } from "@/services/guests/guestMappers";
+import { mapDatabaseGuestToGuest } from "@/utils/mappers";
 
 export function useGuestsRefresh(userId: string | undefined) {
   const [error, setError] = useState<Error | null>(null);
