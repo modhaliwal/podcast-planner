@@ -84,7 +84,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   }}
                   hoverCardConfig={{
                     promptTitle: "Episode Notes Generator",
-                    aiProvider: "Perplexity",
+                    aiProvider: "Anthropic",
                     generatorSlug: "episode-notes-generator"
                   }}
                   contentName="Episode Notes"
@@ -125,7 +125,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   }}
                   hoverCardConfig={{
                     promptTitle: "Episode Introduction Generator",
-                    aiProvider: "Perplexity",
+                    aiProvider: "Anthropic",
                     generatorSlug: "episode-intro-writer"
                   }}
                   contentName="Episode Introduction"
