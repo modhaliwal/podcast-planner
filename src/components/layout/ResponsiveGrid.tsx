@@ -17,7 +17,7 @@ interface ResponsiveGridProps {
 export function ResponsiveGrid({
   children,
   cols = { default: 1, sm: 2, md: 2, lg: 3, xl: 4 },
-  gap = "gap-4 sm:gap-6",
+  gap = "gap-3 sm:gap-4",
   className,
 }: ResponsiveGridProps) {
   // Build grid classes based on provided columns

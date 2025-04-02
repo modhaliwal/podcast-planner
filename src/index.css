@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -27,7 +26,7 @@
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 210 40% 14%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
@@ -201,8 +200,9 @@
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
   
+  /* Standardized page layouts */
   .page-container {
-    @apply container mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-6 sm:space-y-8;
+    @apply py-4 sm:py-5 md:py-6 space-y-4 sm:space-y-6;
   }
   
   .section-title {
@@ -214,23 +214,25 @@
   }
   
   .page-header {
-    @apply flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 sm:pb-6 border-b mb-6 sm:mb-8;
+    @apply flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-3 sm:pb-4 border-b mb-4 sm:mb-6;
   }
   
+  /* Card components */
   .card-header {
-    @apply flex flex-col space-y-1.5 p-4 sm:p-6 pb-2 sm:pb-4;
+    @apply flex flex-col space-y-1.5 p-3 sm:p-4 pb-2;
   }
   
   .card-content {
-    @apply p-4 sm:p-6 pt-0;
+    @apply p-3 sm:p-4 pt-0;
   }
   
   .card-footer {
-    @apply flex items-center p-4 sm:p-6 pt-0;
+    @apply flex items-center p-3 sm:p-4 pt-0;
   }
   
+  /* Form components */
   .form-section {
-    @apply space-y-4 sm:space-y-6;
+    @apply space-y-3 sm:space-y-4;
   }
   
   .form-group {
@@ -238,6 +240,32 @@
   }
   
   .form-actions {
-    @apply flex justify-end gap-3 sm:gap-4 pt-4 border-t mt-6 sm:mt-8;
+    @apply flex justify-end gap-3 pt-4 border-t mt-6;
+  }
+  
+  /* Content section */
+  .content-section {
+    @apply space-y-3 sm:space-y-4;
+  }
+  
+  /* Grid layouts */
+  .responsive-grid {
+    @apply grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+  }
+  
+  .two-column-layout {
+    @apply grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3;
+  }
+  
+  .sidebar-layout {
+    @apply grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-4;
+  }
+  
+  .main-column {
+    @apply lg:col-span-3;
+  }
+  
+  .sidebar-column {
+    @apply lg:col-span-1;
   }
 }

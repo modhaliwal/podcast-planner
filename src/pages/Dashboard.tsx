@@ -4,6 +4,7 @@ import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { PageLayout } from '@/components/layout/PageLayout';
 
 const Dashboard = () => {
   const { 
@@ -44,21 +45,17 @@ const Dashboard = () => {
   
   return (
     <Shell>
-      <div className="page-container">
-        <div className="page-header">
-          <div>
-            <h1 className="section-title">Dashboard</h1>
-            <p className="section-subtitle">Manage your podcast guests and episodes</p>
-          </div>
-        </div>
-        
+      <PageLayout 
+        title="Dashboard" 
+        subtitle="Manage your podcast guests and episodes"
+      >
         {!isLoaded ? (
           <div className="flex justify-center items-center h-64">
             {/* Empty div instead of loading indicator */}
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatsCard
                 title="Total Guests"
                 value={totalGuests}
@@ -88,13 +85,13 @@ const Dashboard = () => {
               />
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
               <RecentGuests guests={guests} />
               <UpcomingEpisodes episodes={episodes} guests={guests} />
             </div>
           </>
         )}
-      </div>
+      </PageLayout>
     </Shell>
   );
 };

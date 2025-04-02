@@ -33,12 +33,10 @@ export default function GuestView() {
   if (isLoading) {
     return (
       <Shell>
-        <div className="container max-w-5xl py-8">
-          <div className="animate-pulse">
-            <div className="h-8 w-32 bg-muted rounded mb-2" />
-            <div className="h-4 w-48 bg-muted rounded mb-8" />
-            <div className="h-64 bg-muted rounded" />
-          </div>
+        <div className="animate-pulse p-4">
+          <div className="h-8 w-32 bg-muted rounded mb-2" />
+          <div className="h-4 w-48 bg-muted rounded mb-8" />
+          <div className="h-64 bg-muted rounded" />
         </div>
       </Shell>
     );
@@ -54,20 +52,18 @@ export default function GuestView() {
 
   return (
     <Shell>
-      <div className="container max-w-5xl py-8">
-        <GuestDetail 
-          guest={guest} 
-          episodes={guestEpisodes}
-          onDelete={() => setIsDeleteDialogOpen(true)} 
-        />
-        
-        <DeleteGuestDialog
-          isOpen={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-          onConfirmDelete={handleDelete}
-          guestName={guest?.name}
-        />
-      </div>
+      <GuestDetail 
+        guest={guest} 
+        episodes={guestEpisodes}
+        onDelete={() => setIsDeleteDialogOpen(true)} 
+      />
+      
+      <DeleteGuestDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirmDelete={handleDelete}
+        guestName={guest?.name}
+      />
     </Shell>
   );
 }

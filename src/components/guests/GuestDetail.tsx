@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { GuestProfileCard } from './GuestProfileCard';
 import { GuestAboutSection } from './GuestAboutSection';
 import { GuestEpisodesList } from './GuestEpisodesList';
+import { ResponsiveContainer } from '@/components/ui/responsive-container';
 
 interface GuestDetailProps {
   guest: Guest;
@@ -17,8 +18,8 @@ interface GuestDetailProps {
 
 export function GuestDetail({ guest, episodes = [], className, onDelete }: GuestDetailProps) {
   return (
-    <div className={cn("space-y-4 sm:space-y-6", className)}>
-      <div className="flex flex-wrap items-center justify-between mb-4 sm:mb-6">
+    <ResponsiveContainer className={cn("page-container", className)}>
+      <div className="flex flex-wrap items-center justify-between mb-4">
         <Button variant="ghost" size="sm" asChild className="mr-2">
           <Link to="/guests">
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -43,16 +44,16 @@ export function GuestDetail({ guest, episodes = [], className, onDelete }: Guest
         </div>
       </div>
       
-      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-        <div className="w-full lg:w-1/3">
+      <div className="two-column-layout">
+        <div className="sidebar-column">
           <GuestProfileCard guest={guest} />
         </div>
         
-        <div className="flex-1 space-y-4 sm:space-y-6">
+        <div className="main-column space-y-4 sm:space-y-6">
           <GuestEpisodesList guest={guest} episodes={episodes} />
           <GuestAboutSection guest={guest} />
         </div>
       </div>
-    </div>
+    </ResponsiveContainer>
   );
 }
