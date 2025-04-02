@@ -35,12 +35,12 @@ export function GuestForm({ guest, onSave, onCancel, onDelete }: GuestFormProps)
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="flex flex-col md:flex-row gap-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Left column - Profile info */}
-          <div className="w-full md:w-1/3 lg:w-1/4 space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-medium mb-4">Profile Image</h3>
+          <div className="w-full lg:w-1/3 space-y-4 sm:space-y-6">
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-lg font-medium mb-3 sm:mb-4">Profile Image</h3>
               <HeadshotSection 
                 initialImageUrl={guest?.imageUrl} 
                 guestName={guest?.name || 'Guest'}
@@ -54,7 +54,7 @@ export function GuestForm({ guest, onSave, onCancel, onDelete }: GuestFormProps)
           </div>
           
           {/* Right column - Content */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-4 sm:space-y-6">
             <ContentSection 
               form={form}
               guest={guest}
@@ -62,7 +62,7 @@ export function GuestForm({ guest, onSave, onCancel, onDelete }: GuestFormProps)
           </div>
         </div>
         
-        <div className="flex justify-between pt-6 border-t">
+        <div className="flex justify-between pt-4 sm:pt-6 border-t">
           {onDelete && (
             <Button 
               type="button" 

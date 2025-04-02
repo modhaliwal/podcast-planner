@@ -24,13 +24,13 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
   
   return (
     <Card className="md:col-span-2">
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-4">
         <CardTitle className="flex items-center gap-2">
           <BookText className="h-5 w-5 text-primary" />
           Episode Content
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-12">
+      <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4 space-y-8 sm:space-y-12">
         {/* Topic Field */}
         <FormField
           control={form.control}
@@ -99,7 +99,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
           control={form.control}
           name="introduction"
           render={({ field }) => (
-            <FormItem className="pt-8">
+            <FormItem className="pt-4 sm:pt-8">
               <FormLabel className="flex items-center gap-2">
                 <Info className="h-4 w-4 text-muted-foreground" />
                 Introduction

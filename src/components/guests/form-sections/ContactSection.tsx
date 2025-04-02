@@ -10,9 +10,9 @@ interface ContactSectionProps {
 
 export function ContactSection({ form }: ContactSectionProps) {
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-medium mb-4">Contact Information</h3>
-      <div className="space-y-4">
+    <Card className="p-4 sm:p-6">
+      <h3 className="text-lg font-medium mb-3 sm:mb-4">Contact Information</h3>
+      <div className="space-y-3 sm:space-y-4">
         <FormField
           control={form.control}
           name="email"

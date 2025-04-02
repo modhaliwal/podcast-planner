@@ -14,7 +14,7 @@ export function ResponsiveContainer({
   return (
     <div 
       className={cn(
-        "w-full mx-auto px-4 sm:px-6 md:max-w-3xl md:px-8 lg:max-w-4xl xl:max-w-5xl", 
+        "w-full mx-auto px-2 sm:px-4 md:px-6 md:max-w-3xl lg:max-w-4xl xl:max-w-5xl", 
         className
       )}
     >

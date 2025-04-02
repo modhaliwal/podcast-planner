@@ -17,8 +17,8 @@ interface GuestDetailProps {
 
 export function GuestDetail({ guest, episodes = [], className, onDelete }: GuestDetailProps) {
   return (
-    <div className={cn("space-y-6", className)}>
-      <div className="flex items-center justify-between mb-6">
+    <div className={cn("space-y-4 sm:space-y-6", className)}>
+      <div className="flex flex-wrap items-center justify-between mb-4 sm:mb-6">
         <Button variant="ghost" size="sm" asChild className="mr-2">
           <Link to="/guests">
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -26,7 +26,7 @@ export function GuestDetail({ guest, episodes = [], className, onDelete }: Guest
           </Link>
         </Button>
         
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 mt-2 sm:mt-0">
           <Button variant="outline" size="sm" asChild>
             <Link to={`/guests/${guest.id}/edit`}>
               <Pencil className="h-4 w-4 mr-1" />
@@ -43,12 +43,12 @@ export function GuestDetail({ guest, episodes = [], className, onDelete }: Guest
         </div>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-1/3 lg:w-1/4">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        <div className="w-full lg:w-1/3">
           <GuestProfileCard guest={guest} />
         </div>
         
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 space-y-4 sm:space-y-6">
           <GuestEpisodesList guest={guest} episodes={episodes} />
           <GuestAboutSection guest={guest} />
         </div>
