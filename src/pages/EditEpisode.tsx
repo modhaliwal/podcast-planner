@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -16,16 +15,11 @@ const EditEpisode = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Use the episode data hook with the ID from URL params
   const { isLoading: isEpisodeLoading, episode, handleSave } = useEpisodeData(id);
-  
-  // Use the guests data hook to fetch all guests
   const { guests, isLoadingGuests } = useGuestsData(user?.id);
   
-  // Combine loading states
   const isLoading = isEpisodeLoading || isLoadingGuests;
   
-  // Show an error and navigate back if episode is null after loading
   useEffect(() => {
     if (!isEpisodeLoading && !episode) {
       toast({
@@ -37,7 +31,6 @@ const EditEpisode = () => {
     }
   }, [isEpisodeLoading, episode, navigate]);
   
-  // Create a stable key that includes both ID and version information
   const episodeKey = useMemo(() => {
     if (!episode) return '';
     const versionsCount = episode.notesVersions?.length || 0;
