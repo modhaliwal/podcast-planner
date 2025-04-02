@@ -39,7 +39,11 @@ export function Header() {
       await signOut();
     } catch (error) {
       console.error('Error signing out:', error);
-      toast.error("Error signing out. Please try again.");
+      toast({
+        title: "Error",
+        description: "Error signing out. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -50,14 +54,14 @@ export function Header() {
   
   return (
     <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 py-4 px-4 md:px-6 transition-all duration-200",
+      "fixed top-0 left-0 right-0 z-50 py-2 sm:py-4 px-2 sm:px-4 md:px-6 transition-all duration-200",
       isScrolled ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-subtle" : "bg-transparent"
     )}>
       <div className="container max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
           <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-2">
-            <Headphones className="h-6 w-6 text-primary" />
-            <span className="font-medium text-xl">PodCast Manager</span>
+            <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <span className="font-medium text-lg sm:text-xl">PodCast Manager</span>
           </Link>
         </div>
         

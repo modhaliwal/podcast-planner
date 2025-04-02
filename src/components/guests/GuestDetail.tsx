@@ -8,6 +8,7 @@ import { GuestProfileCard } from './GuestProfileCard';
 import { GuestAboutSection } from './GuestAboutSection';
 import { GuestEpisodesList } from './GuestEpisodesList';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
+import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 
 interface GuestDetailProps {
   guest: Guest;
@@ -18,7 +19,7 @@ interface GuestDetailProps {
 
 export function GuestDetail({ guest, episodes = [], className, onDelete }: GuestDetailProps) {
   return (
-    <ResponsiveContainer className={cn("page-container", className)}>
+    <ResponsiveContainer className={cn("", className)}>
       <div className="flex flex-wrap items-center justify-between mb-4">
         <Button variant="ghost" size="sm" asChild className="mr-2">
           <Link to="/guests">
@@ -44,16 +45,16 @@ export function GuestDetail({ guest, episodes = [], className, onDelete }: Guest
         </div>
       </div>
       
-      <div className="two-column-layout">
-        <div className="sidebar-column">
+      <ResponsiveGrid cols={{ default: 1, md: 3 }} gap="gap-4 sm:gap-6">
+        <div className="md:col-span-1">
           <GuestProfileCard guest={guest} />
         </div>
         
-        <div className="main-column space-y-4 sm:space-y-6">
+        <div className="md:col-span-2 space-y-4 sm:space-y-6">
           <GuestEpisodesList guest={guest} episodes={episodes} />
           <GuestAboutSection guest={guest} />
         </div>
-      </div>
+      </ResponsiveGrid>
     </ResponsiveContainer>
   );
 }

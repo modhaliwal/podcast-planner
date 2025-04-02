@@ -41,27 +41,25 @@ const Episodes = () => {
       <PageLayout
         title="Episodes"
         subtitle="Manage your podcast episodes"
-        actions={
-          <div className="flex gap-2">
-            <EpisodesHeader onRefresh={handleRefresh} />
-          </div>
-        }
+        actions={<EpisodesHeader onRefresh={handleRefresh} />}
       >
-        <EpisodesSearchFilter 
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-        />
-        
-        <EpisodesContent
-          filteredEpisodes={sortedEpisodes}
-          guests={guests}
-          searchQuery={searchQuery}
-        />
+        <div className="space-y-4 sm:space-y-6">
+          <EpisodesSearchFilter 
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+          />
+          
+          <EpisodesContent
+            filteredEpisodes={sortedEpisodes}
+            guests={guests}
+            searchQuery={searchQuery}
+          />
+        </div>
       </PageLayout>
     </Shell>
   );
-};
+}
 
 export default Episodes;

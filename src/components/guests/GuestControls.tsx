@@ -52,7 +52,7 @@ export function GuestControls({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
       {/* Inline GuestSearch component */}
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -65,13 +65,13 @@ export function GuestControls({
       </div>
       
       {/* Inline GuestFilter component */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
               className={cn(
-                "w-full md:w-auto",
+                "w-full sm:w-auto min-w-[140px]",
                 statusFilter !== 'all' && getStatusColor()
               )}
             >

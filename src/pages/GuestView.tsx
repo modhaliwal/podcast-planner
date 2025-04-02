@@ -7,6 +7,7 @@ import { GuestDetail } from '@/components/guests/GuestDetail';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { GuestNotFound } from '@/components/guests/GuestNotFound';
 import { useEffect } from 'react';
+import { PageLayout } from '@/components/layout/PageLayout';
 
 export default function GuestView() {
   const { id } = useParams<{ id: string }>();
@@ -33,11 +34,13 @@ export default function GuestView() {
   if (isLoading) {
     return (
       <Shell>
-        <div className="animate-pulse p-4">
-          <div className="h-8 w-32 bg-muted rounded mb-2" />
-          <div className="h-4 w-48 bg-muted rounded mb-8" />
-          <div className="h-64 bg-muted rounded" />
-        </div>
+        <PageLayout title="Loading..." noPadding>
+          <div className="animate-pulse p-4">
+            <div className="h-8 w-32 bg-muted rounded mb-2" />
+            <div className="h-4 w-48 bg-muted rounded mb-8" />
+            <div className="h-64 bg-muted rounded" />
+          </div>
+        </PageLayout>
       </Shell>
     );
   }
@@ -52,18 +55,20 @@ export default function GuestView() {
 
   return (
     <Shell>
-      <GuestDetail 
-        guest={guest} 
-        episodes={guestEpisodes}
-        onDelete={() => setIsDeleteDialogOpen(true)} 
-      />
-      
-      <DeleteGuestDialog
-        isOpen={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirmDelete={handleDelete}
-        guestName={guest?.name}
-      />
+      <PageLayout title={guest.name} noPadding>
+        <GuestDetail 
+          guest={guest} 
+          episodes={guestEpisodes}
+          onDelete={() => setIsDeleteDialogOpen(true)} 
+        />
+        
+        <DeleteGuestDialog
+          isOpen={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirmDelete={handleDelete}
+          guestName={guest?.name}
+        />
+      </PageLayout>
     </Shell>
   );
 }

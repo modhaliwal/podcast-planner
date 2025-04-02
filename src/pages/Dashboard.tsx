@@ -5,6 +5,7 @@ import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboar
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 
 const Dashboard = () => {
   const { 
@@ -55,7 +56,10 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <ResponsiveGrid 
+              cols={{ default: 1, sm: 2, lg: 4 }}
+              gap="gap-3 sm:gap-4"
+            >
               <StatsCard
                 title="Total Guests"
                 value={totalGuests}
@@ -83,7 +87,7 @@ const Dashboard = () => {
                 description="Episodes scheduled"
                 icon={<Calendar className="h-5 w-5" />}
               />
-            </div>
+            </ResponsiveGrid>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
               <RecentGuests guests={guests} />

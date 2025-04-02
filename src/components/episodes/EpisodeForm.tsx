@@ -11,6 +11,7 @@ import { CoverArtSection } from './FormSections/CoverArtSection';
 import { FormActions } from '@/components/ui/form-actions';
 import { useCoverArtHandler } from '@/hooks/useCoverArtHandler';
 import { UpdateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
+import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 
 interface EpisodeFormProps {
   episode: Episode;
@@ -55,12 +56,12 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
   
   return (
     <Form {...form}>
-      <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
+      <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8 w-full">
         {/* Grid layout for the top sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ResponsiveGrid cols={{ default: 1, md: 2 }} gap="gap-4 sm:gap-6">
           <PlanningSection form={form as any} guests={guests} />
           <CoverArtSection form={form as any} />
-        </div>
+        </ResponsiveGrid>
         
         <ContentSection form={form as any} guests={guests} />
         

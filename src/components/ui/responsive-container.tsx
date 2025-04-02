@@ -28,7 +28,7 @@ export function ResponsiveContainer({
   // Determine padding based on noPadding prop - reduced padding for mobile
   const paddingClasses = noPadding 
     ? "" 
-    : "px-1 sm:px-2 md:px-3";
+    : "px-3 sm:px-4 md:px-6";
 
   return (
     <div 
