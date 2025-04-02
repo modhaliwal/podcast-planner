@@ -38,7 +38,7 @@ This guide explains how to use the Podcast Planner application to create and man
 ### Managing Guests
 
 1. View all guests from the Guests page
-2. Use the search and filter controls to find specific guests
+2. Use the search and filter controls to find specific guests by name, title, company, or status
 3. Click on a guest card to view their detailed profile
 4. From the guest profile page:
    - View basic information and contact details
@@ -65,6 +65,7 @@ This guide explains how to use the Podcast Planner application to create and man
 
 1. When editing episode content:
    - Use the "Generate Notes" button to create AI-generated episode notes
+   - Use the "Generate Introduction" button to create an episode introduction
 2. Review generated content and select the version you prefer
 3. Edit the content as needed
 4. Save changes to store the selected version
@@ -72,7 +73,7 @@ This guide explains how to use the Podcast Planner application to create and man
 ### Managing Episodes
 
 1. View all episodes from the Episodes page
-2. Use the search and filter controls to find specific episodes
+2. Use the search and filter controls to find specific episodes by title, number, or status
 3. Click on an episode card to view its details
 4. From the episode detail page:
    - View and edit basic information
@@ -96,5 +97,13 @@ This guide explains how to use the Podcast Planner application to create and man
    - Guest bios
    - Background research
    - Episode notes
+   - Episode introductions
 4. Test generators with sample inputs
 5. Save custom configurations for future use
+
+### Profile Settings
+
+1. Access the user dropdown in the top navigation bar
+2. Select "Settings" to access your profile settings
+3. Update your profile information, including name and profile image
+4. Manage application preferences and appearance settings

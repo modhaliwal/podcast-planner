@@ -1,100 +1,90 @@
 
 # Content Management Conventions
 
-This document outlines the standard patterns and conventions used for viewing, editing, and saving content within the Podcast Planner application.
+This document outlines the conventions and best practices for managing content within the Podcast Planner application.
 
-## Hooks-based Pattern
+## AI-Generated Content
 
-We use a consistent hooks-based pattern for form handling and data persistence throughout the application:
+### Content Generation
 
-### 1. Data Fetching and State Management
+The application supports AI-generated content for:
+- Guest biographies
+- Guest background research
+- Episode notes
+- Episode introductions
 
-- Each content type (Episodes, Guests) has a dedicated data hook:
-  - `useEpisodeData` / `useGuestData`: Manages fetching, state, and saving operations
-  - `useFetchEpisode` / `useFetchGuest`: Handles just the data retrieval
+When generating content, consider the following:
 
-### 2. Form Management
+1. **Provide Context**: The more specific information you provide, the better the AI can generate relevant content
+2. **Review Generated Content**: Always review AI-generated content for accuracy and appropriateness
+3. **Edit as Needed**: Use AI-generated content as a starting point and edit to match your voice and style
 
-- Forms use dedicated hooks that encapsulate form state and submission logic:
-  - `useEpisodeForm` / `useGuestForm`: Handle form state and submission
-  - These hooks abstract away the implementation details of form processing
+### Content Versioning
 
-### 3. Content Flow
+Content versioning allows you to:
+- Keep track of different versions of generated content
+- Compare versions side by side
+- Select the most suitable version for your needs
+- Maintain a history of content iterations
 
-The standard flow for content management is:
+Each version includes:
+- Content body
+- Generation timestamp
+- Source (AI provider used)
+- Version number
+- Active status (which version is currently selected)
 
-1. **View**: Content is displayed using data from fetch hooks
-2. **Edit**: When editing, form hooks manage the form state and validation
-3. **Save**: On submission, the form hooks process the data and pass it to the data hooks for persistence
+## Image Management
 
-### 4. Version Management
+### Guest Profile Images
 
-For content that supports versioning (like bios, research notes, etc.):
+For guest profile images:
+- Use square or 1:1 aspect ratio images for best display
+- Recommended resolution: 500x500 pixels
+- Supported formats: JPG, PNG
+- Maximum file size: 2MB
 
-- We use the `useVersionManager` hook to track version history
-- Each version has a unique ID, timestamp, and source attribution
-- Active versions are tracked and can be switched between
+### Episode Cover Art
 
-## Component Structure
+For episode cover art:
+- Use square or 1:1 aspect ratio images for podcast platforms
+- Recommended resolution: 1400x1400 pixels (minimum 1400x1400 per podcast platform requirements)
+- Supported formats: JPG, PNG
+- Maximum file size: 5MB
 
-Components follow a hierarchical structure:
+## Text Formatting
 
-- Page components (`EditEpisode`, `EditGuest`) are container components
-- Form components (`EpisodeForm`, `GuestForm`) handle form layout and structure
-- Section components organize related form fields
-- Field components are the individual input elements
+The application supports basic Markdown formatting in text fields:
 
-## List Structure Pattern
+- **Bold**: `**text**`
+- *Italic*: `*text*`
+- Headers: `# Header 1`, `## Header 2`, etc.
+- Lists:
+  ```
+  * Item 1
+  * Item 2
+  ```
+- Links: `[link text](URL)`
 
-We use a consistent pattern for list views (Episodes, Guests) throughout the application:
+## Resource Management
 
-### 1. Page Component
-- Acts as the main container (e.g., `Episodes.tsx`, `Guests.tsx`)
-- Manages state, filtering, and data fetching
-- Houses all other components
+When adding resources to episodes:
+- Provide a descriptive label
+- Include the full URL
+- Add a brief description of the resource
+- Group related resources together
 
-### 2. Header Component
-- Displays the page title, subtitle, and primary actions
-- Contains refresh and create/add actions
-- Examples: `EpisodesHeader`, `GuestHeader`
+## Status Management
 
-### 3. Controls Component
-- Manages user interactions for filtering and viewing content
-- Contains search input, status filters, and view toggles
-- Examples: `EpisodesSearchFilter`, `GuestControls`
+### Guest Statuses
 
-### 4. Content Component
-- Handles conditional rendering based on data state:
-  - Loading state (shows loading indicator)
-  - Empty state (shows empty state message with action)
-  - Content display (shows actual list or cards)
-- Examples: `EpisodesContent`, `GuestContent`
+- **Potential**: Initial guest identification
+- **Contacted**: Outreach has been made
+- **Confirmed**: Guest has agreed to appear
+- **Appeared**: Guest has recorded an episode
 
-### 5. List/Card Components
-- Pure presentational components that render the actual data
-- No conditional logic - only display the provided data
-- Examples: `EpisodesList`, `GuestList`, `GuestCard`
+### Episode Statuses
 
-This pattern ensures:
-- Clear separation of concerns
-- Consistent user experience across different sections
-- Reusable components for different data types
-- Easier maintenance and feature additions
-
-## Saving Convention
-
-When saving content:
-
-1. Form data is collected and validated
-2. Media (images, etc.) are processed if present
-3. The parent component's save function is called with the updated data
-4. Success/failure is communicated via toast notifications
-5. Navigation occurs after successful saves
-
-## Best Practices
-
-- Use hooks to encapsulate related logic
-- Keep components focused on a single responsibility
-- Process form data before persistence
-- Provide clear feedback during and after save operations
-- Handle errors gracefully with appropriate user feedback
+- **Scheduled**: Episode is planned with date
+- **Recorded**: Episode has been recorded but not published
+- **Published**: Episode is live on podcast platforms

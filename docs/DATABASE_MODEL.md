@@ -21,6 +21,7 @@ erDiagram
         string status
         string cover_art
         string introduction
+        json introduction_versions
         string notes
         json notes_versions
         json recording_links
@@ -103,6 +104,7 @@ Configuration for AI content generation tools
 The database employs JSON fields to store version history for content that can be generated with AI:
 - `bio_versions` in guests table
 - `background_research_versions` in guests table
+- `introduction_versions` in episodes table
 - `notes_versions` in episodes table
 
 Each version includes:
@@ -111,3 +113,4 @@ Each version includes:
 - Timestamp
 - Source attribution
 - Version number
+- Active flag to indicate the currently selected version
