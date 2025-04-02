@@ -97,13 +97,17 @@ export class EpisodeRepository extends BaseRepository<Episode> {
     try {
       // Convert application model to DB model
       const dbEpisode = mapEpisodeToDB(episode);
+      
+      // Ensure required fields are present
+      if (!dbEpisode.episode_number || !dbEpisode.title || !dbEpisode.introduction || !dbEpisode.scheduled) {
+        throw new Error("Missing required fields for episode creation");
+      }
 
-      // Insert episode into database
+      // Insert episode into database with required fields
       const { data, error } = await supabase
         .from('episodes')
         .insert({
           ...dbEpisode,
-          user_id: episode.userId || '',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
