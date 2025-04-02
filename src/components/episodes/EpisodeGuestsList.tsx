@@ -13,7 +13,7 @@ export function EpisodeGuestsList({ guests }: EpisodeGuestsListProps) {
     <div className="flex flex-wrap items-center gap-2 mb-3">
       {guests.length > 0 ? (
         <>
-          {guests.slice(0, 3).map((guest) => (
+          {guests.map((guest) => (
             <GuestChip 
               key={guest.id} 
               guest={guest} 
@@ -21,9 +21,9 @@ export function EpisodeGuestsList({ guests }: EpisodeGuestsListProps) {
             />
           ))}
           
-          {guests.length > 3 && (
+          {guests.length > 5 && (
             <Badge variant="outline">
-              +{guests.length - 3} more
+              +{guests.length - 5} more
             </Badge>
           )}
         </>
