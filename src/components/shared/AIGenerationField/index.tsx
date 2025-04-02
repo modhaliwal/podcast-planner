@@ -4,3 +4,5 @@
 
 export { AIGenerationField } from './AIGenerationField';
 export type { AIGenerationFieldProps, DropdownOption, ContentVersion } from './AIGenerationField';
+export { useGeneratorDetails } from '@/hooks/useGeneratorDetails';
+export type { GeneratorDetails } from '@/hooks/useGeneratorDetails';
