@@ -1,106 +1,62 @@
 
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/toast';
-import { Episode, ContentVersion } from '@/lib/types';
-import { processVersions } from '@/lib/versionUtils';
+import { useState } from "react";
+import { updateEpisode } from "@/services/episodeService";
+import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { Episode } from "@/lib/types";
 
-export function useEpisodeSave(episodeId: string | undefined, onSuccess?: () => void) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export const useEpisodeSave = () => {
+  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
   
-  const handleSave = useCallback(
-    async (updatedEpisode: Partial<Episode>) => {
-      if (!episodeId) return { success: false };
-      
-      setIsSubmitting(true);
-      try {
-        console.log('Saving episode:', updatedEpisode);
-        
-        // Process notesVersions to ensure proper format before saving
-        let notesVersionsToSave = null;
-        if (updatedEpisode.notesVersions) {
-          const processedVersions = processVersions(updatedEpisode.notesVersions);
-          notesVersionsToSave = processedVersions.length > 0 ? 
-            JSON.stringify(processedVersions) : null;
-          
-          console.log('Processed notesVersions for saving:', {
-            input: updatedEpisode.notesVersions,
-            processed: processedVersions,
-            stringified: notesVersionsToSave
-          });
-        }
-        
-        // First, update the episode data
-        const { error } = await supabase
-          .from('episodes')
-          .update({
-            title: updatedEpisode.title,
-            episode_number: updatedEpisode.episodeNumber,
-            status: updatedEpisode.status,
-            scheduled: updatedEpisode.scheduled,
-            publish_date: updatedEpisode.publishDate,
-            topic: updatedEpisode.topic,
-            introduction: updatedEpisode.introduction,
-            notes: updatedEpisode.notes,
-            resources: updatedEpisode.resources ? JSON.stringify(updatedEpisode.resources) : null,
-            podcast_urls: updatedEpisode.podcastUrls ? {
-              spotify: updatedEpisode.podcastUrls.spotify,
-              youtube: updatedEpisode.podcastUrls.youtube,
-              applePodcasts: updatedEpisode.podcastUrls.applePodcasts,
-              amazonPodcasts: updatedEpisode.podcastUrls.amazonPodcasts
-            } : null,
-            cover_art: updatedEpisode.coverArt,
-            notes_versions: notesVersionsToSave
-          })
-          .eq('id', episodeId);
-        
-        if (error) throw error;
-        
-        // Then, update the episode-guest relationships
-        if (updatedEpisode.guestIds) {
-          // First, delete all existing relationships
-          const { error: deleteError } = await supabase
-            .from('episode_guests')
-            .delete()
-            .eq('episode_id', episodeId);
-          
-          if (deleteError) throw deleteError;
-          
-          // Then add the new relationships
-          if (updatedEpisode.guestIds.length > 0) {
-            const episodeGuests = updatedEpisode.guestIds.map(guestId => ({
-              episode_id: episodeId,
-              guest_id: guestId
-            }));
-            
-            const { error: insertError } = await supabase
-              .from('episode_guests')
-              .insert(episodeGuests);
-            
-            if (insertError) throw insertError;
-          }
-        }
-        
-        toast.success("Episode saved successfully");
-        
-        if (onSuccess) {
-          onSuccess();
-        }
-        
-        return { success: true };
-      } catch (error: any) {
-        console.error('Error saving episode:', error);
-        toast.error(`Failed to save episode: ${error.message}`);
-        return { success: false, error };
-      } finally {
-        setIsSubmitting(false);
+  const saveEpisode = async (episodeId: string, data: Partial<Episode>): Promise<boolean> => {
+    setIsSaving(true);
+    
+    try {
+      // Prepare notes versions for storage if they exist
+      if (data.notesVersions) {
+        // AIGenerationField handles version management internally
+        // Just ensure we're sending the right format to the database
+        console.log("Saving notes versions:", data.notesVersions);
       }
-    },
-    [episodeId, onSuccess]
-  );
+      
+      const { success, error } = await updateEpisode(episodeId, {
+        ...data,
+        // Ensure we're sending arrays for versions
+        notes_versions: data.notesVersions || []
+      });
+      
+      if (!success) {
+        throw new Error(error?.message || "Failed to save episode");
+      }
+      
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["episode", episodeId] });
+      queryClient.invalidateQueries({ queryKey: ["episodes"] });
+      
+      toast({
+        title: "Episode saved",
+        description: "Your changes have been saved successfully.",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error("Error saving episode:", error);
+      
+      toast({
+        title: "Error saving episode",
+        description: error.message,
+        variant: "destructive",
+      });
+      
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
   
   return {
-    isSubmitting,
-    handleSave
+    saveEpisode,
+    isSaving,
   };
-}
+};

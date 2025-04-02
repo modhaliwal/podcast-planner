@@ -1,10 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EpisodeStatus } from "@/lib/enums";
 import { User as AppUser, Episode, ContentVersion } from "@/lib/types";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { EpisodeFormData } from "@/components/episodes/CreateEpisodeForm/types";
-import { processVersions } from "@/lib/versionUtils";
 
 interface DBEpisode {
   id: string;
@@ -46,12 +44,12 @@ export function mapEpisodeFromDB(dbEpisode: any): Episode {
   
   try {
     if (dbEpisode.notes_versions) {
-      // Make sure we pass an array to processVersions
-      const versionData = Array.isArray(dbEpisode.notes_versions) 
+      // Simply assign the versions, AIGenerationField will handle version management
+      notesVersions = Array.isArray(dbEpisode.notes_versions) 
         ? dbEpisode.notes_versions 
-        : [dbEpisode.notes_versions];
-      
-      notesVersions = processVersions(versionData);
+        : typeof dbEpisode.notes_versions === 'string'
+          ? JSON.parse(dbEpisode.notes_versions)
+          : [dbEpisode.notes_versions];
       
       console.log("Mapped notesVersions:", {
         input: dbEpisode.notes_versions,
