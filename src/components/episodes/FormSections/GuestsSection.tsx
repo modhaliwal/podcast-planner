@@ -3,7 +3,7 @@ import { Guest } from '@/lib/types';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
 import { EpisodeFormValues } from '../../episodes/EpisodeFormSchema';
@@ -24,6 +24,12 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
     !selectedGuestIds.includes(guest.id) &&
     (searchQuery === "" || guest.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+  
+  // Log for debugging
+  useEffect(() => {
+    console.log("Selected guest IDs:", selectedGuestIds);
+    console.log("All available guests:", guests);
+  }, [selectedGuestIds, guests]);
   
   const handleRemoveGuest = (guestId: string) => {
     const currentGuestIds = [...(form.getValues('guestIds') || [])];

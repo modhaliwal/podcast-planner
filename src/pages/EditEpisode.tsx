@@ -13,7 +13,7 @@ import { toast } from '@/hooks/use-toast';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, guests: allGuests, refreshGuests } = useAuth();
   
   const { 
     isLoading: isEpisodeLoading, 
@@ -21,9 +21,12 @@ const EditEpisode = () => {
     handleSave 
   } = useEpisodeData(id);
   
-  const { 
-    guests
-  } = useGuestsData(user?.id);
+  // Make sure we have the latest guest data
+  useEffect(() => {
+    if (user) {
+      refreshGuests();
+    }
+  }, [user, refreshGuests]);
   
   const isLoading = isEpisodeLoading;
   
@@ -85,7 +88,7 @@ const EditEpisode = () => {
         <EpisodeForm
           key={episodeKey}
           episode={episode}
-          guests={guests || []}
+          guests={allGuests || []}
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
         />

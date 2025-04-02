@@ -6,7 +6,7 @@ import { Episode, Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EpisodeStatusHeader } from './EpisodeStatusHeader';
-import { EpisodeGuests } from './EpisodeGuests';
+import { EpisodeGuestsList } from './EpisodeGuestsList';
 import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
 import { EpisodePodcastUrls } from './EpisodePodcastUrls';
 import { EpisodeResources } from './EpisodeResources';
@@ -45,7 +45,7 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                 <EpisodeStatusHeader episode={episode} />
                 
                 <div className="mt-6 space-y-4">
-                  <EpisodeGuests guests={episodeGuests} />
+                  <EpisodeGuestsList guests={episodeGuests} />
                   <EpisodeRecordingLinks episode={episode} />
                   <EpisodePodcastUrls episode={episode} />
                 </div>

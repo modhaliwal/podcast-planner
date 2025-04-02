@@ -10,26 +10,29 @@ interface EpisodeGuestsListProps {
 
 export function EpisodeGuestsList({ guests }: EpisodeGuestsListProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-3">
-      {guests.length > 0 ? (
-        <>
-          {guests.map((guest) => (
-            <GuestChip 
-              key={guest.id} 
-              guest={guest} 
-              size="sm"
-            />
-          ))}
-          
-          {guests.length > 5 && (
-            <Badge variant="outline">
-              +{guests.length - 5} more
-            </Badge>
-          )}
-        </>
-      ) : (
-        <span className="text-sm text-muted-foreground">No guests</span>
-      )}
+    <div>
+      <h3 className="text-sm font-medium text-muted-foreground mb-2">Guests</h3>
+      <div className="flex flex-wrap items-center gap-2">
+        {guests.length > 0 ? (
+          <>
+            {guests.map((guest) => (
+              <GuestChip 
+                key={guest.id} 
+                guest={guest} 
+                size="sm"
+              />
+            ))}
+            
+            {guests.length > 5 && (
+              <Badge variant="outline">
+                +{guests.length - 5} more
+              </Badge>
+            )}
+          </>
+        ) : (
+          <span className="text-sm text-muted-foreground">No guests assigned</span>
+        )}
+      </div>
     </div>
   );
 }

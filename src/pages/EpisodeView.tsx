@@ -43,7 +43,7 @@ const EpisodeView = () => {
             <h1 className="text-2xl font-semibold mb-2">Episode not found</h1>
             <p className="text-muted-foreground mb-6">The episode you're looking for doesn't exist or has been removed.</p>
             <Button asChild>
-              <a href="/episodes">Back to Episodes</a>
+              <Link to="/episodes">Back to Episodes</Link>
             </Button>
           </div>
         </div>
