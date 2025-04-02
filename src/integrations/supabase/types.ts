@@ -100,6 +100,7 @@ export type Database = {
           episode_number: number
           id: string
           introduction: string
+          introduction_versions: Json | null
           notes: string | null
           notes_versions: Json | null
           podcast_urls: Json | null
@@ -119,6 +120,7 @@ export type Database = {
           episode_number: number
           id?: string
           introduction: string
+          introduction_versions?: Json | null
           notes?: string | null
           notes_versions?: Json | null
           podcast_urls?: Json | null
@@ -138,6 +140,7 @@ export type Database = {
           episode_number?: number
           id?: string
           introduction?: string
+          introduction_versions?: Json | null
           notes?: string | null
           notes_versions?: Json | null
           podcast_urls?: Json | null

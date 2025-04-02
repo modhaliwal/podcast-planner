@@ -17,6 +17,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
   // Get the current topic value for use in AI generation
   const topic = form.watch('topic') || '';
   const selectedGuestIds = form.watch('guestIds') || [];
+  const notes = form.watch('notes') || '';
   
   // Find selected guests from the full guests array
   const selectedGuests = guests.filter(g => selectedGuestIds.includes(g.id));
@@ -94,7 +95,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
           )}
         />
         
-        {/* Introduction Field */}
+        {/* Introduction Field - Replace with AIGenerationField */}
         <FormField
           control={form.control}
           name="introduction"
@@ -105,10 +106,29 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                 Introduction
               </FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Enter episode introduction" 
-                  className="min-h-[150px] resize-y"
-                  {...field} 
+                <AIGenerationField
+                  formField="introduction"
+                  versionsField="introductionVersions"
+                  buttonLabel="Generate Introduction"
+                  loadingLabel="Generating introduction..."
+                  editorPlaceholder="Enter episode introduction"
+                  editorType="plain"
+                  generatorSlug="episode-introduction-generator"
+                  generationParameters={{
+                    notes,
+                    topic,
+                    guests: selectedGuests,
+                    episode: {
+                      title: form.watch('title') || '',
+                      topic
+                    }
+                  }}
+                  hoverCardConfig={{
+                    promptTitle: "Episode Introduction Generator",
+                    aiProvider: "Perplexity",
+                    generatorSlug: "episode-introduction-generator"
+                  }}
+                  contentName="Episode Introduction"
                 />
               </FormControl>
               <FormMessage />
