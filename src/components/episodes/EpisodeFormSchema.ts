@@ -7,9 +7,9 @@ const contentVersionSchema = z.object({
   id: z.string(),
   content: z.string(),
   timestamp: z.string(),
-  source: z.string(), // Changed from enum to string
-  active: z.boolean().optional(), // Add active flag to schema
-  versionNumber: z.number().optional() // Add version number
+  source: z.string(), 
+  active: z.boolean().optional(), 
+  versionNumber: z.number().optional() 
 });
 
 // Define the Resource schema to ensure it has required fields
@@ -31,7 +31,7 @@ export const episodeFormSchema = z.object({
   status: z.nativeEnum(EpisodeStatus),
   scheduled: z.union([z.date(), z.string()]),
   publishDate: z.union([z.date(), z.string()]).nullable().optional(),
-  guestIds: z.array(z.string()),
+  guestIds: z.array(z.string()).default([]),
   coverArt: z.any().optional(),
   recordingLinks: z.object({
     audio: z.string().optional(),
@@ -45,10 +45,10 @@ export const episodeFormSchema = z.object({
     ).optional()
   }).optional(),
   podcastUrls: z.object({
-    spotify: z.string().optional(),
-    applePodcasts: z.string().optional(),
-    amazonPodcasts: z.string().optional(),
-    youtube: z.string().optional()
+    spotify: z.string().optional().nullable(),
+    applePodcasts: z.string().optional().nullable(),
+    amazonPodcasts: z.string().optional().nullable(),
+    youtube: z.string().optional().nullable()
   }).optional(),
   resources: z.array(resourceSchema).optional()
 });

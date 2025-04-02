@@ -54,7 +54,7 @@ export const useEpisodeLoader = (episodeId?: string) => {
     },
     enabled: !!id,
     staleTime: 60000, // Cache data for 1 minute to prevent excessive refetching
-    cacheTime: 300000, // Keep cached data for 5 minutes
+    gcTime: 300000, // Keep cached data for 5 minutes (renamed from cacheTime)
   });
   
   return {

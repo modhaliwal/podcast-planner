@@ -4,10 +4,13 @@ import { updateEpisode } from "@/services/episodeService";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Episode } from "@/lib/types";
+import { useEpisodeGuests } from "@/hooks/useEpisodeGuests";
 
 export const useEpisodeSave = (episodeId?: string) => {
   const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
+  // Add the episode guests hook
+  const { updateEpisodeGuests } = useEpisodeGuests();
   
   const handleSave = async (data: Partial<Episode>): Promise<{ success: boolean; error?: Error }> => {
     if (!episodeId) {
@@ -20,10 +23,24 @@ export const useEpisodeSave = (episodeId?: string) => {
     setIsSaving(true);
     
     try {
-      const { success, error } = await updateEpisode(episodeId, data);
+      // Extract guestIds from data before sending to updateEpisode
+      const { guestIds, ...episodeData } = data;
+      
+      // Update the episode data
+      const { success, error } = await updateEpisode(episodeId, episodeData);
       
       if (!success) {
         throw new Error(error?.message || "Failed to save episode");
+      }
+      
+      // Update guest relationships if guestIds are provided
+      if (guestIds && guestIds.length >= 0) {
+        const guestUpdateSuccess = await updateEpisodeGuests(guestIds, episodeId);
+        
+        if (!guestUpdateSuccess) {
+          console.error("Failed to update episode-guest relationships");
+          // Don't throw error here, as the episode update was successful
+        }
       }
       
       // Invalidate and refetch

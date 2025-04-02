@@ -34,7 +34,12 @@ export function PodcastUrlsSection({ form }: PodcastUrlsSectionProps) {
                 Spotify
               </FormLabel>
               <FormControl>
-                <Input placeholder="Spotify URL" {...field} value={field.value || ''} />
+                <Input 
+                  placeholder="Spotify URL" 
+                  {...field} 
+                  value={field.value || ''} 
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -51,7 +56,12 @@ export function PodcastUrlsSection({ form }: PodcastUrlsSectionProps) {
                 Apple Podcasts
               </FormLabel>
               <FormControl>
-                <Input placeholder="Apple Podcasts URL" {...field} value={field.value || ''} />
+                <Input 
+                  placeholder="Apple Podcasts URL" 
+                  {...field} 
+                  value={field.value || ''} 
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -68,7 +78,12 @@ export function PodcastUrlsSection({ form }: PodcastUrlsSectionProps) {
                 Amazon Podcasts
               </FormLabel>
               <FormControl>
-                <Input placeholder="Amazon Podcasts URL" {...field} value={field.value || ''} />
+                <Input 
+                  placeholder="Amazon Podcasts URL" 
+                  {...field} 
+                  value={field.value || ''} 
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,7 +100,12 @@ export function PodcastUrlsSection({ form }: PodcastUrlsSectionProps) {
                 YouTube
               </FormLabel>
               <FormControl>
-                <Input placeholder="YouTube URL" {...field} value={field.value || ''} />
+                <Input 
+                  placeholder="YouTube URL" 
+                  {...field} 
+                  value={field.value || ''} 
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
