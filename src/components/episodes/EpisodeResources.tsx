@@ -7,19 +7,12 @@ interface EpisodeResourcesProps {
 }
 
 export function EpisodeResources({ episode }: EpisodeResourcesProps) {
-  // Make sure resources exists and is an array
-  if (!episode.resources) {
-    return null;
-  }
-  
-  // Ensure resources is an array by converting if needed
+  // Ensure resources is always an array we can safely map over
   const resourcesArray = Array.isArray(episode.resources) 
     ? episode.resources 
-    : typeof episode.resources === 'string' 
-      ? JSON.parse(episode.resources) 
-      : [];
+    : [];
   
-  // If resources array is empty after converting, return null
+  // If no resources, return null
   if (resourcesArray.length === 0) {
     return null;
   }
