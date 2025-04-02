@@ -1,4 +1,3 @@
-
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface LoadingIndicatorProps {
@@ -6,25 +5,16 @@ interface LoadingIndicatorProps {
   fullPage?: boolean;
 }
 
+// Empty loading indicator that renders nothing
 export function LoadingIndicator({ 
   message = "Loading...", 
   fullPage = false 
 }: LoadingIndicatorProps) {
-  const containerClasses = fullPage 
-    ? "flex flex-col items-center justify-center min-h-[60vh]" 
-    : "flex flex-col items-center py-8";
-  
-  return (
-    <div className={containerClasses}>
-      <div className="w-64 space-y-4">
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">{message}</p>
-        </div>
-      </div>
-    </div>
-  );
+  // Return null instead of rendering anything
+  return null;
 }
 
+// Keep skeleton components for potential future use
 export function SkeletonCards({ count = 3 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
