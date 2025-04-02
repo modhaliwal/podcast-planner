@@ -1,5 +1,3 @@
-
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 
@@ -12,22 +10,6 @@ export function LoadingIndicator({
   message = "Loading...", 
   fullPage = false 
 }: LoadingIndicatorProps) {
-  const [progress, setProgress] = useState(10);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => setProgress(30), 200);
-    const timer2 = setTimeout(() => setProgress(60), 600);
-    const timer3 = setTimeout(() => setProgress(80), 1000);
-    const timer4 = setTimeout(() => setProgress(90), 1500);
-    
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-    };
-  }, []);
-  
   const containerClasses = fullPage 
     ? "flex flex-col items-center justify-center min-h-[60vh]" 
     : "flex flex-col items-center py-8";
@@ -35,10 +17,8 @@ export function LoadingIndicator({
   return (
     <div className={containerClasses}>
       <div className="w-64 space-y-4">
-        <Progress value={progress} className="h-2" />
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center">
           <p className="text-sm text-muted-foreground">{message}</p>
-          <span className="text-sm font-mono text-muted-foreground">{progress}%</span>
         </div>
       </div>
     </div>
