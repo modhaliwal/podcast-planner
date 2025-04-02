@@ -3,6 +3,8 @@ import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { showGenerationToasts } from "../utils/generationUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { addVersion } from "@/lib/versionUtils";
+import { ContentVersion } from "@/lib/types";
 
 interface UseGeneratorContentProps {
   generatorSlug: string;
@@ -11,6 +13,7 @@ interface UseGeneratorContentProps {
   parameters?: Record<string, any>;
   responseFormat?: 'markdown' | 'html';
   onContentGenerated?: (content: string) => void;
+  versionsFieldName?: string; // Added field for tracking versions
 }
 
 export const useGeneratorContent = ({
@@ -19,7 +22,8 @@ export const useGeneratorContent = ({
   form,
   parameters = {},
   responseFormat = 'markdown',
-  onContentGenerated
+  onContentGenerated,
+  versionsFieldName
 }: UseGeneratorContentProps) => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [usedPrompt, setUsedPrompt] = useState<string | null>(null);
@@ -83,6 +87,14 @@ export const useGeneratorContent = ({
       
       // Set the content value in the form directly to trigger UI update
       form.setValue(fieldName, data.content, { shouldDirty: true });
+      
+      // If versionsFieldName is provided, update the versions array
+      if (versionsFieldName) {
+        const currentVersions = form.getValues(versionsFieldName) || [];
+        const source = data.metadata?.provider || generatorSlug;
+        const updatedVersions = addVersion(currentVersions, data.content, source);
+        form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
+      }
       
       // Call the callback with generated content
       if (onContentGenerated) {
