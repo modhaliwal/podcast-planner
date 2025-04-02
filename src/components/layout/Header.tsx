@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Beaker, Calendar, Headphones, Home, Menu, User, Users } from 'lucide-react';
+import { Calendar, Headphones, Home, Menu, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavItem } from './types';
@@ -23,7 +23,6 @@ export function Header() {
     { name: 'Dashboard', path: '/dashboard', icon: <Home className="h-4 w-4 mr-2" /> },
     { name: 'Guests', path: '/guests', icon: <Users className="h-4 w-4 mr-2" /> },
     { name: 'Episodes', path: '/episodes', icon: <Calendar className="h-4 w-4 mr-2" /> },
-    { name: 'Sandbox', path: '/sandbox', icon: <Beaker className="h-4 w-4 mr-2" /> },
   ];
   
   useEffect(() => {

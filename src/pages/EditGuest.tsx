@@ -30,12 +30,13 @@ export default function EditGuest() {
         <GuestForm 
           guest={guest} 
           onSave={handleSave}
+          onCancel={() => window.history.back()}
           onDelete={() => setIsDeleteDialogOpen(true)}
         />
         <DeleteGuestDialog
           isOpen={isDeleteDialogOpen}
-          onClose={() => setIsDeleteDialogOpen(false)}
-          onDelete={handleDelete}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirmDelete={handleDelete}
           guestName={guest?.name}
         />
       </div>

@@ -13,14 +13,17 @@ import { ContactSection } from "./form-sections/ContactSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
 import { FormActions } from "@/components/ui/form-actions";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface GuestFormProps {
   guest: Guest;
   onSave: (updatedGuest: Guest) => Promise<any>;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onDelete?: () => void;
 }
 
-export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
+export function GuestForm({ guest, onSave, onCancel, onDelete }: GuestFormProps) {
   const navigate = useNavigate();
   
   const {
@@ -59,11 +62,25 @@ export function GuestForm({ guest, onSave, onCancel }: GuestFormProps) {
           </div>
         </div>
         
-        <FormActions
-          onCancel={onCancel}
-          isSubmitting={isSubmitting}
-          saveText="Save Guest"
-        />
+        <div className="flex justify-between pt-6 border-t">
+          {onDelete && (
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={onDelete}
+              disabled={isSubmitting}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Guest
+            </Button>
+          )}
+          
+          <FormActions
+            onCancel={onCancel}
+            isSubmitting={isSubmitting}
+            saveText="Save Guest"
+          />
+        </div>
       </form>
     </FormProvider>
   );

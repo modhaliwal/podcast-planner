@@ -7,23 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
+import { EpisodeFormValues } from '../../episodes/EpisodeFormSchema';
 
 interface GuestsSectionProps {
   form: UseFormReturn<any>;
   guests: Guest[];
-}
-
-// Need to fix the prop types for the imported components
-interface SelectedGuestsGridProps {
-  selectedGuests: Guest[];
-  onRemove: (guestId: string) => void;
-}
-
-interface GuestSelectorProps {
-  availableGuests: Guest[];
-  onSelect: (guestId: string) => void;
-  searchQuery: string;
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export function GuestsSection({ form, guests }: GuestsSectionProps) {
@@ -43,16 +31,6 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
     (searchQuery === "" || guest.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
-  // Get selected guest objects
-  const selectedGuests = guests.filter(guest => selectedGuestIds.includes(guest.id));
-  
-  const handleAddGuest = (guestId: string) => {
-    const currentGuestIds = [...(form.getValues('guestIds') || [])];
-    if (!currentGuestIds.includes(guestId)) {
-      form.setValue('guestIds', [...currentGuestIds, guestId]);
-    }
-  };
-  
   const handleRemoveGuest = (guestId: string) => {
     const currentGuestIds = [...(form.getValues('guestIds') || [])];
     const updatedGuestIds = currentGuestIds.filter(id => id !== guestId);
@@ -71,17 +49,16 @@ export function GuestsSection({ form, guests }: GuestsSectionProps) {
         <div className="space-y-4">
           {/* Selected guests grid */}
           <SelectedGuestsGrid 
-            selectedGuests={selectedGuests} 
-            onRemove={handleRemoveGuest} 
+            selectedGuestIds={selectedGuestIds}
+            availableGuests={guests}
+            onRemoveGuest={handleRemoveGuest}
           />
           
           <ScrollArea className="h-[280px] border rounded-md">
             <div className="p-4">
               <GuestSelector 
-                availableGuests={availableGuests}
-                onSelect={handleAddGuest}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
+                form={form as UseFormReturn<EpisodeFormValues>}
+                availableGuests={guests}
               />
             </div>
           </ScrollArea>
