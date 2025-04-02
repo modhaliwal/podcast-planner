@@ -7,18 +7,18 @@ import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter
 import { EpisodesContent } from '@/components/episodes/EpisodesContent';
 
 const Episodes = () => {
-  const { episodes, guests, refreshEpisodes, isDataLoading } = useAuth();
+  const { episodes, guests, refreshEpisodes } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   
   useEffect(() => {
-    if (!initialLoadDone && !isDataLoading) {
+    if (!initialLoadDone) {
       console.log("Episodes initial load, refreshing data");
       refreshEpisodes();
       setInitialLoadDone(true);
     }
-  }, [initialLoadDone, isDataLoading, refreshEpisodes]);
+  }, [initialLoadDone, refreshEpisodes]);
   
   const filteredEpisodes = episodes.filter(episode => {
     const matchesSearch = episode.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -39,8 +39,7 @@ const Episodes = () => {
     <Shell>
       <div className="page-container">
         <EpisodesHeader 
-          onRefresh={handleRefresh} 
-          isLoading={isDataLoading} 
+          onRefresh={handleRefresh}
         />
         
         <EpisodesSearchFilter 
@@ -51,7 +50,6 @@ const Episodes = () => {
         />
         
         <EpisodesContent
-          isLoading={isDataLoading}
           filteredEpisodes={sortedEpisodes}
           guests={guests}
           searchQuery={searchQuery}

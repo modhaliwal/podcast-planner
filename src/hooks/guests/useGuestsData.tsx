@@ -6,7 +6,7 @@ import { useGuestsRefresh } from "./useGuestsRefresh";
 export function useGuestsData(userId: string | undefined) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoadingGuests, setIsLoadingGuests] = useState(true);
-  const { refreshGuests: fetchGuestData, isLoadingGuests: isRefreshing } = useGuestsRefresh(userId);
+  const { refreshGuests: fetchGuestData } = useGuestsRefresh(userId);
   const hasLoadedInitialDataRef = useRef(false);
   const lastFetchTimeRef = useRef<number>(0);
   const isInitialMountRef = useRef(true);
@@ -101,7 +101,6 @@ export function useGuestsData(userId: string | undefined) {
 
   return {
     guests: memoizedGuests,
-    isLoadingGuests: isLoadingGuests || isRefreshing,
     refreshGuests,
     isInitialMount: isInitialMountRef.current,
     setIsInitialMount: (value: boolean) => {

@@ -11,22 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings as SettingsIcon, User, Sparkles } from 'lucide-react';
 
 export default function Settings() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (!loading && !user) {
+    if (!user) {
       navigate('/auth');
     }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <Shell>
-        <div className="page-container"></div>
-      </Shell>
-    );
-  }
+  }, [user, navigate]);
 
   return (
     <Shell>

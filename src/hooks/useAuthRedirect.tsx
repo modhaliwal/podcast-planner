@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export function useAuthRedirect() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isIndexPage = location.pathname === '/';
@@ -13,9 +13,6 @@ export function useAuthRedirect() {
   const hasRedirectedRef = useRef(false);
 
   useEffect(() => {
-    // Don't do anything while auth is still loading
-    if (loading) return;
-    
     // Avoid multiple redirects for the same condition
     if (hasRedirectedRef.current) return;
     
@@ -37,10 +34,9 @@ export function useAuthRedirect() {
       });
       navigate('/auth', { state: { from: location.pathname }, replace: true });
     }
-  }, [user, loading, navigate, location, isIndexPage, isAuthPage]);
+  }, [user, navigate, location, isIndexPage, isAuthPage]);
 
   return { 
-    isAuthenticated: !!user, 
-    isLoading: loading 
+    isAuthenticated: !!user
   };
 }

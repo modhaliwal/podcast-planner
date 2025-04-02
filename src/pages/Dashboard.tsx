@@ -9,7 +9,6 @@ const Dashboard = () => {
   const { 
     guests, 
     episodes, 
-    isDataLoading, 
     refreshAllData, 
     user 
   } = useAuth();
@@ -53,7 +52,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {isDataLoading && !isLoaded ? (
+        {!isLoaded ? (
           <div className="flex justify-center items-center h-64">
             {/* Empty div instead of loading indicator */}
           </div>
