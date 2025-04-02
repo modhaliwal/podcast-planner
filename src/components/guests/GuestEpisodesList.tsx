@@ -6,6 +6,7 @@ import { Guest, Episode } from '@/lib/types';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { episodeStatusColors } from '@/lib/statusColors';
+import { EpisodeGuestsList } from '@/components/episodes/EpisodeGuestsList';
 
 interface GuestEpisodesListProps {
   guest: Guest;
@@ -68,6 +69,18 @@ export function GuestEpisodesList({ guest, episodes }: GuestEpisodesListProps) {
                         <span>{format(new Date(episode.scheduled), 'MMM d, yyyy')}</span>
                       </div>
                       <p className="text-sm line-clamp-2">{episode.introduction}</p>
+                      
+                      {/* Show all guests for this episode */}
+                      <div className="mt-3">
+                        <EpisodeGuestsList 
+                          guests={episodes.find(ep => ep.id === episode.id)?.guestIds
+                            .map(gId => gId !== guest.id ? episodes.flatMap(ep => 
+                              ep.guestIds.map(id => ({ id, episode: ep }))
+                            ).find(g => g.id === gId)?.episode : undefined)
+                            .filter(Boolean)
+                            .map(ep => ({ id: ep!.id, name: ep!.title, imageUrl: ep!.coverArt }))} 
+                        />
+                      </div>
                     </div>
                   </div>
                 </Link>
