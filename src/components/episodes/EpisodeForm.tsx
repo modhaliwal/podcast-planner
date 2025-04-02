@@ -4,7 +4,7 @@ import { Episode, Guest } from '@/lib/types';
 import { ContentSection } from './FormSections/ContentSection';
 import { PodcastUrlsSection } from './FormSections/PodcastUrlsSection';
 import { ResourcesSection } from './FormSections/ResourcesSection';
-import { useEpisodeForm, EpisodeFormValues } from '@/hooks/episodes/useEpisodeForm';
+import { useEpisodeForm } from '@/hooks/episodes/useEpisodeForm';
 import { useMemo } from 'react';
 import { PlanningSection } from './FormSections/PlanningSection';
 import { CoverArtSection } from './FormSections/CoverArtSection';
@@ -57,15 +57,15 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
       <form key={formKey} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
         {/* Grid layout for the top sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <PlanningSection form={form} guests={guests} />
-          <CoverArtSection form={form} />
+          <PlanningSection form={form as any} guests={guests} />
+          <CoverArtSection form={form as any} />
         </div>
         
-        <ContentSection form={form} guests={guests} />
+        <ContentSection form={form as any} guests={guests} />
         
-        <ResourcesSection form={form} />
+        <ResourcesSection form={form as any} />
         
-        <PodcastUrlsSection form={form} />
+        <PodcastUrlsSection form={form as any} />
         
         <FormActions 
           cancelHref={`/episodes/${episode?.id}`}

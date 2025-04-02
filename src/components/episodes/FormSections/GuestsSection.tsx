@@ -1,95 +1,79 @@
 
-import { FormField } from '@/components/ui/form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UseFormReturn } from 'react-hook-form';
-import { EpisodeFormValues } from '../EpisodeFormSchema';
 import { Guest } from '@/lib/types';
-import { useState, useEffect, memo } from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 import { GuestSelector } from './GuestComponents/GuestSelector';
 import { SelectedGuestsGrid } from './GuestComponents/SelectedGuestsGrid';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 interface GuestsSectionProps {
-  form: UseFormReturn<EpisodeFormValues>;
-  guests: Guest[]; // Make this required
+  form: UseFormReturn<any>;
+  guests: Guest[];
 }
 
-export const GuestsSection = memo(function GuestsSection({ form, guests }: GuestsSectionProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function GuestsSection({ form, guests }: GuestsSectionProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const { isDataLoading } = useAuth();
   
-  useEffect(() => {
-    // Set form values for guestIds if they're empty but we have the episode's guest IDs
-    const currentGuestIds = form.getValues('guestIds');
-    if ((!currentGuestIds || currentGuestIds.length === 0) && guests && guests.length > 0) {
-      form.setValue('guestIds', []);
+  // Get selected guests
+  const selectedGuestIds = form.watch('guestIds') || [];
+  
+  if (isDataLoading) {
+    return null;
+  }
+  
+  // Filter available guests (those not already selected)
+  const availableGuests = guests.filter(guest => 
+    !selectedGuestIds.includes(guest.id) &&
+    (searchQuery === "" || guest.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+  
+  // Get selected guest objects
+  const selectedGuests = guests.filter(guest => selectedGuestIds.includes(guest.id));
+  
+  const handleAddGuest = (guestId: string) => {
+    const currentGuestIds = [...(form.getValues('guestIds') || [])];
+    if (!currentGuestIds.includes(guestId)) {
+      form.setValue('guestIds', [...currentGuestIds, guestId]);
     }
-  }, [form, guests]);
-
-  // Handle removing a guest
-  const handleRemoveGuest = (guestId: string) => {
-    const currentValues = form.getValues('guestIds') || [];
-    form.setValue(
-      'guestIds', 
-      currentValues.filter(id => id !== guestId),
-      { shouldValidate: true }
-    );
   };
-
-  // If loading, show a spinner
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Guests</CardTitle>
-        </CardHeader>
-        <CardContent className="flex justify-center py-8">
-          <LoadingIndicator message="Loading guests..." />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // If no guests are available, show a message
-  if (!guests || guests.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Guests</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">No guests available. Please add guests from the Guests page.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  console.log("Rendering GuestsSection with guests:", guests);
-
+  
+  const handleRemoveGuest = (guestId: string) => {
+    const currentGuestIds = [...(form.getValues('guestIds') || [])];
+    const updatedGuestIds = currentGuestIds.filter(id => id !== guestId);
+    form.setValue('guestIds', updatedGuestIds);
+  };
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Guests</CardTitle>
+        <CardTitle>Episode Guests</CardTitle>
+        <CardDescription>
+          Select the guests appearing on this episode
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <FormField
-          control={form.control}
-          name="guestIds"
-          render={() => (
-            <>
+        <div className="space-y-4">
+          {/* Selected guests grid */}
+          <SelectedGuestsGrid 
+            guests={selectedGuests} 
+            onRemove={handleRemoveGuest} 
+          />
+          
+          <ScrollArea className="h-[280px] border rounded-md">
+            <div className="p-4">
               <GuestSelector 
-                form={form} 
-                availableGuests={guests} 
+                guests={availableGuests}
+                onSelect={handleAddGuest}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
               />
-              
-              <SelectedGuestsGrid
-                selectedGuestIds={form.getValues('guestIds') || []}
-                availableGuests={guests}
-                onRemoveGuest={handleRemoveGuest}
-              />
-            </>
-          )}
-        />
+            </div>
+          </ScrollArea>
+        </div>
       </CardContent>
     </Card>
   );
-});
+}

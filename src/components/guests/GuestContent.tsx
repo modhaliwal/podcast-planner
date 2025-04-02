@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { GuestList } from '@/components/guests/GuestList';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -36,7 +35,7 @@ export function GuestContent() {
   });
   
   if (isDataLoading) {
-    return <LoadingIndicator message="Loading guests..." />;
+    return null;
   }
   
   const clearFilters = () => {

@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { UsersList } from '@/components/users/UsersList';
 
 export default function Users() {
@@ -19,9 +18,7 @@ export default function Users() {
   if (loading) {
     return (
       <Shell>
-        <div className="page-container">
-          <LoadingIndicator message="Loading users..." fullPage />
-        </div>
+        <div className="page-container"></div>
       </Shell>
     );
   }

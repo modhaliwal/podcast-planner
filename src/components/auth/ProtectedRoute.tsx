@@ -2,7 +2,6 @@
 import { ReactNode, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { toast } from '@/hooks/use-toast';
 
 interface ProtectedRouteProps {
@@ -24,7 +23,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }, [loading, user]);
 
   if (loading) {
-    return <LoadingIndicator fullPage />;
+    return null;
   }
 
   if (!user) {
