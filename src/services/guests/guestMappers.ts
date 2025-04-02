@@ -52,7 +52,7 @@ export const mapDatabaseGuestToGuest = (guest: any): Guest => {
  * Prepares guest data for database insert/update operations
  */
 export const prepareGuestForDatabase = (guest: Partial<Guest>) => {
-  // Stringify the versions for database storage
+  // Stringify the versions for database storage (when provided)
   const bioVersionsString = guest.bioVersions ? 
     JSON.stringify(guest.bioVersions) : null;
   

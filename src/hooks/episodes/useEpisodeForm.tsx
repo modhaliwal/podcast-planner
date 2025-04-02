@@ -1,98 +1,92 @@
 
 import { useForm } from "react-hook-form";
 import { Episode } from "@/lib/types";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { EpisodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
+import { EpisodeStatus } from "@/lib/enums";
+import { episodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface UseEpisodeFormProps {
-  episode?: Episode;
-  onSubmit?: (data: Episode) => Promise<{ success: boolean; error?: Error }>;
+  episode: Episode;
+  onSubmit: (data: Episode) => Promise<{ success: boolean; error?: Error }>;
 }
 
-export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps = {}) => {
-  const [isDirty, setIsDirty] = useState(false);
+export interface EpisodeFormValues {
+  title: string;
+  episodeNumber: number;
+  scheduled: Date;
+  publishDate?: Date;
+  status: EpisodeStatus;
+  topic?: string;
+  introduction: string;
+  notes: string;
+  notesVersions?: any[];
+  introductionVersions?: any[];
+  guestIds: string[];
+  coverArt?: string;
+  resources: { label: string; url: string; description?: string }[];
+  podcastUrls?: {
+    spotify?: string;
+    applePodcasts?: string;
+    amazonPodcasts?: string;
+    youtube?: string;
+  };
+}
+
+export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
-  
-  const form = useForm({
-    resolver: zodResolver(EpisodeFormSchema),
+
+  // Use episodeFormSchema with zodResolver
+  const form = useForm<EpisodeFormValues>({
+    resolver: zodResolver(episodeFormSchema),
     defaultValues: {
-      title: episode?.title || "",
-      episodeNumber: episode?.episodeNumber || 0,
-      scheduled: episode?.scheduled ? new Date(episode.scheduled) : new Date(),
-      publishDate: episode?.publishDate ? new Date(episode.publishDate) : undefined,
-      status: episode?.status || "scheduled",
-      introduction: episode?.introduction || "",
-      notes: episode?.notes || "",
-      notesVersions: episode?.notesVersions || [],
-      topic: episode?.topic || "",
-      guestIds: episode?.guestIds || [],
-      coverArt: episode?.coverArt || "",
-      podcastUrls: {
-        spotify: episode?.podcastUrls?.spotify || "",
-        applePodcasts: episode?.podcastUrls?.applePodcasts || "",
-        amazonPodcasts: episode?.podcastUrls?.amazonPodcasts || "",
-        youtube: episode?.podcastUrls?.youtube || "",
-      },
-      resources: episode?.resources || [],
-    },
+      title: episode.title || "",
+      episodeNumber: episode.episodeNumber || 1,
+      scheduled: episode.scheduled ? new Date(episode.scheduled) : new Date(),
+      publishDate: episode.publishDate ? new Date(episode.publishDate) : undefined,
+      status: episode.status || EpisodeStatus.PLANNING,
+      guestIds: episode.guestIds || [],
+      topic: episode.topic || "",
+      introduction: episode.introduction || "",
+      notes: episode.notes || "",
+      notesVersions: episode.notesVersions || [],
+      introductionVersions: episode.introductionVersions || [],
+      coverArt: episode.coverArt || "",
+      resources: episode.resources || [],
+      podcastUrls: episode.podcastUrls || {}
+    }
   });
 
-  // Watch for changes to set the dirty state
-  useEffect(() => {
-    const subscription = form.watch(() => setIsDirty(form.formState.isDirty));
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  // Handler for form submission
-  const handleSubmit = async (formData: any) => {
-    if (!onSubmit) return;
-    
+  const handleSubmit = async (data: EpisodeFormValues) => {
     setIsSubmitting(true);
+    
     try {
-      const result = await onSubmit(formData);
+      // Convert dates to ISO strings for API compatibility
+      const formattedData = {
+        ...episode,
+        ...data,
+        scheduled: data.scheduled ? data.scheduled.toISOString() : "",
+        publishDate: data.publishDate ? data.publishDate.toISOString() : undefined
+      };
       
-      if (!result.success && result.error) {
-        toast({
-          title: "Error",
-          description: result.error.message,
-          variant: "destructive"
-        });
+      const result = await onSubmit(formattedData as Episode);
+      
+      if (!result.success) {
+        console.error("Error submitting episode form:", result.error);
       }
       
       return result;
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "An error occurred while saving",
-        variant: "destructive"
-      });
+      console.error("Error in episode form submission:", error);
       return { success: false, error };
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handler for cancellation
-  const handleCancel = () => {
-    if (isDirty) {
-      // Confirm before leaving if there are unsaved changes
-      if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-        navigate(-1);
-      }
-    } else {
-      navigate(-1);
-    }
-  };
-
   return {
     form,
-    isDirty,
     isSubmitting,
-    handleCancel,
     onSubmit: handleSubmit
   };
 };

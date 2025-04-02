@@ -23,8 +23,8 @@ const EditEpisode = () => {
   } = useEpisodeData(id);
   
   const { 
-    guests, 
-    isLoading: isLoadingGuests 
+    guests,
+    isLoadingGuests
   } = useGuestsData(user?.id);
   
   const isLoading = isEpisodeLoading || isLoadingGuests;

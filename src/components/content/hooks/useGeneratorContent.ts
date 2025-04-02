@@ -3,8 +3,6 @@ import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { showGenerationToasts } from "../utils/generationUtils";
 import { supabase } from "@/integrations/supabase/client";
-import { addVersion } from "@/lib/versionUtils";
-import { ContentVersion } from "@/lib/types";
 
 interface UseGeneratorContentProps {
   generatorSlug: string;
@@ -13,7 +11,7 @@ interface UseGeneratorContentProps {
   parameters?: Record<string, any>;
   responseFormat?: 'markdown' | 'html';
   onContentGenerated?: (content: string) => void;
-  versionsFieldName?: string; // Added field for tracking versions
+  versionsFieldName?: string; // Field for tracking versions (handled by AIGenerationField)
 }
 
 export const useGeneratorContent = ({
@@ -50,13 +48,11 @@ export const useGeneratorContent = ({
       const safeParameters = parameters || {};
       
       // Use the Supabase client to invoke the function directly
-      // NOTE: Not passing preferredProvider - use the generator's configured provider
       const { data, error } = await supabase.functions.invoke('generate-with-ai-settings', {
         body: {
           slug: generatorSlug,
           parameters: safeParameters, 
           responseFormat
-          // No preferredProvider here - will use the one configured in the generator
         }
       });
       
@@ -85,15 +81,15 @@ export const useGeneratorContent = ({
         }
       }
       
-      // Set the content value in the form directly to trigger UI update
+      // Set the content value in the form directly
       form.setValue(fieldName, data.content, { shouldDirty: true });
       
-      // If versionsFieldName is provided, update the versions array
-      if (versionsFieldName) {
-        const currentVersions = form.getValues(versionsFieldName) || [];
-        const source = data.metadata?.provider || generatorSlug;
-        const updatedVersions = addVersion(currentVersions, data.content, source);
-        form.setValue(versionsFieldName, updatedVersions, { shouldDirty: true });
+      // If versionsFieldName is provided, let AIGenerationField handle versions
+      if (versionsFieldName && data.metadata?.provider) {
+        // Simply update the value, AIGenerationField will handle versions internally
+        // when it detects content changes
+        const source = data.metadata.provider || generatorSlug;
+        console.log(`Generated from source: ${source} - AIGenerationField will handle versioning`);
       }
       
       // Call the callback with generated content
