@@ -46,11 +46,13 @@ export const useGeneratorContent = ({
       const safeParameters = parameters || {};
       
       // Use the Supabase client to invoke the function directly
+      // NOTE: Not passing preferredProvider - use the generator's configured provider
       const { data, error } = await supabase.functions.invoke('generate-with-ai-settings', {
         body: {
           slug: generatorSlug,
           parameters: safeParameters, 
           responseFormat
+          // No preferredProvider here - will use the one configured in the generator
         }
       });
       

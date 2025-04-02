@@ -56,7 +56,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
           )}
         />
         
-        {/* Notes Field - Replaced with AIGenerationField */}
+        {/* Notes Field - Using AIGenerationField */}
         <FormField
           control={form.control}
           name="notes"
@@ -84,7 +84,6 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   }}
                   hoverCardConfig={{
                     promptTitle: "Episode Notes Generator",
-                    aiProvider: "Anthropic",
                     generatorSlug: "episode-notes-generator"
                   }}
                   contentName="Episode Notes"
@@ -95,7 +94,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
           )}
         />
         
-        {/* Introduction Field - Replace with AIGenerationField */}
+        {/* Introduction Field - Using AIGenerationField */}
         <FormField
           control={form.control}
           name="introduction"
@@ -125,7 +124,6 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   }}
                   hoverCardConfig={{
                     promptTitle: "Episode Introduction Generator",
-                    aiProvider: "Anthropic",
                     generatorSlug: "episode-intro-writer"
                   }}
                   contentName="Episode Introduction"

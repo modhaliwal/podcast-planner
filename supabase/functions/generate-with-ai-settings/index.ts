@@ -124,8 +124,12 @@ serve(async (req) => {
     console.log("Generating content using AI...")
     
     try {
-      // Pass along preferred provider if it was specified in the request
-      const generatedResponse = await generateContent(config, preferredProvider)
+      // We'll only pass the preferredProvider if explicitly requested in the API call
+      // This ensures we respect the generator's configured AI provider by default
+      const generatedResponse = await generateContent(
+        config, 
+        preferredProvider // This will only be used if generator.ai_model is not set
+      )
       
       let finalContent = ''
       

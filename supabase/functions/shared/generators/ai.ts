@@ -71,8 +71,9 @@ export async function generateContent(
   // First priority: Specific provider in the configuration's ai_model field
   let provider = config.ai_model;
   
-  // Second priority: Preferred provider specified in the request
+  // Only use preferredProvider if no specific provider is set in the config
   if (!provider && preferredProvider) {
+    console.log(`No AI model specified in generator config. Using preferred provider: ${preferredProvider}`);
     provider = preferredProvider;
   }
   
