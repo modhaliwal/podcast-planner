@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { Episode } from "@/lib/types";
 import { EpisodeStatus } from "@/lib/enums";
@@ -37,16 +38,16 @@ export type EpisodeFormValues = {
 export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getInitialValues = (episode?: Episode | null) => {
+  const getInitialValues = (episode?: Episode | null): EpisodeFormValues => {
     if (!episode) {
       return {
         title: '',
         episodeNumber: 1,
         topic: '',
         guestIds: [],
-        scheduled: new Date().toISOString(),
-        publishDate: null,
-        status: 'scheduled' as const,
+        scheduled: new Date(),
+        publishDate: undefined,
+        status: EpisodeStatus.SCHEDULED,
         coverArt: '',
         introduction: '',
         notes: '',
@@ -57,11 +58,15 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
       };
     }
     
+    // Convert string dates to Date objects
+    const scheduled = episode.scheduled ? new Date(episode.scheduled) : new Date();
+    const publishDate = episode.publishDate ? new Date(episode.publishDate) : undefined;
+    
     return {
       title: episode.title || "",
       episodeNumber: episode.episodeNumber || 1,
-      scheduled: episode.scheduled ? new Date(episode.scheduled) : new Date(),
-      publishDate: episode.publishDate ? new Date(episode.publishDate) : undefined,
+      scheduled: scheduled,
+      publishDate: publishDate,
       status: episode.status || EpisodeStatus.SCHEDULED,
       guestIds: episode.guestIds || [],
       topic: episode.topic || "",
