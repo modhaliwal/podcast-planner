@@ -62,12 +62,15 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
     const scheduled = episode.scheduled ? new Date(episode.scheduled) : new Date();
     const publishDate = episode.publishDate ? new Date(episode.publishDate) : undefined;
     
+    // Convert string status to enum value
+    const status = convertToEpisodeStatus(episode.status);
+    
     return {
       title: episode.title || "",
       episodeNumber: episode.episodeNumber || 1,
       scheduled: scheduled,
       publishDate: publishDate,
-      status: episode.status || EpisodeStatus.SCHEDULED,
+      status: status,
       guestIds: episode.guestIds || [],
       topic: episode.topic || "",
       introduction: episode.introduction || "",
@@ -78,6 +81,21 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
       resources: episode.resources || [],
       podcastUrls: episode.podcastUrls || {}
     };
+  };
+
+  // Helper function to ensure status is a valid enum value
+  const convertToEpisodeStatus = (status: string | EpisodeStatus): EpisodeStatus => {
+    switch (status) {
+      case 'scheduled':
+        return EpisodeStatus.SCHEDULED;
+      case 'recorded':
+        return EpisodeStatus.RECORDED;
+      case 'published':
+        return EpisodeStatus.PUBLISHED;
+      default:
+        // If it's already an enum value or unrecognized, default to SCHEDULED
+        return status as EpisodeStatus || EpisodeStatus.SCHEDULED;
+    }
   };
 
   const form = useForm<EpisodeFormValues>({
