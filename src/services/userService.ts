@@ -1,276 +1,192 @@
-import { supabase } from "@/integrations/supabase/client";
-import { User, UsersRoleKey } from "@/lib/types";
 
-// Get the current user profile
-export const getCurrentUserProfile = async (): Promise<{ user: User | null; error: any }> => {
+import { supabase } from '@/integrations/supabase/client';
+import { User, UsersRoleKey, UserRole } from '@/lib/types';
+
+// Create a type that extends the User type with roles
+export type UserWithRoles = User & {
+  roles?: UserRole[];
+};
+
+// Check if a user has a specific role
+export async function hasUserRole(role: UsersRoleKey): Promise<boolean> {
   try {
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (authError) throw authError;
-    if (!authUser) return { user: null, error: null };
-    
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', authUser.id)
-      .single();
-    
-    if (profileError && profileError.code !== 'PGRST116') {
-      throw profileError;
+    if (!user) {
+      return false;
     }
     
-    const user: User = {
-      id: authUser.id,
-      email: authUser.email || '',
-      full_name: profileData?.full_name || authUser.user_metadata?.full_name || '',
-      avatar_url: profileData?.avatar_url || authUser.user_metadata?.avatar_url || '',
-      created_at: authUser.created_at || new Date().toISOString(),
-      last_sign_in: authUser.last_sign_in_at || undefined
-    };
+    // Fetch roles for this user
+    const { data: roles, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
     
-    return { user, error: null };
+    if (error || !roles) {
+      console.error('Error fetching user roles:', error);
+      return false;
+    }
+    
+    // Check if the user has the required role
+    return roles.some(r => r.role === role);
   } catch (error) {
-    console.error("Error fetching current user:", error);
+    console.error('Error checking user role:', error);
+    return false;
+  }
+}
+
+// Fetch all users with their roles
+export async function getUsers(): Promise<UserWithRoles[] | null> {
+  try {
+    // First, fetch all users from auth.users through the edge function
+    const { data: usersResponse, error: usersError } = await supabase
+      .functions
+      .invoke('admin-users', {
+        method: 'GET',
+      });
+    
+    if (usersError || !usersResponse.users) {
+      console.error('Error fetching users:', usersError || 'No users returned');
+      return null;
+    }
+    
+    // Then fetch all user roles
+    // In production, this would be better handled on the server side
+    const { data: roles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('*');
+    
+    if (rolesError) {
+      console.error('Error fetching roles:', rolesError);
+      // Continue without roles
+    }
+    
+    // Combine users with their roles
+    const usersWithRoles: UserWithRoles[] = usersResponse.users.map((user: any) => {
+      return {
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name,
+        avatar_url: user.user_metadata?.avatar_url,
+        created_at: user.created_at,
+        last_sign_in: user.last_sign_in_at,
+        roles: roles ? roles.filter((r: UserRole) => r.user_id === user.id) : []
+      };
+    });
+    
+    return usersWithRoles;
+  } catch (error) {
+    console.error('Error in getUsers:', error);
+    return null;
+  }
+}
+
+// Create a new user
+export async function createUser({
+  email,
+  password,
+  full_name,
+  role = UsersRoleKey.STANDARD,
+}: {
+  email: string;
+  password: string;
+  full_name?: string;
+  role: UsersRoleKey;
+}): Promise<{ user: User | null; error: Error | null }> {
+  try {
+    // Create the user through the edge function
+    const response = await supabase.functions.invoke('admin-users', {
+      method: 'POST',
+      body: { email, password, full_name, role }
+    });
+    
+    if (response.error) {
+      return { user: null, error: new Error(response.error.message) };
+    }
+    
+    return { user: response.data, error: null };
+  } catch (error: any) {
+    console.error('Error creating user:', error);
     return { user: null, error };
   }
-};
+}
 
-// Update the current user's profile
-export const updateUserProfile = async (updates: Partial<User>): Promise<{ success: boolean; error?: any }> => {
+// Delete a user
+export async function deleteUser(userId: string): Promise<boolean> {
   try {
-    if (updates.full_name) {
-      const { error: authError } = await supabase.auth.updateUser({
-        data: { full_name: updates.full_name }
-      });
-      
-      if (authError) throw authError;
+    const response = await supabase.functions.invoke('admin-users', {
+      method: 'DELETE',
+      body: { userId }
+    });
+    
+    if (response.error) {
+      console.error('Error deleting user:', response.error);
+      return false;
     }
     
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
-        id: (await supabase.auth.getUser()).data.user?.id,
-        full_name: updates.full_name,
-        avatar_url: updates.avatar_url,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
-    
-    if (profileError) throw profileError;
-    
-    return { success: true };
+    return true;
   } catch (error) {
-    console.error("Error updating user profile:", error);
-    return { success: false, error };
+    console.error('Error deleting user:', error);
+    return false;
   }
-};
+}
 
-// Helper function for signup
-export const signUp = async (email: string, password: string, fullName?: string): Promise<{ data: any; error: any }> => {
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { 
-          full_name: fullName || ''
-        }
-      }
-    });
-    
-    return { data, error };
-  } catch (error) {
-    console.error("Error during signup:", error);
-    return { data: null, error };
-  }
-};
-
-// Helper function for signin
-export const signIn = async (email: string, password: string): Promise<{ data: any; error: any }> => {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-    return { data, error };
-  } catch (error) {
-    console.error("Error during signin:", error);
-    return { data: null, error };
-  }
-};
-
-// Helper function for signout
-export const signOut = async (): Promise<{ error: any }> => {
-  try {
-    const { error } = await supabase.auth.signOut();
-    return { error };
-  } catch (error) {
-    console.error("Error during signout:", error);
-    return { error };
-  }
-};
-
-// New admin user management functions
-export const hasUserRole = async (role: UsersRoleKey): Promise<boolean> => {
+// Fetch user roles
+export async function getUserRoles(userId: string): Promise<UserRole[] | null> {
   try {
     const { data, error } = await supabase
       .from('user_roles')
       .select('*')
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-      .eq('role', role)
-      .single();
+      .eq('user_id', userId);
     
-    if (error && error.code !== 'PGRST116') {
-      console.error("Error checking role:", error);
+    if (error) {
+      console.error('Error fetching user roles:', error);
+      return null;
     }
     
-    return !!data;
+    return data as UserRole[];
   } catch (error) {
-    console.error("Error checking user role:", error);
+    console.error('Error in getUserRoles:', error);
+    return null;
+  }
+}
+
+// Assign a role to a user
+export async function assignUserRole(userId: string, role: UsersRoleKey): Promise<boolean> {
+  try {
+    const response = await supabase.functions.invoke('admin-users', {
+      method: 'POST',
+      body: { userId, role, action: 'assignRole' }
+    });
+    
+    if (response.error) {
+      console.error('Error assigning role:', response.error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error assigning role:', error);
     return false;
   }
-};
+}
 
-export const listUsers = async (): Promise<{ users: User[]; error?: any }> => {
+// Remove a role from a user
+export async function removeUserRole(userId: string, role: UsersRoleKey): Promise<boolean> {
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
+    const response = await supabase.functions.invoke('admin-users', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session?.access_token}`,
-      },
-      body: JSON.stringify({ action: 'listUsers' }),
+      body: { userId, role, action: 'removeRole' }
     });
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to list users');
+    if (response.error) {
+      console.error('Error removing role:', response.error);
+      return false;
     }
     
-    const { users } = await response.json();
-    return { users };
+    return true;
   } catch (error) {
-    console.error("Error listing users:", error);
-    return { users: [], error };
+    console.error('Error removing role:', error);
+    return false;
   }
-};
-
-export const createUser = async (userData: { 
-  email: string; 
-  password: string; 
-  full_name?: string; 
-  role?: UsersRoleKey;
-}): Promise<{ user?: User; error?: any }> => {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session?.access_token}`,
-      },
-      body: JSON.stringify({
-        action: 'createUser',
-        userData
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create user');
-    }
-    
-    const data = await response.json();
-    return { user: data.user };
-  } catch (error) {
-    console.error("Error creating user:", error);
-    return { error };
-  }
-};
-
-export const deleteUser = async (userId: string): Promise<{ success: boolean; error?: any }> => {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session?.access_token}`,
-      },
-      body: JSON.stringify({
-        action: 'deleteUser',
-        userData: { id: userId }
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete user');
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    return { success: false, error };
-  }
-};
-
-export const assignRole = async (userId: string, role: UsersRoleKey): Promise<{ success: boolean; error?: any }> => {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session?.access_token}`,
-      },
-      body: JSON.stringify({
-        action: 'assignRole',
-        userData: { userId, role }
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to assign role');
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error("Error assigning role:", error);
-    return { success: false, error };
-  }
-};
-
-export const removeRole = async (userId: string, role: UsersRoleKey): Promise<{ success: boolean; error?: any }> => {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionData.session?.access_token}`,
-      },
-      body: JSON.stringify({
-        action: 'removeRole',
-        userData: { userId, role }
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to remove role');
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error("Error removing role:", error);
-    return { success: false, error };
-  }
-};
+}

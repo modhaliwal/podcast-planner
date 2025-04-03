@@ -1,332 +1,172 @@
 
-import { useEffect, useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUsers, deleteUser, UserWithRoles } from '@/services/userService';
 import { User, UsersRoleKey } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { AlertCircle, Copy, MoreHorizontal, UserPlus, Check, X } from 'lucide-react';
-import { 
-  listUsers, 
-  deleteUser, 
-  assignRole, 
-  removeRole 
-} from '@/services/userService';
 import { CreateUserDialog } from './CreateUserDialog';
 import { DeleteUserDialog } from './DeleteUserDialog';
+import { Button } from '@/components/ui/button';
+import { UserPlus, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface UsersListProps {
-  isAdmin?: boolean;
+  isAdmin: boolean;
 }
 
-export function UsersList({ isAdmin = false }: UsersListProps) {
-  const [users, setUsers] = useState<User[]>([]);
+export function UsersList({ isAdmin }: UsersListProps) {
+  const { user } = useAuth();
+  const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteDialogState, setDeleteDialogState] = useState({
+    isOpen: false,
+    userName: '',
+    userId: '',
+  });
 
+  // Fetch users on component mount
   useEffect(() => {
-    refreshUsers();
+    fetchUsers();
   }, []);
 
-  const refreshUsers = async () => {
+  const fetchUsers = async () => {
     setIsLoading(true);
-    setError(null);
     try {
-      if (isAdmin) {
-        // For admin users, fetch the full user list with roles
-        const { users: adminUsers, error } = await listUsers();
-        if (error) throw error;
-        setUsers(adminUsers || []);
-      } else {
-        // For non-admin users, just fetch profiles from the public profiles table
-        const { data, error } = await fetch("/api/profiles").then(res => res.json());
-        if (error) throw error;
-        setUsers(data || []);
+      const fetchedUsers = await getUsers();
+      if (fetchedUsers) {
+        setUsers(fetchedUsers);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching users:', error);
-      setError(`Failed to fetch users: ${error.message}`);
-      toast({
-        title: "Error",
-        description: `Failed to fetch users: ${error.message}`,
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCreateUser = async () => {
-    setIsCreateDialogOpen(true);
-  };
-
-  const handleDeleteUser = (user: User) => {
-    setSelectedUser(user);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteUser = async () => {
-    if (!selectedUser) return;
-    
+  const handleDeleteUser = async () => {
     try {
-      const { success, error } = await deleteUser(selectedUser.id);
-      
-      if (error) throw error;
-      
+      const success = await deleteUser(deleteDialogState.userId);
       if (success) {
-        toast({
-          title: "Success",
-          description: `User ${selectedUser.email} has been deleted`
-        });
-        await refreshUsers();
+        setUsers(users.filter(u => u.id !== deleteDialogState.userId));
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting user:', error);
-      toast({
-        title: "Error",
-        description: `Failed to delete user: ${error.message}`,
-        variant: "destructive"
-      });
     } finally {
-      setIsDeleteDialogOpen(false);
-      setSelectedUser(null);
-    }
-  };
-
-  const toggleUserRole = async (user: User, role: UsersRoleKey) => {
-    try {
-      // Check if user already has this role
-      const hasRole = user.roles?.some(r => r.role === role);
-      
-      let result;
-      if (hasRole) {
-        // Remove the role
-        result = await removeRole(user.id, role);
-        if (result.success) {
-          toast({
-            title: "Success",
-            description: `Removed ${role} role from ${user.email}`
-          });
-        }
-      } else {
-        // Assign the role
-        result = await assignRole(user.id, role);
-        if (result.success) {
-          toast({
-            title: "Success",
-            description: `Assigned ${role} role to ${user.email}`
-          });
-        }
-      }
-      
-      if (result.error) throw result.error;
-      
-      await refreshUsers();
-    } catch (error: any) {
-      console.error('Error updating user role:', error);
-      toast({
-        title: "Error",
-        description: `Failed to update user role: ${error.message}`,
-        variant: "destructive"
+      setDeleteDialogState({
+        isOpen: false,
+        userName: '',
+        userId: '',
       });
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const searchTerm = searchQuery.toLowerCase();
-    return (
-      (user.full_name && user.full_name.toLowerCase().includes(searchTerm)) ||
-      (user.email && user.email.toLowerCase().includes(searchTerm)) ||
-      user.id.toLowerCase().includes(searchTerm)
-    );
-  });
-
-  const hasRole = (user: User, role: UsersRoleKey) => {
-    return user.roles?.some(r => r.role === role);
+  const openDeleteDialog = (userId: string, userName: string) => {
+    setDeleteDialogState({
+      isOpen: true,
+      userId,
+      userName: userName || userId,
+    });
   };
 
-  if (isLoading) {
+  if (!isAdmin) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-pulse flex flex-col space-y-2 items-center">
-              <div className="h-4 w-20 bg-muted rounded"></div>
-              <div className="h-4 w-32 bg-muted rounded"></div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="text-center py-8">
+        <p>You don't have permission to view this page.</p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>User Management</CardTitle>
-        {isAdmin && (
-          <Button onClick={handleCreateUser} size="sm">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add User
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Users</h2>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={fetchUsers}
+            disabled={isLoading}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
           </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="mb-4">
-          <Input
-            type="text"
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <Button 
+            size="sm" 
+            onClick={() => setIsCreateDialogOpen(true)}
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            New User
+          </Button>
         </div>
+      </div>
 
-        {filteredUsers.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No users found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  {isAdmin && <TableHead>Roles</TableHead>}
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="font-medium">{user.full_name || '(No name)'}</div>
-                    </TableCell>
-                    <TableCell>{user.email || '-'}</TableCell>
-                    {isAdmin && (
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {hasRole(user, UsersRoleKey.ADMIN) ? (
-                            <Badge variant="default" className="bg-primary">Admin</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-muted-foreground">Standard</Badge>
-                          )}
-                        </div>
-                      </TableCell>
+      {isLoading ? (
+        <div className="text-center py-8">Loading users...</div>
+      ) : users.length === 0 ? (
+        <div className="text-center py-8">No users found</div>
+      ) : (
+        <div className="border rounded-md">
+          <table className="w-full">
+            <thead className="bg-muted">
+              <tr>
+                <th className="text-left p-3">User</th>
+                <th className="text-left p-3">Email</th>
+                <th className="text-left p-3">Role</th>
+                <th className="text-left p-3">Last Sign In</th>
+                <th className="text-right p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-muted/50">
+                  <td className="p-3">
+                    {user.full_name || 'Unnamed User'}
+                  </td>
+                  <td className="p-3">{user.email}</td>
+                  <td className="p-3">
+                    {user.roles?.some(r => r.role === UsersRoleKey.ADMIN) ? (
+                      <Badge variant="default">Admin</Badge>
+                    ) : (
+                      <Badge variant="outline">Standard</Badge>
                     )}
-                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              navigator.clipboard.writeText(user.id);
-                              toast({
-                                title: "Success",
-                                description: "User ID copied to clipboard"
-                              });
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <Copy className="mr-2 h-4 w-4" /> Copy ID
-                          </DropdownMenuItem>
-                          
-                          {isAdmin && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => toggleUserRole(user, UsersRoleKey.ADMIN)}
-                                className="cursor-pointer"
-                              >
-                                {hasRole(user, UsersRoleKey.ADMIN) ? (
-                                  <>
-                                    <X className="mr-2 h-4 w-4" /> Remove Admin Role
-                                  </>
-                                ) : (
-                                  <>
-                                    <Check className="mr-2 h-4 w-4" /> Make Admin
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteUser(user)}
-                                className="cursor-pointer text-destructive focus:text-destructive"
-                              >
-                                <AlertCircle className="mr-2 h-4 w-4" /> Delete User
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                  </td>
+                  <td className="p-3">
+                    {user.last_sign_in 
+                      ? new Date(user.last_sign_in).toLocaleDateString() 
+                      : 'Never'}
+                  </td>
+                  <td className="p-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openDeleteDialog(user.id, user.full_name || user.email)}
+                      className="text-destructive"
+                      disabled={user.id === (user as User).id} // Prevent deleting yourself
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {!isAdmin && (
-          <div className="mt-6">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Admin Access Required</AlertTitle>
-              <AlertDescription>
-                Full user management requires admin privileges. Contact your administrator for access.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-      </CardContent>
-
+      {/* Create User Dialog */}
       <CreateUserDialog
         isOpen={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        onSuccess={refreshUsers}
+        onSuccess={fetchUsers}
       />
 
+      {/* Delete User Dialog */}
       <DeleteUserDialog
-        isOpen={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={confirmDeleteUser}
-        userName={selectedUser?.full_name || selectedUser?.email || 'this user'}
+        userName={deleteDialogState.userName}
+        isOpen={deleteDialogState.isOpen}
+        onOpenChange={(open) => setDeleteDialogState({ ...deleteDialogState, isOpen: open })}
+        onConfirm={handleDeleteUser}
       />
-    </Card>
+    </div>
   );
 }
