@@ -1,10 +1,9 @@
-
 import { useForm } from "react-hook-form";
 import { Episode } from "@/lib/types";
 import { EpisodeStatus } from "@/lib/enums";
 import { episodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 
@@ -38,10 +37,27 @@ export type EpisodeFormValues = {
 export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Use episodeFormSchema with zodResolver
-  const form = useForm<EpisodeFormValues>({
-    resolver: zodResolver(episodeFormSchema),
-    defaultValues: {
+  const getInitialValues = (episode?: Episode | null) => {
+    if (!episode) {
+      return {
+        title: '',
+        episodeNumber: 1,
+        topic: '',
+        guestIds: [],
+        scheduled: new Date().toISOString(),
+        publishDate: null,
+        status: 'scheduled' as const,
+        coverArt: '',
+        introduction: '',
+        notes: '',
+        notesVersions: [],
+        introductionVersions: [],
+        resources: [],
+        podcastUrls: {}
+      };
+    }
+    
+    return {
       title: episode.title || "",
       episodeNumber: episode.episodeNumber || 1,
       scheduled: episode.scheduled ? new Date(episode.scheduled) : new Date(),
@@ -56,14 +72,18 @@ export const useEpisodeForm = ({ episode, onSubmit }: UseEpisodeFormProps) => {
       coverArt: episode.coverArt || "",
       resources: episode.resources || [],
       podcastUrls: episode.podcastUrls || {}
-    }
+    };
+  };
+
+  const form = useForm<EpisodeFormValues>({
+    resolver: zodResolver(episodeFormSchema),
+    defaultValues: getInitialValues(episode)
   });
 
   const handleSubmit = async (data: EpisodeFormValues) => {
     setIsSubmitting(true);
     
     try {
-      // Convert dates to ISO strings for API compatibility
       const formattedData: UpdateEpisodeDTO = {
         ...data,
         scheduled: data.scheduled ? data.scheduled.toISOString() : "",

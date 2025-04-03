@@ -16,22 +16,47 @@ export async function hasUserRole(role: UsersRoleKey): Promise<boolean> {
       return false;
     }
     
-    // Fetch roles for this user
-    const { data: roles, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id);
+    // Fetch roles for this user directly through the edge function since
+    // we can't access user_roles table directly with client credentials
+    const { data, error } = await supabase.functions.invoke('admin-users', {
+      method: 'POST',
+      body: { userId: user.id, action: 'checkRole', role }
+    });
     
-    if (error || !roles) {
-      console.error('Error fetching user roles:', error);
+    if (error) {
+      console.error('Error checking user role:', error);
       return false;
     }
     
-    // Check if the user has the required role
-    return roles.some(r => r.role === role);
+    return !!data?.hasRole;
   } catch (error) {
     console.error('Error checking user role:', error);
     return false;
+  }
+}
+
+// Fetch current user's profile
+export async function getCurrentUserProfile(): Promise<{ user: User | null; error: Error | null }> {
+  try {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    
+    if (!authUser) {
+      return { user: null, error: new Error('Not authenticated') };
+    }
+    
+    // Create a user object from the auth user
+    const user: User = {
+      id: authUser.id,
+      email: authUser.email || '',
+      full_name: authUser.user_metadata?.full_name,
+      avatar_url: authUser.user_metadata?.avatar_url,
+      created_at: authUser.created_at,
+      last_sign_in: authUser.last_sign_in_at
+    };
+    
+    return { user, error: null };
+  } catch (error: any) {
+    return { user: null, error };
   }
 }
 
@@ -42,39 +67,16 @@ export async function getUsers(): Promise<UserWithRoles[] | null> {
     const { data: usersResponse, error: usersError } = await supabase
       .functions
       .invoke('admin-users', {
-        method: 'GET',
+        method: 'POST',
+        body: { action: 'listUsers' }
       });
     
-    if (usersError || !usersResponse.users) {
+    if (usersError || !usersResponse?.users) {
       console.error('Error fetching users:', usersError || 'No users returned');
       return null;
     }
     
-    // Then fetch all user roles
-    // In production, this would be better handled on the server side
-    const { data: roles, error: rolesError } = await supabase
-      .from('user_roles')
-      .select('*');
-    
-    if (rolesError) {
-      console.error('Error fetching roles:', rolesError);
-      // Continue without roles
-    }
-    
-    // Combine users with their roles
-    const usersWithRoles: UserWithRoles[] = usersResponse.users.map((user: any) => {
-      return {
-        id: user.id,
-        email: user.email,
-        full_name: user.user_metadata?.full_name,
-        avatar_url: user.user_metadata?.avatar_url,
-        created_at: user.created_at,
-        last_sign_in: user.last_sign_in_at,
-        roles: roles ? roles.filter((r: UserRole) => r.user_id === user.id) : []
-      };
-    });
-    
-    return usersWithRoles;
+    return usersResponse.users as UserWithRoles[];
   } catch (error) {
     console.error('Error in getUsers:', error);
     return null;
@@ -97,14 +99,14 @@ export async function createUser({
     // Create the user through the edge function
     const response = await supabase.functions.invoke('admin-users', {
       method: 'POST',
-      body: { email, password, full_name, role }
+      body: { action: 'createUser', userData: { email, password, full_name, role } }
     });
     
     if (response.error) {
       return { user: null, error: new Error(response.error.message) };
     }
     
-    return { user: response.data, error: null };
+    return { user: response.data?.user || null, error: null };
   } catch (error: any) {
     console.error('Error creating user:', error);
     return { user: null, error };
@@ -115,8 +117,8 @@ export async function createUser({
 export async function deleteUser(userId: string): Promise<boolean> {
   try {
     const response = await supabase.functions.invoke('admin-users', {
-      method: 'DELETE',
-      body: { userId }
+      method: 'POST',
+      body: { action: 'deleteUser', userData: { id: userId } }
     });
     
     if (response.error) {
@@ -134,17 +136,17 @@ export async function deleteUser(userId: string): Promise<boolean> {
 // Fetch user roles
 export async function getUserRoles(userId: string): Promise<UserRole[] | null> {
   try {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('*')
-      .eq('user_id', userId);
+    const { data, error } = await supabase.functions.invoke('admin-users', {
+      method: 'POST',
+      body: { action: 'getUserRoles', userId }
+    });
     
     if (error) {
       console.error('Error fetching user roles:', error);
       return null;
     }
     
-    return data as UserRole[];
+    return data?.roles as UserRole[] || [];
   } catch (error) {
     console.error('Error in getUserRoles:', error);
     return null;
@@ -156,7 +158,7 @@ export async function assignUserRole(userId: string, role: UsersRoleKey): Promis
   try {
     const response = await supabase.functions.invoke('admin-users', {
       method: 'POST',
-      body: { userId, role, action: 'assignRole' }
+      body: { action: 'assignRole', userData: { userId, role } }
     });
     
     if (response.error) {
@@ -176,7 +178,7 @@ export async function removeUserRole(userId: string, role: UsersRoleKey): Promis
   try {
     const response = await supabase.functions.invoke('admin-users', {
       method: 'POST',
-      body: { userId, role, action: 'removeRole' }
+      body: { action: 'removeRole', userData: { userId, role } }
     });
     
     if (response.error) {
@@ -188,5 +190,46 @@ export async function removeUserRole(userId: string, role: UsersRoleKey): Promis
   } catch (error) {
     console.error('Error removing role:', error);
     return false;
+  }
+}
+
+// Sign in a user
+export async function signIn(email: string, password: string): Promise<{ data: any; error: Error | null }> {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) {
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error: any) {
+    return { data: null, error };
+  }
+}
+
+// Sign up a new user
+export async function signUp(email: string, password: string, fullName?: string): Promise<{ data: any; error: Error | null }> {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName || ''
+        }
+      }
+    });
+    
+    if (error) {
+      return { data: null, error };
+    }
+    
+    return { data, error: null };
+  } catch (error: any) {
+    return { data: null, error };
   }
 }

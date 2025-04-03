@@ -42,7 +42,37 @@ serve(async (req) => {
       );
     }
 
-    // Check if requestor is an admin
+    // Parse request data
+    const requestData = await req.json();
+    const { action } = requestData;
+
+    // For checkRole, we don't need to verify admin status
+    if (action === 'checkRole') {
+      const { userId, role } = requestData;
+      
+      // Validate required parameters
+      if (!userId || !role) {
+        return new Response(
+          JSON.stringify({ error: 'User ID and role are required' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      
+      // Check if user has the specified role
+      const { data, error } = await supabaseAdmin
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('role', role)
+        .single();
+        
+      return new Response(
+        JSON.stringify({ hasRole: !!data && !error }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
+    // Check if requestor is an admin for all other actions
     const { data: roleData } = await supabaseAdmin
       .from('user_roles')
       .select('role')
@@ -57,10 +87,8 @@ serve(async (req) => {
       );
     }
 
-    // Parse request data
-    const { action, userData } = await req.json();
-
     let result;
+    
     switch (action) {
       case 'listUsers':
         // Get list of users from Supabase Auth
@@ -82,8 +110,8 @@ serve(async (req) => {
             return {
               id: authUser.id,
               email: authUser.email,
-              full_name: authUser.user_metadata.full_name || '',
-              avatar_url: authUser.user_metadata.avatar_url || '',
+              full_name: authUser.user_metadata?.full_name || '',
+              avatar_url: authUser.user_metadata?.avatar_url || '',
               created_at: authUser.created_at,
               last_sign_in: authUser.last_sign_in_at,
               roles: userRoles
@@ -93,7 +121,9 @@ serve(async (req) => {
         break;
 
       case 'createUser':
-        if (!userData.email || !userData.password) {
+        const { userData } = requestData;
+        
+        if (!userData?.email || !userData?.password) {
           throw new Error('Email and password are required');
         }
 
@@ -125,12 +155,14 @@ serve(async (req) => {
         break;
 
       case 'deleteUser':
-        if (!userData.id) {
+        const { id } = requestData.userData || {};
+        
+        if (!id) {
           throw new Error('User ID is required');
         }
 
         // Delete the user in Supabase Auth
-        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userData.id);
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(id);
 
         if (deleteError) {
           throw deleteError;
@@ -139,8 +171,28 @@ serve(async (req) => {
         result = { success: true };
         break;
 
+      case 'getUserRoles':
+        const { userId } = requestData;
+        
+        if (!userId) {
+          throw new Error('User ID is required');
+        }
+        
+        // Fetch roles for the specified user
+        const { data: roles, error: rolesError } = await supabaseAdmin
+          .from('user_roles')
+          .select('*')
+          .eq('user_id', userId);
+          
+        if (rolesError) {
+          throw rolesError;
+        }
+        
+        result = { roles };
+        break;
+
       case 'assignRole':
-        if (!userData.userId || !userData.role) {
+        if (!requestData.userData?.userId || !requestData.userData?.role) {
           throw new Error('User ID and role are required');
         }
 
@@ -148,8 +200,8 @@ serve(async (req) => {
         const { data: existingRole } = await supabaseAdmin
           .from('user_roles')
           .select('*')
-          .eq('user_id', userData.userId)
-          .eq('role', userData.role)
+          .eq('user_id', requestData.userData.userId)
+          .eq('role', requestData.userData.role)
           .single();
 
         if (!existingRole) {
@@ -157,8 +209,8 @@ serve(async (req) => {
           const { data, error: roleError } = await supabaseAdmin
             .from('user_roles')
             .insert({
-              user_id: userData.userId,
-              role: userData.role
+              user_id: requestData.userData.userId,
+              role: requestData.userData.role
             })
             .select();
 
@@ -173,7 +225,7 @@ serve(async (req) => {
         break;
 
       case 'removeRole':
-        if (!userData.userId || !userData.role) {
+        if (!requestData.userData?.userId || !requestData.userData?.role) {
           throw new Error('User ID and role are required');
         }
 
@@ -181,8 +233,8 @@ serve(async (req) => {
         const { error: removeRoleError } = await supabaseAdmin
           .from('user_roles')
           .delete()
-          .eq('user_id', userData.userId)
-          .eq('role', userData.role);
+          .eq('user_id', requestData.userData.userId)
+          .eq('role', requestData.userData.role);
 
         if (removeRoleError) {
           throw removeRoleError;
