@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,17 +8,19 @@ import { GuestAboutSection } from './GuestAboutSection';
 import { GuestEpisodesList } from './GuestEpisodesList';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
-
 interface GuestDetailProps {
   guest: Guest;
   episodes?: Episode[];
   className?: string;
   onDelete?: () => void;
 }
-
-export function GuestDetail({ guest, episodes = [], className, onDelete }: GuestDetailProps) {
-  return (
-    <ResponsiveContainer className={cn("", className)}>
+export function GuestDetail({
+  guest,
+  episodes = [],
+  className,
+  onDelete
+}: GuestDetailProps) {
+  return <ResponsiveContainer className={cn("", className)}>
       <div className="flex flex-wrap items-center justify-between mb-4">
         <Button variant="ghost" size="sm" asChild className="mr-2">
           <Link to="/guests">
@@ -36,16 +37,14 @@ export function GuestDetail({ guest, episodes = [], className, onDelete }: Guest
             </Link>
           </Button>
           
-          {onDelete && (
-            <Button variant="destructive" size="sm" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete
-            </Button>
-          )}
+          {onDelete}
         </div>
       </div>
       
-      <ResponsiveGrid cols={{ default: 1, md: 3 }} gap="gap-4 sm:gap-6">
+      <ResponsiveGrid cols={{
+      default: 1,
+      md: 3
+    }} gap="gap-4 sm:gap-6">
         <div className="md:col-span-1">
           <GuestProfileCard guest={guest} />
         </div>
@@ -55,6 +54,5 @@ export function GuestDetail({ guest, episodes = [], className, onDelete }: Guest
           <GuestAboutSection guest={guest} />
         </div>
       </ResponsiveGrid>
-    </ResponsiveContainer>
-  );
+    </ResponsiveContainer>;
 }
