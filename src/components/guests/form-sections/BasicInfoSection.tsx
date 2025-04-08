@@ -1,8 +1,11 @@
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Info } from "lucide-react";
+
 interface BasicInfoSectionProps {
   form: UseFormReturn<any>;
 }
@@ -15,37 +18,49 @@ export function BasicInfoSection({
         <FormField control={form.control} name="name" render={({
         field
       }) => <FormItem>
-              
+              <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="Enter guest name" {...field} />
               </FormControl>
+              <FormDescription className="flex items-center text-xs">
+                <Info className="h-3 w-3 mr-1" /> 
+                Enter the guest's full name as it should appear
+              </FormDescription>
               <FormMessage />
             </FormItem>} />
         
         <FormField control={form.control} name="title" render={({
         field
       }) => <FormItem>
-              
+              <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="Enter guest title" {...field} />
               </FormControl>
+              <FormDescription className="flex items-center text-xs">
+                <Info className="h-3 w-3 mr-1" />
+                Professional title or position (e.g., CEO, Author)
+              </FormDescription>
               <FormMessage />
             </FormItem>} />
         
         <FormField control={form.control} name="company" render={({
         field
       }) => <FormItem>
-              
+              <FormLabel>Company</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="Enter company name" {...field} />
               </FormControl>
+              <FormDescription className="flex items-center text-xs">
+                <Info className="h-3 w-3 mr-1" />
+                Organization or company the guest is affiliated with
+              </FormDescription>
               <FormMessage />
             </FormItem>} />
         
         <FormField control={form.control} name="status" render={({
         field
       }) => <FormItem>
-              
+              <FormLabel>Status</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -59,6 +74,10 @@ export function BasicInfoSection({
                   <SelectItem value="appeared">Appeared</SelectItem>
                 </SelectContent>
               </Select>
+              <FormDescription className="flex items-center text-xs">
+                <Info className="h-3 w-3 mr-1" />
+                Current stage in the guest booking process
+              </FormDescription>
               <FormMessage />
             </FormItem>} />
       </div>
