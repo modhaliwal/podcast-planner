@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { X, ChevronDown, ChevronUp, ListPlus, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { X, ChevronDown, ChevronUp, ListPlus, Pencil, Trash2, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SocialLinkCategory } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -243,15 +243,14 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
         </Card>
       )}
       
-      {/* Add new platform selector */}
-      <div className="space-y-2">
-        <h4 className="text-xs font-medium text-muted-foreground">Add a social link</h4>
-        <Card className="p-3">
-          <LinkForm 
-            onSubmit={handleAddLink}
-            excludedPlatforms={existingLinks}
-          />
-        </Card>
+      {/* Add new platform selector - with improved compact UI */}
+      <div>
+        <h4 className="text-xs font-medium text-muted-foreground mb-2">Add a social link</h4>
+        <LinkForm 
+          onSubmit={handleAddLink}
+          excludedPlatforms={existingLinks}
+          compact={true}
+        />
       </div>
       
       {/* Categories Section */}
@@ -363,30 +362,31 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
                       </div>
                     ))}
                     
-                    {/* Add/Edit link to category form */}
-                    <Card className="p-3">
-                      {editingCategoryId === category.id && editingLinkIndex !== null ? (
-                        <div>
-                          <h4 className="text-xs font-medium mb-3">Edit Link</h4>
-                          <LinkForm
-                            initialValues={category.links[editingLinkIndex]}
-                            onSubmit={(linkData) => handleUpdateLinkInCategory(category.id, editingLinkIndex, linkData)}
-                            onCancel={() => {
-                              setEditingCategoryId(null);
-                              setEditingLinkIndex(null);
-                            }}
-                            submitLabel="Update"
-                          />
-                        </div>
-                      ) : (
-                        <div>
-                          <h4 className="text-xs font-medium mb-3">Add Link to Category</h4>
-                          <LinkForm
-                            onSubmit={(linkData) => handleAddLinkToCategory(category.id, linkData)}
-                          />
-                        </div>
-                      )}
-                    </Card>
+                    {/* Add link to category form - with improved compact UI */}
+                    <LinkForm
+                      onSubmit={(linkData) => handleAddLinkToCategory(category.id, linkData)}
+                      compact={true}
+                      className={
+                        editingCategoryId === category.id && editingLinkIndex !== null ? 
+                        "hidden" : ""
+                      }
+                    />
+                    
+                    {/* Edit link in category form */}
+                    {editingCategoryId === category.id && editingLinkIndex !== null && (
+                      <Card className="p-3">
+                        <h4 className="text-xs font-medium mb-3">Edit Link</h4>
+                        <LinkForm
+                          initialValues={category.links[editingLinkIndex]}
+                          onSubmit={(linkData) => handleUpdateLinkInCategory(category.id, editingLinkIndex, linkData)}
+                          onCancel={() => {
+                            setEditingCategoryId(null);
+                            setEditingLinkIndex(null);
+                          }}
+                          submitLabel="Update"
+                        />
+                      </Card>
+                    )}
                     
                     <div className="flex justify-between mt-2">
                       <Button
