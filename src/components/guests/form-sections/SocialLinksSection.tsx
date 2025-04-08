@@ -1,11 +1,15 @@
 
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, X } from "lucide-react";
+import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, X, ChevronDown, ChevronUp, ListPlus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SocialLinkCategory } from "@/lib/types";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Card } from "@/components/ui/card";
 
 interface SocialLinksSectionProps {
   form: UseFormReturn<any>;
@@ -35,8 +39,14 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
   const [newPlatform, setNewPlatform] = useState("");
   const [customLabel, setCustomLabel] = useState("");
   const [showCustomField, setShowCustomField] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showCategoryInput, setShowCategoryInput] = useState(false);
+  const [categoryPlatform, setCategoryPlatform] = useState("");
+  const [categoryUrl, setCategoryUrl] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingLinkIndex, setEditingLinkIndex] = useState<number | null>(null);
 
-  // Get the form values for all social links
+  // Get the form values
   const formValues = form.getValues();
   
   // Define existing links by checking which ones have values
@@ -49,12 +59,14 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
     platform => !existingLinks.includes(platform.id) || platform.id === 'custom'
   );
 
+  // Get existing categories or initialize empty array
+  const categories = formValues.categories || [];
+
   // Handle adding a new social link
   const handleAddLink = () => {
     if (newPlatform === 'custom') {
       if (customLabel.trim()) {
         // For custom platforms, we'd store them in a different way
-        // This would need additional implementation
         setCustomLabel("");
         setShowCustomField(false);
       }
@@ -74,9 +86,130 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
     form.setValue(platform, "", { shouldValidate: true });
   };
 
+  // Handle adding a new category
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return;
+    
+    const newCategory: SocialLinkCategory = {
+      id: uuidv4(),
+      name: newCategoryName,
+      links: []
+    };
+    
+    const updatedCategories = [...categories, newCategory];
+    form.setValue('categories', updatedCategories);
+    
+    setNewCategoryName("");
+    setShowCategoryInput(false);
+  };
+
+  // Handle removing a category
+  const handleRemoveCategory = (categoryId: string) => {
+    const updatedCategories = categories.filter(
+      (category: SocialLinkCategory) => category.id !== categoryId
+    );
+    form.setValue('categories', updatedCategories);
+  };
+
+  // Handle adding a link to a category
+  const handleAddLinkToCategory = (categoryId: string) => {
+    if (!categoryPlatform || !categoryUrl.trim()) return;
+    
+    const updatedCategories = categories.map((category: SocialLinkCategory) => {
+      if (category.id === categoryId) {
+        return {
+          ...category,
+          links: [
+            ...category.links,
+            {
+              platform: categoryPlatform,
+              url: categoryUrl,
+              label: customLabel.trim() || undefined
+            }
+          ]
+        };
+      }
+      return category;
+    });
+    
+    form.setValue('categories', updatedCategories);
+    
+    // Reset form
+    setCategoryPlatform("");
+    setCategoryUrl("");
+    setCustomLabel("");
+    setEditingCategoryId(null);
+    setEditingLinkIndex(null);
+  };
+
+  // Handle removing a link from a category
+  const handleRemoveLinkFromCategory = (categoryId: string, linkIndex: number) => {
+    const updatedCategories = categories.map((category: SocialLinkCategory) => {
+      if (category.id === categoryId) {
+        const updatedLinks = [...category.links];
+        updatedLinks.splice(linkIndex, 1);
+        return {
+          ...category,
+          links: updatedLinks
+        };
+      }
+      return category;
+    });
+    
+    form.setValue('categories', updatedCategories);
+  };
+
+  // Handle editing a link in a category
+  const handleEditLinkInCategory = (categoryId: string, linkIndex: number) => {
+    const category = categories.find((c: SocialLinkCategory) => c.id === categoryId);
+    if (!category) return;
+    
+    const link = category.links[linkIndex];
+    setCategoryPlatform(link.platform);
+    setCategoryUrl(link.url);
+    setCustomLabel(link.label || "");
+    setEditingCategoryId(categoryId);
+    setEditingLinkIndex(linkIndex);
+  };
+
+  // Update an existing link
+  const handleUpdateLink = () => {
+    if (!editingCategoryId || editingLinkIndex === null) return;
+    
+    const updatedCategories = categories.map((category: SocialLinkCategory) => {
+      if (category.id === editingCategoryId) {
+        const updatedLinks = [...category.links];
+        updatedLinks[editingLinkIndex] = {
+          platform: categoryPlatform,
+          url: categoryUrl,
+          label: customLabel.trim() || undefined
+        };
+        return {
+          ...category,
+          links: updatedLinks
+        };
+      }
+      return category;
+    });
+    
+    form.setValue('categories', updatedCategories);
+    
+    // Reset form
+    setCategoryPlatform("");
+    setCategoryUrl("");
+    setCustomLabel("");
+    setEditingCategoryId(null);
+    setEditingLinkIndex(null);
+  };
+
   const renderPlatformIcon = (platformId: string) => {
     const platform = platforms.find(p => p.id === platformId);
     return platform ? platform.icon : <Globe className="w-4 h-4 mr-2 text-muted-foreground" />;
+  };
+
+  const getPlatformLabel = (platformId: string) => {
+    const platform = platforms.find(p => p.id === platformId);
+    return platform ? platform.label : platformId;
   };
 
   return (
@@ -164,6 +297,199 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
             placeholder="Enter custom platform name"
             className="mt-2"
           />
+        )}
+      </div>
+      
+      {/* Categories Section */}
+      <div className="space-y-4 mt-6 pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium">Link Categories</h3>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowCategoryInput(true)}
+            className="h-8"
+          >
+            <ListPlus className="h-4 w-4 mr-2" />
+            Add Category
+          </Button>
+        </div>
+        
+        {/* New Category Input */}
+        {showCategoryInput && (
+          <div className="flex gap-2 items-center">
+            <Input
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Category name"
+              className="flex-1"
+            />
+            <Button 
+              type="button" 
+              variant="default" 
+              size="sm"
+              onClick={handleAddCategory}
+              disabled={!newCategoryName.trim()}
+              className="h-10"
+            >
+              Add
+            </Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                setShowCategoryInput(false);
+                setNewCategoryName("");
+              }}
+              className="h-10"
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+        
+        {/* Display Categories */}
+        {categories.length > 0 && (
+          <Accordion type="multiple" className="w-full">
+            {categories.map((category: SocialLinkCategory) => (
+              <AccordionItem key={category.id} value={category.id}>
+                <AccordionTrigger className="hover:no-underline">
+                  <span className="text-sm font-medium">{category.name}</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-3 pb-2">
+                    {/* List of links in this category */}
+                    {category.links.map((link, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-muted/40 rounded">
+                        <div className="flex items-center flex-1 overflow-hidden">
+                          {renderPlatformIcon(link.platform)}
+                          <div className="ml-2 overflow-hidden">
+                            <div className="font-medium text-sm truncate">
+                              {link.label || getPlatformLabel(link.platform)}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {link.url}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditLinkInCategory(category.id, index)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveLinkFromCategory(category.id, index)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remove</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Add link to category form */}
+                    <Card className="p-3">
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-medium">
+                          {editingLinkIndex !== null ? "Edit Link" : "Add Link to Category"}
+                        </h4>
+                        <Select value={categoryPlatform} onValueChange={setCategoryPlatform}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select platform" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {platforms.map(platform => (
+                              <SelectItem key={platform.id} value={platform.id}>
+                                <div className="flex items-center">
+                                  {platform.icon}
+                                  <span>{platform.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        <Input
+                          value={categoryUrl}
+                          onChange={(e) => setCategoryUrl(e.target.value)}
+                          placeholder="URL"
+                        />
+                        
+                        <Input
+                          value={customLabel}
+                          onChange={(e) => setCustomLabel(e.target.value)}
+                          placeholder="Custom label (optional)"
+                        />
+                        
+                        <div className="flex justify-end space-x-2">
+                          {editingLinkIndex !== null ? (
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              onClick={handleUpdateLink}
+                              disabled={!categoryPlatform || !categoryUrl.trim()}
+                            >
+                              Update
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleAddLinkToCategory(category.id)}
+                              disabled={!categoryPlatform || !categoryUrl.trim()}
+                            >
+                              Add
+                            </Button>
+                          )}
+                          
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setCategoryPlatform("");
+                              setCategoryUrl("");
+                              setCustomLabel("");
+                              setEditingCategoryId(null);
+                              setEditingLinkIndex(null);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                    
+                    <div className="flex justify-between mt-2">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveCategory(category.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove Category
+                      </Button>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         )}
       </div>
     </div>

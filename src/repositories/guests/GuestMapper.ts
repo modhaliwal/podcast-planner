@@ -1,6 +1,6 @@
 
 import { DataMapper } from "../core/DataMapper";
-import { Guest, SocialLinks, ContentVersion } from "@/lib/types";
+import { Guest, SocialLinks, ContentVersion, SocialLinkCategory } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
 
 export interface DBGuest {
@@ -55,6 +55,15 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       console.error("Error parsing versions for guest", dbGuest.id, e);
     }
     
+    // Parse social links and ensure categories are properly formatted
+    let socialLinks: SocialLinks = dbGuest.social_links as unknown as SocialLinks || {};
+    
+    // Ensure categories is an array if it exists
+    if (socialLinks.categories && !Array.isArray(socialLinks.categories)) {
+      console.error("Categories is not an array for guest", dbGuest.id);
+      socialLinks.categories = [];
+    }
+    
     return {
       id: dbGuest.id,
       name: dbGuest.name,
@@ -65,7 +74,7 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       bio: dbGuest.bio,
       bioVersions: bioVersions,
       imageUrl: dbGuest.image_url || undefined,
-      socialLinks: dbGuest.social_links as unknown as SocialLinks || {},
+      socialLinks,
       notes: dbGuest.notes || undefined,
       backgroundResearch: dbGuest.background_research || undefined,
       backgroundResearchVersions: backgroundResearchVersions,

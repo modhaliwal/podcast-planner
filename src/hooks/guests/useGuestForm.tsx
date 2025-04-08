@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Guest, ContentVersion } from '@/lib/types';
+import { Guest, ContentVersion, SocialLinkCategory } from '@/lib/types';
 import { deleteImage, isBlobUrl, uploadImage } from '@/lib/imageUpload';
 import { toast } from '@/hooks/toast';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +28,20 @@ const GuestFormSchema = z.object({
   tiktok: z.string().optional().or(z.literal("")),
   youtube: z.string().optional().or(z.literal("")),
   website: z.string().optional().or(z.literal("")),
-  // We could add custom platforms support here
+  // Add support for categories
+  categories: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      links: z.array(
+        z.object({
+          platform: z.string(),
+          url: z.string(),
+          label: z.string().optional()
+        })
+      )
+    })
+  ).optional()
 });
 
 interface UseGuestFormProps {
@@ -64,6 +77,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
       tiktok: guest.socialLinks.tiktok || "",
       youtube: guest.socialLinks.youtube || "",
       website: guest.socialLinks.website || "",
+      categories: guest.socialLinks.categories || []
     },
     mode: "onChange"
   });
@@ -111,7 +125,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         imageUrl = null;
       }
       
-      // Collect social links from individual form fields
+      // Collect social links from individual form fields and categories
       const socialLinks = {
         twitter: formData.twitter || undefined,
         facebook: formData.facebook || undefined,
@@ -120,6 +134,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         tiktok: formData.tiktok || undefined,
         youtube: formData.youtube || undefined,
         website: formData.website || undefined,
+        categories: formData.categories || undefined
       };
       
       const updatedGuest: Guest = {

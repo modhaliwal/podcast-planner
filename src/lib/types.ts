@@ -74,7 +74,14 @@ export interface SocialLinks {
   tiktok?: string;
   youtube?: string;
   website?: string;
+  categories?: SocialLinkCategory[];
   other?: { label: string; url: string }[];
+}
+
+export interface SocialLinkCategory {
+  id: string;
+  name: string;
+  links: { platform: string; url: string; label?: string }[];
 }
 
 export interface RecordingLinks {
