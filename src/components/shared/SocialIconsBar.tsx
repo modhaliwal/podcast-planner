@@ -1,6 +1,6 @@
 
 import { SocialLinks, SocialLinkCategory } from "@/lib/types";
-import { Twitter, Linkedin, Globe, Instagram, Youtube, Facebook } from "lucide-react";
+import { Twitter, Linkedin, Globe, Instagram, Youtube, Facebook, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -185,11 +185,16 @@ function SocialIcon({ href, icon, label, buttonClassName, showLabel }: SocialIco
           href={href} 
           target="_blank" 
           rel="noopener noreferrer"
-          className={buttonClassName}
+          className={cn(buttonClassName, "group")}
           onClick={(e) => e.stopPropagation()}
         >
           {icon}
-          {showLabel && <span className="ml-2 text-xs">{label}</span>}
+          {showLabel && (
+            <span className="ml-2 text-xs group-hover:underline flex items-center">
+              {label}
+              <ExternalLink className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </span>
+          )}
           {!showLabel && <span className="sr-only">{label}</span>}
         </a>
       </TooltipTrigger>

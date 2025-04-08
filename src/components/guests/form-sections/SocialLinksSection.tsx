@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { X, ChevronDown, ChevronUp, ListPlus, Pencil, Trash2 } from "lucide-react";
+import { X, ChevronDown, ChevronUp, ListPlus, Pencil, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SocialLinkCategory } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -165,6 +165,13 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
     return platform ? platform.label : platformId;
   };
 
+  // Function to handle opening the link in a new tab
+  const handleLinkClick = (url: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent edit/form interaction
+    e.preventDefault(); // Prevent default behavior
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-medium">Social Links</h3>
@@ -176,10 +183,20 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
             <div className="flex items-center flex-1 overflow-hidden">
               {renderPlatformIcon(platformId)}
               <div className="ml-2 overflow-hidden">
-                <div className="font-medium text-sm truncate">
-                  {getPlatformLabel(platformId)}
-                </div>
-                <div className="text-xs text-muted-foreground truncate">
+                <a 
+                  href={formValues[platformId]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => handleLinkClick(formValues[platformId], e)}
+                  className="font-medium text-sm truncate hover:underline cursor-pointer group"
+                >
+                  {getPlatformLabel(platformId)} 
+                  <ExternalLink className="h-3 w-3 inline ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+                <div 
+                  className="text-xs text-muted-foreground truncate hover:underline cursor-pointer"
+                  onClick={(e) => handleLinkClick(formValues[platformId], e)}
+                >
                   {formValues[platformId]}
                 </div>
               </div>
@@ -303,10 +320,20 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
                         <div className="flex items-center flex-1 overflow-hidden">
                           {renderPlatformIcon(link.platform)}
                           <div className="ml-2 overflow-hidden">
-                            <div className="font-medium text-sm truncate">
+                            <a 
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => handleLinkClick(link.url, e)}
+                              className="font-medium text-sm truncate hover:underline cursor-pointer group"
+                            >
                               {link.label || getPlatformLabel(link.platform)}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">
+                              <ExternalLink className="h-3 w-3 inline ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </a>
+                            <div 
+                              className="text-xs text-muted-foreground truncate hover:underline cursor-pointer"
+                              onClick={(e) => handleLinkClick(link.url, e)}
+                            >
                               {link.url}
                             </div>
                           </div>
