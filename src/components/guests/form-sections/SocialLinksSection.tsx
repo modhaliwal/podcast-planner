@@ -7,7 +7,6 @@ import { UseFormReturn } from "react-hook-form";
 import { X, ChevronDown, ChevronUp, ListPlus, Pencil, Trash2, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SocialLinkCategory } from "@/lib/types";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { LinkForm, SOCIAL_PLATFORMS, LinkFormData } from "./social/LinkForm";
 
@@ -253,7 +252,7 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
         />
       </div>
       
-      {/* Categories Section */}
+      {/* Categories Section - Now always visible without accordion */}
       <div className="space-y-4 mt-6 pt-4 border-t">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">Link Categories</h3>
@@ -303,107 +302,104 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
           </div>
         )}
         
-        {/* Display Categories */}
+        {/* Display Categories - Now always visible */}
         {categories.length > 0 && (
-          <Accordion type="multiple" className="w-full">
+          <div className="space-y-6">
             {categories.map((category: SocialLinkCategory) => (
-              <AccordionItem key={category.id} value={category.id}>
-                <AccordionTrigger className="hover:no-underline">
-                  <span className="text-sm font-medium">{category.name}</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3 pb-2">
-                    {/* List of links in this category */}
-                    {category.links.map((link, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-muted/40 rounded">
-                        <div className="flex items-center flex-1 overflow-hidden">
-                          {renderPlatformIcon(link.platform)}
-                          <div className="ml-2 overflow-hidden">
-                            <a 
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => handleLinkClick(link.url, e)}
-                              className="font-medium text-sm truncate hover:underline cursor-pointer group"
-                            >
-                              {link.label || getPlatformLabel(link.platform)}
-                              <ExternalLink className="h-3 w-3 inline ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </a>
-                            <div 
-                              className="text-xs text-muted-foreground truncate hover:underline cursor-pointer"
-                              onClick={(e) => handleLinkClick(link.url, e)}
-                            >
-                              {link.url}
-                            </div>
+              <Card key={category.id} className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium">{category.name}</h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveCategory(category.id)}
+                    className="h-7 px-2"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Remove
+                  </Button>
+                </div>
+                
+                <div className="space-y-3">
+                  {/* List of links in this category */}
+                  {category.links.map((link, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted/40 rounded">
+                      <div className="flex items-center flex-1 overflow-hidden">
+                        {renderPlatformIcon(link.platform)}
+                        <div className="ml-2 overflow-hidden">
+                          <a 
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => handleLinkClick(link.url, e)}
+                            className="font-medium text-sm truncate hover:underline cursor-pointer group"
+                          >
+                            {link.label || getPlatformLabel(link.platform)}
+                            <ExternalLink className="h-3 w-3 inline ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </a>
+                          <div 
+                            className="text-xs text-muted-foreground truncate hover:underline cursor-pointer"
+                            onClick={(e) => handleLinkClick(link.url, e)}
+                          >
+                            {link.url}
                           </div>
                         </div>
-                        <div className="flex space-x-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditLinkInCategory(category.id, index)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveLinkFromCategory(category.id, index)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Remove</span>
-                          </Button>
-                        </div>
                       </div>
-                    ))}
-                    
-                    {/* Add link to category form - with improved compact UI */}
-                    <LinkForm
-                      onSubmit={(linkData) => handleAddLinkToCategory(category.id, linkData)}
-                      compact={true}
-                      className={
-                        editingCategoryId === category.id && editingLinkIndex !== null ? 
-                        "hidden" : ""
-                      }
-                    />
-                    
-                    {/* Edit link in category form */}
-                    {editingCategoryId === category.id && editingLinkIndex !== null && (
-                      <Card className="p-3">
-                        <h4 className="text-xs font-medium mb-3">Edit Link</h4>
-                        <LinkForm
-                          initialValues={category.links[editingLinkIndex]}
-                          onSubmit={(linkData) => handleUpdateLinkInCategory(category.id, editingLinkIndex, linkData)}
-                          onCancel={() => {
-                            setEditingCategoryId(null);
-                            setEditingLinkIndex(null);
-                          }}
-                          submitLabel="Update"
-                        />
-                      </Card>
-                    )}
-                    
-                    <div className="flex justify-between mt-2">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleRemoveCategory(category.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Remove Category
-                      </Button>
+                      <div className="flex space-x-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditLinkInCategory(category.id, index)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Edit</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveLinkFromCategory(category.id, index)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remove</span>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                  ))}
+                  
+                  {/* Add link to category form - with improved compact UI */}
+                  <LinkForm
+                    onSubmit={(linkData) => handleAddLinkToCategory(category.id, linkData)}
+                    compact={true}
+                    className={
+                      editingCategoryId === category.id && editingLinkIndex !== null ? 
+                      "hidden" : ""
+                    }
+                  />
+                  
+                  {/* Edit link in category form */}
+                  {editingCategoryId === category.id && editingLinkIndex !== null && (
+                    <Card className="p-3">
+                      <h4 className="text-xs font-medium mb-3">Edit Link</h4>
+                      <LinkForm
+                        initialValues={category.links[editingLinkIndex]}
+                        onSubmit={(linkData) => handleUpdateLinkInCategory(category.id, editingLinkIndex, linkData)}
+                        onCancel={() => {
+                          setEditingCategoryId(null);
+                          setEditingLinkIndex(null);
+                        }}
+                        submitLabel="Update"
+                      />
+                    </Card>
+                  )}
+                </div>
+              </Card>
             ))}
-          </Accordion>
+          </div>
         )}
       </div>
     </div>
