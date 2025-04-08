@@ -20,6 +20,7 @@ const GuestFormSchema = z.object({
   backgroundResearchVersions: z.array(z.any()).optional(),
   notes: z.string().optional().or(z.literal("")),
   status: z.enum(["potential", "contacted", "confirmed", "appeared"]),
+  // Add all possible social platforms as optional fields
   twitter: z.string().optional().or(z.literal("")),
   facebook: z.string().optional().or(z.literal("")),
   linkedin: z.string().optional().or(z.literal("")),
@@ -27,6 +28,7 @@ const GuestFormSchema = z.object({
   tiktok: z.string().optional().or(z.literal("")),
   youtube: z.string().optional().or(z.literal("")),
   website: z.string().optional().or(z.literal("")),
+  // We could add custom platforms support here
 });
 
 interface UseGuestFormProps {
@@ -109,6 +111,17 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         imageUrl = null;
       }
       
+      // Collect social links from individual form fields
+      const socialLinks = {
+        twitter: formData.twitter || undefined,
+        facebook: formData.facebook || undefined,
+        linkedin: formData.linkedin || undefined,
+        instagram: formData.instagram || undefined,
+        tiktok: formData.tiktok || undefined,
+        youtube: formData.youtube || undefined,
+        website: formData.website || undefined,
+      };
+      
       const updatedGuest: Guest = {
         ...guest,
         name: formData.name,
@@ -123,15 +136,7 @@ export function useGuestForm({ guest, onSave, onCancel }: UseGuestFormProps) {
         notes: formData.notes || undefined,
         status: formData.status,
         imageUrl: imageUrl as string | undefined,
-        socialLinks: {
-          twitter: formData.twitter || undefined,
-          facebook: formData.facebook || undefined,
-          linkedin: formData.linkedin || undefined,
-          instagram: formData.instagram || undefined,
-          tiktok: formData.tiktok || undefined,
-          youtube: formData.youtube || undefined,
-          website: formData.website || undefined,
-        },
+        socialLinks,
         updatedAt: new Date().toISOString(),
       };
 
