@@ -1,5 +1,6 @@
+
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Pencil, Trash2 } from 'lucide-react';
+import { ChevronLeft, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Guest, Episode } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,14 @@ import { GuestAboutSection } from './GuestAboutSection';
 import { GuestEpisodesList } from './GuestEpisodesList';
 import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
+
 interface GuestDetailProps {
   guest: Guest;
   episodes?: Episode[];
   className?: string;
-  onDelete?: () => void;
+  onDelete?: React.ReactNode;
 }
+
 export function GuestDetail({
   guest,
   episodes = [],

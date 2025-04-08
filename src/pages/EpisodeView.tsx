@@ -4,8 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useEffect, useCallback } from 'react';
 import { useEpisodeData } from '@/hooks/episodes';
 
@@ -24,9 +22,6 @@ const EpisodeView = () => {
   const {
     isLoading,
     episode,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    handleDelete
   } = useEpisodeData(id);
 
   // Refresh data once on initial mount with a controlled approach
@@ -36,9 +31,11 @@ const EpisodeView = () => {
       await refreshGuests();
     }
   }, [id, refreshEpisodes, refreshGuests]);
+  
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+  
   if (!episode) {
     return <Shell>
         <div className="page-container">
@@ -52,6 +49,7 @@ const EpisodeView = () => {
         </div>
       </Shell>;
   }
+  
   return <Shell>
       <div className="page-container">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -61,39 +59,11 @@ const EpisodeView = () => {
               <span className="text-sm font-mono bg-muted px-2 py-1 rounded">#{episode.episodeNumber}</span>
             </div>
           </div>
-          
-          <div className="flex space-x-2 mt-4 md:mt-0">
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={() => setIsDeleteDialogOpen(true)}
-              className="ml-auto"
-            >
-              <Trash className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          </div>
         </div>
         
         <EpisodeDetail episode={episode} guests={guests} />
-        
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Episode</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete this episode? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </Shell>;
 };
+
 export default EpisodeView;
