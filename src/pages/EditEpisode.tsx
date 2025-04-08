@@ -1,11 +1,10 @@
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
-import { useEpisodeData } from '@/hooks/episodes/useEpisodeData';
-import { useGuestsData } from '@/hooks/guests/useGuestsData';
+import { useEpisodeData } from '@/hooks/episodes';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -50,7 +49,14 @@ const EditEpisode = () => {
   if (isLoading) {
     return (
       <Shell>
-        <div className="w-full max-w-[1400px] mx-auto px-4"></div>
+        <PageLayout
+          title="Edit Episode"
+          subtitle="Loading episode details..."
+        >
+          <div className="w-full h-64 flex items-center justify-center">
+            <div className="text-muted-foreground">Loading...</div>
+          </div>
+        </PageLayout>
       </Shell>
     );
   }
@@ -63,7 +69,7 @@ const EditEpisode = () => {
             <h1 className="text-2xl font-semibold mb-2">Episode not found</h1>
             <p className="text-muted-foreground mb-6">The episode you're looking for doesn't exist or has been removed.</p>
             <Button asChild>
-              <a href="/episodes">Back to Episodes</a>
+              <Link to="/episodes">Back to Episodes</Link>
             </Button>
           </div>
         </div>
