@@ -68,10 +68,7 @@ const EpisodeView = () => {
                 Edit
               </Link>
             </Button>
-            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => setIsDeleteDialogOpen(true)} disabled={isLoading}>
-              <Trash className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
+            
           </div>
         </div>
         
