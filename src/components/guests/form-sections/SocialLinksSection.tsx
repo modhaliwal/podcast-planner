@@ -20,6 +20,7 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
   const [showCategoryInput, setShowCategoryInput] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingLinkIndex, setEditingLinkIndex] = useState<number | null>(null);
+  const [editingMainLinkPlatform, setEditingMainLinkPlatform] = useState<string | null>(null);
 
   // Get the form values
   const formValues = form.getValues();
@@ -46,6 +47,17 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
   // Handle removing a social link
   const handleRemoveLink = (platform: string) => {
     form.setValue(platform, "", { shouldValidate: true });
+  };
+
+  // Handle editing a main profile link
+  const handleEditMainLink = (platform: string) => {
+    setEditingMainLinkPlatform(platform);
+  };
+
+  // Handle updating a main profile link
+  const handleUpdateMainLink = (linkData: LinkFormData) => {
+    form.setValue(linkData.platform, linkData.url, { shouldValidate: true });
+    setEditingMainLinkPlatform(null);
   };
 
   // Handle adding a new category
@@ -157,42 +169,62 @@ export function SocialLinksSection({ form }: SocialLinksSectionProps) {
     <div className="space-y-4">
       <h3 className="text-sm font-medium">Social Links</h3>
       
-      {/* Display existing links */}
-      {existingLinks.map(platformId => (
-        <FormField
-          key={platformId}
-          control={form.control}
-          name={platformId}
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  {renderPlatformIcon(platformId)}
-                  <FormLabel>{SOCIAL_PLATFORMS.find(p => p.id === platformId)?.label}</FormLabel>
+      {/* Display existing links in the improved visual format */}
+      <div className="space-y-3">
+        {existingLinks.map(platformId => (
+          <div key={platformId} className="flex items-center justify-between p-2 bg-muted/40 rounded">
+            <div className="flex items-center flex-1 overflow-hidden">
+              {renderPlatformIcon(platformId)}
+              <div className="ml-2 overflow-hidden">
+                <div className="font-medium text-sm truncate">
+                  {getPlatformLabel(platformId)}
                 </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => handleRemoveLink(platformId)}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Remove</span>
-                </Button>
+                <div className="text-xs text-muted-foreground truncate">
+                  {formValues[platformId]}
+                </div>
               </div>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  id={`social-${platformId}`}
-                  placeholder={`https://${platformId}.com/username`} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      ))}
+            </div>
+            <div className="flex space-x-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEditMainLink(platformId)}
+                className="h-8 w-8 p-0"
+              >
+                <Pencil className="h-4 w-4" />
+                <span className="sr-only">Edit</span>
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => handleRemoveLink(platformId)}
+                className="h-8 w-8 p-0"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">Remove</span>
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Edit Main Link Form */}
+      {editingMainLinkPlatform && (
+        <Card className="p-3 mt-2">
+          <h4 className="text-xs font-medium mb-3">Edit Link</h4>
+          <LinkForm
+            initialValues={{
+              platform: editingMainLinkPlatform,
+              url: formValues[editingMainLinkPlatform] || ""
+            }}
+            onSubmit={handleUpdateMainLink}
+            onCancel={() => setEditingMainLinkPlatform(null)}
+            submitLabel="Update"
+          />
+        </Card>
+      )}
       
       {/* Add new platform selector */}
       <div className="space-y-2">
