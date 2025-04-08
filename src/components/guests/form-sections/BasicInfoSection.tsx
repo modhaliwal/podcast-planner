@@ -1,11 +1,9 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info } from "lucide-react";
-
 interface BasicInfoSectionProps {
   form: UseFormReturn<any>;
 }
@@ -18,7 +16,7 @@ export function BasicInfoSection({
         <FormField control={form.control} name="name" render={({
         field
       }) => <FormItem>
-              <FormLabel>Name</FormLabel>
+              
               <FormControl>
                 <Input placeholder="Enter guest name" {...field} />
               </FormControl>
@@ -32,7 +30,7 @@ export function BasicInfoSection({
         <FormField control={form.control} name="title" render={({
         field
       }) => <FormItem>
-              <FormLabel>Title</FormLabel>
+              
               <FormControl>
                 <Input placeholder="Enter guest title" {...field} />
               </FormControl>
@@ -46,7 +44,7 @@ export function BasicInfoSection({
         <FormField control={form.control} name="company" render={({
         field
       }) => <FormItem>
-              <FormLabel>Company</FormLabel>
+              
               <FormControl>
                 <Input placeholder="Enter company name" {...field} />
               </FormControl>
@@ -60,7 +58,7 @@ export function BasicInfoSection({
         <FormField control={form.control} name="status" render={({
         field
       }) => <FormItem>
-              <FormLabel>Status</FormLabel>
+              
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>

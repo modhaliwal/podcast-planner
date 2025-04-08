@@ -1,10 +1,8 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Info } from "lucide-react";
-
 interface ContactSectionProps {
   form: UseFormReturn<any>;
 }
@@ -17,7 +15,7 @@ export function ContactSection({
         <FormField control={form.control} name="email" render={({
         field
       }) => <FormItem>
-              <FormLabel>Email</FormLabel>
+              
               <FormControl>
                 <Input type="email" placeholder="Enter guest email address" {...field} />
               </FormControl>
@@ -31,7 +29,7 @@ export function ContactSection({
         <FormField control={form.control} name="phone" render={({
         field
       }) => <FormItem>
-              <FormLabel>Phone</FormLabel>
+              
               <FormControl>
                 <Input type="tel" placeholder="Enter guest phone number" {...field} />
               </FormControl>
