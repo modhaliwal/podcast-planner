@@ -1,9 +1,9 @@
-
 import { SocialLinks, SocialLinkCategory } from "@/lib/types";
-import { Twitter, Linkedin, Globe, Instagram, Youtube, Facebook, ExternalLink } from "lucide-react";
+import { Twitter, Linkedin, Globe, Instagram, Youtube, Facebook, ExternalLink, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 export interface SocialIconsBarProps {
   socialLinks: SocialLinks;
@@ -61,6 +61,9 @@ export function SocialIconsBar({
     center: "justify-center",
     end: "justify-end"
   };
+  
+  // Check if we have categories that would need to be shown in the hovercard
+  const hasHiddenCategories = !showCategories && hasCategories;
   
   return (
     <TooltipProvider>
@@ -130,9 +133,57 @@ export function SocialIconsBar({
               showLabel={showLabels}
             />
           )}
+          
+          {/* Add "More" button with hovercard when there are categories but showCategories is false */}
+          {hasHiddenCategories && (
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <button 
+                  className={cn(buttonStyles[variant], "group")} 
+                  aria-label="Show more links"
+                >
+                  <MoreHorizontal className={iconSizes[size]} />
+                  {showLabels && <span className="ml-2 text-xs">More</span>}
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-auto p-4 max-w-sm">
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium">Additional Links</h4>
+                  
+                  {socialLinks.categories?.map((category: SocialLinkCategory) => (
+                    category.links.length > 0 && (
+                      <div key={category.id} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-normal">
+                            {category.name}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {category.links.map((link, index) => (
+                            <a 
+                              key={`${category.id}-${index}`}
+                              href={link.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded-full hover:bg-muted flex items-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {getPlatformIcon(link.platform, `h-3.5 w-3.5`)}
+                              <span className="ml-1.5 text-xs">{link.label || getPlatformLabel(link.platform)}</span>
+                              <ExternalLink className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          )}
         </div>
         
-        {/* Categorized links */}
+        {/* Categorized links - shown directly when showCategories is true */}
         {showCategories && hasCategories && (
           <div className="space-y-3">
             {socialLinks.categories?.map((category: SocialLinkCategory) => (
