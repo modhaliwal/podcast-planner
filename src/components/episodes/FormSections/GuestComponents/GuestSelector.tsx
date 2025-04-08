@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -6,21 +5,23 @@ import { cn } from '@/lib/utils';
 import { Guest } from '@/lib/types';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../../EpisodeFormSchema';
-
 interface GuestSelectorProps {
   form: UseFormReturn<EpisodeFormValues>;
   availableGuests: Guest[];
 }
-
-export const GuestSelector = React.memo(function GuestSelector({ form, availableGuests }: GuestSelectorProps) {
+export const GuestSelector = React.memo(function GuestSelector({
+  form,
+  availableGuests
+}: GuestSelectorProps) {
   const guestIds = form.getValues('guestIds') || [];
-  
   const handleValueChange = (value: string) => {
     if (value === "all") {
-      form.setValue('guestIds', availableGuests.map(guest => guest.id), { shouldValidate: true });
+      form.setValue('guestIds', availableGuests.map(guest => guest.id), {
+        shouldValidate: true
+      });
     } else {
       const currentValues = [...guestIds];
-      
+
       // Add or remove the value
       const valueIndex = currentValues.indexOf(value);
       if (valueIndex === -1) {
@@ -30,11 +31,11 @@ export const GuestSelector = React.memo(function GuestSelector({ form, available
         // Remove value if already selected
         currentValues.splice(valueIndex, 1);
       }
-      
-      form.setValue('guestIds', currentValues, { shouldValidate: true });
+      form.setValue('guestIds', currentValues, {
+        shouldValidate: true
+      });
     }
   };
-
   const getSelectedDisplay = useMemo(() => {
     if (guestIds.length === 0) {
       return "Select guests";
@@ -44,10 +45,8 @@ export const GuestSelector = React.memo(function GuestSelector({ form, available
       return `${guestIds.length} guests selected`;
     }
   }, [guestIds, availableGuests]);
-
-  return (
-    <FormItem>
-      <FormLabel>Select Guests</FormLabel>
+  return <FormItem>
+      
       <Select onValueChange={handleValueChange}>
         <FormControl>
           <SelectTrigger>
@@ -57,29 +56,15 @@ export const GuestSelector = React.memo(function GuestSelector({ form, available
           </SelectTrigger>
         </FormControl>
         <SelectContent>
-          {availableGuests.map((guest) => (
-            <SelectItem 
-              key={guest.id} 
-              value={guest.id}
-              className={cn(
-                "flex items-center",
-                guestIds.includes(guest.id) && "bg-secondary"
-              )}
-            >
+          {availableGuests.map(guest => <SelectItem key={guest.id} value={guest.id} className={cn("flex items-center", guestIds.includes(guest.id) && "bg-secondary")}>
               <div className="flex items-center">
-                {guestIds.includes(guest.id) && (
-                  <span className="mr-2">✓</span>
-                )}
+                {guestIds.includes(guest.id) && <span className="mr-2">✓</span>}
                 {guest.name}
               </div>
-            </SelectItem>
-          ))}
-          {availableGuests.length > 0 && (
-            <SelectItem value="all">Select All Guests</SelectItem>
-          )}
+            </SelectItem>)}
+          {availableGuests.length > 0 && <SelectItem value="all">Select All Guests</SelectItem>}
         </SelectContent>
       </Select>
       <FormMessage />
-    </FormItem>
-  );
+    </FormItem>;
 });
