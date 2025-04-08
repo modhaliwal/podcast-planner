@@ -1,12 +1,14 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash } from 'lucide-react';
+import { Trash } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useEffect, useCallback } from 'react';
 import { useEpisodeData } from '@/hooks/episodes';
+
 const EpisodeView = () => {
   const {
     id
@@ -58,17 +60,18 @@ const EpisodeView = () => {
               <h1 className="section-title">{episode.title}</h1>
               <span className="text-sm font-mono bg-muted px-2 py-1 rounded">#{episode.episodeNumber}</span>
             </div>
-            
           </div>
           
           <div className="flex space-x-2 mt-4 md:mt-0">
-            <Button variant="outline" size="sm" asChild>
-              <Link to={`/episodes/${id}/edit`}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Link>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="ml-auto"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete
             </Button>
-            
           </div>
         </div>
         

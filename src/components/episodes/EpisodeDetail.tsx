@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Info, BookText, Image, Download } from 'lucide-react';
+import { ChevronLeft, Info, BookText, Image, Download, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Episode, Guest } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -29,11 +29,18 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
   
   return (
     <div className={cn("space-y-3 sm:space-y-4", className)}>
-      <div className="flex items-center mb-2 sm:mb-3">
-        <Button variant="ghost" size="sm" asChild className="mr-2">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <Button variant="ghost" size="sm" asChild>
           <Link to="/episodes">
             <ChevronLeft className="h-4 w-4 mr-1" />
             Back
+          </Link>
+        </Button>
+
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/episodes/${episode.id}/edit`}>
+            <Edit className="h-4 w-4 mr-1" />
+            Edit
           </Link>
         </Button>
       </div>
