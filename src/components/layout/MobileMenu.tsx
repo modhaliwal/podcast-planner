@@ -1,5 +1,5 @@
 
-import { X, User, LogOut, Headphones, Settings, Users } from 'lucide-react';
+import { X, LogOut, Headphones, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,7 @@ interface MobileMenuProps {
   onClose: () => void;
   onSignOut: () => void;
   logoPath: string;
-  user: any;
+  isAuthenticated: boolean;
 }
 
 export function MobileMenu({ 
@@ -20,7 +20,7 @@ export function MobileMenu({
   onClose, 
   onSignOut, 
   logoPath, 
-  user 
+  isAuthenticated 
 }: MobileMenuProps) {
   const location = useLocation();
   
@@ -65,50 +65,18 @@ export function MobileMenu({
             </Link>
           ))}
           
-          {user && (
-            <>
-              <div className="border-t my-2"></div>
-              <Link 
-                to="/settings"
-                className={cn(
-                  "px-4 py-3 rounded-md text-base font-medium flex items-center",
-                  location.pathname === "/settings"
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground/80 hover:text-foreground hover:bg-accent"
-                )}
-                onClick={onClose}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Link>
-              <Link 
-                to="/users"
-                className={cn(
-                  "px-4 py-3 rounded-md text-base font-medium flex items-center",
-                  location.pathname === "/users"
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground/80 hover:text-foreground hover:bg-accent"
-                )}
-                onClick={onClose}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                User Management
-              </Link>
-            </>
-          )}
-          
-          {!user && (
+          {!isAuthenticated && (
             <Link 
               to="/auth"
               className="px-4 py-3 rounded-md text-base font-medium flex items-center bg-primary text-primary-foreground"
               onClick={onClose}
             >
-              <User className="h-4 w-4 mr-2" />
+              <Home className="h-4 w-4 mr-2" />
               Sign In
             </Link>
           )}
           
-          {user && (
+          {isAuthenticated && (
             <Button 
               variant="outline" 
               className="w-full justify-start"

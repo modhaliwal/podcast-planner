@@ -2,11 +2,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Headphones, Home, Menu, User, Users } from 'lucide-react';
+import { Calendar, Headphones, Home, Menu, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NavItem } from './types';
 import { Navigation } from './Navigation';
-import { UserDropdown } from './UserDropdown';
 import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
@@ -17,7 +16,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, signOut, isLoading } = useAuthProxy();
+  const { isAuthenticated, signOut, isLoading } = useAuthProxy();
   const isMobile = useIsMobile();
   
   const navItems: NavItem[] = [
@@ -47,11 +46,6 @@ export function Header() {
       });
     }
   };
-
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-  };
   
   return (
     <header className={cn(
@@ -60,7 +54,7 @@ export function Header() {
     )}>
       <div className="container max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-2">
+          <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-2">
             <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             <span className="font-medium text-lg sm:text-xl">PodCast Manager</span>
           </Link>
@@ -69,15 +63,12 @@ export function Header() {
         {!isMobile && <Navigation />}
         
         <div className="flex items-center space-x-2">
-          {!isLoading && (user ? (
-            <UserDropdown 
-              user={user} 
-              onSignOut={handleSignOut} 
-              getInitials={getInitials} 
-            />
+          {!isLoading && (isAuthenticated ? (
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              Sign Out
+            </Button>
           ) : (
             <Button onClick={() => navigate('/auth')} variant="default" size="sm">
-              <User className="h-4 w-4 mr-2" />
               Sign In
             </Button>
           ))}
@@ -97,8 +88,8 @@ export function Header() {
           navItems={navItems}
           onClose={() => setIsMobileMenuOpen(false)}
           onSignOut={handleSignOut}
-          logoPath={user ? "/dashboard" : "/"}
-          user={user}
+          logoPath={isAuthenticated ? "/dashboard" : "/"}
+          isAuthenticated={isAuthenticated}
         />
       </div>
     </header>

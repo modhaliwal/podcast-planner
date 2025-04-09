@@ -86,14 +86,7 @@ export function useAuthProxy() {
     }
   }, [contextLogout, authModule]);
   
-  // Build the user object from token if available
-  const user = authToken ? {
-    id: 'federated-user', // Would normally be extracted from the token
-    email: 'user@example.com'  // Would normally be extracted from the token
-  } : null;
-  
   return {
-    user,
     signIn,
     signOut,
     authenticateWithToken,
