@@ -3,7 +3,7 @@ import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { federatedSignIn } from '@/integrations/auth/federated-auth';
+import { federatedSignIn, federatedSignOut } from '@/integrations/auth/federated-auth';
 
 // A proxy hook that provides auth functionality based on federation
 export function useAuthProxy() {
@@ -34,37 +34,13 @@ export function useAuthProxy() {
         return { error: { message: 'Authentication service unavailable' } };
       }
       
-      // Use the federated sign-in function
-      const result = await federatedSignIn(email, password);
+      // Use the federated sign-in function with full callbackUrl
+      const callbackUrl = `${window.location.origin}/auth/callback?redirectTo=/dashboard`;
+      federatedSignIn(callbackUrl);
       
-      if (result.error) {
-        toast({
-          title: 'Authentication Failed',
-          description: result.error.message,
-          variant: 'destructive',
-        });
-        return result;
-      }
+      // This will redirect, so we don't have to return anything meaningful
+      return { success: true };
       
-      // Store the token if available
-      if (result.data?.session) {
-        const token = {
-          access_token: result.data.session.access_token,
-          refresh_token: result.data.session.refresh_token || '',
-          expires_at: Date.now() + (result.data.session.expires_in || 3600) * 1000
-        };
-        
-        setAuthToken(token);
-        
-        toast({
-          title: 'Authentication Successful',
-          description: 'You have been signed in.',
-        });
-        
-        navigate('/dashboard');
-      }
-      
-      return result;
     } catch (error: any) {
       toast({
         title: 'Authentication Error',
@@ -94,6 +70,7 @@ export function useAuthProxy() {
     try {
       setIsLoading(true);
       contextLogout();
+      federatedSignOut();
       return true;
     } catch (error: any) {
       toast({

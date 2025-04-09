@@ -21,10 +21,10 @@ export const useEpisodeSave = (episodeId?: string) => {
     
     try {
       // Update the episode using the repository
-      const { success, error } = await episodeRepository.update(episodeId, data);
+      const updatedEpisode = await episodeRepository.update(episodeId, data);
       
-      if (!success) {
-        throw new Error(error?.message || "Failed to save episode");
+      if (!updatedEpisode) {
+        throw new Error("Failed to save episode");
       }
       
       // Invalidate and refetch

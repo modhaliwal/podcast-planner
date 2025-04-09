@@ -3,6 +3,7 @@ import { useEpisodeLoader } from './useEpisodeLoader';
 import { useEpisodeSave } from './useEpisodeSave';
 import { useEpisodeDelete } from './useEpisodeDelete';
 import { Episode } from '@/lib/types';
+import { UpdateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
 
 export function useEpisodeData(episodeId?: string) {
   // Use our specialized hooks
@@ -28,7 +29,7 @@ export function useEpisodeData(episodeId?: string) {
   const isLoading = isLoadingEpisode || isSaving || isDeleting;
   
   // Define a standard save handler that accepts the updated episode
-  const onSave = async (updatedEpisode: Episode) => {
+  const onSave = async (updatedEpisode: UpdateEpisodeDTO) => {
     if (!episodeId) {
       return { success: false, error: new Error('Episode ID is required for saving') };
     }

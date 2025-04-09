@@ -23,3 +23,18 @@ export const federatedSignOut = () => {
   // Redirect to the home page
   window.location.href = "/";
 };
+
+// Exported function to get the auth module
+export const getAuthModule = (): [any, null] => {
+  // Return a simple fallback implementation
+  return [{ 
+    useAuth: () => ({
+      user: null,
+      isLoading: false,
+      error: null,
+      signIn: async () => ({ error: { message: "Auth module unavailable" } }),
+      signOut: async () => {},
+    })
+  }, null];
+};
+

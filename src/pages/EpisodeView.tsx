@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { Shell } from '@/components/layout/Shell';
@@ -8,7 +9,7 @@ import { useEpisodeLoader } from '@/hooks/episodes';
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
-  const { episodes, guests, refreshEpisodes, refreshGuests } = useAuthProxy();
+  const { refreshEpisodes, refreshGuests } = useAuthProxy();
 
   // Use the episodeLoader hook for consistent data fetching
   const {
@@ -17,6 +18,9 @@ const EpisodeView = () => {
     refreshEpisode
   } = useEpisodeLoader(id);
 
+  // Load guest data for the episode display
+  const { guests } = useAuthProxy();
+
   // Refresh data once on initial mount with a controlled approach
   const refreshData = useCallback(async () => {
     if (id) {
@@ -24,9 +28,11 @@ const EpisodeView = () => {
       await refreshGuests();
     }
   }, [id, refreshEpisodes, refreshGuests]);
+  
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+  
   if (!episode && !isLoading) {
     return <Shell>
         <div className="page-container">
@@ -40,6 +46,7 @@ const EpisodeView = () => {
         </div>
       </Shell>;
   }
+  
   return <Shell>
       <div className="page-container">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">

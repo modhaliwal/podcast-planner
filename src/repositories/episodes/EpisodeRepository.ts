@@ -8,9 +8,13 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Repository for managing Episode data
  */
-export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO, UpdateEpisodeDTO> {
+export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
+  protected readonly mapper: EpisodeMapper;
+  
   constructor() {
-    super('episodes' as TableName, new EpisodeMapper());
+    const mapper = new EpisodeMapper();
+    super('episodes' as TableName, mapper);
+    this.mapper = mapper;
   }
   
   /**
@@ -170,6 +174,16 @@ export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO,
     } catch (error: any) {
       console.error('Repository error:', error);
       return false;
+    }
+  }
+  
+  // Add a getById method for compatibility
+  async getById(id: string): Promise<{ data: Episode | null; error: Error | null }> {
+    try {
+      const episode = await this.findById(id);
+      return { data: episode, error: null };
+    } catch (error: any) {
+      return { data: null, error };
     }
   }
 }

@@ -26,18 +26,18 @@ export const useEpisodeLoader = (episodeId?: string) => {
       }
       
       // Use the repository pattern to fetch episode data
-      const { data, error } = await episodeRepository.getById(id);
+      const result = await episodeRepository.getById(id);
       
-      if (error) {
-        showErrorToast(error);
-        throw error;
+      if (result.error) {
+        showErrorToast(result.error);
+        throw result.error;
       }
       
-      if (!data) {
+      if (!result.data) {
         throw new Error("Episode not found");
       }
       
-      return data as Episode;
+      return result.data as Episode;
     },
     enabled: !!id,
     staleTime: 60000, // Cache data for 1 minute to prevent excessive refetching
