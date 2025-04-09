@@ -16,7 +16,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { isAuthenticated, signOut, isLoading } = useAuthProxy();
+  const { isAuthenticated, isLoading } = useAuthProxy();
   const isMobile = useIsMobile();
   
   const navItems: NavItem[] = [
@@ -33,19 +33,6 @@ export function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "Error signing out. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
   
   return (
     <header className={cn(
@@ -63,15 +50,11 @@ export function Header() {
         {!isMobile && <Navigation />}
         
         <div className="flex items-center space-x-2">
-          {!isLoading && (isAuthenticated ? (
-            <Button onClick={handleSignOut} variant="outline" size="sm">
-              Sign Out
-            </Button>
-          ) : (
+          {!isLoading && !isAuthenticated && (
             <Button onClick={() => navigate('/auth')} variant="default" size="sm">
               Sign In
             </Button>
-          ))}
+          )}
 
           <Button
             variant="ghost"
@@ -87,7 +70,6 @@ export function Header() {
           isOpen={isMobileMenuOpen}
           navItems={navItems}
           onClose={() => setIsMobileMenuOpen(false)}
-          onSignOut={handleSignOut}
           logoPath={isAuthenticated ? "/dashboard" : "/"}
           isAuthenticated={isAuthenticated}
         />

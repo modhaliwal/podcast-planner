@@ -94,6 +94,8 @@ export function useAuthProxy() {
     authError,
     isAuthenticated,
     token: authToken?.access_token,
+    // Adding a user property that's null to maintain compatibility
+    user: null,
     // Provide empty implementations for backward compatibility
     refreshGuests: async () => [],
     refreshEpisodes: async () => [],

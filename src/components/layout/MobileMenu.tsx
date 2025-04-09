@@ -1,5 +1,5 @@
 
-import { X, LogOut, Headphones, Home } from 'lucide-react';
+import { X, Home, Headphones } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,6 @@ interface MobileMenuProps {
   isOpen: boolean;
   navItems: NavItem[];
   onClose: () => void;
-  onSignOut: () => void;
   logoPath: string;
   isAuthenticated: boolean;
 }
@@ -18,7 +17,6 @@ export function MobileMenu({
   isOpen, 
   navItems, 
   onClose, 
-  onSignOut, 
   logoPath, 
   isAuthenticated 
 }: MobileMenuProps) {
@@ -74,20 +72,6 @@ export function MobileMenu({
               <Home className="h-4 w-4 mr-2" />
               Sign In
             </Link>
-          )}
-          
-          {isAuthenticated && (
-            <Button 
-              variant="outline" 
-              className="w-full justify-start"
-              onClick={() => {
-                onSignOut();
-                onClose();
-              }}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Log Out
-            </Button>
           )}
         </nav>
       </div>
