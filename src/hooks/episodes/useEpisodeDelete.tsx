@@ -4,13 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useCoverArtHandler } from '../useCoverArtHandler';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 
 export function useEpisodeDelete(episodeId: string | undefined) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { refreshEpisodes } = useAuth();
   const { handleCoverArtUpload } = useCoverArtHandler();
 
   const handleDelete = useCallback(async () => {
@@ -51,9 +50,6 @@ export function useEpisodeDelete(episodeId: string | undefined) {
         description: "Episode deleted successfully"
       });
       
-      // Refresh episodes data
-      await refreshEpisodes();
-      
       // Navigate back to episodes list
       navigate('/episodes');
       
@@ -70,7 +66,7 @@ export function useEpisodeDelete(episodeId: string | undefined) {
       setIsLoading(false);
       setIsDeleteDialogOpen(false);
     }
-  }, [episodeId, navigate, refreshEpisodes, handleCoverArtUpload]);
+  }, [episodeId, navigate, handleCoverArtUpload]);
 
   return {
     isLoading,

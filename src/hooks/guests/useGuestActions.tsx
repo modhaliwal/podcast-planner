@@ -1,14 +1,12 @@
 
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
 import { deleteImage, isBlobUrl } from '@/lib/imageUpload';
-import { useAuth } from '@/contexts/AuthContext';
 
 export function useGuestActions() {
   const navigate = useNavigate();
-  const { refreshGuests } = useAuth();
   
   const handleSave = async (guestId: string, updatedGuest: Guest, currentGuest?: Guest) => {
     try {
@@ -65,9 +63,6 @@ export function useGuestActions() {
         imageUrl: imageUrl === null ? undefined : imageUrl,
       };
       
-      // Refresh the guests list
-      await refreshGuests();
-      
       toast({
         title: "Success",
         description: "Guest updated successfully"
@@ -107,8 +102,6 @@ export function useGuestActions() {
         title: "Success",
         description: "Guest deleted successfully"
       });
-      
-      await refreshGuests();
       
       navigate('/guests');
       

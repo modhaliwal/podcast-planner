@@ -10,8 +10,8 @@ const GuestView = () => {
   const { id } = useParams<{ id: string }>();
   const { guest, isLoading } = useGuestData(id);
   
-  // Since we removed AuthContext, we need to fetch episodes differently
-  // This would typically be done through a dedicated hook/service
+  // Here we would fetch episodes related to this guest if needed
+  // For now, we'll just use an empty array
   const guestEpisodes = [];
 
   if (isLoading) {

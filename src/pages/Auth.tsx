@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Headphones } from "lucide-react";
+import { Headphones, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
@@ -55,6 +55,15 @@ export default function Auth() {
     }
   }
 
+  const handleExternalAuth = () => {
+    const currentUrl = window.location.origin;
+    const callbackUrl = `${currentUrl}/auth/callback?redirectTo=${encodeURIComponent(from)}`;
+    
+    // Redirect to the federated auth provider
+    const authProviderUrl = "https://admin.skyrocketdigital.com/auth";
+    window.location.href = `${authProviderUrl}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  };
+
   // Show auth module error if it exists
   useEffect(() => {
     if (authError && !authModuleLoading) {
@@ -80,6 +89,23 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-6 pt-4">
+          <Button 
+            className="w-full flex items-center justify-center gap-2"
+            onClick={handleExternalAuth}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Sign in with Authentication Provider
+          </Button>
+          
+          <div className="relative w-full">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleAuth)} className="space-y-4 w-full">
               <FormField
@@ -112,8 +138,9 @@ export default function Auth() {
                 type="submit" 
                 className="w-full mt-6" 
                 disabled={loading || authModuleLoading}
+                variant="outline"
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "Signing in..." : "Sign In with Email"}
               </Button>
             </form>
           </Form>

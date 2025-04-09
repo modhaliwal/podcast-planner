@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { getUsers, deleteUser, UserWithRoles } from '@/services/userService';
-import { User, UsersRoleKey } from '@/lib/types';
 import { CreateUserDialog } from './CreateUserDialog';
 import { DeleteUserDialog } from './DeleteUserDialog';
 import { Button } from '@/components/ui/button';
 import { UserPlus, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { UsersRoleKey } from '@/lib/types';
 
 interface UsersListProps {
   isAdmin: boolean;
@@ -117,31 +117,31 @@ export function UsersList({ isAdmin }: UsersListProps) {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-muted/50">
+              {users.map((userItem) => (
+                <tr key={userItem.id} className="hover:bg-muted/50">
                   <td className="p-3">
-                    {user.full_name || 'Unnamed User'}
+                    {userItem.full_name || 'Unnamed User'}
                   </td>
-                  <td className="p-3">{user.email}</td>
+                  <td className="p-3">{userItem.email}</td>
                   <td className="p-3">
-                    {user.roles?.some(r => r.role === UsersRoleKey.ADMIN) ? (
+                    {userItem.roles?.some(r => r.role === UsersRoleKey.ADMIN) ? (
                       <Badge variant="default">Admin</Badge>
                     ) : (
                       <Badge variant="outline">Standard</Badge>
                     )}
                   </td>
                   <td className="p-3">
-                    {user.last_sign_in 
-                      ? new Date(user.last_sign_in).toLocaleDateString() 
+                    {userItem.last_sign_in 
+                      ? new Date(userItem.last_sign_in).toLocaleDateString() 
                       : 'Never'}
                   </td>
                   <td className="p-3 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => openDeleteDialog(user.id, user.full_name || user.email)}
+                      onClick={() => openDeleteDialog(userItem.id, userItem.full_name || userItem.email)}
                       className="text-destructive"
-                      disabled={user.id === (user as User).id} // Prevent deleting yourself
+                      disabled={userItem.id === user?.id} // Prevent deleting yourself
                     >
                       Delete
                     </Button>
