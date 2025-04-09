@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { FederatedAuthProvider } from "@/contexts/FederatedAuthContext";
 import { ErrorBoundary } from "@/components/error";
@@ -26,64 +26,66 @@ import "./App.css";
 function App() {
   return (
     <ErrorBoundary>
-      <FederatedAuthProvider>
-        <AuthErrorNotification />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          
-          {/* Protected routes */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/guests" element={
-            <ProtectedRoute>
-              <Guests />
-            </ProtectedRoute>
-          } />
-          <Route path="/guests/new" element={
-            <ProtectedRoute>
-              <AddGuest />
-            </ProtectedRoute>
-          } />
-          <Route path="/guests/:id" element={
-            <ProtectedRoute>
-              <GuestView />
-            </ProtectedRoute>
-          } />
-          <Route path="/guests/:id/edit" element={
-            <ProtectedRoute>
-              <EditGuest />
-            </ProtectedRoute>
-          } />
-          <Route path="/episodes" element={
-            <ProtectedRoute>
-              <Episodes />
-            </ProtectedRoute>
-          } />
-          <Route path="/episodes/new" element={
-            <ProtectedRoute>
-              <CreateEpisode />
-            </ProtectedRoute>
-          } />
-          <Route path="/episodes/:id" element={
-            <ProtectedRoute>
-              <EpisodeView />
-            </ProtectedRoute>
-          } />
-          <Route path="/episodes/:id/edit" element={
-            <ProtectedRoute>
-              <EditEpisode />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </FederatedAuthProvider>
+      <BrowserRouter>
+        <FederatedAuthProvider>
+          <AuthErrorNotification />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/guests" element={
+              <ProtectedRoute>
+                <Guests />
+              </ProtectedRoute>
+            } />
+            <Route path="/guests/new" element={
+              <ProtectedRoute>
+                <AddGuest />
+              </ProtectedRoute>
+            } />
+            <Route path="/guests/:id" element={
+              <ProtectedRoute>
+                <GuestView />
+              </ProtectedRoute>
+            } />
+            <Route path="/guests/:id/edit" element={
+              <ProtectedRoute>
+                <EditGuest />
+              </ProtectedRoute>
+            } />
+            <Route path="/episodes" element={
+              <ProtectedRoute>
+                <Episodes />
+              </ProtectedRoute>
+            } />
+            <Route path="/episodes/new" element={
+              <ProtectedRoute>
+                <CreateEpisode />
+              </ProtectedRoute>
+            } />
+            <Route path="/episodes/:id" element={
+              <ProtectedRoute>
+                <EpisodeView />
+              </ProtectedRoute>
+            } />
+            <Route path="/episodes/:id/edit" element={
+              <ProtectedRoute>
+                <EditEpisode />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </FederatedAuthProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }
