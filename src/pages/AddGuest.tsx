@@ -6,6 +6,7 @@ import { GuestForm } from '@/components/guests/GuestForm';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
+import { repositories } from '@/repositories';
 
 const AddGuest = () => {
   const navigate = useNavigate();
@@ -26,27 +27,21 @@ const AddGuest = () => {
     setIsSubmitting(true);
     
     try {
-      // Insert the new guest into the database
-      const { data, error } = await supabase
-        .from('guests')
-        .insert({
-          name: newGuest.name,
-          title: newGuest.title || '',
-          company: newGuest.company || null,
-          email: newGuest.email || null,
-          phone: newGuest.phone || null,
-          bio: newGuest.bio || '',
-          image_url: newGuest.imageUrl || null,
-          social_links: newGuest.socialLinks as any,
-          notes: newGuest.notes || null,
-          status: newGuest.status || 'potential',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+      // Use the GuestRepository to add the new guest
+      const guestData = {
+        name: newGuest.name,
+        title: newGuest.title,
+        company: newGuest.company,
+        email: newGuest.email,
+        phone: newGuest.phone,
+        bio: newGuest.bio || '',
+        imageUrl: newGuest.imageUrl,
+        notes: newGuest.notes,
+        status: newGuest.status || 'potential',
+        socialLinks: newGuest.socialLinks
+      };
       
-      if (error) throw error;
+      const createdGuest = await repositories.guests.add(guestData);
       
       toast({
         title: "Success",
@@ -54,7 +49,7 @@ const AddGuest = () => {
       });
       
       // Navigate to the new guest's page
-      navigate(`/guests/${data.id}`);
+      navigate(`/guests/${createdGuest.id}`);
     } catch (error: any) {
       toast({
         title: "Error",

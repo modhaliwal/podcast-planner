@@ -4,7 +4,7 @@ import { Repository } from './Repository';
 import { supabase } from '@/integrations/supabase/client';
 
 // Valid Supabase table names
-export type TableName = 'guests' | 'episodes' | 'ai_generators' | 'episode_guests' | 'profiles';
+export type TableName = 'guests' | 'episodes' | 'ai_generators' | 'episode_guests';
 
 /**
  * Base implementation of the Repository interface
