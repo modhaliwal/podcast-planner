@@ -31,24 +31,33 @@ const fallbackAuth: FederatedAuth = {
 // Create a lazy loaded module with error handling
 let authModuleError: AuthModuleError = null;
 
-// We need to properly type the module to avoid errors
-type ModuleType = {
-  default: FederatedAuth;
+// Create a wrapper component that will be lazy loaded
+const AuthModuleWrapper = ({ children }: { children: ReactNode }) => {
+  // This is a simple component that just renders its children
+  // It serves as our ComponentType for lazy loading
+  return <>{children}</>;
 };
 
-// Use proper typing for lazy loading
-// We have to create a component that will load the federated module
+// Properly type the module for lazy loading
 const FederatedAuthModuleLoader = lazy(() => 
   import('auth/module')
-    .then((module): ModuleType => {
-      // This forces the type to match what lazy() expects
-      return { default: module.default };
+    .then((module) => {
+      // Return a component that renders our auth module
+      return { 
+        default: ({ children }: { children: ReactNode }) => {
+          return <AuthModuleWrapper>{children}</AuthModuleWrapper>;
+        }
+      };
     })
     .catch(err => {
       console.error('Failed to load auth module:', err);
       authModuleError = 'unavailable';
       // Return a component that just provides our fallback
-      return { default: fallbackAuth };
+      return { 
+        default: ({ children }: { children: ReactNode }) => {
+          return <AuthModuleWrapper>{children}</AuthModuleWrapper>;
+        }
+      };
     })
 );
 
@@ -77,15 +86,15 @@ const FederatedAuthModule: React.FC<FederatedAuthModuleProps> = ({ children }) =
 };
 
 // Wrapper component to provide auth module with proper error handling
-export function withFederatedAuth<T>(
+export function withFederatedAuth<T extends object>(
   Component: React.ComponentType<T & { authModule: FederatedAuth }>
 ): React.FC<T> {
   return (props: T) => {
     return (
       <Suspense fallback={<div className="flex items-center justify-center p-4">Loading authentication...</div>}>
-        <FederatedAuthModuleLoader />
-        {/* We can't use children like this with a lazy component, so we need to render differently */}
-        <Component {...props as any} authModule={fallbackAuth} />
+        <FederatedAuthModuleLoader>
+          <Component {...props} authModule={fallbackAuth} />
+        </FederatedAuthModuleLoader>
       </Suspense>
     );
   };
