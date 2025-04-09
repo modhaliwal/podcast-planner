@@ -4,19 +4,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Calendar, Headphones, Home, Menu, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
 import { NavItem } from './types';
 import { Navigation } from './Navigation';
 import { UserDropdown } from './UserDropdown';
 import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from '@/hooks/use-toast';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
+import { PermissionGate } from '@/components/auth/PermissionGate';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isLoading } = useAuthProxy();
   const isMobile = useIsMobile();
   
   const navItems: NavItem[] = [
@@ -68,7 +69,7 @@ export function Header() {
         {!isMobile && <Navigation />}
         
         <div className="flex items-center space-x-2">
-          {user ? (
+          {!isLoading && (user ? (
             <UserDropdown 
               user={user} 
               onSignOut={handleSignOut} 
@@ -79,7 +80,7 @@ export function Header() {
               <User className="h-4 w-4 mr-2" />
               Sign In
             </Button>
-          )}
+          ))}
 
           <Button
             variant="ghost"
