@@ -1,3 +1,4 @@
+import { Result } from "@/lib/types";
 
 /**
  * Base Repository interface that defines common CRUD operations
@@ -5,30 +6,33 @@
  */
 export interface Repository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>> {
   /**
-   * Get all items
+   * Get all items with optional filtering
    */
-  getAll(): Promise<{ data: T[] | null; error: Error | null }>;
+  getAll(options?: { 
+    filters?: Record<string, any>,
+    relations?: string[] 
+  }): Promise<Result<T[]>>;
   
   /**
    * Get a single item by ID
    */
-  getById(id: string): Promise<{ data: T | null; error: Error | null }>;
+  getById(id: string): Promise<Result<T>>;
   
   /**
    * Create a new item
    * @param item Data required to create a new entity
    */
-  create(item: CreateDTO): Promise<{ data: T | null; error: Error | null }>;
+  create(item: CreateDTO): Promise<Result<T>>;
   
   /**
    * Update an existing item
    * @param id ID of the entity to update
    * @param item Data to update the entity with
    */
-  update(id: string, item: UpdateDTO): Promise<{ success: boolean; error: Error | null }>;
+  update(id: string, item: UpdateDTO): Promise<Result<boolean>>;
   
   /**
    * Delete an item by ID
    */
-  delete(id: string): Promise<{ success: boolean; error: Error | null }>;
+  delete(id: string): Promise<Result<boolean>>;
 }

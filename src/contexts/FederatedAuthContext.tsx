@@ -1,17 +1,18 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getAuthModule, getFederatedAuthError } from '@/integrations/auth/federated-auth';
+import { getAuthModule } from '@/integrations/auth/federated-auth';
 import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
-import { toast } from '@/hooks/use-toast';
 
+// Types for auth context
 interface FederatedAuthContextType {
   authModule: FederatedAuth;
-  authError: AuthModuleError;
   isLoading: boolean;
   authToken: FederatedAuthToken | null;
   setAuthToken: (token: FederatedAuthToken | null) => void;
+  hasAuthError: boolean;
+  authErrorType: AuthModuleError | null;
 }
 
+// Create the context
 const FederatedAuthContext = createContext<FederatedAuthContextType | undefined>(undefined);
 
 // Helper function to get token from local storage
@@ -30,6 +31,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
   const [authModule, authError] = getAuthModule();
   const [isLoading, setIsLoading] = useState(true);
   const [authToken, setAuthTokenState] = useState<FederatedAuthToken | null>(getStoredToken());
+  const [authErrorType, setAuthErrorType] = useState<AuthModuleError | null>(null);
   
   // Function to set token and persist to localStorage
   const setAuthToken = (token: FederatedAuthToken | null) => {
@@ -48,17 +50,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
         // Wait a moment to ensure module federation has time to initialize
         setTimeout(() => {
           const [, currentError] = getAuthModule();
-          
-          if (currentError === 'network') {
-            toast({
-              title: 'Authentication Service Unavailable',
-              description: 'Could not connect to the authentication service. Some features may be limited.',
-              variant: 'destructive',
-            });
-          } else if (currentError === 'configuration') {
-            console.warn('Auth module is not properly configured.');
-          }
-          
+          setAuthErrorType(currentError);
           setIsLoading(false);
         }, 1000);
       } catch (error) {
@@ -77,14 +69,18 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     }
   }, [authToken]);
   
+  // Create the context value
+  const contextValue: FederatedAuthContextType = {
+    authModule,
+    isLoading,
+    authToken,
+    setAuthToken,
+    hasAuthError: authErrorType !== null,
+    authErrorType
+  };
+  
   return (
-    <FederatedAuthContext.Provider value={{ 
-      authModule, 
-      authError, 
-      isLoading,
-      authToken,
-      setAuthToken
-    }}>
+    <FederatedAuthContext.Provider value={contextValue}>
       {children}
     </FederatedAuthContext.Provider>
   );

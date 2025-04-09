@@ -1,9 +1,9 @@
-
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { FederatedAuthProvider } from "@/contexts/FederatedAuthContext";
 import { ErrorBoundary } from "@/components/error";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AuthErrorNotification } from "@/components/auth/AuthErrorNotification";
 
 // Import pages
 import Index from "@/pages/Index";
@@ -28,6 +28,7 @@ function App() {
   return (
     <ErrorBoundary>
       <FederatedAuthProvider>
+        <AuthErrorNotification />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />

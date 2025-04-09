@@ -1,37 +1,43 @@
-
-import React from 'react';
+import { ReactNode } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
-import { FormGroup, FormLabel, FormError, FormHelp } from '../ui/form-group';
+import { FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
+import { cn } from '@/lib/utils';
 
 interface FormFieldProps {
   name: string;
-  label: string;
-  required?: boolean;
-  helperText?: string;
-  children: React.ReactNode;
+  label?: string;
+  description?: string;
+  className?: string;
+  children: (field: { value: any; onChange: (...event: any[]) => void; }) => ReactNode;
 }
 
-export function FormField({ name, label, required, helperText, children }: FormFieldProps) {
-  const { control, formState } = useFormContext();
-  const error = formState.errors[name];
+/**
+ * Reusable form field component to standardize form layout and behavior
+ * Reduces duplication across form implementations
+ */
+export function FormField({
+  name,
+  label,
+  description,
+  className,
+  children
+}: FormFieldProps) {
+  const { control } = useFormContext();
   
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <FormGroup id={name} isInvalid={!!error}>
-          <FormLabel required={required}>{label}</FormLabel>
-          {React.isValidElement(children)
-            ? React.cloneElement(children as React.ReactElement, {
-                ...field,
-                id: name,
-              })
-            : children}
-          {error && <FormError message={error.message?.toString()} />}
-          {helperText && <FormHelp>{helperText}</FormHelp>}
-        </FormGroup>
-      )}
-    />
+    <FormItem className={cn(className)}>
+      {label && <FormLabel>{label}</FormLabel>}
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <FormControl>
+            {children(field)}
+          </FormControl>
+        )}
+      />
+      {description && <FormDescription>{description}</FormDescription>}
+      <FormMessage />
+    </FormItem>
   );
 }

@@ -1,15 +1,24 @@
-
 /**
- * Generic interface for mapping between database models and domain models
+ * Data mapper interface that translates between domain and database models
  */
-export interface DataMapper<DomainModel, DatabaseModel> {
+export interface DataMapper<DomainType, DBType> {
   /**
-   * Maps a database model to a domain model
+   * Map from database model to domain model
    */
-  toDomain(dbModel: DatabaseModel): DomainModel;
+  toDomain(dbModel: DBType): DomainType;
   
   /**
-   * Maps a domain model to a database model
+   * Map from domain model to database model
    */
-  toDB(domainModel: Partial<DomainModel>): Partial<DatabaseModel>;
+  toDB(domainModel: Partial<DomainType>): Partial<DBType>;
+  
+  /**
+   * Map from creation DTO to database model
+   */
+  createDtoToDB?(dto: any): Partial<DBType>;
+  
+  /**
+   * Map from update DTO to database model
+   */
+  updateDtoToDB?(dto: any): Partial<DBType>;
 }

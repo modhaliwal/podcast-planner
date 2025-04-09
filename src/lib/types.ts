@@ -1,4 +1,3 @@
-
 export interface Guest {
   id: string;
   name: string;
@@ -133,4 +132,12 @@ export interface User {
   created_at: string;
   last_sign_in?: string;
   roles?: UserRole[];
+}
+
+/**
+ * Standardized result type for repository operations
+ */
+export interface Result<T> {
+  data: T | null;
+  error: Error | null;
 }
