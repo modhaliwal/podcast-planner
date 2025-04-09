@@ -1,5 +1,5 @@
 
-import { X, Home, Headphones } from 'lucide-react';
+import { X, Headphones } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -10,15 +10,13 @@ interface MobileMenuProps {
   navItems: NavItem[];
   onClose: () => void;
   logoPath: string;
-  isAuthenticated: boolean;
 }
 
 export function MobileMenu({ 
   isOpen, 
   navItems, 
   onClose, 
-  logoPath, 
-  isAuthenticated 
+  logoPath 
 }: MobileMenuProps) {
   const location = useLocation();
   

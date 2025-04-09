@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Calendar, Headphones, Home, Menu, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,15 +8,10 @@ import { NavItem } from './types';
 import { Navigation } from './Navigation';
 import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { toast } from '@/hooks/use-toast';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
-import { PermissionGate } from '@/components/auth/PermissionGate';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuthProxy();
   const isMobile = useIsMobile();
   
   const navItems: NavItem[] = [
@@ -41,7 +36,7 @@ export function Header() {
     )}>
       <div className="container max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-2">
+          <Link to="/dashboard" className="flex items-center space-x-2">
             <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             <span className="font-medium text-lg sm:text-xl">PodCast Manager</span>
           </Link>
@@ -64,8 +59,7 @@ export function Header() {
           isOpen={isMobileMenuOpen}
           navItems={navItems}
           onClose={() => setIsMobileMenuOpen(false)}
-          logoPath={isAuthenticated ? "/dashboard" : "/"}
-          isAuthenticated={isAuthenticated}
+          logoPath="/dashboard"
         />
       </div>
     </header>

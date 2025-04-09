@@ -3,7 +3,6 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { FederatedAuthProvider } from "@/contexts/FederatedAuthContext";
 import { ErrorBoundary } from "@/components/error";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AuthErrorNotification } from "@/components/auth/AuthErrorNotification";
 
 // Import pages
@@ -32,52 +31,16 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             
-            {/* Protected routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/guests" element={
-              <ProtectedRoute>
-                <Guests />
-              </ProtectedRoute>
-            } />
-            <Route path="/guests/new" element={
-              <ProtectedRoute>
-                <AddGuest />
-              </ProtectedRoute>
-            } />
-            <Route path="/guests/:id" element={
-              <ProtectedRoute>
-                <GuestView />
-              </ProtectedRoute>
-            } />
-            <Route path="/guests/:id/edit" element={
-              <ProtectedRoute>
-                <EditGuest />
-              </ProtectedRoute>
-            } />
-            <Route path="/episodes" element={
-              <ProtectedRoute>
-                <Episodes />
-              </ProtectedRoute>
-            } />
-            <Route path="/episodes/new" element={
-              <ProtectedRoute>
-                <CreateEpisode />
-              </ProtectedRoute>
-            } />
-            <Route path="/episodes/:id" element={
-              <ProtectedRoute>
-                <EpisodeView />
-              </ProtectedRoute>
-            } />
-            <Route path="/episodes/:id/edit" element={
-              <ProtectedRoute>
-                <EditEpisode />
-              </ProtectedRoute>
-            } />
+            {/* Routes without individual protection */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/guests" element={<Guests />} />
+            <Route path="/guests/new" element={<AddGuest />} />
+            <Route path="/guests/:id" element={<GuestView />} />
+            <Route path="/guests/:id/edit" element={<EditGuest />} />
+            <Route path="/episodes" element={<Episodes />} />
+            <Route path="/episodes/new" element={<CreateEpisode />} />
+            <Route path="/episodes/:id" element={<EpisodeView />} />
+            <Route path="/episodes/:id/edit" element={<EditEpisode />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

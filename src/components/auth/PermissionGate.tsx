@@ -1,6 +1,5 @@
 
 import { ReactNode } from 'react';
-import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 
 interface PermissionGateProps {
   permission: string;
@@ -9,21 +8,9 @@ interface PermissionGateProps {
 }
 
 export const PermissionGate = ({ 
-  permission, 
-  children, 
-  fallback = null 
+  children
 }: PermissionGateProps) => {
-  const { authToken, authError } = useFederatedAuth();
-  
-  // If auth service is unavailable, show children with a warning
-  if (authError) {
-    console.warn(`Auth service unavailable: ${authError}. Permissive fallback used.`);
-    return <>{children}</>;
-  }
-  
-  // Simplified permission check - just check if we have a token
-  const hasPermission = !!authToken;
-  
-  // Show content only if user has the required permission
-  return hasPermission ? <>{children}</> : <>{fallback}</>;
+  // Since permissions are now handled at the app level,
+  // we simply pass through the children
+  return <>{children}</>;
 };
