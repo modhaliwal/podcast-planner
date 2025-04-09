@@ -1,6 +1,10 @@
 
-import { episodeRepository } from './episodes/EpisodeRepository';
-import { guestRepository } from './guests/GuestRepository';
+import { EpisodeRepository } from './episodes/EpisodeRepository';
+import { GuestRepository } from './guests/GuestRepository';
+
+// Create singleton instances
+export const episodeRepository = new EpisodeRepository();
+export const guestRepository = new GuestRepository();
 
 /**
  * Central registry of all repositories for easy access
@@ -10,6 +14,4 @@ export const repositories = {
   guests: guestRepository
 };
 
-export { episodeRepository } from './episodes/EpisodeRepository';
-export { guestRepository } from './guests/GuestRepository';
-export type { Repository } from './core/Repository';
+export type { Repository, Result } from './core/Repository';

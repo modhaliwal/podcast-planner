@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -6,7 +5,7 @@ import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes';
 import { useEpisodeDelete } from '@/hooks/episodes/useEpisodeDelete';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { useEffect, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -25,7 +24,7 @@ import { Trash2 } from 'lucide-react';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, guests: allGuests, refreshGuests } = useAuth();
+  const { user, guests: allGuests, refreshGuests } = useAuthProxy();
   
   const { 
     isLoading: isEpisodeLoading, 
@@ -33,7 +32,6 @@ const EditEpisode = () => {
     handleSave 
   } = useEpisodeData(id);
   
-  // Add delete functionality
   const {
     isLoading: isDeleteLoading,
     isDeleteDialogOpen,
@@ -41,7 +39,6 @@ const EditEpisode = () => {
     handleDelete
   } = useEpisodeDelete(id);
   
-  // Make sure we have the latest guest data
   useEffect(() => {
     if (user) {
       refreshGuests();
@@ -106,7 +103,6 @@ const EditEpisode = () => {
     return result;
   };
   
-  // Create the delete button component
   const DeleteButton = () => (
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
       <AlertDialogTrigger asChild>

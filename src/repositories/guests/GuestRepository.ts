@@ -2,7 +2,6 @@
 import { Guest } from '@/lib/types';
 import { GuestMapper } from './GuestMapper';
 import { BaseRepository, TableName } from '../core/BaseRepository';
-import { Result } from '../core/Repository';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -14,9 +13,9 @@ export class GuestRepository extends BaseRepository<Guest, any> {
   }
   
   /**
-   * Get all guests
+   * Find all guests
    */
-  async getAll(): Promise<Result<Guest[]>> {
+  async findAll(): Promise<Guest[]> {
     try {
       const { data, error } = await supabase
         .from('guests')
@@ -25,26 +24,17 @@ export class GuestRepository extends BaseRepository<Guest, any> {
       
       if (error) throw error;
       
-      const guests = data?.map(guest => this.mapper.toDomain(guest)) || [];
-      
-      return {
-        success: true,
-        data: guests
-      };
+      return data?.map(guest => this.mapper.toDomain(guest)) || [];
     } catch (error: any) {
       console.error('Error getting all guests:', error);
-      return {
-        success: false,
-        error: new Error(error.message || 'Unknown error'),
-        data: []
-      };
+      return [];
     }
   }
   
   /**
-   * Get guest by ID
+   * Find guest by ID
    */
-  async getById(id: string): Promise<Result<Guest>> {
+  async findById(id: string): Promise<Guest | null> {
     try {
       const { data, error } = await supabase
         .from('guests')
@@ -54,25 +44,17 @@ export class GuestRepository extends BaseRepository<Guest, any> {
       
       if (error) throw error;
       
-      const guest = this.mapper.toDomain(data);
-      
-      return {
-        success: true,
-        data: guest
-      };
+      return this.mapper.toDomain(data);
     } catch (error: any) {
       console.error('Error getting guest by ID:', error);
-      return {
-        success: false,
-        error: new Error(error.message || 'Unknown error')
-      };
+      return null;
     }
   }
   
   /**
-   * Create a new guest
+   * Add a new guest
    */
-  async create(guest: Partial<Guest>): Promise<Result<Guest>> {
+  async add(guest: Partial<Guest>): Promise<Guest> {
     try {
       const guestData = this.mapper.toDB(guest);
       
@@ -84,51 +66,40 @@ export class GuestRepository extends BaseRepository<Guest, any> {
       
       if (error) throw error;
       
-      const createdGuest = this.mapper.toDomain(data);
-      
-      return {
-        success: true,
-        data: createdGuest
-      };
+      return this.mapper.toDomain(data);
     } catch (error: any) {
       console.error('Error creating guest:', error);
-      return {
-        success: false,
-        error: new Error(error.message || 'Unknown error')
-      };
+      throw error;
     }
   }
   
   /**
    * Update a guest
    */
-  async update(id: string, guest: Partial<Guest>): Promise<Result<boolean>> {
+  async update(id: string, guest: Partial<Guest>): Promise<Guest | null> {
     try {
       const guestData = this.mapper.toDB(guest);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('guests')
         .update(guestData)
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
       
       if (error) throw error;
       
-      return {
-        success: true
-      };
+      return this.mapper.toDomain(data);
     } catch (error: any) {
       console.error('Error updating guest:', error);
-      return {
-        success: false,
-        error: new Error(error.message || 'Unknown error')
-      };
+      return null;
     }
   }
   
   /**
    * Delete a guest
    */
-  async delete(id: string): Promise<Result<boolean>> {
+  async delete(id: string): Promise<boolean> {
     try {
       // First, check if this guest is linked to any episodes
       const { data: linkedEpisodes, error: checkError } = await supabase
@@ -156,20 +127,10 @@ export class GuestRepository extends BaseRepository<Guest, any> {
       
       if (error) throw error;
       
-      return {
-        success: true
-      };
+      return true;
     } catch (error: any) {
       console.error('Error deleting guest:', error);
-      return {
-        success: false,
-        error: new Error(error.message || 'Unknown error')
-      };
+      return false;
     }
-  }
-  
-  // Factory method to get a repository instance
-  static getInstance(): GuestRepository {
-    return new GuestRepository();
   }
 }

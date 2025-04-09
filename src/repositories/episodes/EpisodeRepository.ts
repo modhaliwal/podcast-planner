@@ -1,171 +1,151 @@
 
-import { Episode, EpisodeDTO } from '@/types';
+import { Episode } from '@/lib/types';
+import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from './EpisodeDTO';
 import { EpisodeMapper } from './EpisodeMapper';
 import { BaseRepository, TableName } from '../core/BaseRepository';
-import { Result } from '../core/Repository';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Repository for managing Episode data
  */
-export class EpisodeRepository extends BaseRepository<Episode, EpisodeDTO> {
+export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO, UpdateEpisodeDTO> {
   constructor() {
     super('episodes' as TableName, new EpisodeMapper());
   }
   
   /**
-   * Find all episodes for a user
+   * Find all episodes
    */
-  async findAllForUser(userId: string): Promise<Result<Episode[]>> {
+  async findAll(): Promise<Episode[]> {
     try {
       const { data, error } = await supabase
         .from('episodes')
-        .select('*, episode_guests(*, guests(*))')
-        .eq('user_id', userId)
+        .select('*')
         .order('scheduled', { ascending: false });
       
-      if (error) {
-        return { success: false, error: new Error(error.message) };
+      if (error) throw error;
+      
+      // Map to domain models
+      const episodes = data?.map(episode => this.mapper.toDomain(episode)) || [];
+      
+      // Fetch episode-guest relationships
+      const { data: episodeGuests, error: epGuestsError } = await supabase
+        .from('episode_guests')
+        .select('episode_id, guest_id');
+        
+      if (!epGuestsError && episodeGuests) {
+        // Group guest IDs by episode ID
+        const guestsByEpisode: Record<string, string[]> = {};
+        episodeGuests.forEach(item => {
+          if (!guestsByEpisode[item.episode_id]) {
+            guestsByEpisode[item.episode_id] = [];
+          }
+          guestsByEpisode[item.episode_id].push(item.guest_id);
+        });
+        
+        // Assign guest IDs to each episode
+        episodes.forEach(episode => {
+          episode.guestIds = guestsByEpisode[episode.id] || [];
+        });
       }
       
-      if (!data) {
-        return { success: true, data: [] };
-      }
-      
-      // Process and map the episodes with their guests
-      const episodes = data.map(episode => {
-        // Map the episode to domain model
-        return this.mapper.toDomain(episode);
-      });
-      
-      return { success: true, data: episodes };
+      return episodes;
     } catch (error: any) {
-      return this.handleError(error);
+      console.error('Repository error:', error);
+      return [];
     }
   }
 
   /**
-   * Find an episode with its guests
+   * Find an episode by ID
    */
-  async findWithGuests(id: string): Promise<Result<Episode>> {
+  async findById(id: string): Promise<Episode | null> {
     try {
       const { data, error } = await supabase
         .from('episodes')
-        .select('*, episode_guests(*, guests(*))')
+        .select('*')
         .eq('id', id)
         .single();
       
-      if (error) {
-        return { success: false, error: new Error(error.message) };
-      }
+      if (error) throw error;
       
-      if (!data) {
-        return { success: false, error: new Error('Episode not found') };
-      }
-      
-      // Map the episode to domain model with its guests
+      // Map to domain model
       const episode = this.mapper.toDomain(data);
       
-      return { success: true, data: episode };
+      // Fetch guest IDs for this episode
+      const { data: episodeGuests, error: epGuestsError } = await supabase
+        .from('episode_guests')
+        .select('guest_id')
+        .eq('episode_id', id);
+        
+      if (!epGuestsError && episodeGuests) {
+        episode.guestIds = episodeGuests.map(item => item.guest_id);
+      }
+      
+      return episode;
     } catch (error: any) {
-      return this.handleError(error);
+      console.error('Repository error:', error);
+      return null;
     }
   }
   
   /**
-   * Create an episode with its guests
+   * Add a new episode
    */
-  async createWithGuests(episode: Episode, guestIds: string[]): Promise<Result<Episode>> {
+  async add(episode: CreateEpisodeDTO): Promise<Episode> {
     try {
-      // First create the episode
-      const { data: createdEpisode, error: episodeError } = await supabase
+      // Prepare the data for insertion
+      const dbEpisode = this.mapper.createDtoToDB(episode);
+      
+      // Add the episode
+      const { data, error } = await supabase
         .from('episodes')
-        .insert(this.mapper.toDB(episode))
+        .insert(dbEpisode)
         .select()
         .single();
       
-      if (episodeError) {
-        return { success: false, error: new Error(episodeError.message) };
-      }
+      if (error) throw error;
       
-      // If there are guest IDs, create episode_guests relations
-      if (guestIds.length > 0) {
-        const episodeGuests = guestIds.map(guestId => ({
-          episode_id: createdEpisode.id,
-          guest_id: guestId
-        }));
-        
-        const { error: guestLinkError } = await supabase
-          .from('episode_guests')
-          .insert(episodeGuests);
-        
-        if (guestLinkError) {
-          console.error('Error linking guests to episode:', guestLinkError);
-          // We don't return an error here since the episode was created
-        }
-      }
+      // Map to domain model
+      const createdEpisode = this.mapper.toDomain(data);
       
-      // Return the created episode
-      return { 
-        success: true, 
-        data: this.mapper.toDomain(createdEpisode)
-      };
+      return createdEpisode;
     } catch (error: any) {
-      return this.handleError(error);
+      console.error('Repository error:', error);
+      throw error;
     }
   }
   
   /**
-   * Update an episode and its guest relationships
+   * Update an episode
    */
-  async updateWithGuests(id: string, episode: Partial<Episode>, guestIds: string[]): Promise<Result<boolean>> {
+  async update(id: string, episode: UpdateEpisodeDTO): Promise<Episode | null> {
     try {
-      // First, update the episode
-      const { error: episodeError } = await supabase
+      // Prepare the data for update
+      const dbEpisode = this.mapper.toDB(episode as Partial<Episode>);
+      
+      // Update the episode
+      const { data, error } = await supabase
         .from('episodes')
-        .update(this.mapper.toDB(episode))
-        .eq('id', id);
+        .update(dbEpisode)
+        .eq('id', id)
+        .select()
+        .single();
       
-      if (episodeError) {
-        return { success: false, error: new Error(episodeError.message) };
-      }
+      if (error) throw error;
       
-      // Delete existing episode_guests relations
-      const { error: deleteError } = await supabase
-        .from('episode_guests')
-        .delete()
-        .eq('episode_id', id);
-      
-      if (deleteError) {
-        return { success: false, error: new Error(deleteError.message) };
-      }
-      
-      // If there are guest IDs, create new episode_guests relations
-      if (guestIds.length > 0) {
-        const episodeGuests = guestIds.map(guestId => ({
-          episode_id: id,
-          guest_id: guestId
-        }));
-        
-        const { error: guestLinkError } = await supabase
-          .from('episode_guests')
-          .insert(episodeGuests);
-        
-        if (guestLinkError) {
-          return { success: false, error: new Error(guestLinkError.message) };
-        }
-      }
-      
-      return { success: true };
+      // Map to domain model
+      return this.mapper.toDomain(data);
     } catch (error: any) {
-      return this.handleError(error);
+      console.error('Repository error:', error);
+      return null;
     }
   }
   
   /**
-   * Delete an episode and its guest relationships
+   * Delete an episode
    */
-  async deleteWithGuests(id: string): Promise<Result<boolean>> {
+  async delete(id: string): Promise<boolean> {
     try {
       // Delete episode_guests relations first
       const { error: deleteGuestsError } = await supabase
@@ -184,27 +164,12 @@ export class EpisodeRepository extends BaseRepository<Episode, EpisodeDTO> {
         .delete()
         .eq('id', id);
       
-      if (deleteEpisodeError) {
-        return { success: false, error: new Error(deleteEpisodeError.message) };
-      }
+      if (deleteEpisodeError) throw deleteEpisodeError;
       
-      return { success: true };
+      return true;
     } catch (error: any) {
-      return this.handleError(error);
+      console.error('Repository error:', error);
+      return false;
     }
-  }
-  
-  // Helper method to handle errors consistently
-  private handleError(error: any): Result<any> {
-    console.error('Repository error:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error : new Error(error.message || 'Unknown error')
-    };
-  }
-  
-  // Factory method to get a repository instance
-  static getInstance(): EpisodeRepository {
-    return new EpisodeRepository();
   }
 }

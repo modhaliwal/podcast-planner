@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { guestRepository } from '@/repositories/guests/GuestRepository';
+import { guestRepository } from '@/repositories';
 import { Guest } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
@@ -18,17 +18,7 @@ export function useGuestRepository() {
   const getAllGuests = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await guestRepository.getAll();
-      
-      if (error) {
-        toast({
-          title: "Error loading guests",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-      
-      return data || [];
+      return await guestRepository.findAll();
     } finally {
       setIsLoading(false);
     }
@@ -40,17 +30,7 @@ export function useGuestRepository() {
   const getGuestById = async (id: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await guestRepository.getById(id);
-      
-      if (error) {
-        toast({
-          title: "Error loading guest",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-      
-      return data;
+      return await guestRepository.findById(id);
     } finally {
       setIsLoading(false);
     }
@@ -62,16 +42,7 @@ export function useGuestRepository() {
   const createGuest = async (guest: Partial<Guest>) => {
     setIsLoading(true);
     try {
-      const { data, error } = await guestRepository.create(guest);
-      
-      if (error) {
-        toast({
-          title: "Error creating guest",
-          description: error.message,
-          variant: "destructive"
-        });
-        return null;
-      }
+      const result = await guestRepository.add(guest);
       
       // Invalidate guests cache
       queryClient.invalidateQueries({ queryKey: ['guests'] });
@@ -81,7 +52,7 @@ export function useGuestRepository() {
         description: "Guest created successfully"
       });
       
-      return data;
+      return result;
     } finally {
       setIsLoading(false);
     }
@@ -93,16 +64,7 @@ export function useGuestRepository() {
   const updateGuest = async (id: string, guest: Partial<Guest>) => {
     setIsLoading(true);
     try {
-      const { success, error } = await guestRepository.update(id, guest);
-      
-      if (error) {
-        toast({
-          title: "Error updating guest",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
+      const result = await guestRepository.update(id, guest);
       
       // Invalidate guest cache
       queryClient.invalidateQueries({ queryKey: ['guests', id] });
@@ -113,7 +75,7 @@ export function useGuestRepository() {
         description: "Guest updated successfully"
       });
       
-      return success;
+      return !!result;
     } finally {
       setIsLoading(false);
     }
@@ -125,16 +87,7 @@ export function useGuestRepository() {
   const deleteGuest = async (id: string) => {
     setIsLoading(true);
     try {
-      const { success, error } = await guestRepository.delete(id);
-      
-      if (error) {
-        toast({
-          title: "Error deleting guest",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
+      const success = await guestRepository.delete(id);
       
       // Invalidate guests cache
       queryClient.invalidateQueries({ queryKey: ['guests'] });

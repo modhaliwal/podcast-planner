@@ -4,12 +4,14 @@ import { Episode, Guest } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
+import { GuestMapper } from '@/repositories/guests/GuestMapper';
 
 export function useEpisodes() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuthProxy();
+  const guestMapper = new GuestMapper();
 
   const refreshEpisodes = useCallback(async () => {
     if (!user) {
@@ -69,8 +71,11 @@ export function useEpisodes() {
         };
       });
       
+      // Map guests from DB format to domain model
+      const mappedGuests = guestData?.map(guest => guestMapper.toDomain(guest)) || [];
+      
       setEpisodes(processedEpisodes);
-      setGuests(guestData || []);
+      setGuests(mappedGuests);
       setIsLoading(false);
       
       return processedEpisodes;

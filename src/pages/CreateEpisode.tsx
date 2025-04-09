@@ -5,7 +5,7 @@ import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { EpisodeFormCard } from '@/components/episodes/CreateEpisodeForm/EpisodeFormCard';
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 import { getUpcomingFriday, getNextEpisodeDate } from '@/utils/dateUtils';
@@ -14,7 +14,7 @@ import { FormActions } from '@/components/ui/form-actions';
 
 const CreateEpisode = () => {
   const navigate = useNavigate();
-  const { user, refreshEpisodes } = useAuth();
+  const { user, refreshEpisodes } = useAuthProxy();
   const [episodes, setEpisodes] = useState<EpisodeFormData[]>([
     { 
       episodeNumber: 1, 

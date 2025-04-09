@@ -1,22 +1,14 @@
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
 import { useEffect, useCallback } from 'react';
 import { useEpisodeLoader } from '@/hooks/episodes';
+
 const EpisodeView = () => {
-  const {
-    id
-  } = useParams<{
-    id: string;
-  }>();
-  const {
-    episodes,
-    guests,
-    refreshEpisodes,
-    refreshGuests
-  } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  const { episodes, guests, refreshEpisodes, refreshGuests } = useAuthProxy();
 
   // Use the episodeLoader hook for consistent data fetching
   const {
@@ -60,4 +52,5 @@ const EpisodeView = () => {
       </div>
     </Shell>;
 };
+
 export default EpisodeView;

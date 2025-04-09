@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { Repository } from '@/repositories/core/Repository';
+import { Repository, Result } from '@/repositories/core/Repository';
 import { toast } from '@/hooks/use-toast';
 
 /**
@@ -17,14 +17,7 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const fetchAll = useCallback(async (): Promise<T[]> => {
     try {
       setError(null);
-      const { data, error } = await repository.getAll();
-      
-      if (error) {
-        setError(error);
-        return [];
-      }
-      
-      return data || [];
+      return await repository.findAll();
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
@@ -38,14 +31,7 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const fetchById = useCallback(async (id: string): Promise<T | null> => {
     try {
       setError(null);
-      const { data, error } = await repository.getById(id);
-      
-      if (error) {
-        setError(error);
-        return null;
-      }
-      
-      return data;
+      return await repository.findById(id);
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
@@ -59,19 +45,8 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const create = useCallback(async (item: CreateDTO): Promise<T | null> => {
     try {
       setError(null);
-      const { data, error } = await repository.create(item);
-      
-      if (error) {
-        setError(error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        return null;
-      }
-      
-      return data;
+      const result = await repository.add(item);
+      return result;
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
@@ -90,19 +65,8 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const update = useCallback(async (id: string, item: UpdateDTO): Promise<boolean> => {
     try {
       setError(null);
-      const { success, error } = await repository.update(id, item);
-      
-      if (error) {
-        setError(error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      return success;
+      const result = await repository.update(id, item);
+      return !!result;
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
@@ -121,19 +85,7 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const remove = useCallback(async (id: string): Promise<boolean> => {
     try {
       setError(null);
-      const { success, error } = await repository.delete(id);
-      
-      if (error) {
-        setError(error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      return success;
+      return await repository.delete(id);
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
