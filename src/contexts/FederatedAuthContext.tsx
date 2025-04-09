@@ -1,8 +1,8 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
+import { LaunchpadConfig } from '@/config/launchpad';
 
 // Types for auth context
 interface FederatedAuthContextType {

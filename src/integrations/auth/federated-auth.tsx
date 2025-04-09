@@ -1,6 +1,7 @@
 
 import { lazy, Suspense, ReactNode } from 'react';
 import { AuthModuleError, FederatedAuth } from './types';
+import { LaunchpadConfig } from '@/config/launchpad';
 
 // Default fallback values when federation fails
 const fallbackAuth: FederatedAuth = {
@@ -111,8 +112,8 @@ export const validateFederationToken = async (token: string): Promise<boolean> =
 
 // Function to initiate federation auth with the launchpad
 export const initiateFederatedAuth = (callbackUrl: string): void => {
-  // In a real implementation, this would redirect to the launchpad auth page
-  const authUrl = "https://admin.skyrocketdigital.com/auth";
+  // Use the config from launchpad.ts
+  const authUrl = LaunchpadConfig.authUrl;
   window.location.href = `${authUrl}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
 };
 

@@ -1,11 +1,13 @@
 
+import { LaunchpadConfig } from '@/config/launchpad';
+
 /**
  * Initiates the federated sign-in process by redirecting to the auth provider
  * @param callbackUrl URL to redirect to after successful authentication
  */
 export const federatedSignIn = (callbackUrl: string) => {
   // Create the full URL with callback parameter
-  const authUrl = new URL(`${window.location.origin}/auth`);
+  const authUrl = new URL(LaunchpadConfig.authUrl);
   authUrl.searchParams.set("callbackUrl", callbackUrl);
   
   // Redirect to the auth page
@@ -17,8 +19,8 @@ export const federatedSignIn = (callbackUrl: string) => {
  */
 export const federatedSignOut = () => {
   // Clear tokens from localStorage
-  localStorage.removeItem("federation_token");
-  localStorage.removeItem("federation_refresh_token");
+  localStorage.removeItem(LaunchpadConfig.storageKeys.token);
+  localStorage.removeItem(LaunchpadConfig.storageKeys.refreshToken);
   
   // Redirect to the home page
   window.location.href = "/";
