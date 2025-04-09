@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   // Debug guests data
-  console.log("Dashboard rendering with guests:", guests.length, "episodes:", episodes.length);
+  console.log("Dashboard rendering with guests:", guests?.length, "episodes:", episodes?.length);
   
   // Load data when the component mounts and user is available
   useEffect(() => {
@@ -32,17 +32,17 @@ const Dashboard = () => {
       };
       
       loadData();
-    } else if (guests.length > 0 && !isLoaded) {
+    } else if (guests?.length > 0 && !isLoaded) {
       // If we already have guests data but haven't marked as loaded
       setIsLoaded(true);
     }
-  }, [refreshAllData, user, guests.length, isLoaded]);
+  }, [refreshAllData, user, guests, isLoaded]);
   
   // Calculate statistics
-  const totalGuests = guests.length;
-  const totalEpisodes = episodes.length;
-  const publishedEpisodes = episodes.filter(ep => ep.status === 'published').length;
-  const scheduledEpisodes = episodes.filter(ep => ep.status === 'scheduled').length;
+  const totalGuests = guests?.length || 0;
+  const totalEpisodes = episodes?.length || 0;
+  const publishedEpisodes = episodes?.filter(ep => ep.status === 'published')?.length || 0;
+  const scheduledEpisodes = episodes?.filter(ep => ep.status === 'scheduled')?.length || 0;
   
   return (
     <Shell>
@@ -52,7 +52,7 @@ const Dashboard = () => {
       >
         {!isLoaded ? (
           <div className="flex justify-center items-center h-64">
-            {/* Empty div instead of loading indicator */}
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>
         ) : (
           <>
@@ -90,8 +90,8 @@ const Dashboard = () => {
             </ResponsiveGrid>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
-              <RecentGuests guests={guests} />
-              <UpcomingEpisodes episodes={episodes} guests={guests} />
+              <RecentGuests guests={guests || []} />
+              <UpcomingEpisodes episodes={episodes || []} guests={guests || []} />
             </div>
           </>
         )}

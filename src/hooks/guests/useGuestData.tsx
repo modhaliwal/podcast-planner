@@ -17,7 +17,7 @@ export function useGuestData(guestId: string | undefined) {
     setIsLoading(true);
     try {
       // In a real implementation, this would fetch from your API using the token
-      console.log(`Fetching guest with ID: ${guestId}, token: ${token?.substring(0, 10)}...`);
+      console.log(`Fetching guest with ID: ${guestId}, token: ${token?.substring(0, 10) || 'none'}...`);
       
       // For now, we're using a mock implementation
       // This simulates a network request
@@ -53,9 +53,10 @@ export function useGuestData(guestId: string | undefined) {
         const data = await response.json();
         setGuest(data);
       } else {
-        // Check if response is a real Response object with text method
+        // Handle error based on whether it's a real Response object or our mock
         if (response instanceof Response) {
-          console.error("Error fetching guest:", await response.text());
+          const errorText = await response.text();
+          console.error("Error fetching guest:", errorText);
         } else {
           console.error("Error fetching guest: Unknown error");
         }

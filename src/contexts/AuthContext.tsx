@@ -27,16 +27,19 @@ export const useAuth = () => {
     'Use useAuthProxy instead.'
   );
   
-  const { user, isLoading, error } = useAuthProxy();
+  const auth = useAuthProxy();
   
   // Return a compatible interface that will work with existing code
   return {
-    user,
-    isLoading,
-    error,
-    isAuthenticated: !!user,
-    episodes: [], // Placeholder - should be fetched separately
-    guests: [], // Placeholder - should be fetched separately
+    user: auth.user,
+    isLoading: auth.isLoading,
+    error: auth.error,
+    isAuthenticated: !!auth.user,
+    refreshGuests: auth.refreshGuests,
+    refreshEpisodes: auth.refreshEpisodes,
+    refreshAllData: auth.refreshAllData,
+    episodes: auth.episodes || [],
+    guests: auth.guests || [],
   };
 };
 

@@ -32,7 +32,7 @@ export default function EditGuest() {
           email: updatedGuest.email,
           phone: updatedGuest.phone,
           bio: updatedGuest.bio,
-          social_links: updatedGuest.socialLinks,
+          social_links: updatedGuest.socialLinks as any,
           notes: updatedGuest.notes,
           status: updatedGuest.status,
           updated_at: new Date().toISOString()
@@ -93,7 +93,14 @@ export default function EditGuest() {
   };
 
   if (isLoading) {
-    return null;
+    return <Shell>
+      <div className="container max-w-5xl py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-12 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </Shell>;
   }
 
   if (!guest) {

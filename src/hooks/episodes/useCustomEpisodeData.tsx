@@ -1,24 +1,23 @@
 
-import { useState, useCallback, useEffect } from 'react';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
-import { Episode } from '@/lib/types';
-import { EpisodeStatus } from '@/lib/enums';
+import { useState, useCallback, useEffect } from "react";
+import { Episode, EpisodeStatus } from "@/lib/types";
+import { useAuthProxy } from "@/hooks/useAuthProxy";
 
-export function useCustomEpisodeData(episodeId?: string) {
+export function useCustomEpisodeData(episodeId: string | undefined) {
   const [episode, setEpisode] = useState<Episode | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { token } = useAuthProxy();
-
+  
   const fetchEpisode = useCallback(async () => {
     if (!episodeId) {
       setIsLoading(false);
       return null;
     }
-
+    
     setIsLoading(true);
     try {
       // In a real implementation, this would fetch from your API using the token
-      console.log(`Fetching episode with ID: ${episodeId}, token: ${token?.substring(0, 10)}...`);
+      console.log(`Fetching episode with ID: ${episodeId}, token: ${token?.substring(0, 10) || 'none'}...`);
       
       // For now, we're using a mock implementation
       // This simulates a network request
@@ -37,10 +36,10 @@ export function useCustomEpisodeData(episodeId?: string) {
           ok: true,
           json: async () => ({
             id: episodeId,
-            title: "Mock Episode Title",
+            title: "Mock Episode",
             topic: "Technology",
             episodeNumber: 1,
-            status: EpisodeStatus.SCHEDULED, // Changed from PLANNED to SCHEDULED
+            status: "planned",  // Using 'planned' instead of EpisodeStatus.PLANNED
             scheduled: new Date().toISOString(),
             guestIds: [],
             createdAt: new Date().toISOString(),
@@ -53,9 +52,10 @@ export function useCustomEpisodeData(episodeId?: string) {
         const data = await response.json();
         setEpisode(data);
       } else {
-        // Check if response is a real Response object with text method
+        // Handle error based on whether it's a real Response object or our mock
         if (response instanceof Response) {
-          console.error("Error fetching episode:", await response.text());
+          const errorText = await response.text();
+          console.error("Error fetching episode:", errorText);
         } else {
           console.error("Error fetching episode: Unknown error");
         }
@@ -68,11 +68,11 @@ export function useCustomEpisodeData(episodeId?: string) {
       setIsLoading(false);
     }
   }, [episodeId, token]);
-
+  
   useEffect(() => {
     fetchEpisode();
   }, [fetchEpisode]);
-
+  
   return {
     episode,
     isLoading,

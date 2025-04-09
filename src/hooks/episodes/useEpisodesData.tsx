@@ -1,43 +1,61 @@
 
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Episode, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
-import { EpisodeStatus } from "@/lib/enums";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Episode } from "@/lib/types";
+import { useEpisodeRefresh } from "./useEpisodeRefresh";
 
-function useEpisodesData(userId: string | undefined) {
+export function useEpisodesData(userId: string | undefined) {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
-  const refreshTimerRef = useRef<number>(0);
-  const isInitialMountRef = useRef(true);
+  const { refreshEpisodes: fetchEpisodeData } = useEpisodeRefresh(userId);
   const hasLoadedInitialDataRef = useRef(false);
-  const cacheTTL = 60000; // 1 minute cache TTL
   const lastFetchTimeRef = useRef<number>(0);
-  const refreshPromiseRef = useRef<Promise<Episode[]> | null>(null);
+  const isInitialMountRef = useRef(true);
+  const userIdRef = useRef<string | undefined>(undefined);
+  const cacheTTL = 60000; // 1 minute cache TTL
 
-  // Load episodes on initial mount
+  // Track changes to userId
+  useEffect(() => {
+    if (userId && userId !== userIdRef.current) {
+      console.log("User ID changed or became available:", userId);
+      userIdRef.current = userId;
+      
+      // If we have a new userId but haven't loaded data yet, trigger a refresh
+      if (!hasLoadedInitialDataRef.current && userId) {
+        console.log("User ID became available, triggering initial episode data load");
+        refreshEpisodes(true);
+      }
+    }
+  }, [userId]);
+  
+  // Load episodes on initial mount, but only if userId is available
   useEffect(() => {
     const loadEpisodes = async () => {
       if (userId && !hasLoadedInitialDataRef.current) {
         console.log("Initial useEpisodesData mount, loading episodes for user:", userId);
-        await refreshEpisodes(true);
-        isInitialMountRef.current = false;
-        hasLoadedInitialDataRef.current = true;
+        setIsLoadingEpisodes(true);
+        
+        try {
+          const fetchedEpisodes = await fetchEpisodeData(true);
+          setEpisodes(fetchedEpisodes);
+          hasLoadedInitialDataRef.current = true;
+          lastFetchTimeRef.current = Date.now();
+        } catch (error) {
+          console.error("Error loading episodes:", error);
+        } finally {
+          setIsLoadingEpisodes(false);
+          isInitialMountRef.current = false;
+        }
       } else if (!userId) {
         console.log("No userId available, skipping initial episodes load");
       }
     };
     
     loadEpisodes();
-  }, [userId]);
+  }, [fetchEpisodeData, userId]);
 
+  // Create a function that wraps refreshEpisodes and updates the episodes state
   const refreshEpisodes = useCallback(async (force = false) => {
-    if (!userId) {
-      console.log("No user found, skipping episode refresh");
-      return episodes;
-    }
-    
-    // Check cache validity unless forced
+    // Check cache validity if not forced
     if (!force) {
       const now = Date.now();
       const cacheAge = now - lastFetchTimeRef.current;
@@ -47,128 +65,47 @@ function useEpisodesData(userId: string | undefined) {
         console.log("Using cached episode data, age:", Math.round(cacheAge / 1000), "seconds");
         return episodes;
       }
-      
-      // Prevent rapid refreshes unless forced
-      if (now - refreshTimerRef.current < 2000) {
-        console.log("Skipping episodes refresh, too soon since last refresh");
-        
-        // If we have an in-flight refresh, return that promise
-        if (refreshPromiseRef.current) {
-          console.log("Using in-flight episodes refresh promise");
-          return refreshPromiseRef.current;
-        }
-        
-        return episodes;
-      }
+    }
+    
+    // Throttle refreshes to prevent too many calls
+    const now = Date.now();
+    if (!force && now - lastFetchTimeRef.current < 2000) {
+      console.log("Skipping refresh, too soon since last refresh");
+      return episodes;
+    }
+    
+    if (!userId) {
+      console.log("Cannot refresh episodes: No user ID available");
+      return episodes;
     }
     
     setIsLoadingEpisodes(true);
-    refreshTimerRef.current = Date.now();
-    lastFetchTimeRef.current = Date.now();
+    lastFetchTimeRef.current = now;
     
-    // Create a new refresh promise
-    const fetchPromise = (async () => {
-      try {
-        console.log("Fetching episodes from database for user:", userId);
-        
-        // Fetch episodes - no user_id filter
-        const { data: episodesData, error: episodesError } = await supabase
-          .from('episodes')
-          .select('*');
-        
-        if (episodesError) throw episodesError;
-        
-        if (!episodesData || episodesData.length === 0) {
-          console.log("No episodes found in database");
-          setEpisodes([]);
-          return [];
-        }
-        
-        // Fetch guest relationships
-        const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
-          .from('episode_guests')
-          .select('episode_id, guest_id');
-        
-        if (episodeGuestsError) throw episodeGuestsError;
-        
-        // Organize guest IDs by episode
-        const guestsByEpisode: Record<string, string[]> = {};
-        
-        episodeGuestsData?.forEach(({ episode_id, guest_id }) => {
-          if (!guestsByEpisode[episode_id]) {
-            guestsByEpisode[episode_id] = [];
-          }
-          guestsByEpisode[episode_id].push(guest_id);
-        });
-        
-        // Format episodes data
-        const formattedEpisodes: Episode[] = episodesData.map(episode => {
-          // Parse resources safely
-          let typedResources: Resource[] = [];
-          if (episode.resources && Array.isArray(episode.resources)) {
-            typedResources = episode.resources.map((resource: any) => ({
-              label: resource.label || '',
-              url: resource.url || '',
-              description: resource.description || undefined
-            }));
-          }
-          
-          return {
-            id: episode.id,
-            episodeNumber: episode.episode_number,
-            title: episode.title,
-            topic: episode.topic, 
-            scheduled: episode.scheduled,
-            publishDate: episode.publish_date || undefined,
-            status: episode.status as EpisodeStatus,
-            coverArt: episode.cover_art || undefined,
-            guestIds: guestsByEpisode[episode.id] || [],
-            introduction: episode.introduction,
-            notes: episode.notes || '',
-            recordingLinks: episode.recording_links ? (episode.recording_links as RecordingLinks) : {},
-            podcastUrls: episode.podcast_urls ? (episode.podcast_urls as PodcastUrls) : {},
-            resources: typedResources,
-            createdAt: episode.created_at,
-            updatedAt: episode.updated_at
-          };
-        });
-        
-        console.log(`Loaded ${formattedEpisodes.length} episodes`);
-        setEpisodes(formattedEpisodes);
-        return formattedEpisodes;
-        
-      } catch (error: any) {
-        console.error("Error fetching episodes:", error);
-        toast({
-          title: "Error fetching episodes",
-          description: error.message,
-          variant: "destructive"
-        });
-        return episodes;
-      } finally {
-        setIsLoadingEpisodes(false);
-        refreshPromiseRef.current = null;
-      }
-    })();
-    
-    // Store the promise so we can reuse it for duplicate calls
-    refreshPromiseRef.current = fetchPromise;
-    
-    return fetchPromise;
-  }, [userId, episodes]);
+    try {
+      console.log("Refreshing episodes for user:", userId);
+      const fetchedEpisodes = await fetchEpisodeData(force);
+      console.log(`Fetched ${fetchedEpisodes.length} episodes`);
+      setEpisodes(fetchedEpisodes);
+      return fetchedEpisodes;
+    } catch (error) {
+      console.error("Error refreshing episodes:", error);
+      return episodes;
+    } finally {
+      setIsLoadingEpisodes(false);
+    }
+  }, [fetchEpisodeData, episodes, userId]);
 
   // Memoize episodes to prevent unnecessary re-renders
   const memoizedEpisodes = useMemo(() => episodes, [episodes]);
 
   return {
     episodes: memoizedEpisodes,
-    isLoadingEpisodes,
     refreshEpisodes,
+    isLoadingEpisodes,
     isInitialMount: isInitialMountRef.current,
     setIsInitialMount: (value: boolean) => {
       isInitialMountRef.current = value;
     }
   };
 }
-
-export default useEpisodesData;
