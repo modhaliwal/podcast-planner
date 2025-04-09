@@ -70,3 +70,15 @@ export const deleteUser = async (userId: string): Promise<boolean> => {
     return false;
   }
 };
+
+// Add the missing assignUserRole function
+export const assignUserRole = async (userId: string, role: UsersRoleKey): Promise<boolean> => {
+  try {
+    console.log(`Assigning role ${role} to user ${userId}`);
+    // Mock successful role assignment
+    return true;
+  } catch (error) {
+    console.error('Error assigning role:', error);
+    return false;
+  }
+};

@@ -1,7 +1,6 @@
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Guest } from "@/lib/types";
-import { useGuestsRefresh } from "./useGuestsRefresh";
 import { useAuthProxy } from "@/hooks/useAuthProxy";
 
 export function useGuestData(guestId: string | undefined) {
@@ -54,7 +53,12 @@ export function useGuestData(guestId: string | undefined) {
         const data = await response.json();
         setGuest(data);
       } else {
-        console.error("Error fetching guest:", await response.text());
+        // Check if response is a real Response object with text method
+        if (response instanceof Response) {
+          console.error("Error fetching guest:", await response.text());
+        } else {
+          console.error("Error fetching guest: Unknown error");
+        }
         setGuest(null);
       }
     } catch (error) {

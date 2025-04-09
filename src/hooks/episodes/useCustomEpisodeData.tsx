@@ -40,7 +40,7 @@ export function useCustomEpisodeData(episodeId?: string) {
             title: "Mock Episode Title",
             topic: "Technology",
             episodeNumber: 1,
-            status: EpisodeStatus.PLANNED,
+            status: EpisodeStatus.SCHEDULED, // Changed from PLANNED to SCHEDULED
             scheduled: new Date().toISOString(),
             guestIds: [],
             createdAt: new Date().toISOString(),
@@ -53,7 +53,12 @@ export function useCustomEpisodeData(episodeId?: string) {
         const data = await response.json();
         setEpisode(data);
       } else {
-        console.error("Error fetching episode:", await response.text());
+        // Check if response is a real Response object with text method
+        if (response instanceof Response) {
+          console.error("Error fetching episode:", await response.text());
+        } else {
+          console.error("Error fetching episode: Unknown error");
+        }
         setEpisode(null);
       }
     } catch (error) {

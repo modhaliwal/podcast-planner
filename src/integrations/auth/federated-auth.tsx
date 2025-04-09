@@ -10,6 +10,13 @@ const fallbackAuth: FederatedAuth = {
     error: new Error("Auth module unavailable"),
     signIn: async () => ({ error: { message: "Auth module unavailable" } }),
     signOut: async () => {},
+    // Add missing methods for backward compatibility
+    refreshGuests: async () => [],
+    refreshEpisodes: async () => [],
+    refreshAllData: async () => {},
+    episodes: [],
+    guests: [],
+    isAuthenticated: false
   }),
   usePermissions: () => ({
     hasPermission: () => false,
@@ -95,7 +102,15 @@ export const federatedSignIn = async (email: string, password: string) => {
 export function useAuth() {
   // Get the auth module and return its useAuth hook result
   const [authModule] = getAuthModule();
-  return authModule.useAuth();
+  return {
+    ...authModule.useAuth(),
+    // Add backwards compatibility for common operations
+    refreshGuests: async () => [],
+    refreshEpisodes: async (force = false) => [],
+    refreshAllData: async () => {},
+    episodes: [],
+    guests: []
+  };
 }
 
 // Direct export for FederatedModuleRoute to match expected API

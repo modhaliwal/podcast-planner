@@ -7,6 +7,13 @@ export interface FederatedAuth {
     error: Error | null;
     signIn: (email: string, password: string) => Promise<any>;
     signOut: () => Promise<void>;
+    // Add these properties for backward compatibility
+    refreshGuests?: () => Promise<any[]>;
+    refreshEpisodes?: (force?: boolean) => Promise<any[]>;
+    refreshAllData?: () => Promise<void>;
+    episodes?: any[];
+    guests?: any[];
+    isAuthenticated?: boolean;
   };
   usePermissions: () => {
     hasPermission: (permission: string) => boolean;
