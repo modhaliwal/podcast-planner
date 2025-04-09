@@ -5,21 +5,12 @@ import { EpisodesHeader } from '@/components/episodes/EpisodesHeader';
 import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter';
 import { EpisodesContent } from '@/components/episodes/EpisodesContent';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
+import { useEpisodes } from '@/hooks/useEpisodes';
 
 const Episodes = () => {
-  const { episodes, guests, refreshEpisodes } = useAuthProxy();
+  const { episodes, guests, isLoading, refreshEpisodes } = useEpisodes();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-  
-  useEffect(() => {
-    if (!initialLoadDone) {
-      console.log("Episodes initial load, refreshing data");
-      refreshEpisodes();
-      setInitialLoadDone(true);
-    }
-  }, [initialLoadDone, refreshEpisodes]);
   
   const filteredEpisodes = episodes.filter(episode => {
     const matchesSearch = episode.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -51,11 +42,17 @@ const Episodes = () => {
             onStatusChange={setStatusFilter}
           />
           
-          <EpisodesContent
-            filteredEpisodes={sortedEpisodes}
-            guests={guests}
-            searchQuery={searchQuery}
-          />
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          ) : (
+            <EpisodesContent
+              filteredEpisodes={sortedEpisodes}
+              guests={guests}
+              searchQuery={searchQuery}
+            />
+          )}
         </div>
       </PageLayout>
     </Shell>

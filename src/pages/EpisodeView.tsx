@@ -1,15 +1,15 @@
 
 import { useParams, Link } from 'react-router-dom';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
-import { useEffect, useCallback } from 'react';
+import { useEpisodes } from '@/hooks/useEpisodes';
 import { useEpisodeLoader } from '@/hooks/episodes';
+import { useEffect } from 'react';
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
-  const { refreshEpisodes, refreshGuests } = useAuthProxy();
+  const { guests, refreshEpisodes } = useEpisodes();
 
   // Use the episodeLoader hook for consistent data fetching
   const {
@@ -18,20 +18,10 @@ const EpisodeView = () => {
     refreshEpisode
   } = useEpisodeLoader(id);
 
-  // Load guest data for the episode display
-  const { guests } = useAuthProxy();
-
-  // Refresh data once on initial mount with a controlled approach
-  const refreshData = useCallback(async () => {
-    if (id) {
-      await refreshEpisodes();
-      await refreshGuests();
-    }
-  }, [id, refreshEpisodes, refreshGuests]);
-  
+  // Refresh the episode data once when the component mounts
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    refreshEpisode();
+  }, [refreshEpisode]);
   
   if (!episode && !isLoading) {
     return <Shell>
@@ -51,11 +41,17 @@ const EpisodeView = () => {
       <div className="page-container">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex-1 min-w-0">
-            
+            {isLoading && <div className="animate-pulse h-8 w-1/3 bg-muted rounded"></div>}
           </div>
         </div>
         
-        {episode && <EpisodeDetail episode={episode} guests={guests} />}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+        ) : episode && (
+          <EpisodeDetail episode={episode} guests={guests} />
+        )}
       </div>
     </Shell>;
 };
