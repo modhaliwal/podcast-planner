@@ -20,7 +20,7 @@ export function useAuthProxy() {
   
   // Use the guest and episode data hooks for compatibility with old code
   const { guests, refreshGuests } = useGuestsData(userId);
-  const { episodes, refreshEpisodes } = useEpisodesData(userId);
+  const { episodes, refreshEpisodes } = useEpisodesData();
   
   // Determine overall loading state
   const isLoading = contextLoading || federatedAuth.isLoading || !initialized;

@@ -1,7 +1,11 @@
+
 import { Repository } from "./Repository";
 import { supabase } from "@/integrations/supabase/client";
 import { DataMapper } from "./DataMapper";
 import { Result } from "@/lib/types";
+
+// Define valid table names to satisfy TypeScript
+type TableName = 'guests' | 'episodes' | 'episode_guests' | 'ai_generators' | 'profiles';
 
 /**
  * Base Repository class that provides standardized methods for CRUD operations.
@@ -10,7 +14,7 @@ import { Result } from "@/lib/types";
 export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>, DBModel = any> 
   implements Repository<T, CreateDTO, UpdateDTO> {
   
-  protected abstract tableName: string;
+  protected abstract tableName: TableName;
   protected abstract mapper: DataMapper<T, DBModel>;
   
   /**
@@ -47,9 +51,9 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
       // Map DB models to domain models
       const items = (data || []).map(item => this.mapper.toDomain(item as DBModel));
       
-      return { data: items, error: null };
+      return { data: items, error: null, success: true };
     } catch (error) {
-      return { data: null, error: this.handleError('getAll', error) };
+      return { data: null, error: this.handleError('getAll', error), success: false };
     }
   }
   
@@ -58,7 +62,7 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
    */
   async getById(id: string): Promise<Result<T>> {
     if (!id) {
-      return { data: null, error: new Error("No ID provided") };
+      return { data: null, error: new Error("No ID provided"), success: false };
     }
     
     try {
@@ -73,9 +77,9 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
       // Map DB model to domain model
       const item = this.mapper.toDomain(data as DBModel);
       
-      return { data: item, error: null };
+      return { data: item, error: null, success: true };
     } catch (error) {
-      return { data: null, error: this.handleError(`getById ${id}`, error) };
+      return { data: null, error: this.handleError(`getById ${id}`, error), success: false };
     }
   }
   
@@ -102,14 +106,14 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
       
       if (error) throw error;
       
-      if (!data) return { data: null, error: null };
+      if (!data) return { data: null, error: null, success: false };
       
       // Return the created item
       const createdItem = this.mapper.toDomain(data as DBModel);
       
-      return { data: createdItem, error: null };
+      return { data: createdItem, error: null, success: true };
     } catch (error) {
-      return { data: null, error: this.handleError('create', error) };
+      return { data: null, error: this.handleError('create', error), success: false };
     }
   }
   
@@ -131,9 +135,9 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
       
       if (error) throw error;
       
-      return { data: true, error: null };
+      return { data: true, error: null, success: true };
     } catch (error) {
-      return { data: false, error: this.handleError(`update ${id}`, error) };
+      return { data: false, error: this.handleError(`update ${id}`, error), success: false };
     }
   }
   
@@ -149,9 +153,9 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
       
       if (error) throw error;
       
-      return { data: true, error: null };
+      return { data: true, error: null, success: true };
     } catch (error) {
-      return { data: false, error: this.handleError(`delete ${id}`, error) };
+      return { data: false, error: this.handleError(`delete ${id}`, error), success: false };
     }
   }
   

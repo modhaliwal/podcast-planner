@@ -63,11 +63,11 @@ export function useEpisodeRefresh(userId: string | undefined) {
           scheduled: episode.scheduled,
           publishDate: episode.publish_date,
           notes: episode.notes || '',
-          guestIds: episode.guest_ids || [],
+          guestIds: episode.guest_ids ? episode.guest_ids : [],
           coverArt: episode.cover_art,
           introduction: episode.introduction,
-          podcastUrls: episode.podcast_urls || {},
-          resources: episode.resources || [],
+          podcastUrls: episode.podcast_urls ? episode.podcast_urls : {},
+          resources: episode.resources ? episode.resources : [],
           createdAt: episode.created_at,
           updatedAt: episode.updated_at
         }));

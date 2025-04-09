@@ -71,7 +71,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     }
   }, [authToken]);
   
-  // Create the context value - fix the authError type to be Error
+  // Create the context value - fix the authError type
   const contextValue: FederatedAuthContextType = {
     authModule,
     isLoading,
@@ -79,7 +79,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     setAuthToken,
     hasAuthError: authErrorType !== null,
     authErrorType,
-    authError: moduleError instanceof Error ? moduleError : moduleError ? new Error(moduleError) : null
+    authError: moduleError ? (moduleError as Error) : null
   };
   
   return (
