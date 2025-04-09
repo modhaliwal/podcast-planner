@@ -79,8 +79,8 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     setAuthToken,
     hasAuthError: authErrorType !== null,
     authErrorType,
-    // Convert moduleError to Error type or null
-    authError: moduleError ? (moduleError instanceof Error ? moduleError : new Error(String(moduleError))) : null
+    // Fix the moduleError to Error type conversion
+    authError: moduleError ? (typeof moduleError === 'object' ? moduleError as Error : new Error(String(moduleError))) : null
   };
   
   return (

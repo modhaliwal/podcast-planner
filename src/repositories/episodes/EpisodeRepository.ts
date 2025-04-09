@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { BaseRepository } from "../core/BaseRepository";
+import { BaseRepository, TableName } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
 import { episodeMapper } from "./EpisodeMapper";
 import { deleteImage } from "@/lib/imageUpload";
@@ -10,7 +11,7 @@ import { Result } from "@/lib/types";
  * Repository for episode-related operations
  */
 export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode> {
-  protected tableName = 'episodes';
+  protected tableName: TableName = 'episodes';
   protected mapper = episodeMapper;
   
   /**

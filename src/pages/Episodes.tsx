@@ -32,8 +32,8 @@ const Episodes = () => {
   );
   
   const handleRefresh = () => {
-    console.log("Manual refresh triggered with force=true");
-    refreshEpisodes(true); // Add the force=true parameter to always fetch fresh data
+    console.log("Manual refresh triggered");
+    refreshEpisodes(); // Remove the parameter to match expected function signature
   };
   
   return (

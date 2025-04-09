@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom';
 import { setupServer } from 'msw/node';
 import { QueryClient } from '@tanstack/react-query';
-import { vi, beforeAll, afterEach, afterAll } from 'vitest';
+import { beforeAll, afterEach, afterAll, vi } from 'vitest';
 
 // Mock the Supabase client
 vi.mock('@/integrations/supabase/client', () => ({

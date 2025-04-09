@@ -2,7 +2,8 @@
 import { useState, useCallback, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Episode } from "@/lib/types";
+import { Episode, ContentVersion } from "@/lib/types";
+import { Json } from "@/integrations/supabase/types";
 
 export function useEpisodeRefresh(userId: string | undefined) {
   const [error, setError] = useState<Error | null>(null);
@@ -54,28 +55,82 @@ export function useEpisodeRefresh(userId: string | undefined) {
         }
         
         // Map database data to Episode type
-        const formattedEpisodes: Episode[] = data.map(episode => ({
-          id: episode.id,
-          title: episode.title || '',
-          topic: episode.topic || '',
-          episodeNumber: episode.episode_number,
-          status: episode.status as "scheduled" | "recorded" | "published",
-          scheduled: episode.scheduled,
-          publishDate: episode.publish_date,
-          notes: episode.notes || '',
-          guestIds: episode.guest_ids ? [...episode.guest_ids] : [],
-          coverArt: episode.cover_art,
-          introduction: episode.introduction,
-          // Convert the podcast_urls to the correct type
-          podcastUrls: typeof episode.podcast_urls === 'object' ? episode.podcast_urls : {},
-          // Convert or initialize resources if needed
-          resources: Array.isArray(episode.resources) ? episode.resources : [],
-          createdAt: episode.created_at,
-          updatedAt: episode.updated_at,
-          // These properties may be optional in the Episode type
-          notesVersions: episode.notes_versions || [],
-          introductionVersions: episode.introduction_versions || []
-        }));
+        const formattedEpisodes: Episode[] = data.map(episode => {
+          // Safely parse complex JSON fields
+          let notesVersions: ContentVersion[] | undefined = undefined;
+          let introductionVersions: ContentVersion[] | undefined = undefined;
+          let podcastUrls: Record<string, string | null> | undefined = undefined;
+          let resources: any[] | undefined = undefined;
+          
+          try {
+            // Handle notes_versions as ContentVersion[]
+            if (episode.notes_versions) {
+              notesVersions = Array.isArray(episode.notes_versions) 
+                ? episode.notes_versions as ContentVersion[]
+                : [];
+            }
+            
+            // Handle introduction_versions as ContentVersion[]
+            if (episode.introduction_versions) {
+              introductionVersions = Array.isArray(episode.introduction_versions)
+                ? episode.introduction_versions as ContentVersion[]
+                : [];
+            }
+            
+            // Handle podcast_urls
+            if (episode.podcast_urls) {
+              podcastUrls = episode.podcast_urls as Record<string, string | null>;
+            }
+            
+            // Handle resources
+            if (episode.resources) {
+              resources = Array.isArray(episode.resources) ? episode.resources : [];
+            }
+          } catch (err) {
+            console.error("Error parsing JSON fields:", err);
+          }
+          
+          return {
+            id: episode.id,
+            title: episode.title || '',
+            topic: episode.topic || '',
+            episodeNumber: episode.episode_number,
+            status: episode.status as "scheduled" | "recorded" | "published",
+            scheduled: episode.scheduled,
+            publishDate: episode.publish_date,
+            notes: episode.notes || '',
+            guestIds: [], // Initialize with empty array, will be filled later
+            coverArt: episode.cover_art,
+            introduction: episode.introduction,
+            podcastUrls: podcastUrls || {},
+            resources: resources || [],
+            createdAt: episode.created_at,
+            updatedAt: episode.updated_at,
+            notesVersions,
+            introductionVersions
+          };
+        });
+        
+        // Now fetch episode-guest relationships
+        const { data: episodeGuests, error: epGuestsError } = await supabase
+          .from('episode_guests')
+          .select('episode_id, guest_id');
+          
+        if (!epGuestsError && episodeGuests) {
+          // Group guest IDs by episode ID
+          const guestsByEpisode: Record<string, string[]> = {};
+          episodeGuests.forEach(item => {
+            if (!guestsByEpisode[item.episode_id]) {
+              guestsByEpisode[item.episode_id] = [];
+            }
+            guestsByEpisode[item.episode_id].push(item.guest_id);
+          });
+          
+          // Assign guest IDs to each episode
+          formattedEpisodes.forEach(episode => {
+            episode.guestIds = guestsByEpisode[episode.id] || [];
+          });
+        }
         
         console.log(`Loaded ${formattedEpisodes.length} episodes`);
         return formattedEpisodes;

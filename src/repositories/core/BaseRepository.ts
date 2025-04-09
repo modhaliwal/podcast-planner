@@ -5,7 +5,7 @@ import { DataMapper } from "./DataMapper";
 import { Result } from "@/lib/types";
 
 // Define valid table names to satisfy TypeScript
-type TableName = 'guests' | 'episodes' | 'episode_guests' | 'ai_generators' | 'profiles';
+export type TableName = 'guests' | 'episodes' | 'episode_guests' | 'ai_generators' | 'profiles';
 
 /**
  * Base Repository class that provides standardized methods for CRUD operations.
@@ -40,7 +40,9 @@ export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Part
       // Apply filters if provided
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
-          query = query.eq(key, value);
+          if (value !== undefined) {
+            query = query.eq(key, value);
+          }
         });
       }
       
