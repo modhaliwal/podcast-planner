@@ -26,6 +26,7 @@ export interface DBEpisode {
   resources?: Json | null;
   created_at: string;
   updated_at: string;
+  user_id?: string;
   episode_guests?: { guest_id: string }[];
 }
 

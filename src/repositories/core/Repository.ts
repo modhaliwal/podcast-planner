@@ -10,6 +10,9 @@ export interface Repository<T, CreateDto = Partial<T>, UpdateDto = Partial<T>> {
   delete(id: string): Promise<boolean>;
 }
 
+/**
+ * Standard result type for repository operations
+ */
 export interface Result<T> {
   data: T | null;
   error: Error | null;

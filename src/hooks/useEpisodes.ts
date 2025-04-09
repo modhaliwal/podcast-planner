@@ -74,32 +74,14 @@ export function useEpisodes() {
       
       // Map guests from DB format to domain model
       const mappedGuests = (guestData || []).map(guest => {
-        // Create DBGuest object with properly defined properties
-        const dbGuest: DBGuest = {
-          id: guest.id,
-          name: guest.name,
-          title: guest.title,
-          company: guest.company,
-          email: guest.email,
-          phone: guest.phone,
-          bio: guest.bio || '',
-          image: guest.image,
-          image_url: guest.image_url,
-          notes: guest.notes,
-          background_research: guest.background_research,
-          status: guest.status,
-          created_at: guest.created_at,
-          updated_at: guest.updated_at,
-          user_id: guest.user_id,
-          social_links: guest.social_links,
-          bio_versions: guest.bio_versions,
-          background_research_versions: guest.background_research_versions,
-          // Add required properties with null values if not present in the data
-          location: null,
-          website: null,
-          twitter: null,
-          linkedin: null
-        };
+        // Create necessary properties for DBGuest
+        const dbGuest = {
+          ...guest,
+          location: guest.location || null,
+          website: guest.website || null,
+          twitter: guest.twitter || null,
+          linkedin: guest.linkedin || null,
+        } as DBGuest;
         
         return guestMapper.toDomain(dbGuest);
       });
@@ -120,7 +102,7 @@ export function useEpisodes() {
       setIsLoading(false);
       return [];
     }
-  }, [user]);
+  }, [user, guestMapper]);
   
   useEffect(() => {
     refreshEpisodes();

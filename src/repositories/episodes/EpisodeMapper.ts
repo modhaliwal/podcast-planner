@@ -18,11 +18,11 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       .map(relation => relation.guest_id);
     
     // Parse complex JSON fields with proper type casting
-    const notesVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.notes_versions) || [];
-    const introductionVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.introduction_versions) || [];
-    const recordingLinks = this.parseJsonField<RecordingLinks>(dbEpisode.recording_links) || {};
-    const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls) || {};
-    const resources = this.parseJsonField<Resource[]>(dbEpisode.resources) || [];
+    const notesVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.notes_versions);
+    const introductionVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.introduction_versions);
+    const recordingLinks = this.parseJsonField<RecordingLinks>(dbEpisode.recording_links);
+    const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls);
+    const resources = this.parseJsonField<Resource[]>(dbEpisode.resources);
     
     return {
       id: dbEpisode.id,
@@ -37,11 +37,11 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       status: dbEpisode.status,
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
-      notesVersions,
-      introductionVersions,
-      recordingLinks,
-      podcastUrls,
-      resources,
+      notesVersions: notesVersions || undefined,
+      introductionVersions: introductionVersions || undefined,
+      recordingLinks: recordingLinks || undefined,
+      podcastUrls: podcastUrls || undefined,
+      resources: resources || undefined,
       createdAt: dbEpisode.created_at,
       updatedAt: dbEpisode.updated_at,
     };
@@ -51,16 +51,16 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
   private parseJsonField<T>(jsonValue: Json | null | undefined): T | undefined {
     if (!jsonValue) return undefined;
     
-    if (typeof jsonValue === 'string') {
-      try {
+    try {
+      if (typeof jsonValue === 'string') {
         return JSON.parse(jsonValue) as T;
-      } catch (e) {
-        console.error('Error parsing JSON field:', e);
-        return undefined;
       }
+      
+      return jsonValue as unknown as T;
+    } catch (e) {
+      console.error('Error parsing JSON field:', e);
+      return undefined;
     }
-    
-    return jsonValue as unknown as T;
   }
   
   /**
@@ -96,15 +96,14 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
   }
   
   /**
-   * Map a domain object to database format for creation
+   * Map from creation DTO to database model
    */
-  createDtoToDB(episode: CreateEpisodeDTO): Partial<DBEpisode> & { user_id: string } {
-    const dbEpisode: Partial<DBEpisode> & { user_id: string } = {
+  createDtoToDB(episode: CreateEpisodeDTO): Partial<DBEpisode> {
+    const dbEpisode: Partial<DBEpisode> = {
       title: episode.title,
       episode_number: episode.episodeNumber,
       scheduled: episode.scheduled,
-      status: episode.status,
-      user_id: '' // This will be populated at runtime
+      status: episode.status
     };
     
     if (episode.description !== undefined) dbEpisode.description = episode.description;
@@ -125,7 +124,7 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
   }
   
   /**
-   * Map a domain object to database format for updates
+   * Map from update DTO to database model
    */
   updateDtoToDB(episode: UpdateEpisodeDTO): Partial<DBEpisode> {
     const dbEpisode: Partial<DBEpisode> = {};

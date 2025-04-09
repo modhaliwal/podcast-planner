@@ -168,7 +168,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
       }
 
       // Convert guestData to DB format
-      const dbGuest = this.mapper.createDtoToDB(guestData);
+      const dbGuest = this.mapper.createDtoToDB(guestData) as any;
       
       // Add user_id
       dbGuest.user_id = userData.user.id;
@@ -181,7 +181,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
 
       const { data, error } = await supabase
         .from('guests')
-        .insert(dbGuest as any)
+        .insert(dbGuest)
         .select()
         .single();
 

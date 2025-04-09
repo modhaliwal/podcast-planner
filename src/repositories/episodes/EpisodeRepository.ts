@@ -4,7 +4,6 @@ import { BaseRepository } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
 import { EpisodeMapper } from "./EpisodeMapper";
 import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
-import { Result } from "@/lib/types";
 
 /**
  * Repository for handling episode data
@@ -32,6 +31,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
+          description,
           topic,
           cover_art,
           scheduled,
@@ -58,7 +58,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Map database records to domain objects, ensuring proper typing
-      return (data || []).map(item => (this.mapper as EpisodeMapper).toDomain(item as DBEpisode));
+      return (data || []).map(item => this.mapper.toDomain(item as DBEpisode));
       
     } catch (error) {
       console.error("Unexpected error in getAll:", error);
@@ -77,6 +77,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
+          description,
           topic,
           cover_art,
           scheduled,
@@ -103,7 +104,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
         return null;
       }
       
-      return (this.mapper as EpisodeMapper).toDomain(data as DBEpisode);
+      return this.mapper.toDomain(data as DBEpisode);
       
     } catch (error) {
       console.error(`Unexpected error in getById(${id}):`, error);
@@ -123,7 +124,14 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Convert to DB format
-      const dbEpisode = (this.mapper as EpisodeMapper).createDtoToDB(episodeDto);
+      const dbEpisode = this.mapper.createDtoToDB(episodeDto) as Partial<DBEpisode> & {
+        user_id: string;
+        episode_number: number;
+        title: string;
+        scheduled: string;
+        status: string;
+      };
+      
       // Add user ID
       dbEpisode.user_id = userData.user.id;
       
@@ -184,7 +192,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Convert to DB format (partial update)
-      const dbEpisode = (this.mapper as EpisodeMapper).updateDtoToDB(episodeDto);
+      const dbEpisode = this.mapper.updateDtoToDB(episodeDto);
       
       // Update the episode
       const { error } = await supabase

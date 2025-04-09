@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { Repository, Result } from '@/repositories/core/Repository';
+import { Repository } from '@/repositories/core/Repository';
 import { toast } from '@/hooks/use-toast';
 
 /**
@@ -17,7 +17,7 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const fetchAll = useCallback(async (): Promise<T[]> => {
     try {
       setError(null);
-      return await repository.findAll();
+      return await repository.getAll();
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
@@ -31,7 +31,7 @@ export function useRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>>
   const fetchById = useCallback(async (id: string): Promise<T | null> => {
     try {
       setError(null);
-      return await repository.findById(id);
+      return await repository.getById(id);
     } catch (err: any) {
       const error = err instanceof Error ? err : new Error(err?.message || 'Unknown error');
       setError(error);
