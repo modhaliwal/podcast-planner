@@ -11,8 +11,14 @@ export function useAuthProxy() {
     user: null,
     guests: [],
     episodes: [],
-    refreshEpisodes: async () => [],
-    refreshGuests: async () => []
+    refreshEpisodes: async () => {
+      console.log("Mock refreshEpisodes called");
+      return [];
+    },
+    refreshGuests: async () => {
+      console.log("Mock refreshGuests called");
+      return [];
+    }
   };
 }
 

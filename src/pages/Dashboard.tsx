@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
@@ -7,7 +7,6 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 
 const Dashboard = () => {
-  const hasInitializedRef = useRef(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [guests, setGuests] = useState([]);
   const [episodes, setEpisodes] = useState([]);
@@ -17,18 +16,15 @@ const Dashboard = () => {
   
   // Load data when the component mounts
   useEffect(() => {
-    if (!hasInitializedRef.current) {
-      console.log("Dashboard component mounted, initializing data");
-      hasInitializedRef.current = true;
-      
-      // In a real implementation, this would fetch data from an API
-      // For now, we'll just set isLoaded to true after a short delay
-      const timer = setTimeout(() => {
-        setIsLoaded(true);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
+    console.log("Dashboard component mounted, initializing data");
+    
+    // In a real implementation, this would fetch data from an API
+    // For now, we'll just set isLoaded to true after a short delay
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
   
   // Calculate statistics

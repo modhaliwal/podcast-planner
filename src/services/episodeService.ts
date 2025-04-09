@@ -1,95 +1,49 @@
 
-import { Episode } from "@/lib/types";
-import { CreateEpisodeDTO, UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
-import { EpisodeFormData } from "@/components/episodes/CreateEpisodeForm/types";
-import { episodeRepository } from "@/repositories";
+import { toast } from '@/hooks/toast';
+import { Episode } from '@/types';
+import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 
-/**
- * Service for episode-related operations
- */
-export const episodeService = {
-  /**
-   * Get all episodes
-   */
-  async getAllEpisodes(): Promise<Episode[]> {
-    return await episodeRepository.getAll();
-  },
-  
-  /**
-   * Get a specific episode by ID
-   */
-  async getEpisodeById(id: string): Promise<Episode | null> {
-    return await episodeRepository.getById(id);
-  },
-  
-  /**
-   * Create a new episode
-   */
-  async createEpisode(episodeData: CreateEpisodeDTO): Promise<Episode> {
-    // Transform the data if needed
-    const createDTO: CreateEpisodeDTO = {
-      ...episodeData,
-      guestIds: episodeData.guestIds || []
-    };
-    
-    // Use the repository to create the episode
-    return await episodeRepository.add(createDTO);
-  },
-  
-  /**
-   * Update an existing episode
-   */
-  async updateEpisode(id: string, episodeData: UpdateEpisodeDTO): Promise<Episode | null> {
-    return await episodeRepository.update(id, episodeData);
-  },
-  
-  /**
-   * Delete an episode
-   */
-  async deleteEpisode(id: string): Promise<boolean> {
-    return await episodeRepository.delete(id);
-  }
-};
-
-/**
- * Create multiple episodes at once
- * @param episodes Array of episode data to create
- * @param user Current user information
- * @returns Result of the operation
- */
-export const createEpisodes = async (
-  episodes: EpisodeFormData[], 
-  user: any
-): Promise<{ success: boolean; error?: Error }> => {
+export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
   try {
-    if (!user) {
-      throw new Error("User is required to create episodes");
-    }
+    console.log("Creating episodes:", episodesData);
     
-    // Process each episode 
-    for (const episodeData of episodes) {
-      // Create CreateEpisodeDTO from form data
-      const createDTO: CreateEpisodeDTO = {
-        title: episodeData.title || `Episode #${episodeData.episodeNumber}`,
-        episodeNumber: episodeData.episodeNumber,
-        topic: episodeData.topic || undefined,
-        description: '',
-        guestIds: episodeData.guestIds || [],
-        scheduled: new Date(episodeData.scheduled).toISOString(),
+    // This is a mock implementation since we don't have a real backend
+    // In a real app, we would send a request to the server
+    
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // In a real app, we would get the IDs from the server
+    const createdEpisodes = episodesData.map((episode, index) => {
+      const now = new Date().toISOString();
+      return {
+        id: `temp-id-${index}-${now}`,
+        episodeNumber: episode.episodeNumber,
+        title: episode.title,
+        scheduled: new Date(episode.scheduled).toISOString(),
+        guestIds: episode.guestIds || [],
         status: 'scheduled',
-        introduction: episodeData.introduction || '',
+        introduction: '',
+        notes: '',
+        createdAt: now,
+        updatedAt: now
       };
-      
-      // Use the repository to create the episode
-      await episodeRepository.add(createDTO);
-    }
+    });
     
-    return { success: true };
-  } catch (error) {
+    console.log("Created episodes:", createdEpisodes);
+    
+    return {
+      success: true,
+      data: createdEpisodes,
+      error: null
+    };
+  } catch (error: any) {
     console.error("Error creating episodes:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error : new Error('Unknown error creating episodes') 
+    
+    return {
+      success: false,
+      data: null,
+      error: error.message || "Failed to create episodes"
     };
   }
 };
