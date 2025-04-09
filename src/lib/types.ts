@@ -1,3 +1,4 @@
+
 export interface Guest {
   id: string;
   name: string;
@@ -110,28 +111,6 @@ export interface ContentVersion {
   source: string;
   active?: boolean;
   versionNumber?: number;
-}
-
-export enum UsersRoleKey {
-  ADMIN = 'admin',
-  STANDARD = 'standard'
-}
-
-export interface UserRole {
-  id: string;
-  user_id: string;
-  role: UsersRoleKey;
-  created_at: string;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  avatar_url?: string;
-  created_at: string;
-  last_sign_in?: string;
-  roles?: UserRole[];
 }
 
 /**

@@ -1,3 +1,4 @@
+
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -24,7 +25,7 @@ import { Trash2 } from 'lucide-react';
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, guests: allGuests, refreshGuests } = useAuthProxy();
+  const { guests: allGuests, refreshGuests } = useAuthProxy();
   
   const { 
     isLoading: isEpisodeLoading, 
@@ -40,10 +41,8 @@ const EditEpisode = () => {
   } = useEpisodeDelete(id);
   
   useEffect(() => {
-    if (user) {
-      refreshGuests();
-    }
-  }, [user, refreshGuests]);
+    refreshGuests();
+  }, [refreshGuests]);
   
   const isLoading = isEpisodeLoading || isDeleteLoading;
   

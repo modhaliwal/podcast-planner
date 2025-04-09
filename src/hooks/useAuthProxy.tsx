@@ -1,5 +1,5 @@
 
-// A minimal hook to serve as a placeholder for future authentication implementation
+// A minimal hook without any auth functionality
 export function useAuthProxy() {
   return {
     signIn: async () => ({ success: true }),
@@ -10,7 +10,9 @@ export function useAuthProxy() {
     token: null,
     user: null,
     guests: [],
-    episodes: []
+    episodes: [],
+    refreshEpisodes: async () => [],
+    refreshGuests: async () => []
   };
 }
 

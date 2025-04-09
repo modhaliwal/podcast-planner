@@ -23,7 +23,7 @@ export interface Guest {
   imageUrl?: string;
   socialLinks: SocialLinks;
   notes?: string;
-  backgroundResearch?: string;  // Re-adding this field
+  backgroundResearch?: string;  
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   createdAt: string;
   updatedAt: string;
@@ -53,17 +53,17 @@ export interface Episode {
   id: string;
   episodeNumber: number;
   title: string;
-  topic?: string;       // Added topic field
-  scheduled: string;    // Recording session date and time
-  publishDate?: string; // Date the episode will be published
+  topic?: string;       
+  scheduled: string;    
+  publishDate?: string; 
   status: EpisodeStatus;
-  coverArt?: string;    // URL to the cover art image
+  coverArt?: string;    
   guestIds: string[];
   introduction: string;
   notes: string;
   recordingLinks?: RecordingLinks;
   podcastUrls?: PodcastUrls;
-  resources?: Resource[];  // Added resources field
+  resources?: Resource[];  
   createdAt: string;
   updatedAt: string;
 }

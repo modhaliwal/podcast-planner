@@ -14,7 +14,7 @@ import { FormActions } from '@/components/ui/form-actions';
 
 const CreateEpisode = () => {
   const navigate = useNavigate();
-  const { user, refreshEpisodes } = useAuthProxy();
+  const { refreshEpisodes } = useAuthProxy();
   const [episodes, setEpisodes] = useState<EpisodeFormData[]>([
     { 
       episodeNumber: 1, 
@@ -70,15 +70,6 @@ const CreateEpisode = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to create episodes",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     const hasErrors = episodes.some(ep => !ep.episodeNumber || !ep.scheduled);
     if (hasErrors) {
       toast({
@@ -92,7 +83,7 @@ const CreateEpisode = () => {
     setIsSubmitting(true);
 
     try {
-      const result = await createEpisodes(episodes, user);
+      const result = await createEpisodes(episodes);
       
       if (!result.success) {
         throw result.error;

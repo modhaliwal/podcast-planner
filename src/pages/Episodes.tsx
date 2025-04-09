@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodesHeader } from '@/components/episodes/EpisodesHeader';
 import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter';
