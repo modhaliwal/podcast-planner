@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BaseRepository } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
@@ -31,7 +30,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
-          description,
           topic,
           cover_art,
           scheduled,
@@ -77,7 +75,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
-          description,
           topic,
           cover_art,
           scheduled,
@@ -124,21 +121,19 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Convert to DB format
-      const dbEpisode = this.mapper.createDtoToDB(episodeDto) as Partial<DBEpisode> & {
-        user_id: string;
-        episode_number: number;
-        title: string;
-        scheduled: string;
-        status: string;
-      };
+      const dbEpisode = this.mapper.createDtoToDB(episodeDto);
       
-      // Add user ID
-      dbEpisode.user_id = userData.user.id;
+      // Add user ID and ensure introduction is set
+      const fullDbEpisode = {
+        ...dbEpisode,
+        user_id: userData.user.id,
+        introduction: episodeDto.introduction || '',
+      };
       
       // Insert the episode
       const { data, error } = await supabase
         .from("episodes")
-        .insert(dbEpisode)
+        .insert(fullDbEpisode)
         .select()
         .single();
       

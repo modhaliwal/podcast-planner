@@ -5,7 +5,6 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestMapper } from '@/repositories/guests/GuestMapper';
-import { DBGuest } from '@/repositories/guests/GuestRepository';
 
 export function useEpisodes() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -74,14 +73,13 @@ export function useEpisodes() {
       
       // Map guests from DB format to domain model
       const mappedGuests = (guestData || []).map(guest => {
-        // Create necessary properties for DBGuest
+        // Create necessary properties and handle optional fields
         const dbGuest = {
           ...guest,
-          location: guest.location || null,
-          website: guest.website || null,
-          twitter: guest.twitter || null,
-          linkedin: guest.linkedin || null,
-        } as DBGuest;
+          // Use existing fields or default to null for optional ones
+          // Don't access non-existent fields on the guest object
+          social_links: guest.social_links || {},
+        };
         
         return guestMapper.toDomain(dbGuest);
       });

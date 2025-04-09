@@ -17,7 +17,7 @@ export interface DBEpisode {
   scheduled: string;
   publish_date?: string | null;
   status: EpisodeStatus;
-  introduction?: string | null;
+  introduction: string;  // Must be required as per database schema
   notes?: string | null;
   notes_versions?: Json | null;
   introduction_versions?: Json | null;
@@ -43,7 +43,7 @@ export interface CreateEpisodeDTO {
   scheduled: string;
   publishDate?: string;
   status: EpisodeStatus;
-  introduction?: string;
+  introduction: string;  // Make this required to match DB schema
   notes?: string;
   notesVersions?: ContentVersion[];
   introductionVersions?: ContentVersion[];
