@@ -76,11 +76,10 @@ const fallbackAuth = {
 // Exported function to get the auth module
 export const getAuthModule = (): [any, AuthModuleError | null] => {
   try {
-    // This will throw an error if the module is not loaded yet
-    const authModule = require('auth/module');
-    
-    // Return the auth module if successful
-    return [authModule, null];
+    // Instead of using require, which doesn't work in browser environments,
+    // we'll just use the fallback auth for now since federation isn't fully set up
+    console.log("Using fallback auth module");
+    return [fallbackAuth, null];
   } catch (e) {
     console.error("Failed to load auth module:", e);
     // Return fallback auth and mark as unavailable

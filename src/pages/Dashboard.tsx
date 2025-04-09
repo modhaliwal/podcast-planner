@@ -5,10 +5,8 @@ import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboar
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 
 const Dashboard = () => {
-  const { user } = useAuthProxy();
   const hasInitializedRef = useRef(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [guests, setGuests] = useState([]);
@@ -17,17 +15,21 @@ const Dashboard = () => {
   // Debug guests data
   console.log("Dashboard rendering with guests:", guests?.length, "episodes:", episodes?.length);
   
-  // Load data when the component mounts and user is available
+  // Load data when the component mounts
   useEffect(() => {
-    if (!hasInitializedRef.current && user?.id) {
-      console.log("Dashboard component mounted with user, initializing data");
+    if (!hasInitializedRef.current) {
+      console.log("Dashboard component mounted, initializing data");
       hasInitializedRef.current = true;
-      setIsLoaded(true);
-    } else if (guests?.length > 0 && !isLoaded) {
-      // If we already have guests data but haven't marked as loaded
-      setIsLoaded(true);
+      
+      // In a real implementation, this would fetch data from an API
+      // For now, we'll just set isLoaded to true after a short delay
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [user, guests, isLoaded]);
+  }, []);
   
   // Calculate statistics
   const totalGuests = guests?.length || 0;
