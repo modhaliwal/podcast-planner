@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { getUsers, deleteUser, UserWithRoles } from '@/services/userService';
 import { User, UsersRoleKey } from '@/lib/types';
 import { CreateUserDialog } from './CreateUserDialog';
@@ -14,7 +14,7 @@ interface UsersListProps {
 }
 
 export function UsersList({ isAdmin }: UsersListProps) {
-  const { user } = useAuth();
+  const { user } = useAuthProxy();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

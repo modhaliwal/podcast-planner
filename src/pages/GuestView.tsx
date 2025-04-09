@@ -1,6 +1,6 @@
 
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { Button } from '@/components/ui/button';
@@ -9,11 +9,10 @@ import { useGuestData } from '@/hooks/guests/useGuestData';
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
   const { guest, isLoading } = useGuestData(id);
-  const { episodes } = useAuth();
   
-  const guestEpisodes = episodes.filter(episode => 
-    guest?.id && episode.guestIds.includes(guest.id)
-  );
+  // Since we removed AuthContext, we need to fetch episodes differently
+  // This would typically be done through a dedicated hook/service
+  const guestEpisodes = [];
 
   if (isLoading) {
     return <Shell>

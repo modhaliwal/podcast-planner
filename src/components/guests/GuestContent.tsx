@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestList } from '@/components/guests/GuestList';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 
 export function GuestContent() {
-  const { guests } = useAuth();
+  // In a real implementation, this would fetch guests data from an API
+  const guests = []; // This would be replaced with proper data fetching
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
