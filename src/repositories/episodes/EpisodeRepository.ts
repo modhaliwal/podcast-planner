@@ -18,13 +18,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
    */
   async getAll(): Promise<Episode[]> {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      
-      if (!userData || !userData.user) {
-        console.error("No authenticated user found");
-        return [];
-      }
-      
       const { data, error } = await supabase
         .from("episodes")
         .select(`
@@ -115,19 +108,12 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
    */
   async add(episodeDto: CreateEpisodeDTO): Promise<Episode> {
     try {
-      // Get current user ID
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        throw new Error("User not authenticated");
-      }
-      
       // Convert to DB format
       const dbEpisode = this.mapper.createDtoToDB(episodeDto);
       
-      // Add user ID and ensure required fields are set
+      // Ensure required fields are set
       const fullDbEpisode = {
         ...dbEpisode,
-        user_id: userData.user.id,
         introduction: episodeDto.introduction || '',
         episode_number: episodeDto.episodeNumber,  // Ensure this required field is set
         title: episodeDto.title,                   // Ensure this required field is set
@@ -183,13 +169,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
    */
   async update(id: string, episodeDto: UpdateEpisodeDTO): Promise<Episode | null> {
     try {
-      // Get current user ID
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        console.error("User not authenticated");
-        return null;
-      }
-      
       // Convert to DB format (partial update)
       const dbEpisode = this.mapper.updateDtoToDB(episodeDto);
       
@@ -197,8 +176,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       const { error } = await supabase
         .from("episodes")
         .update(dbEpisode)
-        .eq("id", id)
-        .eq("user_id", userData.user.id);
+        .eq("id", id);
       
       if (error) {
         console.error("Error updating episode:", error);

@@ -59,7 +59,6 @@ export interface DBGuest {
   status: string | null;
   created_at: string;
   updated_at: string;
-  user_id: string;
   social_links: Json;
   bio_versions?: Json | null;
   background_research_versions?: Json | null;
@@ -148,8 +147,6 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
       dbGuest.name = guestData.name;
       dbGuest.title = guestData.title || '';
       dbGuest.social_links = dbGuest.social_links || {};
-      // Add a fixed user_id value since we removed authentication
-      dbGuest.user_id = '00000000-0000-0000-0000-000000000000';
 
       const { data, error } = await supabase
         .from('guests')
