@@ -13,8 +13,10 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get the token from the URL (in a real implementation, this might be a code that needs to be exchanged)
+        // Get parameters from the URL
         const token = searchParams.get("token");
+        const refreshToken = searchParams.get("refresh_token");
+        const expiresIn = searchParams.get("expires_in");
         const redirectTo = searchParams.get("redirectTo") || "/dashboard";
         
         if (!token) {
@@ -33,17 +35,12 @@ export default function AuthCallback() {
           return;
         }
         
-        // In a real implementation, validate the token with your API
-        // For now, we'll just parse it and store it
         try {
-          // Decode the token (it's URL-safe base64 encoded)
-          const decodedToken = JSON.parse(atob(token));
-          
-          // Store the token
+          // Store the token data
           setAuthToken({
-            access_token: decodedToken.access_token,
-            refresh_token: decodedToken.refresh_token,
-            expires_at: Date.now() + (decodedToken.expires_in || 3600) * 1000
+            access_token: token,
+            refresh_token: refreshToken || '',
+            expires_at: Date.now() + (parseInt(expiresIn || '3600') * 1000)
           });
           
           toast({
@@ -55,11 +52,11 @@ export default function AuthCallback() {
           navigate(redirectTo, { replace: true });
           
         } catch (parseError) {
-          console.error("Error parsing token:", parseError);
+          console.error("Error processing token:", parseError);
           setError("Invalid authentication token format");
           toast({
             title: "Authentication Failed",
-            description: "The authentication token format is invalid.",
+            description: "There was an error processing your authentication data.",
             variant: "destructive",
           });
           

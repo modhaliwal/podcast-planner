@@ -1,184 +1,105 @@
-
-import { Repository } from "./Repository";
-import { supabase } from "@/integrations/supabase/client";
-import { DataMapper } from "./DataMapper";
-import { Result } from "@/lib/types";
-
-// Define valid table names to satisfy TypeScript
-export type TableName = 'guests' | 'episodes' | 'episode_guests' | 'ai_generators' | 'profiles';
+import { DataMapper } from './DataMapper';
+import { Repository } from './Repository';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Base Repository class that provides standardized methods for CRUD operations.
- * Includes proper error handling and common implementations.
+ * Base implementation of the Repository interface
  */
-export abstract class BaseRepository<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>, DBModel = any> 
-  implements Repository<T, CreateDTO, UpdateDTO> {
+export abstract class BaseRepository<T, D> implements Repository<T> {
+  protected readonly tableName: string;
+  protected readonly mapper: DataMapper<T, D>;
   
-  protected abstract tableName: TableName;
-  protected abstract mapper: DataMapper<T, DBModel>;
-  
-  /**
-   * Standardized error handler for repository operations
-   */
-  protected handleError(operation: string, error: any): Error {
-    console.error(`Error during ${operation}:`, error);
-    return error instanceof Error ? error : new Error(error?.message || `Error during ${operation}`);
-  }
-
-  /**
-   * Get all items with optional filtering
-   */
-  async getAll(options?: { 
-    filters?: Record<string, any>,
-    relations?: string[] 
-  }): Promise<Result<T[]>> {
-    try {
-      let query = supabase
-        .from(this.tableName)
-        .select('*');
-        
-      // Apply filters if provided
-      if (options?.filters) {
-        Object.entries(options.filters).forEach(([key, value]) => {
-          if (value !== undefined) {
-            query = query.eq(key, value);
-          }
-        });
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
-      // Map DB models to domain models
-      const items = (data || []).map(item => this.mapper.toDomain(item as DBModel));
-      
-      return { data: items, error: null, success: true };
-    } catch (error) {
-      return { data: null, error: this.handleError('getAll', error), success: false };
-    }
+  constructor(tableName: string, mapper: DataMapper<T, D>) {
+    this.tableName = tableName;
+    this.mapper = mapper;
   }
   
-  /**
-   * Get a single item by ID
-   */
-  async getById(id: string): Promise<Result<T>> {
-    if (!id) {
-      return { data: null, error: new Error("No ID provided"), success: false };
-    }
-    
+  async findById(id: string): Promise<T | null> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
         .select('*')
         .eq('id', id)
-        .single();
-      
+        .maybeSingle();
+        
       if (error) throw error;
+      if (!data) return null;
       
-      // Map DB model to domain model
-      const item = this.mapper.toDomain(data as DBModel);
-      
-      return { data: item, error: null, success: true };
+      return this.mapper.toDomain(data as D);
     } catch (error) {
-      return { data: null, error: this.handleError(`getById ${id}`, error), success: false };
+      console.error(`Error finding ${this.tableName} by ID:`, error);
+      throw error;
     }
   }
   
-  /**
-   * Create a new item
-   */
-  async create(dto: CreateDTO): Promise<Result<T>> {
+  async findAll(): Promise<T[]> {
     try {
-      // Get current user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-      
-      // Convert DTO to DB model using mapper
-      const dbModel = this.prepareForCreate(dto, user.id);
-      
-      // Insert into database
       const { data, error } = await supabase
         .from(this.tableName)
-        .insert(dbModel)
-        .select()
-        .single();
-      
+        .select('*')
+        .order('created_at', { ascending: false });
+        
       if (error) throw error;
+      if (!data) return [];
       
-      if (!data) return { data: null, error: null, success: false };
-      
-      // Return the created item
-      const createdItem = this.mapper.toDomain(data as DBModel);
-      
-      return { data: createdItem, error: null, success: true };
+      return data.map(item => this.mapper.toDomain(item as D));
     } catch (error) {
-      return { data: null, error: this.handleError('create', error), success: false };
+      console.error(`Error finding all ${this.tableName}:`, error);
+      throw error;
     }
   }
   
-  /**
-   * Update an existing item
-   */
-  async update(id: string, dto: UpdateDTO): Promise<Result<boolean>> {
+  async add(item: T): Promise<T> {
     try {
-      // Convert DTO to DB model using mapper
-      const dbModel = this.prepareForUpdate(dto);
-      
-      const { error } = await supabase
+      const dbItem = this.mapper.toDB(item);
+      const { data, error } = await supabase
         .from(this.tableName)
-        .update({
-          ...dbModel,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-      
+        .insert([dbItem])
+        .select('*')
+        .single();
+        
       if (error) throw error;
       
-      return { data: true, error: null, success: true };
+      return this.mapper.toDomain(data as D);
     } catch (error) {
-      return { data: false, error: this.handleError(`update ${id}`, error), success: false };
+      console.error(`Error adding to ${this.tableName}:`, error);
+      throw error;
     }
   }
   
-  /**
-   * Delete an item by ID
-   */
-  async delete(id: string): Promise<Result<boolean>> {
+  async update(id: string, item: Partial<T>): Promise<T | null> {
+    try {
+      const dbItem = this.mapper.toDB(item);
+      const { data, error } = await supabase
+        .from(this.tableName)
+        .update(dbItem)
+        .eq('id', id)
+        .select('*')
+        .single();
+        
+      if (error) throw error;
+      if (!data) return null;
+      
+      return this.mapper.toDomain(data as D);
+    } catch (error) {
+      console.error(`Error updating ${this.tableName}:`, error);
+      throw error;
+    }
+  }
+  
+  async delete(id: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from(this.tableName)
         .delete()
         .eq('id', id);
-      
+        
       if (error) throw error;
       
-      return { data: true, error: null, success: true };
+      return true;
     } catch (error) {
-      return { data: false, error: this.handleError(`delete ${id}`, error), success: false };
+      console.error(`Error deleting from ${this.tableName}:`, error);
+      return false;
     }
-  }
-  
-  /**
-   * Prepare data for create operation
-   * This method can be overridden by child classes
-   */
-  protected prepareForCreate(dto: CreateDTO, userId: string): any {
-    return {
-      ...this.mapper.createDtoToDB?.(dto) || dto,
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-  
-  /**
-   * Prepare data for update operation
-   * This method can be overridden by child classes
-   */
-  protected prepareForUpdate(dto: UpdateDTO): any {
-    return this.mapper.updateDtoToDB?.(dto) || dto;
   }
 }

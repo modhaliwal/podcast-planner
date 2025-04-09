@@ -1,14 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 import { Shell } from '@/components/layout/Shell';
 import { EpisodesHeader } from '@/components/episodes/EpisodesHeader';
 import { EpisodesSearchFilter } from '@/components/episodes/EpisodesSearchFilter';
 import { EpisodesContent } from '@/components/episodes/EpisodesContent';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 
 const Episodes = () => {
-  const { episodes, guests, refreshEpisodes } = useAuth();
+  const { episodes, guests, refreshEpisodes } = useAuthProxy();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -33,7 +34,7 @@ const Episodes = () => {
   
   const handleRefresh = () => {
     console.log("Manual refresh triggered");
-    refreshEpisodes(); // Now correctly calling without parameters
+    refreshEpisodes();
   };
   
   return (

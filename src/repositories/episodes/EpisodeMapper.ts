@@ -24,7 +24,7 @@ const toContentVersionArray = (jsonValue: Json | null): ContentVersion[] | undef
       );
       
       if (isValid) {
-        return jsonValue as ContentVersion[];
+        return jsonValue as unknown as ContentVersion[];
       }
     }
     // If it's a string (JSON string), parse it

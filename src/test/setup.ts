@@ -20,9 +20,26 @@ vi.mock('@/integrations/supabase/client', () => ({
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
     }),
   },
+}));
+
+// Mock the federated auth context
+vi.mock('@/contexts/FederatedAuthContext', () => ({
+  useFederatedAuth: vi.fn().mockReturnValue({
+    authToken: { access_token: 'test-token', expires_at: Date.now() + 3600000 },
+    isAuthenticated: true,
+    isLoading: false,
+    authError: null,
+    authErrorType: null,
+    setAuthToken: vi.fn(),
+    hasAuthError: false,
+    authModule: {},
+    logout: vi.fn()
+  }),
+  FederatedAuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Create msw server for API mocking

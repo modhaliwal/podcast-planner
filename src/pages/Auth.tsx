@@ -1,16 +1,16 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Headphones, ExternalLink } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useFederatedAuth } from "@/contexts/FederatedAuthContext";
+import { useAuthProxy } from "@/hooks/useAuthProxy";
 
 const authSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -23,7 +23,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { authError, isLoading: authModuleLoading, authToken, setAuthToken } = useFederatedAuth();
+  const { authError, isLoading: authModuleLoading, isAuthenticated } = useFederatedAuth();
+  const { signIn } = useAuthProxy();
   
   const from = location.state?.from || "/dashboard";
 
@@ -35,32 +36,17 @@ export default function Auth() {
     },
   });
 
-  useEffect(() => {
-    // If user is authenticated (by token), redirect
-    if (authToken && !authModuleLoading) {
-      navigate(from, { replace: true });
-    }
-  }, [authToken, navigate, from, authModuleLoading]);
+  // If user is authenticated, redirect
+  if (isAuthenticated && !authModuleLoading) {
+    navigate(from, { replace: true });
+    return null;
+  }
 
   async function handleAuth(values: AuthFormValues) {
     try {
       setLoading(true);
-      // For simplicity, we'll just show a message and not actually try to authenticate
-      // This avoids circular dependencies with useAuthProxy
-      toast({
-        title: "Authentication",
-        description: "Mock authentication for " + values.email,
-      });
-      
-      // Mock successful authentication with a token
-      const mockToken = {
-        access_token: "mock_token_" + Date.now(),
-        refresh_token: "mock_refresh_" + Date.now(),
-        expires_at: Date.now() + (3600 * 1000) // 1 hour from now
-      };
-      
-      setAuthToken(mockToken);
-      navigate(from, { replace: true });
+      await signIn(values.email, values.password);
+      // The signIn function handles navigation and toast messages
     } catch (error) {
       console.error(`Authentication error:`, error);
     } finally {
@@ -76,17 +62,6 @@ export default function Auth() {
     const authProviderUrl = "https://admin.skyrocketdigital.com/auth";
     window.location.href = `${authProviderUrl}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
   };
-
-  // Show auth module error if it exists
-  useEffect(() => {
-    if (authError && !authModuleLoading) {
-      toast({
-        title: "Authentication Service Warning",
-        description: "Authentication service is currently unavailable. Some features may be limited.",
-        variant: "destructive",
-      });
-    }
-  }, [authError, authModuleLoading]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -163,16 +138,6 @@ export default function Auth() {
               <p className="font-medium">Authentication Service Notice</p>
               <p className="text-xs mt-1">
                 The authentication service is currently unavailable. You may experience limited functionality.
-              </p>
-            </div>
-          )}
-          
-          {/* Debug section - hidden in production */}
-          {process.env.NODE_ENV !== 'production' && authToken && (
-            <div className="w-full p-3 border border-green-300 bg-green-50 rounded-md text-green-800 text-sm">
-              <p className="font-medium">Debug: Token Present</p>
-              <p className="text-xs mt-1 truncate">
-                Token: {authToken.access_token.substring(0, 20)}...
               </p>
             </div>
           )}

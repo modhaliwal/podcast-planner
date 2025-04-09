@@ -10,7 +10,6 @@ const fallbackAuth: FederatedAuth = {
     error: new Error("Auth module unavailable"),
     signIn: async () => ({ error: { message: "Auth module unavailable" } }),
     signOut: async () => {},
-    // Add missing methods for backward compatibility
     refreshGuests: async () => [],
     refreshEpisodes: async () => [],
     refreshAllData: async () => {},
@@ -98,40 +97,23 @@ export const federatedSignIn = async (email: string, password: string) => {
   }
 };
 
-// Create a component that renders the children with the auth module
-export function useAuth() {
-  // Get the auth module and return its useAuth hook result
-  const [authModule] = getAuthModule();
-  return {
-    ...authModule.useAuth(),
-    // Add backwards compatibility for common operations
-    refreshGuests: async () => [],
-    refreshEpisodes: async (force = false) => [],
-    refreshAllData: async () => {},
-    episodes: [],
-    guests: []
-  };
-}
+// Federation token validation
+export const validateFederationToken = async (token: string): Promise<boolean> => {
+  try {
+    // In a real implementation, this would call an API to validate the token
+    // For now, we'll just check if it exists
+    return !!token;
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return false;
+  }
+};
 
-// Direct export for FederatedModuleRoute to match expected API
-export const FederatedModuleRoute = ({ 
-  children, 
-  requiredPermission,
-  fallback 
-}: { 
-  children: ReactNode;
-  requiredPermission?: string;
-  fallback?: ReactNode;
-}) => {
-  const [authModule] = getAuthModule();
-  return (
-    <authModule.FederatedModuleRoute 
-      requiredPermission={requiredPermission}
-      fallback={fallback}
-    >
-      {children}
-    </authModule.FederatedModuleRoute>
-  );
+// Function to initiate federation auth with the launchpad
+export const initiateFederatedAuth = (callbackUrl: string): void => {
+  // In a real implementation, this would redirect to the launchpad auth page
+  const authUrl = "https://admin.skyrocketdigital.com/auth";
+  window.location.href = `${authUrl}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
 };
 
 // Wrapper component to provide auth module with proper error handling

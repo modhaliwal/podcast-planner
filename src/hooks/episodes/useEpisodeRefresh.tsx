@@ -23,7 +23,7 @@ const convertToContentVersions = (data: Json | null): ContentVersion[] | undefin
       );
       
       if (isValidContentVersionArray) {
-        return data as ContentVersion[];
+        return data as unknown as ContentVersion[];
       }
     }
     return undefined;

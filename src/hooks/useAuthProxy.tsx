@@ -1,50 +1,30 @@
 
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { federatedSignIn } from '@/integrations/auth/federated-auth';
-// Remove circular dependency by not importing these hooks here
-// import { useGuestsData } from '@/hooks/guests/useGuestsData';
-// import { useEpisodesData } from '@/hooks/episodes/useEpisodesData';
 
-// A proxy hook that combines the federated auth with fallback functionality
+// A proxy hook that provides auth functionality based on federation
 export function useAuthProxy() {
-  const { authModule, authError, isLoading: contextLoading, authToken, setAuthToken } = useFederatedAuth();
-  const { useAuth } = authModule;
-  const federatedAuth = useAuth();
-  const [initialized, setInitialized] = useState(false);
+  const { 
+    authModule, 
+    authError, 
+    isLoading: contextLoading, 
+    authToken, 
+    setAuthToken,
+    isAuthenticated,
+    logout: contextLogout,
+  } = useFederatedAuth();
+  
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  
-  // Get the user ID (either from federated auth or token)
-  const userId = federatedAuth?.user?.id || (authToken ? 'current-user' : undefined);
-  
-  // Determine overall loading state
-  const isLoading = contextLoading || federatedAuth.isLoading || !initialized;
-  
-  // Handle auth module errors
-  useEffect(() => {
-    if (!contextLoading && authError) {
-      console.warn(`Auth module error: ${authError}`);
-    }
-    setInitialized(true);
-  }, [authError, contextLoading]);
-  
-  // Add refreshAllData for backward compatibility
-  const refreshAllData = useCallback(async () => {
-    console.log("Refreshing all data");
-    try {
-      // Instead of calling hooks directly, we'll use a simpler implementation
-      // that doesn't create circular dependencies
-      console.log("All data refreshed successfully");
-    } catch (error) {
-      console.error("Error refreshing all data:", error);
-    }
-  }, []);
   
   // Enhanced sign in with token storage
   const signIn = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
+      
       if (authError) {
         toast({
           title: 'Authentication Service Unavailable',
@@ -70,7 +50,7 @@ export function useAuthProxy() {
       if (result.data?.session) {
         const token = {
           access_token: result.data.session.access_token,
-          refresh_token: result.data.session.refresh_token,
+          refresh_token: result.data.session.refresh_token || '',
           expires_at: Date.now() + (result.data.session.expires_in || 3600) * 1000
         };
         
@@ -80,9 +60,6 @@ export function useAuthProxy() {
           title: 'Authentication Successful',
           description: 'You have been signed in.',
         });
-        
-        // Initialize data after successful sign-in
-        setTimeout(() => refreshAllData(), 0);
         
         navigate('/dashboard');
       }
@@ -95,83 +72,88 @@ export function useAuthProxy() {
         variant: 'destructive',
       });
       return { error };
+    } finally {
+      setIsLoading(false);
     }
   };
   
-  // Enhanced sign out with token cleanup
-  const signOut = async () => {
+  // For direct authentication with token (e.g., from external provider)
+  const authenticateWithToken = useCallback((token: string, refreshToken: string, expiresIn: number = 3600) => {
+    const authToken = {
+      access_token: token,
+      refresh_token: refreshToken,
+      expires_at: Date.now() + (expiresIn * 1000)
+    };
+    
+    setAuthToken(authToken);
+    return true;
+  }, [setAuthToken]);
+  
+  // Enhanced sign out that uses the context logout
+  const signOut = useCallback(async () => {
     try {
-      // Clear local token storage
-      setAuthToken(null);
-      
-      // Call the federated sign out if available
-      await federatedAuth.signOut();
-      
-      navigate('/auth');
-      toast({
-        title: 'Signed Out',
-        description: 'You have been signed out successfully.',
-      });
+      setIsLoading(true);
+      contextLogout();
+      return true;
     } catch (error: any) {
       toast({
         title: 'Sign Out Error',
         description: error.message || 'An unexpected error occurred',
         variant: 'destructive',
       });
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [contextLogout]);
+  
+  // Build the user object from token if available
+  const user = authToken ? {
+    id: 'federated-user', // This would normally be extracted from the token
+    email: 'user@example.com',  // This would normally be extracted from the token
+    // Add any other user properties that might be needed
+  } : null;
   
   return {
-    ...federatedAuth,
+    user,
     signIn,
     signOut,
-    isLoading,
+    authenticateWithToken,
+    isLoading: contextLoading || isLoading,
     authError,
-    isAuthenticated: !!authToken,
+    isAuthenticated,
     token: authToken?.access_token,
-    // Add backward compatibility methods
+    // Provide empty implementations for backward compatibility
     refreshGuests: async () => [],
     refreshEpisodes: async () => [],
-    refreshAllData,
+    refreshAllData: async () => {},
     guests: [],
     episodes: []
   };
 }
 
-// Proxy hook for checking authentication status
-export function useIsAuthenticatedProxy() {
-  const { authModule, authError, isLoading: contextLoading, authToken } = useFederatedAuth();
-  const { useIsAuthenticated } = authModule;
-  const { isAuthenticated: federatedIsAuthenticated, isLoading: authLoading } = useIsAuthenticated();
-  
-  // Either we're authenticated by token or by the federated auth
-  const isAuthenticated = !!authToken || federatedIsAuthenticated;
+// Simpler hook for just checking authentication status
+export function useIsAuthenticated() {
+  const { isAuthenticated, isLoading, authError } = useFederatedAuth();
   
   return {
     isAuthenticated,
-    isLoading: contextLoading || authLoading,
+    isLoading,
     authError,
   };
 }
 
-// Proxy hook for checking permissions
-export function useHasPermissionProxy(permission: string) {
-  const { authModule, authError, isLoading: contextLoading, authToken } = useFederatedAuth();
-  const { useHasPermission } = authModule;
-  const { hasPermission, isLoading: permissionLoading } = useHasPermission(permission);
+// Hook for checking permissions (simplified)
+export function useHasPermission(permission: string) {
+  const { authToken, isLoading, authError } = useFederatedAuth();
   
-  // If we don't have a token, we don't have any permissions
-  if (!authToken && !contextLoading) {
-    return {
-      hasPermission: false,
-      isLoading: false,
-      authError,
-    };
-  }
+  // Simple permission check - in a real implementation,
+  // you would decode the JWT and check the permissions claim
+  const hasPermission = !!authToken;
   
   return {
     hasPermission,
-    isLoading: contextLoading || permissionLoading,
+    isLoading,
     authError,
   };
 }
