@@ -2,9 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Headphones, Home, Menu, Users } from 'lucide-react';
+import { Headphones, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { NavItem } from './types';
 import { Navigation } from './Navigation';
 import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -13,12 +12,6 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  
-  const navItems: NavItem[] = [
-    { name: 'Dashboard', path: '/dashboard', icon: <Home className="h-4 w-4 mr-2" /> },
-    { name: 'Guests', path: '/guests', icon: <Users className="h-4 w-4 mr-2" /> },
-    { name: 'Episodes', path: '/episodes', icon: <Calendar className="h-4 w-4 mr-2" /> },
-  ];
   
   useEffect(() => {
     const handleScroll = () => {
@@ -57,7 +50,7 @@ export function Header() {
         
         <MobileMenu 
           isOpen={isMobileMenuOpen}
-          navItems={navItems}
+          navItems={[]}
           onClose={() => setIsMobileMenuOpen(false)}
           logoPath="/dashboard"
         />

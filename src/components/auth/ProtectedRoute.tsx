@@ -7,7 +7,6 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  // Since authentication is handled at the app level, 
-  // we simply pass through the children
+  // Since all authentication is removed, simply pass through the children
   return <>{children}</>;
 };
