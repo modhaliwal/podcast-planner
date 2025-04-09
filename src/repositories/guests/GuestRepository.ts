@@ -1,8 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { BaseRepository } from '../core/BaseRepository';
 import { Guest } from '@/lib/types';
 import { GuestMapper } from './GuestMapper';
 import { Result } from '@/lib/types';
+import { Json } from '@/integrations/supabase/types';
 
 // Define specific types for create/update operations
 export interface CreateGuestDTO {
@@ -49,6 +51,7 @@ export interface DBGuest {
   phone: string | null;
   location: string | null;
   image: string | null;
+  image_url: string | null;
   website: string | null;
   twitter: string | null;
   linkedin: string | null;
@@ -58,10 +61,13 @@ export interface DBGuest {
   created_at: string;
   updated_at: string;
   user_id: string;
+  social_links: Json;
+  bio_versions?: Json | null;
+  background_research_versions?: Json | null;
 }
 
 export class GuestRepository extends BaseRepository<Guest, DBGuest> {
-  private mapper: GuestMapper = new GuestMapper();
+  mapper: GuestMapper = new GuestMapper();
 
   // Method to update a guest with explicit typing
   async update(id: string, guestData: UpdateGuestDTO): Promise<Result<Guest>> {
@@ -73,23 +79,8 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
       }
 
       // Map update DTO to DB format
-      const dbGuest: Record<string, any> = {};
+      const dbGuest = this.mapper.updateDtoToDB(guestData);
       
-      if (guestData.name !== undefined) dbGuest.name = guestData.name;
-      if (guestData.title !== undefined) dbGuest.title = guestData.title || null;
-      if (guestData.company !== undefined) dbGuest.company = guestData.company || null;
-      if (guestData.bio !== undefined) dbGuest.bio = guestData.bio;
-      if (guestData.email !== undefined) dbGuest.email = guestData.email || null;
-      if (guestData.phone !== undefined) dbGuest.phone = guestData.phone || null;
-      if (guestData.location !== undefined) dbGuest.location = guestData.location || null;
-      if (guestData.imageUrl !== undefined) dbGuest.image = guestData.imageUrl || null;
-      if (guestData.website !== undefined) dbGuest.website = guestData.website || null;
-      if (guestData.twitter !== undefined) dbGuest.twitter = guestData.twitter || null;
-      if (guestData.linkedin !== undefined) dbGuest.linkedin = guestData.linkedin || null;
-      if (guestData.notes !== undefined) dbGuest.notes = guestData.notes || null;
-      if (guestData.backgroundResearch !== undefined) dbGuest.background_research = guestData.backgroundResearch || null;
-      if (guestData.status !== undefined) dbGuest.status = guestData.status || null;
-
       // Update the guest in the database
       const { error } = await supabase
         .from('guests')
@@ -115,7 +106,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
       }
 
       // Map the guest from DB format to domain object
-      return { data: this.mapper.mapFromDB(data), error: null };
+      return { data: this.mapper.toDomain(data), error: null };
     } catch (error) {
       console.error('Unexpected error in update:', error);
       return {
@@ -144,7 +135,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
         return [];
       }
 
-      return data.map(this.mapper.mapFromDB);
+      return data.map(guest => this.mapper.toDomain(guest));
     } catch (error) {
       console.error('Unexpected error in getAll:', error);
       return [];
@@ -171,7 +162,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
         return null;
       }
 
-      return this.mapper.mapFromDB(data);
+      return this.mapper.toDomain(data);
     } catch (error) {
       console.error('Unexpected error in getById:', error);
       return null;
@@ -185,27 +176,21 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
         throw new Error('User not authenticated');
       }
 
+      // Convert guestData to DB format
+      const dbGuest = this.mapper.createDtoToDB(guestData);
+      
+      // Add user_id
+      dbGuest.user_id = userData.user.id;
+      
+      // Set default values for required fields
+      dbGuest.bio = guestData.bio || '';
+      dbGuest.name = guestData.name;
+      dbGuest.title = guestData.title || '';
+      dbGuest.social_links = dbGuest.social_links || {};
+
       const { data, error } = await supabase
         .from('guests')
-        .insert([
-          {
-            user_id: userData.user.id,
-            name: guestData.name,
-            title: guestData.title || null,
-            company: guestData.company || null,
-            bio: guestData.bio || '',
-            email: guestData.email || null,
-            phone: guestData.phone || null,
-            location: guestData.location || null,
-            image: guestData.imageUrl || null,
-            website: guestData.website || null,
-            twitter: guestData.twitter || null,
-            linkedin: guestData.linkedin || null,
-            notes: guestData.notes || null,
-            background_research: guestData.backgroundResearch || null,
-            status: guestData.status || null,
-          },
-        ])
+        .insert(dbGuest)
         .select()
         .single();
 
@@ -214,7 +199,13 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
         throw new Error(`Failed to add guest: ${error.message}`);
       }
 
-      return this.getById(data.id) as Guest;
+      // Get full guest details
+      const newGuest = await this.getById(data.id);
+      if (!newGuest) {
+        throw new Error('Failed to retrieve created guest');
+      }
+      
+      return newGuest;
     } catch (error) {
       console.error('Unexpected error in add:', error);
       throw new Error(`Failed to add guest: ${error instanceof Error ? error.message : String(error)}`);

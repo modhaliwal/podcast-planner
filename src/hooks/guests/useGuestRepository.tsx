@@ -4,6 +4,7 @@ import { guestRepository } from '@/repositories';
 import { Guest } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
+import { CreateGuestDTO, UpdateGuestDTO } from '@/repositories/guests/GuestRepository';
 
 /**
  * Custom hook for accessing guest repository with React Query integration
@@ -18,7 +19,7 @@ export function useGuestRepository() {
   const getAllGuests = async () => {
     setIsLoading(true);
     try {
-      return await guestRepository.findAll();
+      return await guestRepository.getAll();
     } finally {
       setIsLoading(false);
     }
@@ -30,7 +31,7 @@ export function useGuestRepository() {
   const getGuestById = async (id: string) => {
     setIsLoading(true);
     try {
-      return await guestRepository.findById(id);
+      return await guestRepository.getById(id);
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +40,7 @@ export function useGuestRepository() {
   /**
    * Create a new guest
    */
-  const createGuest = async (guest: Partial<Guest>) => {
+  const createGuest = async (guest: CreateGuestDTO) => {
     setIsLoading(true);
     try {
       const result = await guestRepository.add(guest);
@@ -61,7 +62,7 @@ export function useGuestRepository() {
   /**
    * Update a guest
    */
-  const updateGuest = async (id: string, guest: Partial<Guest>) => {
+  const updateGuest = async (id: string, guest: UpdateGuestDTO) => {
     setIsLoading(true);
     try {
       const result = await guestRepository.update(id, guest);

@@ -10,16 +10,16 @@ import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
  * Repository for handling episode data
  */
 export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
-  private mapper = new EpisodeMapper();
+  mapper = new EpisodeMapper();
   
   /**
    * Get all episodes for the current user
    */
   async getAll(): Promise<Episode[]> {
     try {
-      const { data: userId } = await supabase.auth.getUser();
+      const { data: userData } = await supabase.auth.getUser();
       
-      if (!userId) {
+      if (!userData || !userData.user) {
         console.error("No authenticated user found");
         return [];
       }
@@ -29,7 +29,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
         .select(`
           id, 
           title, 
-          description, 
           episode_number,
           topic,
           cover_art,
@@ -75,7 +74,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
         .select(`
           id, 
           title, 
-          description, 
           episode_number,
           topic,
           cover_art,
@@ -116,8 +114,16 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
    */
   async add(episode: CreateEpisodeDTO): Promise<Episode> {
     try {
+      // Get current user ID
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData || !userData.user) {
+        throw new Error("User not authenticated");
+      }
+      
       // Convert to DB format
-      const dbEpisode = this.mapper.mapCreateDTOToDB(episode);
+      const dbEpisode = this.mapper.createDtoToDB(episode);
+      // Add user ID
+      dbEpisode.user_id = userData.user.id;
       
       // Insert the episode
       const { data, error } = await supabase
@@ -149,7 +155,12 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Get the full episode including relationships
-      return await this.getById(data.id) as Episode;
+      const fullEpisode = await this.getById(data.id);
+      if (!fullEpisode) {
+        throw new Error("Failed to retrieve created episode");
+      }
+      
+      return fullEpisode;
       
     } catch (error) {
       console.error("Unexpected error in add:", error);
@@ -162,14 +173,21 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
    */
   async update(id: string, episode: UpdateEpisodeDTO): Promise<Result<Episode>> {
     try {
+      // Get current user ID
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData || !userData.user) {
+        return { data: null, error: new Error("User not authenticated") };
+      }
+      
       // Convert to DB format (partial update)
-      const dbEpisode = this.mapper.mapUpdateDTOToDB(episode);
+      const dbEpisode = this.mapper.updateDtoToDB(episode);
       
       // Update the episode
       const { error } = await supabase
         .from("episodes")
         .update(dbEpisode)
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", userData.user.id);
       
       if (error) {
         console.error("Error updating episode:", error);

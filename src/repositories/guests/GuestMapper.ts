@@ -1,27 +1,8 @@
 
 import { DataMapper } from "../core/DataMapper";
-import { Guest, SocialLinks, ContentVersion, SocialLinkCategory } from "@/lib/types";
+import { Guest, SocialLinks, ContentVersion } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
-
-export interface DBGuest {
-  id: string;
-  name: string;
-  title: string;
-  company?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  bio: string;
-  bio_versions?: Json | null;
-  image_url?: string | null;
-  social_links: Json;
-  notes?: string | null;
-  background_research?: string | null;
-  background_research_versions?: Json | null;
-  status?: string | null;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+import { DBGuest } from "./GuestRepository";
 
 /**
  * Maps between Guest domain models and database models
@@ -84,6 +65,11 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     };
   }
   
+  // Alias for backward compatibility
+  mapFromDB(dbGuest: DBGuest): Guest {
+    return this.toDomain(dbGuest);
+  }
+  
   /**
    * Maps a domain model to a database model
    */
@@ -112,6 +98,20 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     }
     
     return dbGuest;
+  }
+  
+  /**
+   * Map from creation DTO to database model
+   */
+  createDtoToDB(dto: any): Partial<DBGuest> {
+    return this.toDB(dto);
+  }
+  
+  /**
+   * Map from update DTO to database model
+   */
+  updateDtoToDB(dto: any): Partial<DBGuest> {
+    return this.toDB(dto);
   }
 }
 

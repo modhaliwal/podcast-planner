@@ -4,9 +4,7 @@ import { EpisodeRepository } from "@/repositories/episodes/EpisodeRepository";
 import { CreateEpisodeDTO, UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 import { EpisodeFormData } from "@/components/episodes/CreateEpisodeForm/types";
 import { supabase } from "@/integrations/supabase/client";
-
-// Create an instance of the repository
-const episodeRepository = new EpisodeRepository();
+import { episodeRepository } from "@/repositories";
 
 /**
  * Service for episode-related operations
