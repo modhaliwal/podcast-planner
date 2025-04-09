@@ -37,12 +37,17 @@ type ModuleType = {
 };
 
 // Use proper typing for lazy loading
+// We have to create a component that will load the federated module
 const FederatedAuthModuleLoader = lazy(() => 
   import('auth/module')
-    .then(module => ({ default: module }))
+    .then((module): ModuleType => {
+      // This forces the type to match what lazy() expects
+      return { default: module.default };
+    })
     .catch(err => {
       console.error('Failed to load auth module:', err);
       authModuleError = 'unavailable';
+      // Return a component that just provides our fallback
       return { default: fallbackAuth };
     })
 );
