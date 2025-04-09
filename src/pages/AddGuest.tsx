@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
 
 const AddGuest = () => {
   const navigate = useNavigate();
-  const { user, refreshGuests } = useAuth();
+  const { user } = useAuthProxy();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Create an empty guest template
@@ -58,8 +58,6 @@ const AddGuest = () => {
         .single();
       
       if (error) throw error;
-      
-      await refreshGuests();
       
       toast({
         title: "Success",

@@ -1,21 +1,18 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useRef, useState } from 'react';
 import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 
 const Dashboard = () => {
-  const { 
-    guests, 
-    episodes, 
-    refreshAllData, 
-    user 
-  } = useAuth();
+  const { user } = useAuthProxy();
   const hasInitializedRef = useRef(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [guests, setGuests] = useState([]);
+  const [episodes, setEpisodes] = useState([]);
   
   // Debug guests data
   console.log("Dashboard rendering with guests:", guests?.length, "episodes:", episodes?.length);
@@ -23,20 +20,14 @@ const Dashboard = () => {
   // Load data when the component mounts and user is available
   useEffect(() => {
     if (!hasInitializedRef.current && user?.id) {
-      console.log("Dashboard component mounted with user, refreshing data");
-      
-      const loadData = async () => {
-        await refreshAllData();
-        hasInitializedRef.current = true;
-        setIsLoaded(true);
-      };
-      
-      loadData();
+      console.log("Dashboard component mounted with user, initializing data");
+      hasInitializedRef.current = true;
+      setIsLoaded(true);
     } else if (guests?.length > 0 && !isLoaded) {
       // If we already have guests data but haven't marked as loaded
       setIsLoaded(true);
     }
-  }, [refreshAllData, user, guests, isLoaded]);
+  }, [user, guests, isLoaded]);
   
   // Calculate statistics
   const totalGuests = guests?.length || 0;

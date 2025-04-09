@@ -109,9 +109,8 @@ export function useAuthProxy() {
   
   // Build the user object from token if available
   const user = authToken ? {
-    id: 'federated-user', // This would normally be extracted from the token
-    email: 'user@example.com',  // This would normally be extracted from the token
-    // Add any other user properties that might be needed
+    id: 'federated-user', // Would normally be extracted from the token
+    email: 'user@example.com'  // Would normally be extracted from the token
   } : null;
   
   return {

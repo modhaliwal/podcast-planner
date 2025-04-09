@@ -1,203 +1,210 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { BaseRepository, TableName } from "../core/BaseRepository";
-import { Episode } from "@/lib/types";
-import { episodeMapper } from "./EpisodeMapper";
-import { deleteImage } from "@/lib/imageUpload";
-import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from "./EpisodeDTO";
-import { Result } from "@/lib/types";
+import { Episode, EpisodeDTO } from '@/types';
+import { EpisodeMapper } from './EpisodeMapper';
+import { BaseRepository, TableName } from '../core/BaseRepository';
+import { Result } from '../core/Repository';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Repository for episode-related operations
+ * Repository for managing Episode data
  */
-export class EpisodeRepository extends BaseRepository<Episode, CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode> {
-  protected tableName: TableName = 'episodes';
-  protected mapper = episodeMapper;
+export class EpisodeRepository extends BaseRepository<Episode, EpisodeDTO> {
+  constructor() {
+    super('episodes' as TableName, new EpisodeMapper());
+  }
   
   /**
-   * Get all episodes with their related guests
+   * Find all episodes for a user
    */
-  async getAll(options?: { 
-    filters?: Record<string, any> 
-  }): Promise<Result<Episode[]>> {
+  async findAllForUser(userId: string): Promise<Result<Episode[]>> {
     try {
-      // Get episodes with base implementation first
-      const result = await super.getAll(options);
+      const { data, error } = await supabase
+        .from('episodes')
+        .select('*, episode_guests(*, guests(*))')
+        .eq('user_id', userId)
+        .order('scheduled', { ascending: false });
       
-      if (result.error || !result.data) {
-        return result;
+      if (error) {
+        return { success: false, error: new Error(error.message) };
       }
       
-      // Fetch guest relationships
-      const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
-        .from('episode_guests')
-        .select('episode_id, guest_id');
+      if (!data) {
+        return { success: true, data: [] };
+      }
       
-      if (episodeGuestsError) throw episodeGuestsError;
-      
-      // Organize guest IDs by episode
-      const guestsByEpisode: Record<string, string[]> = {};
-      episodeGuestsData?.forEach(({ episode_id, guest_id }) => {
-        if (!guestsByEpisode[episode_id]) {
-          guestsByEpisode[episode_id] = [];
-        }
-        guestsByEpisode[episode_id].push(guest_id);
+      // Process and map the episodes with their guests
+      const episodes = data.map(episode => {
+        // Map the episode to domain model
+        return this.mapper.toDomain(episode);
       });
       
-      // Add guest IDs to episodes
-      const episodes = result.data.map(episode => {
-        episode.guestIds = guestsByEpisode[episode.id] || [];
-        return episode;
-      });
+      return { success: true, data: episodes };
+    } catch (error: any) {
+      return this.handleError(error);
+    }
+  }
+
+  /**
+   * Find an episode with its guests
+   */
+  async findWithGuests(id: string): Promise<Result<Episode>> {
+    try {
+      const { data, error } = await supabase
+        .from('episodes')
+        .select('*, episode_guests(*, guests(*))')
+        .eq('id', id)
+        .single();
       
-      return { data: episodes, error: null };
-    } catch (error) {
-      return { data: null, error: this.handleError("getAll with guests", error) };
+      if (error) {
+        return { success: false, error: new Error(error.message) };
+      }
+      
+      if (!data) {
+        return { success: false, error: new Error('Episode not found') };
+      }
+      
+      // Map the episode to domain model with its guests
+      const episode = this.mapper.toDomain(data);
+      
+      return { success: true, data: episode };
+    } catch (error: any) {
+      return this.handleError(error);
     }
   }
   
   /**
-   * Get episode by ID with its related guests
+   * Create an episode with its guests
    */
-  async getById(id: string): Promise<Result<Episode>> {
+  async createWithGuests(episode: Episode, guestIds: string[]): Promise<Result<Episode>> {
     try {
-      // Get episode with base implementation first
-      const result = await super.getById(id);
+      // First create the episode
+      const { data: createdEpisode, error: episodeError } = await supabase
+        .from('episodes')
+        .insert(this.mapper.toDB(episode))
+        .select()
+        .single();
       
-      if (result.error || !result.data) {
-        return result;
+      if (episodeError) {
+        return { success: false, error: new Error(episodeError.message) };
       }
       
-      // Get episode guests
-      const { data: guestsData, error: guestsError } = await supabase
-        .from('episode_guests')
-        .select('guest_id')
-        .eq('episode_id', id);
-      
-      if (guestsError) throw guestsError;
-      
-      // Add guest IDs to episode
-      result.data.guestIds = guestsData?.map(item => item.guest_id) || [];
-      
-      return result;
-    } catch (error) {
-      return { data: null, error: this.handleError(`getById ${id} with guests`, error) };
-    }
-  }
-  
-  /**
-   * Create an episode with guest relationships
-   */
-  async create(episodeDTO: CreateEpisodeDTO): Promise<Result<Episode>> {
-    try {
-      // Create episode with base implementation
-      const result = await super.create(episodeDTO);
-      
-      if (result.error || !result.data) {
-        return result;
-      }
-      
-      // Handle guest relationships if available
-      if (episodeDTO.guestIds && episodeDTO.guestIds.length > 0) {
-        const episodeGuestsToInsert = episodeDTO.guestIds.map(guestId => ({
-          episode_id: result.data!.id,
+      // If there are guest IDs, create episode_guests relations
+      if (guestIds.length > 0) {
+        const episodeGuests = guestIds.map(guestId => ({
+          episode_id: createdEpisode.id,
           guest_id: guestId
         }));
         
-        const { error: guestError } = await supabase
+        const { error: guestLinkError } = await supabase
           .from('episode_guests')
-          .insert(episodeGuestsToInsert);
-          
-        if (guestError) {
-          console.error("Error inserting guest relationships:", guestError);
-          throw guestError;
+          .insert(episodeGuests);
+        
+        if (guestLinkError) {
+          console.error('Error linking guests to episode:', guestLinkError);
+          // We don't return an error here since the episode was created
         }
       }
       
-      // Add guest IDs to returned episode
-      result.data.guestIds = episodeDTO.guestIds || [];
-      
-      return result;
-    } catch (error) {
-      return { data: null, error: this.handleError("create with guests", error) };
+      // Return the created episode
+      return { 
+        success: true, 
+        data: this.mapper.toDomain(createdEpisode)
+      };
+    } catch (error: any) {
+      return this.handleError(error);
     }
   }
   
   /**
    * Update an episode and its guest relationships
    */
-  async update(id: string, updateDTO: UpdateEpisodeDTO): Promise<Result<boolean>> {
+  async updateWithGuests(id: string, episode: Partial<Episode>, guestIds: string[]): Promise<Result<boolean>> {
     try {
-      // Update episode with base implementation
-      const result = await super.update(id, updateDTO);
-      
-      if (result.error || !result.data) {
-        return result;
-      }
-
-      // Handle guest relationships if provided
-      if (updateDTO.guestIds !== undefined) {
-        // First delete existing relationships
-        const { error: deleteError } = await supabase
-          .from('episode_guests')
-          .delete()
-          .eq('episode_id', id);
-        
-        if (deleteError) throw deleteError;
-        
-        // Then insert new relationships if any
-        if (updateDTO.guestIds.length > 0) {
-          const episodeGuestsToInsert = updateDTO.guestIds.map(guestId => ({
-            episode_id: id,
-            guest_id: guestId
-          }));
-          
-          const { error: insertError } = await supabase
-            .from('episode_guests')
-            .insert(episodeGuestsToInsert);
-            
-          if (insertError) throw insertError;
-        }
-      }
-      
-      return { data: true, error: null };
-    } catch (error) {
-      return { data: false, error: this.handleError(`update ${id} with guests`, error) };
-    }
-  }
-  
-  /**
-   * Delete an episode and its related data
-   */
-  async delete(id: string): Promise<Result<boolean>> {
-    try {
-      // Get episode to access cover art
-      const { data: episodeData } = await supabase
+      // First, update the episode
+      const { error: episodeError } = await supabase
         .from('episodes')
-        .select('cover_art')
-        .eq('id', id)
-        .single();
+        .update(this.mapper.toDB(episode))
+        .eq('id', id);
       
-      // Delete cover art from storage if it exists
-      if (episodeData?.cover_art) {
-        await deleteImage(episodeData.cover_art);
+      if (episodeError) {
+        return { success: false, error: new Error(episodeError.message) };
       }
       
-      // Delete episode-guest relationships
-      const { error: guestsError } = await supabase
+      // Delete existing episode_guests relations
+      const { error: deleteError } = await supabase
         .from('episode_guests')
         .delete()
         .eq('episode_id', id);
       
-      if (guestsError) throw guestsError;
+      if (deleteError) {
+        return { success: false, error: new Error(deleteError.message) };
+      }
       
-      // Delete the episode with base implementation
-      return await super.delete(id);
-    } catch (error) {
-      return { data: false, error: this.handleError(`delete ${id} with related data`, error) };
+      // If there are guest IDs, create new episode_guests relations
+      if (guestIds.length > 0) {
+        const episodeGuests = guestIds.map(guestId => ({
+          episode_id: id,
+          guest_id: guestId
+        }));
+        
+        const { error: guestLinkError } = await supabase
+          .from('episode_guests')
+          .insert(episodeGuests);
+        
+        if (guestLinkError) {
+          return { success: false, error: new Error(guestLinkError.message) };
+        }
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      return this.handleError(error);
     }
   }
+  
+  /**
+   * Delete an episode and its guest relationships
+   */
+  async deleteWithGuests(id: string): Promise<Result<boolean>> {
+    try {
+      // Delete episode_guests relations first
+      const { error: deleteGuestsError } = await supabase
+        .from('episode_guests')
+        .delete()
+        .eq('episode_id', id);
+      
+      if (deleteGuestsError) {
+        console.error('Error deleting episode guests:', deleteGuestsError);
+        // Continue with episode deletion regardless
+      }
+      
+      // Delete the episode
+      const { error: deleteEpisodeError } = await supabase
+        .from('episodes')
+        .delete()
+        .eq('id', id);
+      
+      if (deleteEpisodeError) {
+        return { success: false, error: new Error(deleteEpisodeError.message) };
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      return this.handleError(error);
+    }
+  }
+  
+  // Helper method to handle errors consistently
+  private handleError(error: any): Result<any> {
+    console.error('Repository error:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error : new Error(error.message || 'Unknown error')
+    };
+  }
+  
+  // Factory method to get a repository instance
+  static getInstance(): EpisodeRepository {
+    return new EpisodeRepository();
+  }
 }
-
-// Create a singleton instance
-export const episodeRepository = new EpisodeRepository();

@@ -1,15 +1,19 @@
+
 import { DataMapper } from './DataMapper';
 import { Repository } from './Repository';
 import { supabase } from '@/integrations/supabase/client';
+
+// Valid Supabase table names
+export type TableName = 'guests' | 'episodes' | 'ai_generators' | 'episode_guests' | 'profiles';
 
 /**
  * Base implementation of the Repository interface
  */
 export abstract class BaseRepository<T, D> implements Repository<T> {
-  protected readonly tableName: string;
+  protected readonly tableName: TableName;
   protected readonly mapper: DataMapper<T, D>;
   
-  constructor(tableName: string, mapper: DataMapper<T, D>) {
+  constructor(tableName: TableName, mapper: DataMapper<T, D>) {
     this.tableName = tableName;
     this.mapper = mapper;
   }
@@ -54,7 +58,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       const dbItem = this.mapper.toDB(item);
       const { data, error } = await supabase
         .from(this.tableName)
-        .insert([dbItem])
+        .insert(dbItem as any)
         .select('*')
         .single();
         
@@ -72,7 +76,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       const dbItem = this.mapper.toDB(item);
       const { data, error } = await supabase
         .from(this.tableName)
-        .update(dbItem)
+        .update(dbItem as any)
         .eq('id', id)
         .select('*')
         .single();

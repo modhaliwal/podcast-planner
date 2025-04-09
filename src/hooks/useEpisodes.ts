@@ -1,122 +1,100 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { episodeRepository } from '@/repositories';
-import { CreateEpisodeDTO, UpdateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
-import { Episode } from '@/lib/types';
-import { toast } from './use-toast';
 
-// Query keys for episodes
-export const episodeKeys = {
-  all: ['episodes'] as const,
-  lists: () => [...episodeKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...episodeKeys.lists(), filters] as const,
-  details: () => [...episodeKeys.all, 'detail'] as const,
-  detail: (id: string) => [...episodeKeys.details(), id] as const,
-};
+import { useState, useEffect, useCallback } from 'react';
+import { Episode, Guest } from '@/lib/types';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 
-/**
- * Hook for fetching episodes with React Query
- */
-export function useEpisodes(filters?: Record<string, any>) {
-  return useQuery({
-    queryKey: episodeKeys.list(filters || {}),
-    queryFn: async () => {
-      const { data, error } = await episodeRepository.getAll({ filters });
-      if (error) throw error;
-      return data || [];
-    },
-  });
-}
+export function useEpisodes() {
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthProxy();
 
-/**
- * Hook for fetching a single episode with React Query
- */
-export function useEpisode(id: string) {
-  return useQuery({
-    queryKey: episodeKeys.detail(id),
-    queryFn: async () => {
-      const { data, error } = await episodeRepository.getById(id);
-      if (error) throw error;
-      if (!data) throw new Error(`Episode with ID ${id} not found`);
-      return data;
-    },
-    enabled: !!id,
-  });
-}
-
-/**
- * Hook for creating episodes
- */
-export function useCreateEpisode() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (newEpisode: CreateEpisodeDTO) => 
-      episodeRepository.create(newEpisode),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: episodeKeys.lists() });
-      toast({
-        title: 'Episode Created',
-        description: `Episode "${result.data?.title}" has been created successfully.`,
+  const refreshEpisodes = useCallback(async () => {
+    if (!user) {
+      console.log('No user, cannot fetch episodes');
+      setEpisodes([]);
+      setIsLoading(false);
+      return [];
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Fetch episodes
+      const { data: episodeData, error: episodeError } = await supabase
+        .from('episodes')
+        .select('*')
+        .order('scheduled', { ascending: false });
+      
+      if (episodeError) {
+        throw episodeError;
+      }
+      
+      // Fetch guests
+      const { data: guestData, error: guestError } = await supabase
+        .from('guests')
+        .select('*');
+      
+      if (guestError) {
+        throw guestError;
+      }
+      
+      // Fetch episode-guest relationships
+      const { data: episodeGuestsData, error: episodeGuestsError } = await supabase
+        .from('episode_guests')
+        .select('*');
+      
+      if (episodeGuestsError) {
+        throw episodeGuestsError;
+      }
+      
+      // Process episodes to include guest IDs
+      const processedEpisodes = episodeData.map((episode: any) => {
+        // Find guest relationships for this episode
+        const episodeGuestRelations = episodeGuestsData?.filter(
+          (relation: any) => relation.episode_id === episode.id
+        ) || [];
+        
+        // Extract guest IDs
+        const guestIds = episodeGuestRelations.map(
+          (relation: any) => relation.guest_id
+        );
+        
+        // Return episode with guest IDs
+        return {
+          ...episode,
+          guestIds
+        };
       });
-    },
-    onError: (error: Error) => {
+      
+      setEpisodes(processedEpisodes);
+      setGuests(guestData || []);
+      setIsLoading(false);
+      
+      return processedEpisodes;
+    } catch (error: any) {
+      console.error('Error fetching episodes:', error);
       toast({
-        title: 'Failed to Create Episode',
+        title: 'Error fetching episodes',
         description: error.message,
-        variant: 'destructive',
+        variant: 'destructive'
       });
-    },
-  });
-}
-
-/**
- * Hook for updating episodes
- */
-export function useUpdateEpisode(id: string) {
-  const queryClient = useQueryClient();
+      
+      setIsLoading(false);
+      return [];
+    }
+  }, [user]);
   
-  return useMutation({
-    mutationFn: (updatedEpisode: UpdateEpisodeDTO) => 
-      episodeRepository.update(id, updatedEpisode),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: episodeKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: episodeKeys.lists() });
-      toast({
-        title: 'Episode Updated',
-        description: 'Episode has been updated successfully.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Failed to Update Episode',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-}
-
-/**
- * Hook for deleting episodes
- */
-export function useDeleteEpisode() {
-  const queryClient = useQueryClient();
+  useEffect(() => {
+    refreshEpisodes();
+  }, [refreshEpisodes]);
   
-  return useMutation({
-    mutationFn: (id: string) => episodeRepository.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: episodeKeys.lists() });
-      toast({
-        title: 'Episode Deleted',
-        description: 'Episode has been deleted successfully.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Failed to Delete Episode',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-} 
+  return {
+    episodes,
+    guests,
+    isLoading,
+    refreshEpisodes
+  };
+}

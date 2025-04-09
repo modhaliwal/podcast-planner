@@ -1,38 +1,43 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { BaseRepository } from "../core/BaseRepository";
-import { Guest } from "@/lib/types";
-import { guestMapper, DBGuest } from "./GuestMapper";
-import { deleteImage } from "@/lib/imageUpload";
-import { Result } from "@/lib/types";
+import { Guest } from '@/lib/types';
+import { GuestMapper } from './GuestMapper';
+import { BaseRepository, TableName } from '../core/BaseRepository';
+import { Result } from '../core/Repository';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Repository for guest-related operations
+ * Repository for managing Guest data
  */
-export class GuestRepository extends BaseRepository<Guest, Partial<Guest>, Partial<Guest>, DBGuest> {
-  protected tableName = 'guests' as const;
-  protected mapper = guestMapper;
-
+export class GuestRepository extends BaseRepository<Guest, any> {
+  constructor() {
+    super('guests' as TableName, new GuestMapper());
+  }
+  
   /**
    * Get all guests
    */
-  async getAll(options?: { 
-    filters?: Record<string, any> 
-  }): Promise<Result<Guest[]>> {
+  async getAll(): Promise<Result<Guest[]>> {
     try {
       const { data, error } = await supabase
         .from('guests')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('name');
       
       if (error) throw error;
       
-      const guests = data?.map(guest => guestMapper.toDomain(guest as unknown as DBGuest)) || [];
+      const guests = data?.map(guest => this.mapper.toDomain(guest)) || [];
       
-      return { data: guests, error: null, success: true };
+      return {
+        success: true,
+        data: guests
+      };
     } catch (error: any) {
-      console.error("Error fetching guests:", error);
-      return { data: null, error, success: false };
+      console.error('Error getting all guests:', error);
+      return {
+        success: false,
+        error: new Error(error.message || 'Unknown error'),
+        data: []
+      };
     }
   }
   
@@ -40,10 +45,6 @@ export class GuestRepository extends BaseRepository<Guest, Partial<Guest>, Parti
    * Get guest by ID
    */
   async getById(id: string): Promise<Result<Guest>> {
-    if (!id) {
-      return { data: null, error: new Error("No guest ID provided"), success: false };
-    }
-    
     try {
       const { data, error } = await supabase
         .from('guests')
@@ -51,23 +52,20 @@ export class GuestRepository extends BaseRepository<Guest, Partial<Guest>, Parti
         .eq('id', id)
         .single();
       
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return { data: null, error: new Error("Guest not found"), success: false };
-        }
-        throw error;
-      }
+      if (error) throw error;
       
-      if (!data) {
-        return { data: null, error: new Error("Guest not found"), success: false };
-      }
+      const guest = this.mapper.toDomain(data);
       
-      const guest = guestMapper.toDomain(data as unknown as DBGuest);
-      
-      return { data: guest, error: null, success: true };
+      return {
+        success: true,
+        data: guest
+      };
     } catch (error: any) {
-      console.error(`Error fetching guest with id ${id}:`, error);
-      return { data: null, error, success: false };
+      console.error('Error getting guest by ID:', error);
+      return {
+        success: false,
+        error: new Error(error.message || 'Unknown error')
+      };
     }
   }
   
@@ -76,92 +74,81 @@ export class GuestRepository extends BaseRepository<Guest, Partial<Guest>, Parti
    */
   async create(guest: Partial<Guest>): Promise<Result<Guest>> {
     try {
-      // Get current user from supabase auth
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error("User not authenticated");
-      }
-      
-      // Prepare guest data for database
-      const dbGuest = guestMapper.toDB(guest);
-      
-      if (!dbGuest.bio) {
-        throw new Error("Guest bio is required");
-      }
-      if (!dbGuest.name) {
-        throw new Error("Guest name is required");
-      }
-      if (!dbGuest.title) {
-        throw new Error("Guest title is required");
-      }
-      
-      // Add required fields for database insert
-      const guestToInsert = {
-        ...dbGuest,
-        user_id: user.id,
-        bio: dbGuest.bio,
-        name: dbGuest.name,
-        title: dbGuest.title,
-        social_links: dbGuest.social_links || {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      const guestData = this.mapper.toDB(guest);
       
       const { data, error } = await supabase
         .from('guests')
-        .insert(guestToInsert)
+        .insert(guestData)
         .select()
         .single();
       
       if (error) throw error;
       
-      return { data: guestMapper.toDomain(data as unknown as DBGuest), error: null, success: true };
+      const createdGuest = this.mapper.toDomain(data);
+      
+      return {
+        success: true,
+        data: createdGuest
+      };
     } catch (error: any) {
-      console.error("Error creating guest:", error);
-      return { data: null, error, success: false };
+      console.error('Error creating guest:', error);
+      return {
+        success: false,
+        error: new Error(error.message || 'Unknown error')
+      };
     }
   }
   
   /**
-   * Update an existing guest
+   * Update a guest
    */
-  async update(id: string, updates: Partial<Guest>): Promise<Result<boolean>> {
+  async update(id: string, guest: Partial<Guest>): Promise<Result<boolean>> {
     try {
-      // Prepare guest data for database
-      const dbUpdates = guestMapper.toDB(updates);
+      const guestData = this.mapper.toDB(guest);
       
       const { error } = await supabase
         .from('guests')
-        .update({
-          ...dbUpdates,
-          updated_at: new Date().toISOString()
-        })
+        .update(guestData)
         .eq('id', id);
       
       if (error) throw error;
       
-      return { data: true, error: null, success: true };
+      return {
+        success: true
+      };
     } catch (error: any) {
-      console.error(`Error updating guest with id ${id}:`, error);
-      return { data: false, error, success: false };
+      console.error('Error updating guest:', error);
+      return {
+        success: false,
+        error: new Error(error.message || 'Unknown error')
+      };
     }
   }
   
   /**
-   * Delete a guest by ID
+   * Delete a guest
    */
   async delete(id: string): Promise<Result<boolean>> {
     try {
-      // First get the guest to access the image URL
-      const { data: guest } = await this.getById(id);
+      // First, check if this guest is linked to any episodes
+      const { data: linkedEpisodes, error: checkError } = await supabase
+        .from('episode_guests')
+        .select('episode_id')
+        .eq('guest_id', id);
       
-      if (guest?.imageUrl) {
-        // Delete image from storage
-        await deleteImage(guest.imageUrl);
+      if (checkError) throw checkError;
+      
+      // If the guest is linked to episodes, delete those links first
+      if (linkedEpisodes && linkedEpisodes.length > 0) {
+        const { error: unlinkError } = await supabase
+          .from('episode_guests')
+          .delete()
+          .eq('guest_id', id);
+        
+        if (unlinkError) throw unlinkError;
       }
       
-      // Delete the guest from the database
+      // Now delete the guest
       const { error } = await supabase
         .from('guests')
         .delete()
@@ -169,13 +156,20 @@ export class GuestRepository extends BaseRepository<Guest, Partial<Guest>, Parti
       
       if (error) throw error;
       
-      return { data: true, error: null, success: true };
+      return {
+        success: true
+      };
     } catch (error: any) {
-      console.error(`Error deleting guest with id ${id}:`, error);
-      return { data: false, error, success: false };
+      console.error('Error deleting guest:', error);
+      return {
+        success: false,
+        error: new Error(error.message || 'Unknown error')
+      };
     }
   }
+  
+  // Factory method to get a repository instance
+  static getInstance(): GuestRepository {
+    return new GuestRepository();
+  }
 }
-
-// Create a singleton instance
-export const guestRepository = new GuestRepository();

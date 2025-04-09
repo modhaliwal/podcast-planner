@@ -19,7 +19,6 @@ import Episodes from "@/pages/Episodes";
 import CreateEpisode from "@/pages/CreateEpisode";
 import EpisodeView from "@/pages/EpisodeView";
 import EditEpisode from "@/pages/EditEpisode";
-import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 
 import "./App.css";
@@ -78,11 +77,6 @@ function App() {
           <Route path="/episodes/:id/edit" element={
             <ProtectedRoute>
               <EditEpisode />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <Settings />
             </ProtectedRoute>
           } />
           
