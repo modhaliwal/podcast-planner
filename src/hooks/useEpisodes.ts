@@ -74,12 +74,12 @@ export function useEpisodes() {
           bio: guest.bio || '',
           email: guest.email || null,
           phone: guest.phone || null,
-          location: null,  // Required in the interface but may not be in data
-          image: null,     // Required in the interface but may not be in data
+          location: null,
+          image: null,
           image_url: guest.image_url || null,
-          website: null,   // Required in the interface but may not be in data
-          twitter: null,   // Required in the interface but may not be in data
-          linkedin: null,  // Required in the interface but may not be in data
+          website: null,
+          twitter: null,
+          linkedin: null,
           notes: guest.notes || null,
           background_research: guest.background_research || null,
           status: guest.status || null,

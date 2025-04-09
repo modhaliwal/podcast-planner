@@ -112,7 +112,6 @@ export type Database = {
           title: string
           topic: string | null
           updated_at: string
-          user_id: string
         }
         Insert: {
           cover_art?: string | null
@@ -132,7 +131,6 @@ export type Database = {
           title: string
           topic?: string | null
           updated_at?: string
-          user_id: string
         }
         Update: {
           cover_art?: string | null
@@ -152,7 +150,6 @@ export type Database = {
           title?: string
           topic?: string | null
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -175,7 +172,6 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           background_research?: string | null
@@ -195,7 +191,6 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           background_research?: string | null
@@ -215,7 +210,6 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }

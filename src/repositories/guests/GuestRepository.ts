@@ -21,6 +21,7 @@ export interface CreateGuestDTO {
   notes?: string;
   backgroundResearch?: string;
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
+  socialLinks?: any;
 }
 
 export interface UpdateGuestDTO {
@@ -38,6 +39,7 @@ export interface UpdateGuestDTO {
   notes?: string;
   backgroundResearch?: string;
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
+  socialLinks?: any;
 }
 
 export interface DBGuest {
