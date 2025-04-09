@@ -1,3 +1,4 @@
+
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +21,7 @@ export function useAuthProxy() {
   const navigate = useNavigate();
   
   // Enhanced sign in with token storage
-  const signIn = async (email: string, password: string) => {
+  const signIn = async () => {
     try {
       setIsLoading(true);
       

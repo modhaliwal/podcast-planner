@@ -1,163 +1,94 @@
 
-import { DataMapper } from "../core/DataMapper";
 import { Episode } from "@/lib/types";
-import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from "./EpisodeDTO";
-import { EpisodeStatus } from "@/lib/enums";
-import { Json } from "@/integrations/supabase/types";
-import { ContentVersion } from "@/lib/types";
-
-// Helper function to safely convert Json to ContentVersion array
-const toContentVersionArray = (jsonValue: Json | null): ContentVersion[] | undefined => {
-  if (!jsonValue) return undefined;
-  
-  try {
-    // If it's already an array, check if it has the right structure
-    if (Array.isArray(jsonValue)) {
-      // Validate that every item has the required properties
-      const isValid = jsonValue.every(item => 
-        typeof item === 'object' && 
-        item !== null && 
-        'id' in item && 
-        'content' in item && 
-        'timestamp' in item && 
-        'source' in item
-      );
-      
-      if (isValid) {
-        return jsonValue as unknown as ContentVersion[];
-      }
-    }
-    // If it's a string (JSON string), parse it
-    else if (typeof jsonValue === 'string') {
-      const parsed = JSON.parse(jsonValue);
-      if (Array.isArray(parsed)) {
-        return parsed as ContentVersion[];
-      }
-    }
-    return undefined;
-  } catch (e) {
-    console.error("Error converting to ContentVersion array:", e);
-    return undefined;
-  }
-};
+import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
 
 /**
- * Maps between Episode domain models and database models
+ * Mapper for converting between Episode domain objects and DB representation
  */
-export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
+export class EpisodeMapper {
   /**
-   * Maps a database model to a domain model
+   * Map a database record to a domain object
    */
-  toDomain(dbEpisode: DBEpisode): Episode {
-    // Use the helper function to convert JSON to ContentVersion arrays
-    const notesVersions = toContentVersionArray(dbEpisode.notes_versions);
-    const introductionVersions = toContentVersionArray(dbEpisode.introduction_versions);
-
-    // Parse JSON fields for resources, podcast_urls, and recording_links
-    let resources = undefined;
-    let podcastUrls = undefined;
-    let recordingLinks = undefined;
-
-    try {
-      if (dbEpisode.resources) {
-        resources = dbEpisode.resources as any; // Already handled by Supabase client
-      }
-
-      if (dbEpisode.podcast_urls) {
-        podcastUrls = dbEpisode.podcast_urls as any;
-      }
-
-      if (dbEpisode.recording_links) {
-        recordingLinks = dbEpisode.recording_links as any;
-      }
-    } catch (e) {
-      console.error("Error parsing JSON fields for episode", dbEpisode.id, e);
-    }
+  mapFromDB(dbEpisode: DBEpisode): Episode {
+    // Extract guest IDs from episode_guests relationship
+    const guestIds = (dbEpisode.episode_guests || [])
+      .map(relation => relation.guest_id);
     
     return {
-      id: dbEpisode.id || '',
-      episodeNumber: dbEpisode.episode_number,
+      id: dbEpisode.id,
       title: dbEpisode.title,
+      episodeNumber: dbEpisode.episode_number,
+      description: dbEpisode.description || undefined,
       topic: dbEpisode.topic || undefined,
+      coverArt: dbEpisode.cover_art || undefined,
+      guestIds: guestIds,
       scheduled: dbEpisode.scheduled,
       publishDate: dbEpisode.publish_date || undefined,
-      status: dbEpisode.status as EpisodeStatus,
-      coverArt: dbEpisode.cover_art || undefined,
-      guestIds: [], // This should be populated separately
-      introduction: dbEpisode.introduction,
-      notes: dbEpisode.notes || '',
-      notesVersions: notesVersions,
-      introductionVersions: introductionVersions,
-      recordingLinks: recordingLinks,
-      podcastUrls: podcastUrls,
-      resources: resources,
-      createdAt: dbEpisode.created_at || '',
-      updatedAt: dbEpisode.updated_at || ''
+      status: dbEpisode.status as 'scheduled' | 'recorded' | 'published',
+      introduction: dbEpisode.introduction || undefined,
+      notes: dbEpisode.notes || undefined,
+      notesVersions: dbEpisode.notes_versions || undefined,
+      introductionVersions: dbEpisode.introduction_versions || undefined,
+      recordingLinks: dbEpisode.recording_links || undefined,
+      podcastUrls: dbEpisode.podcast_urls || undefined,
+      resources: dbEpisode.resources || undefined,
+      createdAt: dbEpisode.created_at,
+      updatedAt: dbEpisode.updated_at,
     };
   }
   
   /**
-   * Maps a domain model to a database model
+   * Map multiple database records to domain objects
    */
-  toDB(episode: Partial<Episode>): Partial<DBEpisode> {
+  mapManyFromDB(dbEpisodes: DBEpisode[]): Episode[] {
+    return dbEpisodes.map(dbEpisode => this.mapFromDB(dbEpisode));
+  }
+  
+  /**
+   * Map a domain object to database format for creation
+   */
+  mapCreateDTOToDB(episode: CreateEpisodeDTO): Omit<DBEpisode, 'id' | 'created_at' | 'updated_at' | 'episode_guests'> {
+    return {
+      title: episode.title,
+      episode_number: episode.episodeNumber,
+      description: episode.description || null,
+      topic: episode.topic || null,
+      cover_art: episode.coverArt || null,
+      scheduled: episode.scheduled,
+      publish_date: episode.publishDate || null,
+      status: episode.status,
+      introduction: episode.introduction || null,
+      notes: episode.notes || null,
+      notes_versions: episode.notesVersions || null,
+      introduction_versions: episode.introductionVersions || null,
+      recording_links: episode.recordingLinks || null,
+      podcast_urls: episode.podcastUrls || null,
+      resources: episode.resources || null,
+    };
+  }
+  
+  /**
+   * Map a domain object to database format for updates
+   */
+  mapUpdateDTOToDB(episode: UpdateEpisodeDTO): Partial<Omit<DBEpisode, 'id' | 'created_at' | 'updated_at' | 'episode_guests'>> {
     const dbEpisode: Partial<DBEpisode> = {};
     
-    if (episode.episodeNumber !== undefined) dbEpisode.episode_number = episode.episodeNumber;
     if (episode.title !== undefined) dbEpisode.title = episode.title;
-    if (episode.topic !== undefined) dbEpisode.topic = episode.topic;
+    if (episode.episodeNumber !== undefined) dbEpisode.episode_number = episode.episodeNumber;
+    if (episode.description !== undefined) dbEpisode.description = episode.description || null;
+    if (episode.topic !== undefined) dbEpisode.topic = episode.topic || null;
+    if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt || null;
     if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
-    if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate;
+    if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
     if (episode.status !== undefined) dbEpisode.status = episode.status;
-    if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt;
-    if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction;
-    if (episode.notes !== undefined) dbEpisode.notes = episode.notes;
-    
-    // Handle complex JSON fields
-    if (episode.recordingLinks !== undefined) {
-      dbEpisode.recording_links = episode.recordingLinks as unknown as Json;
-    }
-    
-    if (episode.podcastUrls !== undefined) {
-      dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json;
-    }
-    
-    if (episode.resources !== undefined) {
-      dbEpisode.resources = episode.resources as unknown as Json;
-    }
-    
-    // Stringify the versions for database storage
-    if (episode.notesVersions) {
-      dbEpisode.notes_versions = episode.notesVersions as unknown as Json;
-    }
-    
-    if (episode.introductionVersions) {
-      dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json;
-    }
+    if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
+    if (episode.notes !== undefined) dbEpisode.notes = episode.notes || null;
+    if (episode.notesVersions !== undefined) dbEpisode.notes_versions = episode.notesVersions || null;
+    if (episode.introductionVersions !== undefined) dbEpisode.introduction_versions = episode.introductionVersions || null;
+    if (episode.recordingLinks !== undefined) dbEpisode.recording_links = episode.recordingLinks || null;
+    if (episode.podcastUrls !== undefined) dbEpisode.podcast_urls = episode.podcastUrls || null;
+    if (episode.resources !== undefined) dbEpisode.resources = episode.resources || null;
     
     return dbEpisode;
   }
-
-  /**
-   * Maps from CreateEpisodeDTO to database model
-   */
-  createDtoToDB(dto: CreateEpisodeDTO): DBEpisode {
-    return {
-      title: dto.title,
-      episode_number: dto.episodeNumber,
-      introduction: dto.introduction,
-      scheduled: dto.scheduled,
-      status: dto.status || EpisodeStatus.SCHEDULED,
-      topic: dto.topic || null,
-      notes: dto.notes || null,
-      cover_art: dto.coverArt || null,
-      publish_date: dto.publishDate || null,
-      resources: dto.resources as unknown as Json || null,
-      podcast_urls: dto.podcastUrls as unknown as Json || null,
-      recording_links: dto.recordingLinks as unknown as Json || null,
-      user_id: '' // Will be set by repository
-    };
-  }
 }
-
-// Create a singleton instance
-export const episodeMapper = new EpisodeMapper();

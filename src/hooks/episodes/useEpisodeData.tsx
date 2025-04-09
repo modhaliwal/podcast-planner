@@ -2,7 +2,6 @@
 import { useEpisodeLoader } from './useEpisodeLoader';
 import { useEpisodeSave } from './useEpisodeSave';
 import { useEpisodeDelete } from './useEpisodeDelete';
-import { Episode } from '@/lib/types';
 import { UpdateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
 
 export function useEpisodeData(episodeId?: string) {

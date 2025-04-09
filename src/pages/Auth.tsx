@@ -14,7 +14,7 @@ export default function Auth() {
   const location = useLocation();
   const navigate = useNavigate();
   const { authError, isLoading: authModuleLoading, isAuthenticated, setAuthToken } = useFederatedAuth();
-  const { signIn } = useAuthProxy();
+  const { signInAsDev } = useAuthProxy();
   
   const from = location.state?.from || "/dashboard";
 
@@ -23,15 +23,6 @@ export default function Auth() {
     navigate(from, { replace: true });
     return null;
   }
-
-  const handleExternalAuth = () => {
-    const currentUrl = window.location.origin;
-    const callbackUrl = `${currentUrl}/auth/callback?redirectTo=${encodeURIComponent(from)}`;
-    
-    // Redirect to the federated auth provider
-    const authProviderUrl = "https://admin.skyrocketdigital.com/auth";
-    window.location.href = `${authProviderUrl}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-  };
 
   const handleDevUserAuth = () => {
     try {
@@ -70,31 +61,13 @@ export default function Auth() {
             <Headphones className="h-6 w-6 text-primary" />
             <span className="font-medium text-xl">PodCast Manager</span>
           </div>
-          <CardTitle className="text-2xl text-center">Welcome</CardTitle>
+          <CardTitle className="text-2xl text-center">Development Login</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your account to manage your podcasts
+            Sign in with a development account to access the application
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-6 pt-4">
           <Button 
-            className="w-full flex items-center justify-center gap-2"
-            onClick={handleExternalAuth}
-          >
-            <Headphones className="h-4 w-4" />
-            Sign in with Authentication Provider
-          </Button>
-          
-          <div className="relative w-full">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t"></span>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or</span>
-            </div>
-          </div>
-          
-          <Button 
-            variant="outline"
             className="w-full flex items-center justify-center gap-2"
             onClick={handleDevUserAuth}
             disabled={loading}

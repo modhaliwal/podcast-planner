@@ -1,56 +1,74 @@
 
+import { ContentVersion, PodcastUrls, RecordingLinks, Resource } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
-import { EpisodeStatus } from "@/lib/enums";
 
+export type EpisodeStatus = 'scheduled' | 'recorded' | 'published';
+
+/**
+ * Database representation of Episode
+ */
 export interface DBEpisode {
-  id?: string;
+  id: string;
+  title: string;
   episode_number: number;
-  title: string;
-  topic?: string | null;
+  description: string | null;
+  topic: string | null;
+  cover_art: string | null;
   scheduled: string;
-  publish_date?: string | null;
-  status: string;
-  cover_art?: string | null;
-  introduction: string;
-  notes?: string | null;
-  notes_versions?: Json | null;
-  introduction_versions?: Json | null;
-  recording_links?: Json | null;
-  podcast_urls?: Json | null;
-  resources?: Json | null;
-  created_at?: string;
-  updated_at?: string;
-  user_id: string;
+  publish_date: string | null;
+  status: EpisodeStatus;
+  introduction: string | null;
+  notes: string | null;
+  notes_versions: ContentVersion[] | null;
+  introduction_versions: ContentVersion[] | null;
+  recording_links: RecordingLinks | null;
+  podcast_urls: PodcastUrls | null;
+  resources: Resource[] | null;
+  created_at: string;
+  updated_at: string;
+  episode_guests?: { guest_id: string }[];
 }
 
+/**
+ * DTO for creating a new Episode
+ */
 export interface CreateEpisodeDTO {
-  episodeNumber: number;
   title: string;
+  episodeNumber: number;
+  description?: string;
   topic?: string;
-  introduction: string;
-  scheduled: string;
-  status?: EpisodeStatus;
-  publishDate?: string;
   coverArt?: string;
+  guestIds: string[];
+  scheduled: string;
+  publishDate?: string;
+  status: EpisodeStatus;
+  introduction: string;
   notes?: string;
-  resources?: any[];
-  podcastUrls?: Record<string, string | null>;
-  recordingLinks?: Record<string, string>;
+  notesVersions?: ContentVersion[];
+  introductionVersions?: ContentVersion[];
+  recordingLinks?: RecordingLinks;
+  podcastUrls?: PodcastUrls;
+  resources?: Resource[];
 }
 
+/**
+ * DTO for updating an Episode
+ */
 export interface UpdateEpisodeDTO {
-  episodeNumber?: number;
   title?: string;
+  episodeNumber?: number;
+  description?: string;
   topic?: string;
-  introduction?: string;
-  scheduled?: string;
-  status?: EpisodeStatus;
-  publishDate?: string;
   coverArt?: string;
+  guestIds?: string[];
+  scheduled?: string;
+  publishDate?: string;
+  status?: EpisodeStatus;
+  introduction?: string;
   notes?: string;
-  notesVersions?: any[];
-  introductionVersions?: any[];
-  resources?: any[];
-  podcastUrls?: Record<string, string | null>;
-  recordingLinks?: Record<string, string>;
+  notesVersions?: ContentVersion[];
+  introductionVersions?: ContentVersion[];
+  recordingLinks?: RecordingLinks;
+  podcastUrls?: PodcastUrls;
+  resources?: Resource[];
 }

@@ -1,9 +1,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getAuthModule } from '@/integrations/auth/federated-auth';
-import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
 
 // Types for auth context
 interface FederatedAuthContextType {
@@ -39,8 +38,46 @@ const isTokenValid = (token: FederatedAuthToken | null): boolean => {
   return token.expires_at > Date.now();
 };
 
+// Create fallback auth module
+const fallbackAuth: FederatedAuth = {
+  useAuth: () => ({
+    user: null,
+    isLoading: false,
+    error: new Error("Auth module unavailable"),
+    signIn: async () => ({ error: { message: "Auth module unavailable" } }),
+    signOut: async () => {},
+    refreshGuests: async () => [],
+    refreshEpisodes: async () => [],
+    refreshAllData: async () => {},
+    episodes: [],
+    guests: [],
+    isAuthenticated: false
+  }),
+  usePermissions: () => ({
+    hasPermission: () => false,
+    userPermissions: [],
+    isLoading: false,
+    error: new Error("Auth module unavailable"),
+  }),
+  FederatedModuleRoute: ({ fallback, children }) => fallback || children || null,
+  useIsAuthenticated: () => ({
+    isAuthenticated: false,
+    isLoading: false,
+  }),
+  useHasPermission: () => ({
+    hasPermission: false,
+    isLoading: false,
+  }),
+  signIn: async () => ({ 
+    error: { message: "Auth module unavailable" }
+  }),
+};
+
 export function FederatedAuthProvider({ children }: { children: React.ReactNode }) {
-  const [authModule, moduleError] = getAuthModule();
+  // Use fallback auth module
+  const authModule = fallbackAuth;
+  const moduleError: AuthModuleError = 'unavailable';
+  
   const [isLoading, setIsLoading] = useState(true);
   const [authToken, setAuthTokenState] = useState<FederatedAuthToken | null>(getStoredToken());
   const [authErrorType, setAuthErrorType] = useState<AuthModuleError | null>(null);
@@ -106,21 +143,12 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
   
   // Check the status of the auth module on mount
   useEffect(() => {
-    const checkAuthModule = async () => {
-      try {
-        // Wait a moment to ensure module federation has time to initialize
-        setTimeout(() => {
-          const [, currentError] = getAuthModule();
-          setAuthErrorType(currentError);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        setIsLoading(false);
-      }
-    };
-    
-    checkAuthModule();
-  }, []);
+    // Set it as not loading after a short delay
+    setTimeout(() => {
+      setAuthErrorType(moduleError);
+      setIsLoading(false);
+    }, 500);
+  }, [moduleError]);
 
   // Check for token expiration
   useEffect(() => {
@@ -183,11 +211,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     isAuthenticated: isTokenValid(authToken),
     logout,
     // Convert moduleError to Error type
-    authError: moduleError ? 
-      (typeof moduleError === 'object' && moduleError !== null ? 
-        new Error(String(moduleError)) : 
-        new Error(String(moduleError))
-      ) : null
+    authError: moduleError ? new Error(String(moduleError)) : null
   };
   
   return (

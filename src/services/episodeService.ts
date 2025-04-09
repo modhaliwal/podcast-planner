@@ -1,51 +1,55 @@
 
-import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
-import { episodeRepository } from '@/repositories';
-import { EpisodeStatus } from '@/lib/enums';
-import { CreateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
+import { Episode } from "@/lib/types";
+import { EpisodeRepository } from "@/repositories/episodes/EpisodeRepository";
+import { CreateEpisodeDTO, UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
+
+// Create an instance of the repository
+const episodeRepository = new EpisodeRepository();
 
 /**
- * Create multiple episodes from form data
- * @param episodes Array of episode form data
- * @param user Current user
- * @returns Result of operation
+ * Service for episode-related operations
  */
-export const createEpisodes = async (
-  episodes: EpisodeFormData[], 
-  user: { id: string }
-): Promise<{ success: boolean; error?: Error }> => {
-  if (!user) {
-    return { success: false, error: new Error('User not authenticated') };
-  }
+export const episodeService = {
+  /**
+   * Get all episodes
+   */
+  async getAllEpisodes(): Promise<Episode[]> {
+    return await episodeRepository.getAll();
+  },
   
-  try {
-    // Process each episode
-    for (const episodeData of episodes) {
-      // Convert form data to a proper CreateEpisodeDTO
-      const episode: CreateEpisodeDTO = {
-        title: episodeData.title || `Episode #${episodeData.episodeNumber}`,
-        episodeNumber: episodeData.episodeNumber,
-        introduction: episodeData.introduction || `Introduction for episode #${episodeData.episodeNumber}`,
-        scheduled: episodeData.scheduled instanceof Date 
-          ? episodeData.scheduled.toISOString() 
-          : episodeData.scheduled,
-        status: EpisodeStatus.SCHEDULED,
-        topic: episodeData.topic,
-      };
-      
-      // Store the episode
-      await episodeRepository.add(episode);
-      
-      // If we have guest IDs, we would need to handle them separately
-      // This would typically involve adding entries to the episode_guests table
-    }
-    
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error creating episodes:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error : new Error(error?.message || 'Error creating episodes') 
+  /**
+   * Get a specific episode by ID
+   */
+  async getEpisodeById(id: string): Promise<Episode | null> {
+    return await episodeRepository.getById(id);
+  },
+  
+  /**
+   * Create a new episode
+   */
+  async createEpisode(episodeData: CreateEpisodeDTO): Promise<Episode> {
+    // Transform the data if needed
+    const createDTO: CreateEpisodeDTO = {
+      ...episodeData,
+      guestIds: episodeData.guestIds || []
     };
+    
+    // Use the repository to create the episode
+    return await episodeRepository.add(createDTO);
+  },
+  
+  /**
+   * Update an existing episode
+   */
+  async updateEpisode(id: string, episodeData: UpdateEpisodeDTO): Promise<Episode | null> {
+    const result = await episodeRepository.update(id, episodeData);
+    return result.data;
+  },
+  
+  /**
+   * Delete an episode
+   */
+  async deleteEpisode(id: string): Promise<boolean> {
+    return await episodeRepository.remove(id);
   }
 };
