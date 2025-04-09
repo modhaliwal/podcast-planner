@@ -1,13 +1,11 @@
 
 import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { toast } from '@/hooks/use-toast';
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 
 export function useAuthRedirect() {
   const { isAuthenticated, authToken } = useFederatedAuth();
-  const { user } = useAuthProxy();
   const navigate = useNavigate();
   const location = useLocation();
   const isIndexPage = location.pathname === '/';

@@ -1,9 +1,8 @@
 
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { federatedSignIn, federatedSignOut, signInAsDevUser } from '@/integrations/auth/federated-auth';
 
 // A proxy hook that provides auth functionality based on federation
 export function useAuthProxy() {
@@ -17,14 +16,11 @@ export function useAuthProxy() {
     logout: contextLogout,
   } = useFederatedAuth();
   
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
   // Enhanced sign in with token storage
   const signIn = async () => {
     try {
-      setIsLoading(true);
-      
       if (authError) {
         toast({
           title: 'Authentication Service Unavailable',
@@ -36,10 +32,15 @@ export function useAuthProxy() {
       
       // Use the federated sign-in function with full callbackUrl
       const callbackUrl = `${window.location.origin}/auth/callback?redirectTo=/dashboard`;
-      federatedSignIn(callbackUrl);
       
-      // This will redirect, so we don't have to return anything meaningful
-      return { success: true };
+      // Check if authModule has federatedSignIn method
+      if (authModule && typeof authModule.federatedSignIn === 'function') {
+        return authModule.federatedSignIn(callbackUrl);
+      } else {
+        // Use local implementation as fallback
+        window.location.href = `${callbackUrl}`;
+        return { success: true };
+      }
       
     } catch (error: any) {
       toast({
@@ -48,8 +49,6 @@ export function useAuthProxy() {
         variant: 'destructive',
       });
       return { error };
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -68,9 +67,13 @@ export function useAuthProxy() {
   // Enhanced sign out that uses the context logout
   const signOut = useCallback(async () => {
     try {
-      setIsLoading(true);
       contextLogout();
-      federatedSignOut();
+      
+      // Call the federated sign out if available
+      if (authModule && typeof authModule.signOut === 'function') {
+        await authModule.signOut();
+      }
+      
       return true;
     } catch (error: any) {
       toast({
@@ -79,26 +82,8 @@ export function useAuthProxy() {
         variant: 'destructive',
       });
       return false;
-    } finally {
-      setIsLoading(false);
     }
-  }, [contextLogout]);
-  
-  // Sign in as dev user
-  const signInAsDev = useCallback(() => {
-    try {
-      const token = signInAsDevUser();
-      setAuthToken(token);
-      return { success: true };
-    } catch (error: any) {
-      toast({
-        title: 'Dev Auth Error',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-      return { error };
-    }
-  }, [setAuthToken]);
+  }, [contextLogout, authModule]);
   
   // Build the user object from token if available
   const user = authToken ? {
@@ -110,9 +95,8 @@ export function useAuthProxy() {
     user,
     signIn,
     signOut,
-    signInAsDev,
     authenticateWithToken,
-    isLoading: contextLoading || isLoading,
+    isLoading: contextLoading,
     authError,
     isAuthenticated,
     token: authToken?.access_token,

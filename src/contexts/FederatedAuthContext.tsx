@@ -1,12 +1,14 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
+import { AuthModuleError, FederatedAuthToken } from '@/integrations/auth/types';
 import { LaunchpadConfig } from '@/config/launchpad';
+import { getAuthModule } from '@/integrations/auth/federated-auth';
 
 // Types for auth context
 interface FederatedAuthContextType {
-  authModule: FederatedAuth;
+  authModule: any;
   isLoading: boolean;
   authToken: FederatedAuthToken | null;
   setAuthToken: (token: FederatedAuthToken | null) => void;
@@ -38,45 +40,9 @@ const isTokenValid = (token: FederatedAuthToken | null): boolean => {
   return token.expires_at > Date.now();
 };
 
-// Create fallback auth module
-const fallbackAuth: FederatedAuth = {
-  useAuth: () => ({
-    user: null,
-    isLoading: false,
-    error: new Error("Auth module unavailable"),
-    signIn: async () => ({ error: { message: "Auth module unavailable" } }),
-    signOut: async () => {},
-    refreshGuests: async () => [],
-    refreshEpisodes: async () => [],
-    refreshAllData: async () => {},
-    episodes: [],
-    guests: [],
-    isAuthenticated: false
-  }),
-  usePermissions: () => ({
-    hasPermission: () => false,
-    userPermissions: [],
-    isLoading: false,
-    error: new Error("Auth module unavailable"),
-  }),
-  FederatedModuleRoute: ({ fallback, children }) => fallback || children || null,
-  useIsAuthenticated: () => ({
-    isAuthenticated: false,
-    isLoading: false,
-  }),
-  useHasPermission: () => ({
-    hasPermission: false,
-    isLoading: false,
-  }),
-  signIn: async () => ({ 
-    error: { message: "Auth module unavailable" }
-  }),
-};
-
 export function FederatedAuthProvider({ children }: { children: React.ReactNode }) {
-  // Use fallback auth module
-  const authModule = fallbackAuth;
-  const moduleError: AuthModuleError = 'unavailable';
+  // Get the federated auth module
+  const [authModule, moduleError] = getAuthModule();
   
   const [isLoading, setIsLoading] = useState(true);
   const [authToken, setAuthTokenState] = useState<FederatedAuthToken | null>(getStoredToken());
@@ -88,8 +54,18 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
   const setAuthToken = (token: FederatedAuthToken | null) => {
     if (token) {
       localStorage.setItem('auth_token', JSON.stringify(token));
+      
+      // Also store the token in the storage specified by Launchpad
+      if (token.access_token) {
+        localStorage.setItem(LaunchpadConfig.storageKeys.token, token.access_token);
+      }
+      if (token.refresh_token) {
+        localStorage.setItem(LaunchpadConfig.storageKeys.refreshToken, token.refresh_token);
+      }
     } else {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem(LaunchpadConfig.storageKeys.token);
+      localStorage.removeItem(LaunchpadConfig.storageKeys.refreshToken);
     }
     setAuthTokenState(token);
   };
@@ -111,12 +87,17 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     const urlRefreshToken = searchParams.get("refresh_token");
     const redirectTo = searchParams.get("redirectTo") || "/dashboard";
     
-    if (urlToken && urlRefreshToken) {
+    if (urlToken) {
       // Create a token object from URL parameters
+      const expiresIn = searchParams.get("expires_in");
+      const expiresAt = expiresIn 
+        ? Date.now() + (parseInt(expiresIn) * 1000) 
+        : Date.now() + (3600 * 1000); // Default to 1 hour if not specified
+      
       const newToken: FederatedAuthToken = {
         access_token: urlToken,
-        refresh_token: urlRefreshToken,
-        expires_at: Date.now() + (3600 * 1000) // Default to 1 hour if not specified
+        refresh_token: urlRefreshToken || undefined,
+        expires_at: expiresAt
       };
       
       // Save the token
@@ -126,6 +107,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
       const cleanParams = new URLSearchParams(location.search);
       cleanParams.delete("token");
       cleanParams.delete("refresh_token");
+      cleanParams.delete("expires_in");
       
       // Replace current URL without reloading
       const newUrl = location.pathname + 
@@ -176,7 +158,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     if (authToken && authToken.expires_at) {
       const timeToExpiry = authToken.expires_at - Date.now();
-      const refreshTime = timeToExpiry - (5 * 60 * 1000); // 5 minutes before expiry
+      const refreshTime = timeToExpiry - (LaunchpadConfig.tokenRefresh.refreshBeforeExpiryMinutes * 60 * 1000);
       
       if (refreshTime <= 0) {
         // Token is already expired or about to expire

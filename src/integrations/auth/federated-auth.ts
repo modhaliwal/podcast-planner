@@ -1,4 +1,5 @@
 
+import { AuthModuleError, FederatedAuth } from './types';
 import { LaunchpadConfig } from '@/config/launchpad';
 
 /**
@@ -44,16 +45,45 @@ export const signInAsDevUser = () => {
   return mockToken;
 };
 
+// Create a basic fallback auth module
+const fallbackAuth = {
+  useAuth: () => ({
+    user: null,
+    isLoading: false,
+    error: new Error("Auth module unavailable"),
+    signIn: async () => ({ error: { message: "Auth module unavailable" } }),
+    signOut: async () => {},
+  }),
+  usePermissions: () => ({
+    hasPermission: () => false,
+    userPermissions: [],
+    isLoading: false,
+    error: new Error("Auth module unavailable"),
+  }),
+  FederatedModuleRoute: ({ fallback, children }: any) => fallback || children || null,
+  useIsAuthenticated: () => ({
+    isAuthenticated: false,
+    isLoading: false,
+  }),
+  useHasPermission: () => ({
+    hasPermission: false,
+    isLoading: false,
+  }),
+  federatedSignIn,
+  signIn: async () => ({ error: { message: "Auth module unavailable" } }),
+};
+
 // Exported function to get the auth module
-export const getAuthModule = (): [any, null] => {
-  // Return a simple fallback implementation
-  return [{ 
-    useAuth: () => ({
-      user: null,
-      isLoading: false,
-      error: null,
-      signIn: async () => ({ error: { message: "Auth module unavailable" } }),
-      signOut: async () => {},
-    })
-  }, null];
+export const getAuthModule = (): [any, AuthModuleError | null] => {
+  try {
+    // This will throw an error if the module is not loaded yet
+    const authModule = require('auth/module');
+    
+    // Return the auth module if successful
+    return [authModule, null];
+  } catch (e) {
+    console.error("Failed to load auth module:", e);
+    // Return fallback auth and mark as unavailable
+    return [fallbackAuth, 'unavailable'];
+  }
 };

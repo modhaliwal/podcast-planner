@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 import { toast } from '@/hooks/use-toast';

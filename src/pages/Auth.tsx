@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Headphones, Bug } from "lucide-react";
 import { useFederatedAuth } from "@/contexts/FederatedAuthContext";
-import { useAuthProxy } from "@/hooks/useAuthProxy";
 import { signInAsDevUser } from "@/integrations/auth/federated-auth";
 import { toast } from "@/hooks/use-toast";
 
@@ -14,7 +13,6 @@ export default function Auth() {
   const location = useLocation();
   const navigate = useNavigate();
   const { authError, isLoading: authModuleLoading, isAuthenticated, setAuthToken } = useFederatedAuth();
-  const { signInAsDev } = useAuthProxy();
   
   const from = location.state?.from || "/dashboard";
 
