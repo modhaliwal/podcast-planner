@@ -1,30 +1,41 @@
 
 import { useParams, Link } from 'react-router-dom';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
+import { useData } from '@/context/DataContext';
 import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { Button } from '@/components/ui/button';
 import { useGuestData } from '@/hooks/guests/useGuestData';
+import { useMemo } from 'react';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
+  const { episodes } = useData();
   const { guest, isLoading } = useGuestData(id);
   
-  // Here we would fetch episodes related to this guest if needed
-  // For now, we'll just use an empty array
-  const guestEpisodes = [];
+  // Find episodes related to this guest
+  const guestEpisodes = useMemo(() => {
+    if (!guest) return [];
+    return episodes.filter(episode => 
+      episode.guestIds.includes(guest.id)
+    );
+  }, [guest, episodes]);
 
   if (isLoading) {
     return <Shell>
-      <div className="w-full max-w-[1400px] mx-auto px-4">
-        <div className="text-center py-12">Loading guest...</div>
+      <div className="page-container">
+        <div className="text-center py-12">
+          <div className="flex justify-center items-center h-12">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          </div>
+          <p className="mt-2 text-muted-foreground">Loading guest...</p>
+        </div>
       </div>
     </Shell>;
   }
   
   if (!guest) {
     return <Shell>
-      <div className="w-full max-w-[1400px] mx-auto px-4">
+      <div className="page-container">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h1 className="text-2xl font-semibold mb-2">Guest not found</h1>
           <p className="text-muted-foreground mb-6">The guest you're looking for doesn't exist or has been removed.</p>

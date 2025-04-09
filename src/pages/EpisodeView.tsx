@@ -4,12 +4,12 @@ import { Shell } from '@/components/layout/Shell';
 import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
 import { useEpisodes } from '@/hooks/useEpisodes';
-import { useEpisodeLoader } from '@/hooks/episodes';
+import { useEpisodeLoader } from '@/hooks/episodes/useEpisodeLoader';
 import { useEffect } from 'react';
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
-  const { guests, refreshEpisodes } = useEpisodes();
+  const { guests } = useEpisodes();
 
   // Use the episodeLoader hook for consistent data fetching
   const {

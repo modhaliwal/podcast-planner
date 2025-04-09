@@ -7,42 +7,41 @@ import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Guest } from '@/lib/types';
-import { supabase } from '@/integrations/supabase/client';
+import { repositories } from '@/repositories';
+import { useData } from '@/context/DataContext';
 
 export default function EditGuest() {
   const { id } = useParams<{ id: string }>();
   const { isLoading, guest, refreshGuest } = useGuestData(id);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { refreshData } = useData();
 
-  // Add missing handlers
+  // Add repository-based handlers
   const handleSave = async (updatedGuest: Guest) => {
     try {
       if (!id) return { success: false };
       
-      // This is a mock implementation
-      console.log("Saving guest", updatedGuest);
+      // Use repository pattern to update guest
+      const result = await repositories.guests.update(id, {
+        name: updatedGuest.name,
+        title: updatedGuest.title,
+        company: updatedGuest.company,
+        email: updatedGuest.email,
+        phone: updatedGuest.phone,
+        bio: updatedGuest.bio,
+        socialLinks: updatedGuest.socialLinks,
+        notes: updatedGuest.notes,
+        status: updatedGuest.status,
+      });
       
-      // Update the guest in Supabase
-      const { error } = await supabase
-        .from('guests')
-        .update({
-          name: updatedGuest.name,
-          title: updatedGuest.title,
-          company: updatedGuest.company,
-          email: updatedGuest.email,
-          phone: updatedGuest.phone,
-          bio: updatedGuest.bio,
-          social_links: updatedGuest.socialLinks as any,
-          notes: updatedGuest.notes,
-          status: updatedGuest.status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-      
-      if (error) throw error;
+      if (!result) {
+        throw new Error('Failed to update guest');
+      }
       
       // Refresh guest data
       await refreshGuest();
+      // Also refresh the global data context
+      await refreshData();
       
       toast({
         title: "Success",
@@ -65,13 +64,15 @@ export default function EditGuest() {
     try {
       if (!id) return { success: false };
       
-      // Delete the guest from Supabase
-      const { error } = await supabase
-        .from('guests')
-        .delete()
-        .eq('id', id);
+      // Use repository pattern to delete guest
+      const success = await repositories.guests.delete(id);
       
-      if (error) throw error;
+      if (!success) {
+        throw new Error('Failed to delete guest');
+      }
+      
+      // Refresh the global data context
+      await refreshData();
       
       toast({
         title: "Success",

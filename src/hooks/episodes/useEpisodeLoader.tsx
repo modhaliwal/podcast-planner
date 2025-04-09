@@ -1,50 +1,53 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { episodeRepository } from "@/repositories";
-import { useParams } from "react-router-dom";
-import { Episode } from "@/lib/types";
-import { useState, useMemo } from "react";
-import { showErrorToast } from "@/lib/errorHandling";
+import { useState, useCallback, useEffect } from 'react';
+import { Episode } from '@/lib/types';
+import { repositories } from '@/repositories';
+import { toast } from '@/hooks/use-toast';
 
-export const useEpisodeLoader = (episodeId?: string) => {
-  const { id: paramId } = useParams<{ id: string }>();
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  
-  // Use provided episodeId or fall back to URL parameter
-  const id = useMemo(() => episodeId || paramId, [episodeId, paramId]);
-  
-  const {
-    data: episode,
-    isLoading,
-    error: queryError,
-    refetch: refreshEpisode
-  } = useQuery({
-    queryKey: ["episode", id],
-    queryFn: async () => {
-      if (!id) {
-        throw new Error("Episode ID is required");
+export function useEpisodeLoader(episodeId: string | undefined) {
+  const [episode, setEpisode] = useState<Episode | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const refreshEpisode = useCallback(async () => {
+    if (!episodeId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Use the repository pattern to fetch the episode
+      const fetchedEpisode = await repositories.episodes.getById(episodeId);
+      
+      if (!fetchedEpisode) {
+        throw new Error('Episode not found');
       }
       
-      // Use the repository pattern to fetch episode data
-      const result = await episodeRepository.getById(id);
-      
-      if (!result) {
-        throw new Error("Episode not found");
-      }
-      
-      return result;
-    },
-    enabled: !!id,
-    staleTime: 60000, // Cache data for 1 minute to prevent excessive refetching
-    gcTime: 300000, // Keep cached data for 5 minutes
-  });
-  
+      setEpisode(fetchedEpisode);
+    } catch (err: any) {
+      setError(err instanceof Error ? err : new Error(err?.message || 'Failed to load episode'));
+      console.error('Error loading episode:', err);
+      toast({
+        title: 'Error loading episode',
+        description: err.message || 'Failed to load episode data',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [episodeId]);
+
+  useEffect(() => {
+    refreshEpisode();
+  }, [refreshEpisode]);
+
   return {
     episode,
     isLoading,
-    error: queryError,
-    isRedirecting,
-    setIsRedirecting,
+    error,
     refreshEpisode
   };
-};
+}

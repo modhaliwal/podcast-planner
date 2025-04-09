@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
 import { repositories } from '@/repositories';
+import { useData } from '@/context/DataContext';
 
 const AddGuest = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { refreshData } = useData();
   
   // Create an empty guest template
   const emptyGuest: Guest = {
@@ -42,6 +43,9 @@ const AddGuest = () => {
       };
       
       const createdGuest = await repositories.guests.add(guestData);
+      
+      // Refresh global data after creating a new guest
+      await refreshData();
       
       toast({
         title: "Success",
