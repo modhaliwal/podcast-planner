@@ -24,6 +24,24 @@ export const federatedSignOut = () => {
   window.location.href = "/";
 };
 
+/**
+ * Creates a simulated authentication session for development
+ * @returns Object containing tokens for the dev user
+ */
+export const signInAsDevUser = () => {
+  // Create a mock token that expires in 1 hour
+  const mockToken = {
+    access_token: "dev-user-token-" + Date.now(),
+    refresh_token: "dev-user-refresh-" + Date.now(),
+    expires_at: Date.now() + (3600 * 1000) // 1 hour from now
+  };
+  
+  // Store tokens in localStorage
+  localStorage.setItem("auth_token", JSON.stringify(mockToken));
+  
+  return mockToken;
+};
+
 // Exported function to get the auth module
 export const getAuthModule = (): [any, null] => {
   // Return a simple fallback implementation
@@ -37,4 +55,3 @@ export const getAuthModule = (): [any, null] => {
     })
   }, null];
 };
-

@@ -1,9 +1,8 @@
-
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { federatedSignIn, federatedSignOut } from '@/integrations/auth/federated-auth';
+import { federatedSignIn, federatedSignOut, signInAsDevUser } from '@/integrations/auth/federated-auth';
 
 // A proxy hook that provides auth functionality based on federation
 export function useAuthProxy() {
@@ -84,6 +83,22 @@ export function useAuthProxy() {
     }
   }, [contextLogout]);
   
+  // Sign in as dev user
+  const signInAsDev = useCallback(() => {
+    try {
+      const token = signInAsDevUser();
+      setAuthToken(token);
+      return { success: true };
+    } catch (error: any) {
+      toast({
+        title: 'Dev Auth Error',
+        description: error.message || 'An unexpected error occurred',
+        variant: 'destructive',
+      });
+      return { error };
+    }
+  }, [setAuthToken]);
+  
   // Build the user object from token if available
   const user = authToken ? {
     id: 'federated-user', // Would normally be extracted from the token
@@ -94,6 +109,7 @@ export function useAuthProxy() {
     user,
     signIn,
     signOut,
+    signInAsDev,
     authenticateWithToken,
     isLoading: contextLoading || isLoading,
     authError,

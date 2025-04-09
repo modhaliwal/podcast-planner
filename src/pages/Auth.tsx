@@ -3,55 +3,25 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Headphones, ExternalLink } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Headphones, Bug } from "lucide-react";
 import { useFederatedAuth } from "@/contexts/FederatedAuthContext";
 import { useAuthProxy } from "@/hooks/useAuthProxy";
-
-const authSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-});
-
-type AuthFormValues = z.infer<typeof authSchema>;
+import { signInAsDevUser } from "@/integrations/auth/federated-auth";
+import { toast } from "@/hooks/use-toast";
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { authError, isLoading: authModuleLoading, isAuthenticated } = useFederatedAuth();
+  const { authError, isLoading: authModuleLoading, isAuthenticated, setAuthToken } = useFederatedAuth();
   const { signIn } = useAuthProxy();
   
   const from = location.state?.from || "/dashboard";
-
-  const form = useForm<AuthFormValues>({
-    resolver: zodResolver(authSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
 
   // If user is authenticated, redirect
   if (isAuthenticated && !authModuleLoading) {
     navigate(from, { replace: true });
     return null;
-  }
-
-  async function handleAuth(values: AuthFormValues) {
-    try {
-      setLoading(true);
-      await signIn(values.email, values.password);
-      // The signIn function handles navigation and toast messages
-    } catch (error) {
-      console.error(`Authentication error:`, error);
-    } finally {
-      setLoading(false);
-    }
   }
 
   const handleExternalAuth = () => {
@@ -61,6 +31,35 @@ export default function Auth() {
     // Redirect to the federated auth provider
     const authProviderUrl = "https://admin.skyrocketdigital.com/auth";
     window.location.href = `${authProviderUrl}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  };
+
+  const handleDevUserAuth = () => {
+    try {
+      setLoading(true);
+      
+      // Create a simulated session
+      const token = signInAsDevUser();
+      
+      // Update auth context with the token
+      setAuthToken(token);
+      
+      toast({
+        title: "Authenticated as Dev User",
+        description: "You've been signed in with a development account",
+      });
+      
+      // Navigate to the destination
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error("Dev auth error:", error);
+      toast({
+        title: "Authentication Error",
+        description: "Failed to create dev user session",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,7 +80,7 @@ export default function Auth() {
             className="w-full flex items-center justify-center gap-2"
             onClick={handleExternalAuth}
           >
-            <ExternalLink className="h-4 w-4" />
+            <Headphones className="h-4 w-4" />
             Sign in with Authentication Provider
           </Button>
           
@@ -90,48 +89,19 @@ export default function Auth() {
               <span className="w-full border-t"></span>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-card px-2 text-muted-foreground">Or</span>
             </div>
           </div>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleAuth)} className="space-y-4 w-full">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button 
-                type="submit" 
-                className="w-full mt-6" 
-                disabled={loading || authModuleLoading}
-                variant="outline"
-              >
-                {loading ? "Signing in..." : "Sign In with Email"}
-              </Button>
-            </form>
-          </Form>
+          <Button 
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={handleDevUserAuth}
+            disabled={loading}
+          >
+            <Bug className="h-4 w-4" />
+            {loading ? "Signing in..." : "Sign in as Dev User"}
+          </Button>
 
           {authError && (
             <div className="w-full p-3 border border-amber-300 bg-amber-50 rounded-md text-amber-800 text-sm">
