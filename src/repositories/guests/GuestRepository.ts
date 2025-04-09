@@ -73,13 +73,6 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
   // Method to update a guest with explicit typing
   async update(id: string, guestData: UpdateGuestDTO): Promise<Guest | null> {
     try {
-      // First, get the current user ID
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        console.error('User not authenticated');
-        return null;
-      }
-
       // Map update DTO to DB format
       const dbGuest = this.mapper.updateDtoToDB(guestData);
       
@@ -87,8 +80,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
       const { error } = await supabase
         .from('guests')
         .update(dbGuest)
-        .eq('id', id)
-        .eq('user_id', userData.user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Error updating guest:', error);
@@ -106,16 +98,9 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
   // Override getAll to implement specific requirements
   async getAll(): Promise<Guest[]> {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        console.error('User not authenticated');
-        return [];
-      }
-
       const { data, error } = await supabase
         .from('guests')
         .select('*')
-        .eq('user_id', userData.user.id)
         .order('name', { ascending: true });
 
       if (error) {
@@ -134,17 +119,10 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
   // Override getById to implement specific requirements
   async getById(id: string): Promise<Guest | null> {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        console.error('User not authenticated');
-        return null;
-      }
-
       const { data, error } = await supabase
         .from('guests')
         .select('*')
         .eq('id', id)
-        .eq('user_id', userData.user.id)
         .single();
 
       if (error) {
@@ -162,16 +140,8 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
   // Override add to implement specific requirements
   async add(guestData: CreateGuestDTO): Promise<Guest> {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        throw new Error('User not authenticated');
-      }
-
       // Convert guestData to DB format
       const dbGuest = this.mapper.createDtoToDB(guestData) as any;
-      
-      // Add user_id
-      dbGuest.user_id = userData.user.id;
       
       // Set default values for required fields
       dbGuest.bio = guestData.bio || '';
@@ -206,17 +176,10 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
   // Override delete to implement specific requirements
   async delete(id: string): Promise<boolean> {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData || !userData.user) {
-        console.error('User not authenticated');
-        return false;
-      }
-
       const { error } = await supabase
         .from('guests')
         .delete()
-        .eq('id', id)
-        .eq('user_id', userData.user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Error deleting guest:', error);

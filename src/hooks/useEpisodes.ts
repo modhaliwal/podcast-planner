@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Episode, Guest } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestMapper } from '@/repositories/guests/GuestMapper';
 import { DBGuest } from '@/repositories/guests/GuestRepository';
 
@@ -11,17 +10,9 @@ export function useEpisodes() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuthProxy();
   const guestMapper = new GuestMapper();
 
   const refreshEpisodes = useCallback(async () => {
-    if (!user) {
-      console.log('No user, cannot fetch episodes');
-      setEpisodes([]);
-      setIsLoading(false);
-      return [];
-    }
-    
     setIsLoading(true);
     
     try {
@@ -119,7 +110,7 @@ export function useEpisodes() {
       setIsLoading(false);
       return [];
     }
-  }, [user, guestMapper]);
+  }, [guestMapper]);
   
   useEffect(() => {
     refreshEpisodes();

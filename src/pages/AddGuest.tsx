@@ -4,13 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
 import { toast } from '@/hooks/use-toast';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { supabase } from '@/integrations/supabase/client';
 import { Guest } from '@/lib/types';
 
 const AddGuest = () => {
   const navigate = useNavigate();
-  const { user } = useAuthProxy();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Create an empty guest template
@@ -25,14 +23,6 @@ const AddGuest = () => {
   };
   
   const handleSave = async (newGuest: Guest) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "You need to be logged in to add guests"
-      });
-      return;
-    }
-    
     setIsSubmitting(true);
     
     try {
@@ -50,7 +40,7 @@ const AddGuest = () => {
           social_links: newGuest.socialLinks as any,
           notes: newGuest.notes,
           status: newGuest.status || 'potential',
-          user_id: user.id,
+          // Remove user_id reference
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
