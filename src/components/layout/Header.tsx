@@ -49,13 +49,7 @@ export function Header() {
         
         {!isMobile && <Navigation />}
         
-        <div className="flex items-center space-x-2">
-          {!isLoading && !isAuthenticated && (
-            <Button onClick={() => navigate('/auth')} variant="default" size="sm">
-              Sign In
-            </Button>
-          )}
-
+        <div className="flex items-center">
           <Button
             variant="ghost"
             size="icon"

@@ -62,17 +62,6 @@ export function MobileMenu({
               {item.name}
             </Link>
           ))}
-          
-          {!isAuthenticated && (
-            <Link 
-              to="/auth"
-              className="px-4 py-3 rounded-md text-base font-medium flex items-center bg-primary text-primary-foreground"
-              onClick={onClose}
-            >
-              <Home className="h-4 w-4 mr-2" />
-              Sign In
-            </Link>
-          )}
         </nav>
       </div>
     </div>
