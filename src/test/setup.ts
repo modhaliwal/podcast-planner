@@ -7,12 +7,6 @@ import { beforeAll, afterEach, afterAll, vi } from 'vitest';
 // Mock the Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    auth: {
-      getUser: vi.fn().mockReturnValue({
-        data: { user: { id: 'test-user-id' } },
-        error: null,
-      }),
-    },
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),

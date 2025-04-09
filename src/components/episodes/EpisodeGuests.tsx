@@ -1,6 +1,5 @@
 
 import { Guest } from '@/lib/types';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestChip } from '@/components/guests/GuestChip';
 
 interface EpisodeGuestsProps {
@@ -9,16 +8,13 @@ interface EpisodeGuestsProps {
 }
 
 export function EpisodeGuests({ guests: propGuests, guestIds }: EpisodeGuestsProps) {
-  // Since we're moving away from AuthContext, we would need to fetch this data differently
-  // For now, just use the provided guests prop
-  
+  // Use only the provided guests prop
   let guests: Guest[] = [];
   
   if (propGuests) {
     guests = propGuests;
   } else if (guestIds && guestIds.length > 0) {
-    // In the future, implement a proper fetch here
-    // For now, we'll just use what's provided
+    // In the future, implement a proper fetch here if needed
     guests = [];
   }
   

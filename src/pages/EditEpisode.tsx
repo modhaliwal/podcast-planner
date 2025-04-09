@@ -4,10 +4,8 @@ import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
-import { useEpisodeData } from '@/hooks/episodes';
-import { useEpisodeDelete } from '@/hooks/episodes/useEpisodeDelete';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
-import { useEffect, useMemo } from 'react';
+import { useEpisodeLoader } from '@/hooks/episodes/useEpisodeLoader';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { 
   AlertDialog,
@@ -21,28 +19,26 @@ import {
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
 import { Trash2 } from 'lucide-react';
+import { useData } from '@/context/DataContext';
+import { repositories } from '@/repositories';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { guests: allGuests, refreshGuests } = useAuthProxy();
+  const { guests, refreshData } = useData();
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   const { 
     isLoading: isEpisodeLoading, 
     episode, 
-    handleSave 
-  } = useEpisodeData(id);
-  
-  const {
-    isLoading: isDeleteLoading,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    handleDelete
-  } = useEpisodeDelete(id);
+    error,
+    refreshEpisode
+  } = useEpisodeLoader(id);
   
   useEffect(() => {
-    refreshGuests();
-  }, [refreshGuests]);
+    refreshData();
+  }, [refreshData]);
   
   const isLoading = isEpisodeLoading || isDeleteLoading;
   
@@ -62,6 +58,62 @@ const EditEpisode = () => {
     const versionsCount = episode.notesVersions?.length || 0;
     return `episode-${episode.id}-versions-${versionsCount}`;
   }, [episode]);
+
+  const handleDelete = async () => {
+    if (!id) return { success: false };
+    
+    setIsDeleteLoading(true);
+    try {
+      // Delete the episode using repository
+      await repositories.episodes.remove(id);
+      
+      toast({
+        title: "Success",
+        description: "Episode deleted successfully"
+      });
+      
+      // Refresh global data
+      await refreshData();
+      
+      // Navigate back to episodes list
+      navigate('/episodes');
+      
+      return { success: true };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Error deleting episode: ${error.message}`,
+        variant: "destructive"
+      });
+      console.error("Error deleting episode:", error);
+      return { success: false, error };
+    } finally {
+      setIsDeleteLoading(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleSave = async (updatedEpisode: any) => {
+    try {
+      const result = await repositories.episodes.update(id!, updatedEpisode);
+      await refreshData();
+      
+      toast({
+        title: "Success",
+        description: "Episode updated successfully"
+      });
+      
+      return { success: true, data: result };
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Error updating episode: ${error.message}`,
+        variant: "destructive"
+      });
+      console.error("Error updating episode:", error);
+      return { success: false, error };
+    }
+  };
   
   if (isLoading) {
     return (
@@ -134,7 +186,7 @@ const EditEpisode = () => {
         <EpisodeForm
           key={episodeKey}
           episode={episode}
-          guests={allGuests || []}
+          guests={guests || []}
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
           deleteButton={<DeleteButton />}

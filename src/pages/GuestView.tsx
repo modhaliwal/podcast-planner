@@ -5,12 +5,18 @@ import { Shell } from '@/components/layout/Shell';
 import { GuestDetail } from '@/components/guests/GuestDetail';
 import { Button } from '@/components/ui/button';
 import { useGuestData } from '@/hooks/guests/useGuestData';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
-  const { episodes } = useData();
-  const { guest, isLoading, error } = useGuestData(id);
+  const { episodes, refreshData } = useData();
+  const { guest, isLoading, error, refreshGuest } = useGuestData(id);
+  
+  // Refresh data when component mounts
+  useEffect(() => {
+    refreshData();
+    refreshGuest();
+  }, [id, refreshData, refreshGuest]);
   
   // Find episodes related to this guest
   const guestEpisodes = useMemo(() => {

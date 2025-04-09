@@ -78,6 +78,7 @@ const AddGuest = () => {
           guest={emptyGuest}
           onSave={handleSave}
           onCancel={() => navigate(-1)}
+          isSubmitting={isSubmitting}
         />
       </div>
     </Shell>

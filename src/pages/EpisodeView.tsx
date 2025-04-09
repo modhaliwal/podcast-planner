@@ -5,10 +5,11 @@ import { EpisodeDetail } from '@/components/episodes/EpisodeDetail';
 import { Button } from '@/components/ui/button';
 import { useData } from '@/context/DataContext';
 import { useEpisodeLoader } from '@/hooks/episodes/useEpisodeLoader';
+import { useEffect } from 'react';
 
 const EpisodeView = () => {
   const { id } = useParams<{ id: string }>();
-  const { guests } = useData();
+  const { guests, refreshData } = useData();
 
   // Use the episodeLoader hook for consistent data fetching
   const {
@@ -17,6 +18,12 @@ const EpisodeView = () => {
     error,
     refreshEpisode
   } = useEpisodeLoader(id);
+  
+  // Refresh data when component mounts
+  useEffect(() => {
+    refreshData();
+    refreshEpisode();
+  }, [id, refreshData, refreshEpisode]);
   
   if (isLoading) {
     return <Shell>
