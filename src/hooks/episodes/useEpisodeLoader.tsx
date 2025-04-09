@@ -19,7 +19,6 @@ export function useEpisodeLoader(episodeId: string | undefined) {
     setError(null);
     
     try {
-      // Use the repository pattern to fetch the episode
       const fetchedEpisode = await repositories.episodes.getById(episodeId);
       
       if (!fetchedEpisode) {

@@ -1,5 +1,5 @@
 
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useGuestData } from '@/hooks/guests/useGuestData';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
@@ -12,7 +12,8 @@ import { useData } from '@/context/DataContext';
 
 export default function EditGuest() {
   const { id } = useParams<{ id: string }>();
-  const { isLoading, guest, refreshGuest } = useGuestData(id);
+  const navigate = useNavigate();
+  const { isLoading, guest, error, refreshGuest } = useGuestData(id);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { refreshData } = useData();
 
@@ -79,6 +80,7 @@ export default function EditGuest() {
         description: "Guest deleted successfully"
       });
       
+      navigate('/guests');
       return { success: true };
     } catch (error: any) {
       toast({
@@ -104,7 +106,7 @@ export default function EditGuest() {
     </Shell>;
   }
 
-  if (!guest) {
+  if (error || !guest) {
     return <Navigate to="/guests" replace />;
   }
 
@@ -114,7 +116,7 @@ export default function EditGuest() {
         <GuestForm 
           guest={guest} 
           onSave={handleSave}
-          onCancel={() => window.history.back()}
+          onCancel={() => navigate(-1)}
           onDelete={() => setIsDeleteDialogOpen(true)}
         />
         <DeleteGuestDialog

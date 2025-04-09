@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 const GuestView = () => {
   const { id } = useParams<{ id: string }>();
   const { episodes } = useData();
-  const { guest, isLoading } = useGuestData(id);
+  const { guest, isLoading, error } = useGuestData(id);
   
   // Find episodes related to this guest
   const guestEpisodes = useMemo(() => {
@@ -33,7 +33,7 @@ const GuestView = () => {
     </Shell>;
   }
   
-  if (!guest) {
+  if (error || !guest) {
     return <Shell>
       <div className="page-container">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">

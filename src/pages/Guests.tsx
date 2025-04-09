@@ -6,23 +6,13 @@ import { GuestHeader } from '@/components/guests/GuestHeader';
 import { GuestContent } from '@/components/guests/GuestContent';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ErrorBoundary } from '@/components/error';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { useData } from '@/context/DataContext';
 
 const Guests = () => {
-  const { user } = useAuthProxy();
   const { refreshData } = useData();
   const navigate = useNavigate();
   
   const handleAddGuest = () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "You need to be logged in to add guests"
-      });
-      return;
-    }
-    
     navigate('/guests/new');
   };
   

@@ -77,7 +77,7 @@ const AddGuest = () => {
         <GuestForm 
           guest={emptyGuest}
           onSave={handleSave}
-          onCancel={() => navigate('/guests')}
+          onCancel={() => navigate(-1)}
         />
       </div>
     </Shell>

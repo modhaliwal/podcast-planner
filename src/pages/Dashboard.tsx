@@ -4,10 +4,10 @@ import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboar
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
-import { useEpisodes } from '@/hooks/useEpisodes';
+import { useData } from '@/context/DataContext';
 
 const Dashboard = () => {
-  const { episodes, guests, isLoading } = useEpisodes();
+  const { episodes, guests, isLoading } = useData();
   
   // Calculate statistics
   const totalGuests = guests?.length || 0;

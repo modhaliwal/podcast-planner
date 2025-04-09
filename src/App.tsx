@@ -27,8 +27,6 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            
-            {/* Routes without protection */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/guests" element={<Guests />} />
             <Route path="/guests/new" element={<AddGuest />} />
@@ -39,7 +37,6 @@ function App() {
             <Route path="/episodes/:id" element={<EpisodeView />} />
             <Route path="/episodes/:id/edit" element={<EditEpisode />} />
             <Route path="/settings" element={<Settings />} />
-            
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />

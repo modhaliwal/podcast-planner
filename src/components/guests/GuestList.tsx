@@ -2,7 +2,7 @@
 import { Guest } from "@/lib/types";
 import { GuestCard } from "./GuestListCard";
 import { memo } from "react";
-import { useEpisodes } from "@/hooks/useEpisodes";
+import { useData } from "@/context/DataContext";
 
 interface GuestListProps {
   guests: Guest[];
@@ -10,8 +10,8 @@ interface GuestListProps {
 
 // Memoize the component to prevent unnecessary re-renders
 export const GuestList = memo(function GuestList({ guests }: GuestListProps) {
-  // Get episodes from the useEpisodes hook to properly link guests to episodes
-  const { episodes } = useEpisodes();
+  // Get episodes from context to properly link guests to episodes
+  const { episodes } = useData();
   
   return (
     <div className="space-y-4">

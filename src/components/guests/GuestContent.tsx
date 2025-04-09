@@ -4,12 +4,12 @@ import { GuestList } from '@/components/guests/GuestList';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
 import { Button } from '@/components/ui/button';
-import { useEpisodes } from '@/hooks/useEpisodes';
+import { useData } from '@/context/DataContext';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 
 export function GuestContent() {
-  const { guests, isLoading } = useEpisodes();
+  const { guests, isLoading } = useData();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
