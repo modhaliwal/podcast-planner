@@ -53,20 +53,19 @@ export function useEpisodeRefresh(userId: string | undefined) {
           return [];
         }
         
-        // Mock data conversion for now
+        // Map database data to Episode type
         const formattedEpisodes: Episode[] = data.map(episode => ({
           id: episode.id,
-          title: episode.title,
-          description: episode.description,
+          title: episode.title || '',
           topic: episode.topic || '',
           episodeNumber: episode.episode_number,
-          status: episode.status,
-          recordingDate: episode.recording_date,
-          publishDate: episode.publish_date,
+          status: episode.status as "scheduled" | "recorded" | "published",
           scheduled: episode.scheduled,
-          notes: episode.notes,
+          publishDate: episode.publish_date,
+          notes: episode.notes || '',
           guestIds: episode.guest_ids || [],
           coverArt: episode.cover_art,
+          introduction: episode.introduction,
           podcastUrls: episode.podcast_urls || {},
           resources: episode.resources || [],
           createdAt: episode.created_at,

@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from "react";
-import { Episode, EpisodeStatus } from "@/lib/types";
+import { Episode } from "@/lib/types";
 import { useAuthProxy } from "@/hooks/useAuthProxy";
 
 export function useCustomEpisodeData(episodeId: string | undefined) {
@@ -39,7 +39,7 @@ export function useCustomEpisodeData(episodeId: string | undefined) {
             title: "Mock Episode",
             topic: "Technology",
             episodeNumber: 1,
-            status: "planned",  // Using 'planned' instead of EpisodeStatus.PLANNED
+            status: "scheduled",  // Using 'scheduled' instead of enum value
             scheduled: new Date().toISOString(),
             guestIds: [],
             createdAt: new Date().toISOString(),

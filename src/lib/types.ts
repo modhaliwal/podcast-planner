@@ -140,4 +140,5 @@ export interface User {
 export interface Result<T> {
   data: T | null;
   error: Error | null;
+  success?: boolean; // Add success flag for backward compatibility
 }

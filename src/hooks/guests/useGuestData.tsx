@@ -45,6 +45,7 @@ export function useGuestData(guestId: string | undefined) {
             status: "confirmed",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            socialLinks: {} // Add required fields to match Guest type
           })
         };
       });

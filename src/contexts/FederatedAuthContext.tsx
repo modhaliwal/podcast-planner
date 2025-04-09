@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getAuthModule } from '@/integrations/auth/federated-auth';
 import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
@@ -10,6 +11,7 @@ interface FederatedAuthContextType {
   setAuthToken: (token: FederatedAuthToken | null) => void;
   hasAuthError: boolean;
   authErrorType: AuthModuleError | null;
+  authError: Error | null; // Add authError property for backward compatibility
 }
 
 // Create the context
@@ -76,7 +78,8 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     authToken,
     setAuthToken,
     hasAuthError: authErrorType !== null,
-    authErrorType
+    authErrorType,
+    authError: authError // Expose authError for backward compatibility
   };
   
   return (

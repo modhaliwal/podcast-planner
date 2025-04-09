@@ -109,3 +109,6 @@ export function useEpisodesData(userId: string | undefined) {
     }
   };
 }
+
+// Add a default export as well to maintain backward compatibility
+export default useEpisodesData;
