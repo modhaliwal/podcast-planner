@@ -15,7 +15,10 @@ export default defineConfig(({ mode }) => ({
     federation({
       name: 'podcast-manager-app',
       remotes: {
-        auth: 'https://admin.skyrocketdigital.com/assets/remoteEntry.js',
+        auth: {
+          external: 'https://admin.skyrocketdigital.com/assets/remoteEntry.js',
+          externalType: 'url',
+        },
       },
       shared: ['react', 'react-dom'],
     }),
@@ -32,6 +35,13 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
     },
   },
 }));

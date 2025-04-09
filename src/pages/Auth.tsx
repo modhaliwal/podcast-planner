@@ -24,7 +24,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { authError, isLoading: authModuleLoading } = useFederatedAuth();
+  const { authError, isLoading: authModuleLoading, authToken } = useFederatedAuth();
   const auth = useAuthProxy();
   
   const from = location.state?.from || "/dashboard";
@@ -38,10 +38,11 @@ export default function Auth() {
   });
 
   useEffect(() => {
-    if (auth.user && !authModuleLoading) {
+    // If user is authenticated (either by token or module), redirect
+    if ((auth.user || authToken) && !authModuleLoading) {
       navigate(from, { replace: true });
     }
-  }, [auth.user, navigate, from, authModuleLoading]);
+  }, [auth.user, authToken, navigate, from, authModuleLoading]);
 
   async function handleAuth(values: AuthFormValues) {
     try {
@@ -122,6 +123,16 @@ export default function Auth() {
               <p className="font-medium">Authentication Service Notice</p>
               <p className="text-xs mt-1">
                 The authentication service is currently unavailable. You may experience limited functionality.
+              </p>
+            </div>
+          )}
+          
+          {/* Debug section - hidden in production */}
+          {process.env.NODE_ENV !== 'production' && authToken && (
+            <div className="w-full p-3 border border-green-300 bg-green-50 rounded-md text-green-800 text-sm">
+              <p className="font-medium">Debug: Token Present</p>
+              <p className="text-xs mt-1 truncate">
+                Token: {authToken.access_token.substring(0, 20)}...
               </p>
             </div>
           )}

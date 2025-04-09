@@ -17,7 +17,7 @@ const fallbackAuth: FederatedAuth = {
     isLoading: false,
     error: new Error("Auth module unavailable"),
   }),
-  FederatedModuleRoute: ({ fallback }) => fallback || null,
+  FederatedModuleRoute: ({ fallback, children }) => fallback || children || null,
   useIsAuthenticated: () => ({
     isAuthenticated: false,
     isLoading: false,
@@ -25,6 +25,9 @@ const fallbackAuth: FederatedAuth = {
   useHasPermission: () => ({
     hasPermission: false,
     isLoading: false,
+  }),
+  federatedSignIn: async (email, password) => ({ 
+    error: { message: "Auth module unavailable" }
   }),
 };
 
@@ -74,15 +77,43 @@ export const getAuthModule = (): [FederatedAuth, AuthModuleError] => {
   }
 };
 
-// Fix the typing for the FederatedAuthModuleProps
-interface FederatedAuthModuleProps {
-  children: (module: FederatedAuth) => ReactNode;
-}
+// Add direct export for federatedSignIn to match expected API
+export const federatedSignIn = async (email: string, password: string) => {
+  try {
+    const [authModule] = getAuthModule();
+    return await authModule.signIn(email, password);
+  } catch (error) {
+    console.error('Federation sign in error:', error);
+    return { error: { message: 'Authentication service unavailable' } };
+  }
+};
 
 // Create a component that renders the children with the auth module
-const FederatedAuthModule: React.FC<FederatedAuthModuleProps> = ({ children }) => {
-  // Just return the fallback auth for now - we'll improve this later
-  return <>{children(fallbackAuth)}</>;
+export function useAuth() {
+  // Get the auth module and return its useAuth hook result
+  const [authModule] = getAuthModule();
+  return authModule.useAuth();
+}
+
+// Direct export for FederatedModuleRoute to match expected API
+export const FederatedModuleRoute = ({ 
+  children, 
+  requiredPermission,
+  fallback 
+}: { 
+  children: ReactNode;
+  requiredPermission?: string;
+  fallback?: ReactNode;
+}) => {
+  const [authModule] = getAuthModule();
+  return (
+    <authModule.FederatedModuleRoute 
+      requiredPermission={requiredPermission}
+      fallback={fallback}
+    >
+      {children}
+    </authModule.FederatedModuleRoute>
+  );
 };
 
 // Wrapper component to provide auth module with proper error handling

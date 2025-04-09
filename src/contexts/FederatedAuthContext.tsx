@@ -1,20 +1,45 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getAuthModule, getFederatedAuthError } from '@/integrations/auth/federated-auth';
-import { AuthModuleError, FederatedAuth } from '@/integrations/auth/types';
+import { AuthModuleError, FederatedAuth, FederatedAuthToken } from '@/integrations/auth/types';
 import { toast } from '@/hooks/use-toast';
 
 interface FederatedAuthContextType {
   authModule: FederatedAuth;
   authError: AuthModuleError;
   isLoading: boolean;
+  authToken: FederatedAuthToken | null;
+  setAuthToken: (token: FederatedAuthToken | null) => void;
 }
 
 const FederatedAuthContext = createContext<FederatedAuthContextType | undefined>(undefined);
 
+// Helper function to get token from local storage
+const getStoredToken = (): FederatedAuthToken | null => {
+  try {
+    const tokenStr = localStorage.getItem('auth_token');
+    if (!tokenStr) return null;
+    return JSON.parse(tokenStr);
+  } catch (error) {
+    console.error('Error parsing stored auth token:', error);
+    return null;
+  }
+};
+
 export function FederatedAuthProvider({ children }: { children: React.ReactNode }) {
   const [authModule, authError] = getAuthModule();
   const [isLoading, setIsLoading] = useState(true);
+  const [authToken, setAuthTokenState] = useState<FederatedAuthToken | null>(getStoredToken());
+  
+  // Function to set token and persist to localStorage
+  const setAuthToken = (token: FederatedAuthToken | null) => {
+    if (token) {
+      localStorage.setItem('auth_token', JSON.stringify(token));
+    } else {
+      localStorage.removeItem('auth_token');
+    }
+    setAuthTokenState(token);
+  };
   
   // Check the status of the auth module on mount
   useEffect(() => {
@@ -43,9 +68,23 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     
     checkAuthModule();
   }, []);
+
+  // Check for token expiration
+  useEffect(() => {
+    if (authToken?.expires_at && authToken.expires_at < Date.now()) {
+      console.warn('Auth token expired, clearing session');
+      setAuthToken(null);
+    }
+  }, [authToken]);
   
   return (
-    <FederatedAuthContext.Provider value={{ authModule, authError, isLoading }}>
+    <FederatedAuthContext.Provider value={{ 
+      authModule, 
+      authError, 
+      isLoading,
+      authToken,
+      setAuthToken
+    }}>
       {children}
     </FederatedAuthContext.Provider>
   );

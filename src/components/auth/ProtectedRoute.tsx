@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useIsAuthenticatedProxy } from '@/hooks/useAuthProxy';
 import { toast } from '@/hooks/use-toast';
+import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, authError } = useIsAuthenticatedProxy();
+  const { authToken } = useFederatedAuth();
   const location = useLocation();
 
   // Show loading state while authentication is being checked
@@ -24,15 +26,19 @@ export const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteP
   }
 
   // If auth service is unavailable but the route requires authentication
-  if (authError) {
+  if (authError && !authToken) {
+    console.warn(`Auth error detected: ${authError}, but proceeding with warning`);
+    
     toast({
-      title: "Authentication Service Unavailable",
+      title: "Authentication Service Warning",
       description: "Unable to verify your authentication status. Some features may be limited.",
-      variant: "destructive"
+      variant: "warning"
     });
     
-    // We'll allow access with a warning for UX purposes
-    return <>{children}</>;
+    // If we have a token, allow access even with auth service issues
+    if (!isAuthenticated) {
+      return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+    }
   }
 
   // If not authenticated, redirect to auth page
