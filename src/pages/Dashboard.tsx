@@ -1,5 +1,4 @@
 
-import { useEffect, useState } from 'react';
 import { Shell } from '@/components/layout/Shell';
 import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboard/DashboardCards';
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
@@ -8,20 +7,7 @@ import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
 import { useEpisodes } from '@/hooks/useEpisodes';
 
 const Dashboard = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const { episodes, guests, isLoading, refreshEpisodes } = useEpisodes();
-  
-  // Debug guests data
-  console.log("Dashboard rendering with guests:", guests?.length, "episodes:", episodes?.length);
-  
-  // Set isLoaded when data is fetched
-  useEffect(() => {
-    console.log("Dashboard component mounted, initializing data");
-    
-    if (!isLoading) {
-      setIsLoaded(true);
-    }
-  }, [isLoading]);
+  const { episodes, guests, isLoading } = useEpisodes();
   
   // Calculate statistics
   const totalGuests = guests?.length || 0;
@@ -35,7 +21,7 @@ const Dashboard = () => {
         title="Dashboard" 
         subtitle="Manage your podcast guests and episodes"
       >
-        {isLoading || !isLoaded ? (
+        {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>

@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestList } from '@/components/guests/GuestList';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
@@ -10,7 +9,6 @@ import { useEpisodes } from '@/hooks/useEpisodes';
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 
 export function GuestContent() {
-  // Use the proper hook to fetch guests and episodes
   const { guests, isLoading } = useEpisodes();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');

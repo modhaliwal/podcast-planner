@@ -1,5 +1,4 @@
 
-import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { toast } from '@/hooks/use-toast';
@@ -8,9 +7,11 @@ import { GuestContent } from '@/components/guests/GuestContent';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ErrorBoundary } from '@/components/error';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
+import { useData } from '@/context/DataContext';
 
 const Guests = () => {
   const { user } = useAuthProxy();
+  const { refreshData } = useData();
   const navigate = useNavigate();
   
   const handleAddGuest = () => {
@@ -34,7 +35,7 @@ const Guests = () => {
           actions={
             <GuestHeader 
               onAddGuest={handleAddGuest}
-              onRefresh={() => {}}
+              onRefresh={refreshData}
             />
           }
         >

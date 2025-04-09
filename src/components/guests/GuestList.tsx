@@ -1,6 +1,5 @@
 
-import { Guest, Episode } from "@/lib/types";
-import { useAuthProxy } from "@/hooks/useAuthProxy";
+import { Guest } from "@/lib/types";
 import { GuestCard } from "./GuestListCard";
 import { memo } from "react";
 import { useEpisodes } from "@/hooks/useEpisodes";
