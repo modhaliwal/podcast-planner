@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { FederatedAuthProvider } from "@/contexts/FederatedAuthContext";
@@ -19,7 +20,6 @@ import CreateEpisode from "@/pages/CreateEpisode";
 import EpisodeView from "@/pages/EpisodeView";
 import EditEpisode from "@/pages/EditEpisode";
 import Settings from "@/pages/Settings";
-import Users from "@/pages/Users";
 import NotFound from "@/pages/NotFound";
 
 import "./App.css";
@@ -83,13 +83,6 @@ function App() {
           <Route path="/settings" element={
             <ProtectedRoute>
               <Settings />
-            </ProtectedRoute>
-          } />
-          
-          {/* Admin-only route with permission check */}
-          <Route path="/users" element={
-            <ProtectedRoute requiredPermission="admin.users.view">
-              <Users />
             </ProtectedRoute>
           } />
           

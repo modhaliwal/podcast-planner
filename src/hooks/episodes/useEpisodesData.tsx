@@ -1,114 +1,77 @@
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Episode } from "@/lib/types";
-import { useEpisodeRefresh } from "./useEpisodeRefresh";
+import { useState, useEffect, useCallback } from 'react';
+import { Episode } from '@/lib/types';
+import { useAuthProxy } from '@/hooks/useAuthProxy';
 
-export function useEpisodesData(userId: string | undefined) {
+export function useEpisodesData() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
-  const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(true);
-  const { refreshEpisodes: fetchEpisodeData } = useEpisodeRefresh(userId);
-  const hasLoadedInitialDataRef = useRef(false);
-  const lastFetchTimeRef = useRef<number>(0);
-  const isInitialMountRef = useRef(true);
-  const userIdRef = useRef<string | undefined>(undefined);
-  const cacheTTL = 60000; // 1 minute cache TTL
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { token } = useAuthProxy();
 
-  // Track changes to userId
-  useEffect(() => {
-    if (userId && userId !== userIdRef.current) {
-      console.log("User ID changed or became available:", userId);
-      userIdRef.current = userId;
-      
-      // If we have a new userId but haven't loaded data yet, trigger a refresh
-      if (!hasLoadedInitialDataRef.current && userId) {
-        console.log("User ID became available, triggering initial episode data load");
-        refreshEpisodes(true);
-      }
+  const fetchEpisodes = useCallback(async () => {
+    if (!token) {
+      setEpisodes([]);
+      setIsLoading(false);
+      return;
     }
-  }, [userId]);
-  
-  // Load episodes on initial mount, but only if userId is available
-  useEffect(() => {
-    const loadEpisodes = async () => {
-      if (userId && !hasLoadedInitialDataRef.current) {
-        console.log("Initial useEpisodesData mount, loading episodes for user:", userId);
-        setIsLoadingEpisodes(true);
-        
-        try {
-          const fetchedEpisodes = await fetchEpisodeData(true);
-          setEpisodes(fetchedEpisodes);
-          hasLoadedInitialDataRef.current = true;
-          lastFetchTimeRef.current = Date.now();
-        } catch (error) {
-          console.error("Error loading episodes:", error);
-        } finally {
-          setIsLoadingEpisodes(false);
-          isInitialMountRef.current = false;
-        }
-      } else if (!userId) {
-        console.log("No userId available, skipping initial episodes load");
-      }
-    };
-    
-    loadEpisodes();
-  }, [fetchEpisodeData, userId]);
 
-  // Create a function that wraps refreshEpisodes and updates the episodes state
-  const refreshEpisodes = useCallback(async (force = false) => {
-    // Check cache validity if not forced
-    if (!force) {
-      const now = Date.now();
-      const cacheAge = now - lastFetchTimeRef.current;
-      
-      // If cache is still valid and we have data, return existing data
-      if (cacheAge < cacheTTL && episodes.length > 0) {
-        console.log("Using cached episode data, age:", Math.round(cacheAge / 1000), "seconds");
-        return episodes;
-      }
-    }
-    
-    // Throttle refreshes to prevent too many calls
-    const now = Date.now();
-    if (!force && now - lastFetchTimeRef.current < 2000) {
-      console.log("Skipping refresh, too soon since last refresh");
-      return episodes;
-    }
-    
-    if (!userId) {
-      console.log("Cannot refresh episodes: No user ID available");
-      return episodes;
-    }
-    
-    setIsLoadingEpisodes(true);
-    lastFetchTimeRef.current = now;
+    setIsLoading(true);
+    setError(null);
     
     try {
-      console.log("Refreshing episodes for user:", userId);
-      const fetchedEpisodes = await fetchEpisodeData(force);
-      console.log(`Fetched ${fetchedEpisodes.length} episodes`);
-      setEpisodes(fetchedEpisodes);
-      return fetchedEpisodes;
-    } catch (error) {
-      console.error("Error refreshing episodes:", error);
-      return episodes;
+      // This would normally fetch from an API
+      console.log("Fetching episodes with token:", token?.substring(0, 10));
+      
+      // Mock implementation with a delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Mock data
+      const mockEpisodes: Episode[] = [
+        {
+          id: '1',
+          title: 'Getting Started with React',
+          episodeNumber: 1,
+          status: 'published',
+          guestIds: ['guest-1'],
+          scheduled: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          topic: 'Development'
+        },
+        {
+          id: '2',
+          title: 'Advanced TypeScript Patterns',
+          episodeNumber: 2,
+          status: 'scheduled',
+          guestIds: ['guest-2'],
+          scheduled: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          topic: 'TypeScript'
+        }
+      ];
+      
+      setEpisodes(mockEpisodes);
+    } catch (err) {
+      console.error("Error fetching episodes:", err);
+      setError(err instanceof Error ? err : new Error('Failed to fetch episodes'));
     } finally {
-      setIsLoadingEpisodes(false);
+      setIsLoading(false);
     }
-  }, [fetchEpisodeData, episodes, userId]);
+  }, [token]);
 
-  // Memoize episodes to prevent unnecessary re-renders
-  const memoizedEpisodes = useMemo(() => episodes, [episodes]);
+  useEffect(() => {
+    fetchEpisodes();
+  }, [fetchEpisodes]);
 
   return {
-    episodes: memoizedEpisodes,
-    refreshEpisodes,
-    isLoadingEpisodes,
-    isInitialMount: isInitialMountRef.current,
-    setIsInitialMount: (value: boolean) => {
-      isInitialMountRef.current = value;
-    }
+    episodes,
+    isLoading,
+    error,
+    refreshEpisodes: fetchEpisodes
   };
 }
 
-// Add a default export as well to maintain backward compatibility
+// Add default export for backward compatibility
 export default useEpisodesData;

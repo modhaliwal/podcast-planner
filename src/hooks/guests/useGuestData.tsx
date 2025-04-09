@@ -24,43 +24,28 @@ export function useGuestData(guestId: string | undefined) {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Simulate fetching guest data from API
-      const response = await fetch(`/api/guests/${guestId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }).catch(() => {
-        // If fetch fails (e.g., in development without a real API)
-        // return a mock guest
-        console.log("Using mock guest data");
-        return {
-          ok: true,
-          json: async () => ({
-            id: guestId,
-            name: "John Doe",
-            title: "Software Engineer",
-            company: "Example Corp",
-            email: "john@example.com",
-            phone: "555-123-4567",
-            bio: "A talented software engineer with experience in React.",
-            status: "confirmed",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            socialLinks: {} // Add required fields to match Guest type
-          })
-        };
-      });
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          id: guestId,
+          name: "John Doe",
+          title: "Software Engineer",
+          company: "Example Corp",
+          email: "john@example.com",
+          phone: "555-123-4567",
+          bio: "A talented software engineer with experience in React.",
+          status: "confirmed" as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          socialLinks: {} 
+        })
+      };
       
-      if (response.ok) {
-        const data = await response.json();
+      if (mockResponse.ok) {
+        const data = await mockResponse.json();
         setGuest(data);
       } else {
-        // Handle error based on whether it's a real Response object or our mock
-        if (response instanceof Response) {
-          const errorText = await response.text();
-          console.error("Error fetching guest:", errorText);
-        } else {
-          console.error("Error fetching guest: Unknown error");
-        }
+        console.error("Error fetching guest: Mock error");
         setGuest(null);
       }
     } catch (error) {

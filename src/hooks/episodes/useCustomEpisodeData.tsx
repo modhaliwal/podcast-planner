@@ -24,41 +24,32 @@ export function useCustomEpisodeData(episodeId: string | undefined) {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Simulate fetching episode data from API
-      const response = await fetch(`/api/episodes/${episodeId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }).catch(() => {
-        // If fetch fails (e.g., in development without a real API)
-        // return a mock episode
-        console.log("Using mock episode data");
-        return {
-          ok: true,
-          json: async () => ({
-            id: episodeId,
-            title: "Mock Episode",
-            topic: "Technology",
-            episodeNumber: 1,
-            status: "scheduled",  // Using 'scheduled' instead of enum value
-            scheduled: new Date().toISOString(),
-            guestIds: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          })
-        };
-      });
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          id: episodeId,
+          title: "Mock Episode",
+          topic: "Technology",
+          episodeNumber: 1,
+          status: "scheduled" as const,  // Using 'as const' to specify the literal type
+          scheduled: new Date().toISOString(),
+          guestIds: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          podcastUrls: {
+            spotify: null,
+            applePodcasts: null,
+            amazonPodcasts: null,
+            youtube: null
+          }
+        })
+      };
       
-      if (response.ok) {
-        const data = await response.json();
+      if (mockResponse.ok) {
+        const data = await mockResponse.json();
         setEpisode(data);
       } else {
-        // Handle error based on whether it's a real Response object or our mock
-        if (response instanceof Response) {
-          const errorText = await response.text();
-          console.error("Error fetching episode:", errorText);
-        } else {
-          console.error("Error fetching episode: Unknown error");
-        }
+        console.error("Error fetching episode: Mock error");
         setEpisode(null);
       }
     } catch (error) {

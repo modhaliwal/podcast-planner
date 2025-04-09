@@ -30,7 +30,7 @@ const getStoredToken = (): FederatedAuthToken | null => {
 };
 
 export function FederatedAuthProvider({ children }: { children: React.ReactNode }) {
-  const [authModule, authError] = getAuthModule();
+  const [authModule, moduleError] = getAuthModule();
   const [isLoading, setIsLoading] = useState(true);
   const [authToken, setAuthTokenState] = useState<FederatedAuthToken | null>(getStoredToken());
   const [authErrorType, setAuthErrorType] = useState<AuthModuleError | null>(null);
@@ -71,7 +71,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     }
   }, [authToken]);
   
-  // Create the context value
+  // Create the context value - fix the authError type to be Error
   const contextValue: FederatedAuthContextType = {
     authModule,
     isLoading,
@@ -79,7 +79,7 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
     setAuthToken,
     hasAuthError: authErrorType !== null,
     authErrorType,
-    authError: authError // Expose authError for backward compatibility
+    authError: moduleError instanceof Error ? moduleError : moduleError ? new Error(moduleError) : null
   };
   
   return (
