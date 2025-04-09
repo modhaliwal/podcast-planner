@@ -36,16 +36,16 @@ type ModuleType = {
   default: FederatedAuth;
 };
 
-// Create a component that will render the federated module
-const FederatedAuthModuleLoader = lazy<() => Promise<ModuleType>>(() => {
-  return import('auth/module')
+// Use proper typing for lazy loading
+const FederatedAuthModuleLoader = lazy(() => 
+  import('auth/module')
     .then(module => ({ default: module }))
     .catch(err => {
       console.error('Failed to load auth module:', err);
       authModuleError = 'unavailable';
       return { default: fallbackAuth };
-    });
-});
+    })
+);
 
 // Exported function to get the auth module
 export const getAuthModule = (): [FederatedAuth, AuthModuleError] => {
@@ -80,7 +80,7 @@ export function withFederatedAuth<T>(
       <Suspense fallback={<div className="flex items-center justify-center p-4">Loading authentication...</div>}>
         <FederatedAuthModuleLoader />
         {/* We can't use children like this with a lazy component, so we need to render differently */}
-        <Component {...props} authModule={fallbackAuth} />
+        <Component {...props as any} authModule={fallbackAuth} />
       </Suspense>
     );
   };
