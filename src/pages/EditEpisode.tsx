@@ -64,8 +64,8 @@ const EditEpisode = () => {
     
     setIsDeleteLoading(true);
     try {
-      // Delete the episode using repository
-      await repositories.episodes.remove(id);
+      // Delete the episode using repository - fixed method name
+      await repositories.episodes.delete(id);
       
       toast({
         title: "Success",

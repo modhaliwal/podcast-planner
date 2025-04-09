@@ -21,17 +21,21 @@ interface GuestFormProps {
   onSave: (updatedGuest: Guest) => Promise<any>;
   onCancel?: () => void;
   onDelete?: () => void;
+  isSubmitting?: boolean;
 }
 
-export function GuestForm({ guest, onSave, onCancel, onDelete }: GuestFormProps) {
+export function GuestForm({ guest, onSave, onCancel, onDelete, isSubmitting: propIsSubmitting }: GuestFormProps) {
   const navigate = useNavigate();
   
   const {
     form,
-    isSubmitting,
+    isSubmitting: formIsSubmitting,
     handleSubmit,
     handleImageChange
   } = useGuestForm({ guest, onSave, onCancel });
+
+  // Use provided isSubmitting prop or the one from the form hook
+  const isSubmitting = propIsSubmitting !== undefined ? propIsSubmitting : formIsSubmitting;
 
   return (
     <FormProvider {...form}>
