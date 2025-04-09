@@ -1,4 +1,3 @@
-
 import { Guest, SocialLinks } from "@/lib/types";
 import { DBGuest } from "./GuestRepository";
 import { DataMapper } from "../core/DataMapper";
@@ -28,12 +27,12 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       company: dbGuest.company || undefined,
       email: dbGuest.email || undefined,
       phone: dbGuest.phone || undefined,
-      location: undefined, // Not in DBGuest type
+      location: dbGuest.location || undefined,
       bio: dbGuest.bio || '',
       imageUrl: dbGuest.image_url || undefined,
-      website: undefined, // Not in DBGuest type
-      twitter: undefined, // Not in DBGuest type
-      linkedin: undefined, // Not in DBGuest type
+      website: dbGuest.website || undefined,
+      twitter: dbGuest.twitter || undefined,
+      linkedin: dbGuest.linkedin || undefined,
       notes: dbGuest.notes || undefined,
       backgroundResearch: dbGuest.background_research || undefined,
       status: dbGuest.status as Guest['status'] || 'potential',

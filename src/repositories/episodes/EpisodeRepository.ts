@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BaseRepository } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
@@ -123,11 +124,14 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       // Convert to DB format
       const dbEpisode = this.mapper.createDtoToDB(episodeDto);
       
-      // Add user ID and ensure introduction is set
+      // Add user ID and ensure required fields are set
       const fullDbEpisode = {
         ...dbEpisode,
         user_id: userData.user.id,
         introduction: episodeDto.introduction || '',
+        episode_number: episodeDto.episodeNumber,  // Ensure this required field is set
+        title: episodeDto.title,                   // Ensure this required field is set
+        scheduled: episodeDto.scheduled            // Ensure this required field is set
       };
       
       // Insert the episode

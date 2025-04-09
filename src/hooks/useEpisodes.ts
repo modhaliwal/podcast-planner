@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestMapper } from '@/repositories/guests/GuestMapper';
+import { DBGuest } from '@/repositories/guests/GuestRepository';
 
 export function useEpisodes() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -73,12 +74,30 @@ export function useEpisodes() {
       
       // Map guests from DB format to domain model
       const mappedGuests = (guestData || []).map(guest => {
-        // Create necessary properties and handle optional fields
-        const dbGuest = {
-          ...guest,
-          // Use existing fields or default to null for optional ones
-          // Don't access non-existent fields on the guest object
+        // Create a properly structured DBGuest object to pass to the mapper
+        const dbGuest: DBGuest = {
+          id: guest.id,
+          name: guest.name,
+          title: guest.title || null,
+          company: guest.company || null,
+          bio: guest.bio || '',
+          email: guest.email || null,
+          phone: guest.phone || null,
+          location: null,  // Required in the interface but may not be in data
+          image: null,     // Required in the interface but may not be in data
+          image_url: guest.image_url || null,
+          website: null,   // Required in the interface but may not be in data
+          twitter: null,   // Required in the interface but may not be in data
+          linkedin: null,  // Required in the interface but may not be in data
+          notes: guest.notes || null,
+          background_research: guest.background_research || null,
+          status: guest.status || null,
           social_links: guest.social_links || {},
+          bio_versions: guest.bio_versions || null,
+          background_research_versions: guest.background_research_versions || null,
+          created_at: guest.created_at,
+          updated_at: guest.updated_at,
+          user_id: guest.user_id
         };
         
         return guestMapper.toDomain(dbGuest);
