@@ -31,7 +31,8 @@ export function useAuthProxy() {
       }
       
       // Use the federated sign-in function with full callbackUrl
-      const callbackUrl = `${window.location.origin}/auth/callback?redirectTo=/dashboard`;
+      // Now we're using the main /auth route for the callback
+      const callbackUrl = `${window.location.origin}/auth?redirectTo=/dashboard`;
       
       // Check if authModule has federatedSignIn method
       if (authModule && typeof authModule.federatedSignIn === 'function') {

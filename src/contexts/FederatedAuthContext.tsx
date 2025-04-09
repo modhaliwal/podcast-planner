@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -84,42 +83,14 @@ export function FederatedAuthProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const urlToken = searchParams.get("token");
-    const urlRefreshToken = searchParams.get("refresh_token");
-    const redirectTo = searchParams.get("redirectTo") || "/dashboard";
     
-    if (urlToken) {
-      // Create a token object from URL parameters
-      const expiresIn = searchParams.get("expires_in");
-      const expiresAt = expiresIn 
-        ? Date.now() + (parseInt(expiresIn) * 1000) 
-        : Date.now() + (3600 * 1000); // Default to 1 hour if not specified
-      
-      const newToken: FederatedAuthToken = {
-        access_token: urlToken,
-        refresh_token: urlRefreshToken || undefined,
-        expires_at: expiresAt
-      };
-      
-      // Save the token
-      setAuthToken(newToken);
-      
-      // Clean up URL by removing auth parameters
-      const cleanParams = new URLSearchParams(location.search);
-      cleanParams.delete("token");
-      cleanParams.delete("refresh_token");
-      cleanParams.delete("expires_in");
-      
-      // Replace current URL without reloading
-      const newUrl = location.pathname + 
-        (cleanParams.toString() ? '?' + cleanParams.toString() : '') +
-        location.hash;
-      
-      window.history.replaceState({}, '', newUrl);
-      
-      // Navigate to the redirectTo parameter if available
-      if (redirectTo && redirectTo !== '/auth' && redirectTo !== location.pathname) {
-        navigate(redirectTo, { replace: true });
-      }
+    if (urlToken && location.pathname !== '/auth') {
+      console.log("Token detected in non-auth route, redirecting to /auth with params");
+      // Redirect to /auth with all current parameters preserved
+      navigate({
+        pathname: '/auth',
+        search: location.search
+      }, { replace: true });
     }
   }, [location, navigate]);
   

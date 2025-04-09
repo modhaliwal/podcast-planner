@@ -10,7 +10,6 @@ import { AuthErrorNotification } from "@/components/auth/AuthErrorNotification";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Auth from "@/pages/Auth";
-import AuthCallback from "@/pages/AuthCallback";
 import Guests from "@/pages/Guests";
 import AddGuest from "@/pages/AddGuest";
 import GuestView from "@/pages/GuestView";
@@ -32,7 +31,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={
