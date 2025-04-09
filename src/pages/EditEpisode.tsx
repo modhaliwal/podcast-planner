@@ -5,9 +5,22 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { useEpisodeData } from '@/hooks/episodes';
+import { useEpisodeDelete } from '@/hooks/episodes/useEpisodeDelete';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useMemo } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
+import { Trash2 } from 'lucide-react';
 
 const EditEpisode = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +33,14 @@ const EditEpisode = () => {
     handleSave 
   } = useEpisodeData(id);
   
+  // Add delete functionality
+  const {
+    isLoading: isDeleteLoading,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    handleDelete
+  } = useEpisodeDelete(id);
+  
   // Make sure we have the latest guest data
   useEffect(() => {
     if (user) {
@@ -27,7 +48,7 @@ const EditEpisode = () => {
     }
   }, [user, refreshGuests]);
   
-  const isLoading = isEpisodeLoading;
+  const isLoading = isEpisodeLoading || isDeleteLoading;
   
   useEffect(() => {
     if (!isEpisodeLoading && !episode) {
@@ -85,6 +106,30 @@ const EditEpisode = () => {
     return result;
   };
   
+  // Create the delete button component
+  const DeleteButton = () => (
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" type="button" className="mr-auto">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete Episode
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Episode</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this episode? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+  
   return (
     <Shell>
       <PageLayout 
@@ -97,6 +142,7 @@ const EditEpisode = () => {
           guests={allGuests || []}
           onSave={onSave}
           onCancel={() => navigate(`/episodes/${id}`)}
+          deleteButton={<DeleteButton />}
         />
       </PageLayout>
     </Shell>

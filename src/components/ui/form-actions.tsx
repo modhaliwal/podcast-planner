@@ -24,30 +24,36 @@ export function FormActions({
   additionalActions
 }: FormActionsProps) {
   return (
-    <div className="flex justify-end space-x-4 pt-6 border-t">
-      {onCancel ? (
-        <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
-          <X className="h-4 w-4 mr-2" />
-          {cancelText}
-        </Button>
-      ) : cancelHref ? (
-        <Button variant="outline" type="button" asChild disabled={isSubmitting}>
-          <Link to={cancelHref}>
+    <div className="flex justify-between items-center pt-6 border-t">
+      {/* Left side - for delete button */}
+      <div>
+        {additionalActions}
+      </div>
+      
+      {/* Right side - for cancel and save buttons */}
+      <div className="flex space-x-4">
+        {onCancel ? (
+          <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
             <X className="h-4 w-4 mr-2" />
             {cancelText}
-          </Link>
+          </Button>
+        ) : cancelHref ? (
+          <Button variant="outline" type="button" asChild disabled={isSubmitting}>
+            <Link to={cancelHref}>
+              <X className="h-4 w-4 mr-2" />
+              {cancelText}
+            </Link>
+          </Button>
+        ) : null}
+        
+        <Button 
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {saveIcon}
+          {isSubmitting ? "Saving..." : saveText}
         </Button>
-      ) : null}
-      
-      {additionalActions}
-      
-      <Button 
-        type="submit"
-        disabled={isSubmitting}
-      >
-        {saveIcon}
-        {isSubmitting ? "Saving..." : saveText}
-      </Button>
+      </div>
     </div>
   );
 }

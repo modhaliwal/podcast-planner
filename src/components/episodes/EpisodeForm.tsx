@@ -12,15 +12,17 @@ import { FormActions } from '@/components/ui/form-actions';
 import { useCoverArtHandler } from '@/hooks/useCoverArtHandler';
 import { UpdateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
+import { ReactNode } from 'react';
 
 interface EpisodeFormProps {
   episode: Episode;
   guests: Guest[];
   onSave: (episode: UpdateEpisodeDTO) => Promise<{success: boolean; error?: Error}>;
   onCancel?: () => void;
+  deleteButton?: ReactNode;
 }
 
-export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormProps) {
+export function EpisodeForm({ episode, guests, onSave, onCancel, deleteButton }: EpisodeFormProps) {
   // Use our cover art upload handler
   const { handleCoverArtUpload } = useCoverArtHandler(episode.coverArt);
   
@@ -73,6 +75,7 @@ export function EpisodeForm({ episode, guests, onSave, onCancel }: EpisodeFormPr
           cancelHref={`/episodes/${episode?.id}`}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
+          additionalActions={deleteButton}
         />
       </form>
     </Form>
