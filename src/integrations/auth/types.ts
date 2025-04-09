@@ -27,7 +27,7 @@ export interface FederatedAuth {
     hasPermission: boolean;
     isLoading: boolean;
   };
-  federatedSignIn?: (callbackUrl: string) => void;
+  federatedSignIn: (callbackUrl: string) => void;
   signIn: (email: string, password: string) => Promise<any>;
 }
 
