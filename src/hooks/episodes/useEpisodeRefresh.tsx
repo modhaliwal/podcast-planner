@@ -5,6 +5,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { Episode, ContentVersion } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
 
+// Helper function to safely convert Json array to ContentVersion array
+const convertToContentVersions = (data: Json | null): ContentVersion[] | undefined => {
+  if (!data) return undefined;
+  
+  try {
+    // Check if the data is an array
+    if (Array.isArray(data)) {
+      // Verify each item has the required ContentVersion properties
+      const isValidContentVersionArray = data.every(item => 
+        typeof item === 'object' && 
+        item !== null && 
+        'id' in item && 
+        'content' in item && 
+        'timestamp' in item && 
+        'source' in item
+      );
+      
+      if (isValidContentVersionArray) {
+        return data as ContentVersion[];
+      }
+    }
+    return undefined;
+  } catch (err) {
+    console.error("Error converting to ContentVersion array:", err);
+    return undefined;
+  }
+};
+
 export function useEpisodeRefresh(userId: string | undefined) {
   const [error, setError] = useState<Error | null>(null);
   const lastRefreshTimeRef = useRef<number>(0);
@@ -57,26 +85,14 @@ export function useEpisodeRefresh(userId: string | undefined) {
         // Map database data to Episode type
         const formattedEpisodes: Episode[] = data.map(episode => {
           // Safely parse complex JSON fields
-          let notesVersions: ContentVersion[] | undefined = undefined;
-          let introductionVersions: ContentVersion[] | undefined = undefined;
+          const notesVersions = convertToContentVersions(episode.notes_versions);
+          const introductionVersions = convertToContentVersions(episode.introduction_versions);
+          
           let podcastUrls: Record<string, string | null> | undefined = undefined;
           let resources: any[] | undefined = undefined;
+          let recordingLinks: any | undefined = undefined;
           
           try {
-            // Handle notes_versions as ContentVersion[]
-            if (episode.notes_versions) {
-              notesVersions = Array.isArray(episode.notes_versions) 
-                ? episode.notes_versions as ContentVersion[]
-                : [];
-            }
-            
-            // Handle introduction_versions as ContentVersion[]
-            if (episode.introduction_versions) {
-              introductionVersions = Array.isArray(episode.introduction_versions)
-                ? episode.introduction_versions as ContentVersion[]
-                : [];
-            }
-            
             // Handle podcast_urls
             if (episode.podcast_urls) {
               podcastUrls = episode.podcast_urls as Record<string, string | null>;
@@ -85,6 +101,11 @@ export function useEpisodeRefresh(userId: string | undefined) {
             // Handle resources
             if (episode.resources) {
               resources = Array.isArray(episode.resources) ? episode.resources : [];
+            }
+            
+            // Handle recording links
+            if (episode.recording_links) {
+              recordingLinks = episode.recording_links;
             }
           } catch (err) {
             console.error("Error parsing JSON fields:", err);
@@ -104,6 +125,7 @@ export function useEpisodeRefresh(userId: string | undefined) {
             introduction: episode.introduction,
             podcastUrls: podcastUrls || {},
             resources: resources || [],
+            recordingLinks: recordingLinks,
             createdAt: episode.created_at,
             updatedAt: episode.updated_at,
             notesVersions,

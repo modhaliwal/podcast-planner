@@ -4,6 +4,42 @@ import { Episode } from "@/lib/types";
 import { CreateEpisodeDTO, UpdateEpisodeDTO, DBEpisode } from "./EpisodeDTO";
 import { EpisodeStatus } from "@/lib/enums";
 import { Json } from "@/integrations/supabase/types";
+import { ContentVersion } from "@/lib/types";
+
+// Helper function to safely convert Json to ContentVersion array
+const toContentVersionArray = (jsonValue: Json | null): ContentVersion[] | undefined => {
+  if (!jsonValue) return undefined;
+  
+  try {
+    // If it's already an array, check if it has the right structure
+    if (Array.isArray(jsonValue)) {
+      // Validate that every item has the required properties
+      const isValid = jsonValue.every(item => 
+        typeof item === 'object' && 
+        item !== null && 
+        'id' in item && 
+        'content' in item && 
+        'timestamp' in item && 
+        'source' in item
+      );
+      
+      if (isValid) {
+        return jsonValue as ContentVersion[];
+      }
+    }
+    // If it's a string (JSON string), parse it
+    else if (typeof jsonValue === 'string') {
+      const parsed = JSON.parse(jsonValue);
+      if (Array.isArray(parsed)) {
+        return parsed as ContentVersion[];
+      }
+    }
+    return undefined;
+  } catch (e) {
+    console.error("Error converting to ContentVersion array:", e);
+    return undefined;
+  }
+};
 
 /**
  * Maps between Episode domain models and database models
@@ -13,29 +49,9 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
    * Maps a database model to a domain model
    */
   toDomain(dbEpisode: DBEpisode): Episode {
-    // Parse versions if they exist as strings
-    let notesVersions = undefined;
-    let introductionVersions = undefined;
-    
-    try {
-      if (dbEpisode.notes_versions) {
-        if (typeof dbEpisode.notes_versions === 'string') {
-          notesVersions = JSON.parse(dbEpisode.notes_versions as string);
-        } else {
-          notesVersions = dbEpisode.notes_versions;
-        }
-      }
-      
-      if (dbEpisode.introduction_versions) {
-        if (typeof dbEpisode.introduction_versions === 'string') {
-          introductionVersions = JSON.parse(dbEpisode.introduction_versions as string);
-        } else {
-          introductionVersions = dbEpisode.introduction_versions;
-        }
-      }
-    } catch (e) {
-      console.error("Error parsing versions for episode", dbEpisode.id, e);
-    }
+    // Use the helper function to convert JSON to ContentVersion arrays
+    const notesVersions = toContentVersionArray(dbEpisode.notes_versions);
+    const introductionVersions = toContentVersionArray(dbEpisode.introduction_versions);
 
     // Parse JSON fields for resources, podcast_urls, and recording_links
     let resources = undefined;

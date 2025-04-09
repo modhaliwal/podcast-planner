@@ -33,7 +33,7 @@ const Episodes = () => {
   
   const handleRefresh = () => {
     console.log("Manual refresh triggered");
-    refreshEpisodes(); // Remove the parameter to match expected function signature
+    refreshEpisodes(); // Now correctly calling without parameters
   };
   
   return (
