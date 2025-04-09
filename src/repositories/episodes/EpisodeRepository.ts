@@ -4,6 +4,7 @@ import { BaseRepository } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
 import { EpisodeMapper } from "./EpisodeMapper";
 import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
+import { Result } from "@/lib/types";
 
 /**
  * Repository for handling episode data
@@ -31,7 +32,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
-          description,
           topic,
           cover_art,
           scheduled,
@@ -57,8 +57,8 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
         return [];
       }
       
-      // Map database records to domain objects
-      return data.map(item => (this.mapper as EpisodeMapper).toDomain(item as DBEpisode));
+      // Map database records to domain objects, ensuring proper typing
+      return (data || []).map(item => (this.mapper as EpisodeMapper).toDomain(item as DBEpisode));
       
     } catch (error) {
       console.error("Unexpected error in getAll:", error);
@@ -77,7 +77,6 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
-          description,
           topic,
           cover_art,
           scheduled,
@@ -131,7 +130,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       // Insert the episode
       const { data, error } = await supabase
         .from("episodes")
-        .insert(dbEpisode as any)
+        .insert(dbEpisode)
         .select()
         .single();
       
@@ -141,8 +140,9 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // For each guest ID, create a relationship in episode_guests
-      if (episodeDto.guestIds && episodeDto.guestIds.length > 0) {
-        const guestLinks = episodeDto.guestIds.map(guestId => ({
+      const guestIds = episodeDto.guestIds || [];
+      if (guestIds.length > 0) {
+        const guestLinks = guestIds.map(guestId => ({
           episode_id: data.id,
           guest_id: guestId
         }));
@@ -189,7 +189,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       // Update the episode
       const { error } = await supabase
         .from("episodes")
-        .update(dbEpisode as any)
+        .update(dbEpisode)
         .eq("id", id)
         .eq("user_id", userData.user.id);
       
@@ -199,7 +199,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Handle guest relationships if needed
-      if (episodeDto.guestIds) {
+      if (episodeDto.guestIds !== undefined) {
         // First delete existing relationships
         const { error: deleteError } = await supabase
           .from("episode_guests")

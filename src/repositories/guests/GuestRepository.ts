@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { BaseRepository } from '../core/BaseRepository';
 import { Guest } from '@/lib/types';
 import { GuestMapper } from './GuestMapper';
-import { Result } from '@/lib/types';
 import { Json } from '@/integrations/supabase/types';
 
 // Define specific types for create/update operations
@@ -104,6 +103,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
     }
   }
 
+  // Override getAll to implement specific requirements
   async getAll(): Promise<Guest[]> {
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -123,13 +123,15 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
         return [];
       }
 
-      return data.map(guest => this.mapper.toDomain(guest));
+      // Ensure data is properly typed before mapping
+      return (data || []).map(guest => this.mapper.toDomain(guest as DBGuest));
     } catch (error) {
       console.error('Unexpected error in getAll:', error);
       return [];
     }
   }
 
+  // Override getById to implement specific requirements
   async getById(id: string): Promise<Guest | null> {
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -150,13 +152,14 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
         return null;
       }
 
-      return this.mapper.toDomain(data);
+      return this.mapper.toDomain(data as DBGuest);
     } catch (error) {
       console.error('Unexpected error in getById:', error);
       return null;
     }
   }
 
+  // Override add to implement specific requirements
   async add(guestData: CreateGuestDTO): Promise<Guest> {
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -200,6 +203,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
     }
   }
 
+  // Override delete to implement specific requirements
   async delete(id: string): Promise<boolean> {
     try {
       const { data: userData } = await supabase.auth.getUser();

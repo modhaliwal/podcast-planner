@@ -1,7 +1,6 @@
 
 import { EpisodeRepository } from './episodes/EpisodeRepository';
 import { GuestRepository } from './guests/GuestRepository';
-import { DataMapper } from './core/DataMapper';
 import { EpisodeMapper } from './episodes/EpisodeMapper';
 import { GuestMapper } from './guests/GuestMapper';
 

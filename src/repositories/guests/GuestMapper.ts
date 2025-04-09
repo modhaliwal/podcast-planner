@@ -48,7 +48,7 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     return {
       id: dbGuest.id,
       name: dbGuest.name,
-      title: dbGuest.title,
+      title: dbGuest.title || undefined,
       company: dbGuest.company || undefined,
       email: dbGuest.email || undefined,
       phone: dbGuest.phone || undefined,
@@ -65,11 +65,6 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     };
   }
   
-  // Alias for backward compatibility
-  mapFromDB(dbGuest: DBGuest): Guest {
-    return this.toDomain(dbGuest);
-  }
-  
   /**
    * Maps a domain model to a database model
    */
@@ -77,16 +72,16 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     const dbGuest: Partial<DBGuest> = {};
     
     if (guest.name !== undefined) dbGuest.name = guest.name;
-    if (guest.title !== undefined) dbGuest.title = guest.title;
-    if (guest.company !== undefined) dbGuest.company = guest.company;
-    if (guest.email !== undefined) dbGuest.email = guest.email;
-    if (guest.phone !== undefined) dbGuest.phone = guest.phone;
+    if (guest.title !== undefined) dbGuest.title = guest.title || null;
+    if (guest.company !== undefined) dbGuest.company = guest.company || null;
+    if (guest.email !== undefined) dbGuest.email = guest.email || null;
+    if (guest.phone !== undefined) dbGuest.phone = guest.phone || null;
     if (guest.bio !== undefined) dbGuest.bio = guest.bio;
-    if (guest.imageUrl !== undefined) dbGuest.image_url = guest.imageUrl;
+    if (guest.imageUrl !== undefined) dbGuest.image_url = guest.imageUrl || null;
     if (guest.socialLinks !== undefined) dbGuest.social_links = guest.socialLinks as unknown as Json;
-    if (guest.notes !== undefined) dbGuest.notes = guest.notes;
-    if (guest.backgroundResearch !== undefined) dbGuest.background_research = guest.backgroundResearch;
-    if (guest.status !== undefined) dbGuest.status = guest.status;
+    if (guest.notes !== undefined) dbGuest.notes = guest.notes || null;
+    if (guest.backgroundResearch !== undefined) dbGuest.background_research = guest.backgroundResearch || null;
+    if (guest.status !== undefined) dbGuest.status = guest.status || null;
     
     // Convert complex JSON objects for database storage
     if (guest.bioVersions) {
@@ -114,6 +109,3 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     return this.toDB(dto);
   }
 }
-
-// Create a singleton instance
-export const guestMapper = new GuestMapper();

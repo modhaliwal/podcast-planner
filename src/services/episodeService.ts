@@ -1,9 +1,7 @@
 
 import { Episode } from "@/lib/types";
-import { EpisodeRepository } from "@/repositories/episodes/EpisodeRepository";
 import { CreateEpisodeDTO, UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 import { EpisodeFormData } from "@/components/episodes/CreateEpisodeForm/types";
-import { supabase } from "@/integrations/supabase/client";
 import { episodeRepository } from "@/repositories";
 
 /**
@@ -42,15 +40,14 @@ export const episodeService = {
    * Update an existing episode
    */
   async updateEpisode(id: string, episodeData: UpdateEpisodeDTO): Promise<Episode | null> {
-    const result = await episodeRepository.update(id, episodeData);
-    return result.data;
+    return await episodeRepository.update(id, episodeData);
   },
   
   /**
    * Delete an episode
    */
   async deleteEpisode(id: string): Promise<boolean> {
-    return await episodeRepository.remove(id);
+    return await episodeRepository.delete(id);
   }
 };
 
@@ -75,7 +72,7 @@ export const createEpisodes = async (
       const createDTO: CreateEpisodeDTO = {
         title: episodeData.title || `Episode #${episodeData.episodeNumber}`,
         episodeNumber: episodeData.episodeNumber,
-        topic: episodeData.topic || null,
+        topic: episodeData.topic || undefined,
         description: '',
         guestIds: episodeData.guestIds || [],
         scheduled: new Date(episodeData.scheduled).toISOString(),

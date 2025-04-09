@@ -18,11 +18,11 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       .map(relation => relation.guest_id);
     
     // Parse complex JSON fields with proper type casting
-    const notesVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.notes_versions, []);
-    const introductionVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.introduction_versions, []);
-    const recordingLinks = this.parseJsonField<RecordingLinks>(dbEpisode.recording_links, {});
-    const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls, {});
-    const resources = this.parseJsonField<Resource[]>(dbEpisode.resources, []);
+    const notesVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.notes_versions) || [];
+    const introductionVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.introduction_versions) || [];
+    const recordingLinks = this.parseJsonField<RecordingLinks>(dbEpisode.recording_links) || {};
+    const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls) || {};
+    const resources = this.parseJsonField<Resource[]>(dbEpisode.resources) || [];
     
     return {
       id: dbEpisode.id,
@@ -34,29 +34,29 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       guestIds: guestIds,
       scheduled: dbEpisode.scheduled,
       publishDate: dbEpisode.publish_date || undefined,
-      status: dbEpisode.status as 'scheduled' | 'recorded' | 'published',
+      status: dbEpisode.status,
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
-      notesVersions: notesVersions,
-      introductionVersions: introductionVersions,
-      recordingLinks: recordingLinks,
-      podcastUrls: podcastUrls,
-      resources: resources,
+      notesVersions,
+      introductionVersions,
+      recordingLinks,
+      podcastUrls,
+      resources,
       createdAt: dbEpisode.created_at,
       updatedAt: dbEpisode.updated_at,
     };
   }
   
   // Helper method to safely parse JSON fields
-  private parseJsonField<T>(jsonValue: Json | null, defaultValue: T): T {
-    if (!jsonValue) return defaultValue;
+  private parseJsonField<T>(jsonValue: Json | null | undefined): T | undefined {
+    if (!jsonValue) return undefined;
     
     if (typeof jsonValue === 'string') {
       try {
         return JSON.parse(jsonValue) as T;
       } catch (e) {
         console.error('Error parsing JSON field:', e);
-        return defaultValue;
+        return undefined;
       }
     }
     
@@ -99,8 +99,28 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
    * Map a domain object to database format for creation
    */
   createDtoToDB(episode: CreateEpisodeDTO): Partial<DBEpisode> & { user_id: string } {
-    const dbEpisode = this.toDB(episode) as Partial<DBEpisode> & { user_id: string };
-    dbEpisode.user_id = ''; // This will be populated at runtime
+    const dbEpisode: Partial<DBEpisode> & { user_id: string } = {
+      title: episode.title,
+      episode_number: episode.episodeNumber,
+      scheduled: episode.scheduled,
+      status: episode.status,
+      user_id: '' // This will be populated at runtime
+    };
+    
+    if (episode.description !== undefined) dbEpisode.description = episode.description;
+    if (episode.topic !== undefined) dbEpisode.topic = episode.topic;
+    if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt;
+    if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate;
+    if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction;
+    if (episode.notes !== undefined) dbEpisode.notes = episode.notes;
+    
+    // Handle complex objects
+    if (episode.notesVersions) dbEpisode.notes_versions = episode.notesVersions as unknown as Json;
+    if (episode.introductionVersions) dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json;
+    if (episode.recordingLinks) dbEpisode.recording_links = episode.recordingLinks as unknown as Json;
+    if (episode.podcastUrls) dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json;
+    if (episode.resources) dbEpisode.resources = episode.resources as unknown as Json;
+    
     return dbEpisode;
   }
   
@@ -108,6 +128,31 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
    * Map a domain object to database format for updates
    */
   updateDtoToDB(episode: UpdateEpisodeDTO): Partial<DBEpisode> {
-    return this.toDB(episode);
+    const dbEpisode: Partial<DBEpisode> = {};
+    
+    if (episode.title !== undefined) dbEpisode.title = episode.title;
+    if (episode.episodeNumber !== undefined) dbEpisode.episode_number = episode.episodeNumber;
+    if (episode.description !== undefined) dbEpisode.description = episode.description || null;
+    if (episode.topic !== undefined) dbEpisode.topic = episode.topic || null;
+    if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt || null;
+    if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
+    if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
+    if (episode.status !== undefined) dbEpisode.status = episode.status;
+    if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
+    if (episode.notes !== undefined) dbEpisode.notes = episode.notes || null;
+    
+    // Handle complex objects with proper JSON typing
+    if (episode.notesVersions !== undefined) 
+      dbEpisode.notes_versions = episode.notesVersions as unknown as Json;
+    if (episode.introductionVersions !== undefined) 
+      dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json;
+    if (episode.recordingLinks !== undefined) 
+      dbEpisode.recording_links = episode.recordingLinks as unknown as Json;
+    if (episode.podcastUrls !== undefined) 
+      dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json;
+    if (episode.resources !== undefined) 
+      dbEpisode.resources = episode.resources as unknown as Json;
+    
+    return dbEpisode;
   }
 }

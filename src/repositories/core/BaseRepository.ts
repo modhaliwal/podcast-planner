@@ -18,7 +18,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
     this.mapper = mapper;
   }
   
-  async findById(id: string): Promise<T | null> {
+  async getById(id: string): Promise<T | null> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -32,11 +32,11 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       return this.mapper.toDomain(data as D);
     } catch (error) {
       console.error(`Error finding ${this.tableName} by ID:`, error);
-      throw error;
+      return null;
     }
   }
   
-  async findAll(): Promise<T[]> {
+  async getAll(): Promise<T[]> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -49,13 +49,15 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       return data.map(item => this.mapper.toDomain(item as D));
     } catch (error) {
       console.error(`Error finding all ${this.tableName}:`, error);
-      throw error;
+      return [];
     }
   }
   
-  async add(item: T): Promise<T> {
+  async add(item: any): Promise<T> {
     try {
-      const dbItem = this.mapper.toDB(item);
+      // Use the mapper to convert the item to DB format
+      const dbItem = this.mapper.createDtoToDB(item);
+      
       const { data, error } = await supabase
         .from(this.tableName)
         .insert(dbItem as any)
@@ -71,9 +73,11 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
     }
   }
   
-  async update(id: string, item: Partial<T>): Promise<T | null> {
+  async update(id: string, item: any): Promise<T | null> {
     try {
-      const dbItem = this.mapper.toDB(item);
+      // Use the mapper to convert the item to DB format
+      const dbItem = this.mapper.updateDtoToDB(item);
+      
       const { data, error } = await supabase
         .from(this.tableName)
         .update(dbItem as any)
@@ -87,7 +91,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       return this.mapper.toDomain(data as D);
     } catch (error) {
       console.error(`Error updating ${this.tableName}:`, error);
-      throw error;
+      return null;
     }
   }
   

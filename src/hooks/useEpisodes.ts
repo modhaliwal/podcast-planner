@@ -72,9 +72,9 @@ export function useEpisodes() {
         };
       });
       
-      // Map guests from DB format to domain model with proper typing
-      const mappedGuests = guestData?.map(guest => {
-        // Ensure all required properties are present for DBGuest interface
+      // Map guests from DB format to domain model
+      const mappedGuests = (guestData || []).map(guest => {
+        // Create DBGuest object with properly defined properties
         const dbGuest: DBGuest = {
           id: guest.id,
           name: guest.name,
@@ -83,12 +83,8 @@ export function useEpisodes() {
           email: guest.email,
           phone: guest.phone,
           bio: guest.bio || '',
-          location: guest.location || null,
           image: guest.image,
           image_url: guest.image_url,
-          website: guest.website || null,
-          twitter: guest.twitter || null,
-          linkedin: guest.linkedin || null,
           notes: guest.notes,
           background_research: guest.background_research,
           status: guest.status,
@@ -97,11 +93,16 @@ export function useEpisodes() {
           user_id: guest.user_id,
           social_links: guest.social_links,
           bio_versions: guest.bio_versions,
-          background_research_versions: guest.background_research_versions
+          background_research_versions: guest.background_research_versions,
+          // Add required properties with null values if not present in the data
+          location: null,
+          website: null,
+          twitter: null,
+          linkedin: null
         };
         
         return guestMapper.toDomain(dbGuest);
-      }) || [];
+      });
       
       setEpisodes(processedEpisodes);
       setGuests(mappedGuests);
