@@ -19,11 +19,11 @@ export interface DBEpisode {
   status: EpisodeStatus;
   introduction: string | null;
   notes: string | null;
-  notes_versions: ContentVersion[] | null;
-  introduction_versions: ContentVersion[] | null;
-  recording_links: RecordingLinks | null;
-  podcast_urls: PodcastUrls | null;
-  resources: Resource[] | null;
+  notes_versions: Json | null;
+  introduction_versions: Json | null;
+  recording_links: Json | null;
+  podcast_urls: Json | null;
+  resources: Json | null;
   created_at: string;
   updated_at: string;
   episode_guests?: { guest_id: string }[];
@@ -42,7 +42,7 @@ export interface CreateEpisodeDTO {
   scheduled: string;
   publishDate?: string;
   status: EpisodeStatus;
-  introduction: string;
+  introduction?: string;
   notes?: string;
   notesVersions?: ContentVersion[];
   introductionVersions?: ContentVersion[];

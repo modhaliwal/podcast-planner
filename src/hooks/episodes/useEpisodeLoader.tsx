@@ -16,7 +16,7 @@ export const useEpisodeLoader = (episodeId?: string) => {
   const {
     data: episode,
     isLoading,
-    error,
+    error: queryError,
     refetch: refreshEpisode
   } = useQuery({
     queryKey: ["episode", id],
@@ -42,7 +42,7 @@ export const useEpisodeLoader = (episodeId?: string) => {
   return {
     episode,
     isLoading,
-    error,
+    error: queryError,
     isRedirecting,
     setIsRedirecting,
     refreshEpisode

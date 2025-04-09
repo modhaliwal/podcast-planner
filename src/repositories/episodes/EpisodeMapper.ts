@@ -3,6 +3,7 @@ import { Episode } from "@/lib/types";
 import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
 import { DataMapper } from "../core/DataMapper";
 import { Json } from "@/integrations/supabase/types";
+import { ContentVersion, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
 
 /**
  * Mapper for converting between Episode domain objects and DB representation
@@ -15,6 +16,13 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     // Extract guest IDs from episode_guests relationship
     const guestIds = (dbEpisode.episode_guests || [])
       .map(relation => relation.guest_id);
+    
+    // Parse complex JSON fields with proper type casting
+    const notesVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.notes_versions, []);
+    const introductionVersions = this.parseJsonField<ContentVersion[]>(dbEpisode.introduction_versions, []);
+    const recordingLinks = this.parseJsonField<RecordingLinks>(dbEpisode.recording_links, {});
+    const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls, {});
+    const resources = this.parseJsonField<Resource[]>(dbEpisode.resources, []);
     
     return {
       id: dbEpisode.id,
@@ -29,26 +37,30 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       status: dbEpisode.status as 'scheduled' | 'recorded' | 'published',
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
-      notesVersions: dbEpisode.notes_versions || undefined,
-      introductionVersions: dbEpisode.introduction_versions || undefined,
-      recordingLinks: dbEpisode.recording_links || undefined,
-      podcastUrls: dbEpisode.podcast_urls || undefined,
-      resources: dbEpisode.resources || undefined,
+      notesVersions: notesVersions,
+      introductionVersions: introductionVersions,
+      recordingLinks: recordingLinks,
+      podcastUrls: podcastUrls,
+      resources: resources,
       createdAt: dbEpisode.created_at,
       updatedAt: dbEpisode.updated_at,
     };
   }
   
-  // Alias for backward compatibility
-  mapFromDB(dbEpisode: DBEpisode): Episode {
-    return this.toDomain(dbEpisode);
-  }
-  
-  /**
-   * Map multiple database records to domain objects
-   */
-  mapManyFromDB(dbEpisodes: DBEpisode[]): Episode[] {
-    return dbEpisodes.map(dbEpisode => this.toDomain(dbEpisode));
+  // Helper method to safely parse JSON fields
+  private parseJsonField<T>(jsonValue: Json | null, defaultValue: T): T {
+    if (!jsonValue) return defaultValue;
+    
+    if (typeof jsonValue === 'string') {
+      try {
+        return JSON.parse(jsonValue) as T;
+      } catch (e) {
+        console.error('Error parsing JSON field:', e);
+        return defaultValue;
+      }
+    }
+    
+    return jsonValue as unknown as T;
   }
   
   /**
@@ -67,11 +79,18 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     if (episode.status !== undefined) dbEpisode.status = episode.status;
     if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
     if (episode.notes !== undefined) dbEpisode.notes = episode.notes || null;
-    if (episode.notesVersions !== undefined) dbEpisode.notes_versions = episode.notesVersions as unknown as Json || null;
-    if (episode.introductionVersions !== undefined) dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json || null;
-    if (episode.recordingLinks !== undefined) dbEpisode.recording_links = episode.recordingLinks as unknown as Json || null;
-    if (episode.podcastUrls !== undefined) dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json || null;
-    if (episode.resources !== undefined) dbEpisode.resources = episode.resources as unknown as Json || null;
+    
+    // Handle complex objects by converting them to JSON
+    if (episode.notesVersions !== undefined) 
+      dbEpisode.notes_versions = episode.notesVersions as unknown as Json;
+    if (episode.introductionVersions !== undefined) 
+      dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json;
+    if (episode.recordingLinks !== undefined) 
+      dbEpisode.recording_links = episode.recordingLinks as unknown as Json;
+    if (episode.podcastUrls !== undefined) 
+      dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json;
+    if (episode.resources !== undefined) 
+      dbEpisode.resources = episode.resources as unknown as Json;
     
     return dbEpisode;
   }
@@ -79,49 +98,16 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
   /**
    * Map a domain object to database format for creation
    */
-  createDtoToDB(episode: CreateEpisodeDTO): Omit<DBEpisode, 'id' | 'created_at' | 'updated_at' | 'episode_guests'> & { user_id: string } {
-    return {
-      title: episode.title,
-      episode_number: episode.episodeNumber,
-      description: episode.description || null,
-      topic: episode.topic || null,
-      cover_art: episode.coverArt || null,
-      scheduled: episode.scheduled,
-      publish_date: episode.publishDate || null,
-      status: episode.status,
-      introduction: episode.introduction || null,
-      notes: episode.notes || null,
-      notes_versions: episode.notesVersions as unknown as Json || null,
-      introduction_versions: episode.introductionVersions as unknown as Json || null,
-      recording_links: episode.recordingLinks as unknown as Json || null,
-      podcast_urls: episode.podcastUrls as unknown as Json || null,
-      resources: episode.resources as unknown as Json || null,
-      user_id: '', // This will be populated at runtime
-    };
+  createDtoToDB(episode: CreateEpisodeDTO): Partial<DBEpisode> & { user_id: string } {
+    const dbEpisode = this.toDB(episode) as Partial<DBEpisode> & { user_id: string };
+    dbEpisode.user_id = ''; // This will be populated at runtime
+    return dbEpisode;
   }
   
   /**
    * Map a domain object to database format for updates
    */
-  updateDtoToDB(episode: UpdateEpisodeDTO): Partial<Omit<DBEpisode, 'id' | 'created_at' | 'updated_at' | 'episode_guests'>> {
-    const dbEpisode: Partial<DBEpisode> = {};
-    
-    if (episode.title !== undefined) dbEpisode.title = episode.title;
-    if (episode.episodeNumber !== undefined) dbEpisode.episode_number = episode.episodeNumber;
-    if (episode.description !== undefined) dbEpisode.description = episode.description || null;
-    if (episode.topic !== undefined) dbEpisode.topic = episode.topic || null;
-    if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt || null;
-    if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
-    if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
-    if (episode.status !== undefined) dbEpisode.status = episode.status;
-    if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
-    if (episode.notes !== undefined) dbEpisode.notes = episode.notes || null;
-    if (episode.notesVersions !== undefined) dbEpisode.notes_versions = episode.notesVersions as unknown as Json || null;
-    if (episode.introductionVersions !== undefined) dbEpisode.introduction_versions = episode.introductionVersions as unknown as Json || null;
-    if (episode.recordingLinks !== undefined) dbEpisode.recording_links = episode.recordingLinks as unknown as Json || null;
-    if (episode.podcastUrls !== undefined) dbEpisode.podcast_urls = episode.podcastUrls as unknown as Json || null;
-    if (episode.resources !== undefined) dbEpisode.resources = episode.resources as unknown as Json || null;
-    
-    return dbEpisode;
+  updateDtoToDB(episode: UpdateEpisodeDTO): Partial<DBEpisode> {
+    return this.toDB(episode);
   }
 }

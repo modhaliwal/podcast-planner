@@ -3,14 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { BaseRepository } from "../core/BaseRepository";
 import { Episode } from "@/lib/types";
 import { EpisodeMapper } from "./EpisodeMapper";
-import { Result } from "@/lib/types";
 import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
 
 /**
  * Repository for handling episode data
  */
 export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
-  mapper = new EpisodeMapper();
+  constructor() {
+    super('episodes', new EpisodeMapper());
+  }
   
   /**
    * Get all episodes for the current user
@@ -30,6 +31,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
+          description,
           topic,
           cover_art,
           scheduled,
@@ -56,7 +58,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Map database records to domain objects
-      return this.mapper.mapManyFromDB(data || []);
+      return data.map(item => (this.mapper as EpisodeMapper).toDomain(item as DBEpisode));
       
     } catch (error) {
       console.error("Unexpected error in getAll:", error);
@@ -75,6 +77,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
           id, 
           title, 
           episode_number,
+          description,
           topic,
           cover_art,
           scheduled,
@@ -101,7 +104,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
         return null;
       }
       
-      return this.mapper.mapFromDB(data);
+      return (this.mapper as EpisodeMapper).toDomain(data as DBEpisode);
       
     } catch (error) {
       console.error(`Unexpected error in getById(${id}):`, error);
@@ -112,7 +115,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
   /**
    * Add a new episode
    */
-  async add(episode: CreateEpisodeDTO): Promise<Episode> {
+  async add(episodeDto: CreateEpisodeDTO): Promise<Episode> {
     try {
       // Get current user ID
       const { data: userData } = await supabase.auth.getUser();
@@ -121,14 +124,14 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Convert to DB format
-      const dbEpisode = this.mapper.createDtoToDB(episode);
+      const dbEpisode = (this.mapper as EpisodeMapper).createDtoToDB(episodeDto);
       // Add user ID
       dbEpisode.user_id = userData.user.id;
       
       // Insert the episode
       const { data, error } = await supabase
         .from("episodes")
-        .insert(dbEpisode)
+        .insert(dbEpisode as any)
         .select()
         .single();
       
@@ -138,8 +141,8 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // For each guest ID, create a relationship in episode_guests
-      if (episode.guestIds && episode.guestIds.length > 0) {
-        const guestLinks = episode.guestIds.map(guestId => ({
+      if (episodeDto.guestIds && episodeDto.guestIds.length > 0) {
+        const guestLinks = episodeDto.guestIds.map(guestId => ({
           episode_id: data.id,
           guest_id: guestId
         }));
@@ -169,33 +172,34 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
   }
   
   /**
-   * Update an existing episode
+   * Override the base update method to handle episode-specific logic
    */
-  async update(id: string, episode: UpdateEpisodeDTO): Promise<Result<Episode>> {
+  async update(id: string, episodeDto: UpdateEpisodeDTO): Promise<Episode | null> {
     try {
       // Get current user ID
       const { data: userData } = await supabase.auth.getUser();
       if (!userData || !userData.user) {
-        return { data: null, error: new Error("User not authenticated") };
+        console.error("User not authenticated");
+        return null;
       }
       
       // Convert to DB format (partial update)
-      const dbEpisode = this.mapper.updateDtoToDB(episode);
+      const dbEpisode = (this.mapper as EpisodeMapper).updateDtoToDB(episodeDto);
       
       // Update the episode
       const { error } = await supabase
         .from("episodes")
-        .update(dbEpisode)
+        .update(dbEpisode as any)
         .eq("id", id)
         .eq("user_id", userData.user.id);
       
       if (error) {
         console.error("Error updating episode:", error);
-        return { data: null, error: new Error(`Failed to update episode: ${error.message}`) };
+        return null;
       }
       
       // Handle guest relationships if needed
-      if (episode.guestIds) {
+      if (episodeDto.guestIds) {
         // First delete existing relationships
         const { error: deleteError } = await supabase
           .from("episode_guests")
@@ -208,8 +212,8 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
         }
         
         // Then add new relationships
-        if (episode.guestIds.length > 0) {
-          const guestLinks = episode.guestIds.map(guestId => ({
+        if (episodeDto.guestIds.length > 0) {
+          const guestLinks = episodeDto.guestIds.map(guestId => ({
             episode_id: id,
             guest_id: guestId
           }));
@@ -226,26 +230,18 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       }
       
       // Get the updated episode
-      const updatedEpisode = await this.getById(id);
-      if (!updatedEpisode) {
-        return { data: null, error: new Error("Failed to retrieve updated episode") };
-      }
-      
-      return { data: updatedEpisode, error: null };
+      return await this.getById(id);
       
     } catch (error) {
       console.error("Unexpected error in update:", error);
-      return { 
-        data: null, 
-        error: new Error(`Failed to update episode: ${error instanceof Error ? error.message : String(error)}`) 
-      };
+      return null;
     }
   }
   
   /**
    * Delete an episode
    */
-  async remove(id: string): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     try {
       // First delete episode-guest relationships
       const { error: relError } = await supabase
@@ -272,7 +268,7 @@ export class EpisodeRepository extends BaseRepository<Episode, DBEpisode> {
       return true;
       
     } catch (error) {
-      console.error("Unexpected error in remove:", error);
+      console.error("Unexpected error in delete:", error);
       return false;
     }
   }

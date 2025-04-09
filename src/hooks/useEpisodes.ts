@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthProxy } from '@/hooks/useAuthProxy';
 import { GuestMapper } from '@/repositories/guests/GuestMapper';
+import { DBGuest } from '@/repositories/guests/GuestRepository';
 
 export function useEpisodes() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -71,8 +72,36 @@ export function useEpisodes() {
         };
       });
       
-      // Map guests from DB format to domain model
-      const mappedGuests = guestData?.map(guest => guestMapper.toDomain(guest)) || [];
+      // Map guests from DB format to domain model with proper typing
+      const mappedGuests = guestData?.map(guest => {
+        // Ensure all required properties are present for DBGuest interface
+        const dbGuest: DBGuest = {
+          id: guest.id,
+          name: guest.name,
+          title: guest.title,
+          company: guest.company,
+          email: guest.email,
+          phone: guest.phone,
+          bio: guest.bio || '',
+          location: guest.location || null,
+          image: guest.image,
+          image_url: guest.image_url,
+          website: guest.website || null,
+          twitter: guest.twitter || null,
+          linkedin: guest.linkedin || null,
+          notes: guest.notes,
+          background_research: guest.background_research,
+          status: guest.status,
+          created_at: guest.created_at,
+          updated_at: guest.updated_at,
+          user_id: guest.user_id,
+          social_links: guest.social_links,
+          bio_versions: guest.bio_versions,
+          background_research_versions: guest.background_research_versions
+        };
+        
+        return guestMapper.toDomain(dbGuest);
+      }) || [];
       
       setEpisodes(processedEpisodes);
       setGuests(mappedGuests);

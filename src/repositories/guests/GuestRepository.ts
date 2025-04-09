@@ -67,15 +67,18 @@ export interface DBGuest {
 }
 
 export class GuestRepository extends BaseRepository<Guest, DBGuest> {
-  mapper: GuestMapper = new GuestMapper();
+  constructor() {
+    super('guests', new GuestMapper());
+  }
 
   // Method to update a guest with explicit typing
-  async update(id: string, guestData: UpdateGuestDTO): Promise<Result<Guest>> {
+  async update(id: string, guestData: UpdateGuestDTO): Promise<Guest | null> {
     try {
       // First, get the current user ID
       const { data: userData } = await supabase.auth.getUser();
       if (!userData || !userData.user) {
-        return { data: null, error: new Error('User not authenticated') };
+        console.error('User not authenticated');
+        return null;
       }
 
       // Map update DTO to DB format
@@ -90,29 +93,14 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
 
       if (error) {
         console.error('Error updating guest:', error);
-        return { data: null, error: new Error(`Failed to update guest: ${error.message}`) };
+        return null;
       }
 
       // Get the updated guest
-      const { data, error: fetchError } = await supabase
-        .from('guests')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching updated guest:', fetchError);
-        return { data: null, error: new Error(`Failed to fetch updated guest: ${fetchError.message}`) };
-      }
-
-      // Map the guest from DB format to domain object
-      return { data: this.mapper.toDomain(data), error: null };
+      return await this.getById(id);
     } catch (error) {
       console.error('Unexpected error in update:', error);
-      return {
-        data: null,
-        error: new Error(`Failed to update guest: ${error instanceof Error ? error.message : String(error)}`)
-      };
+      return null;
     }
   }
 
@@ -190,7 +178,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
 
       const { data, error } = await supabase
         .from('guests')
-        .insert(dbGuest)
+        .insert(dbGuest as any)
         .select()
         .single();
 
@@ -212,7 +200,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
     }
   }
 
-  async remove(id: string): Promise<boolean> {
+  async delete(id: string): Promise<boolean> {
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData || !userData.user) {
@@ -233,7 +221,7 @@ export class GuestRepository extends BaseRepository<Guest, DBGuest> {
 
       return true;
     } catch (error) {
-      console.error('Unexpected error in remove:', error);
+      console.error('Unexpected error in delete:', error);
       return false;
     }
   }
