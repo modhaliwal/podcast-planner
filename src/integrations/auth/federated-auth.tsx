@@ -36,7 +36,8 @@ type ModuleType = {
   default: FederatedAuth;
 };
 
-const FederatedAuthModule = lazy<() => Promise<ModuleType>>(() => {
+// Create a component that will render the federated module
+const FederatedAuthModuleLoader = lazy<() => Promise<ModuleType>>(() => {
   return import('auth/module')
     .then(module => ({ default: module }))
     .catch(err => {
@@ -50,6 +51,7 @@ const FederatedAuthModule = lazy<() => Promise<ModuleType>>(() => {
 export const getAuthModule = (): [FederatedAuth, AuthModuleError] => {
   try {
     // This will throw an error if the module is not loaded yet
+    // Use dynamic import with a type annotation
     const module = require('auth/module');
     return [module as FederatedAuth, authModuleError];
   } catch (e) {
@@ -63,6 +65,12 @@ interface FederatedAuthModuleProps {
   children: (module: FederatedAuth) => ReactNode;
 }
 
+// Create a component that renders the children with the auth module
+const FederatedAuthModule: React.FC<FederatedAuthModuleProps> = ({ children }) => {
+  // Just return the fallback auth for now - we'll improve this later
+  return <>{children(fallbackAuth)}</>;
+};
+
 // Wrapper component to provide auth module with proper error handling
 export function withFederatedAuth<T>(
   Component: React.ComponentType<T & { authModule: FederatedAuth }>
@@ -70,7 +78,7 @@ export function withFederatedAuth<T>(
   return (props: T) => {
     return (
       <Suspense fallback={<div className="flex items-center justify-center p-4">Loading authentication...</div>}>
-        <FederatedAuthModule />
+        <FederatedAuthModuleLoader />
         {/* We can't use children like this with a lazy component, so we need to render differently */}
         <Component {...props} authModule={fallbackAuth} />
       </Suspense>
