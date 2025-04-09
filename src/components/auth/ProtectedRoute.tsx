@@ -32,7 +32,7 @@ export const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteP
     toast({
       title: "Authentication Service Warning",
       description: "Unable to verify your authentication status. Some features may be limited.",
-      variant: "warning"
+      variant: "destructive" // Changed from "warning" to "destructive" to match allowed types
     });
     
     // If we have a token, allow access even with auth service issues

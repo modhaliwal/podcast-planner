@@ -29,6 +29,9 @@ const fallbackAuth: FederatedAuth = {
   federatedSignIn: async (email, password) => ({ 
     error: { message: "Auth module unavailable" }
   }),
+  signIn: async (email, password) => ({ 
+    error: { message: "Auth module unavailable" }
+  }),
 };
 
 // Create a lazy loaded module with error handling
