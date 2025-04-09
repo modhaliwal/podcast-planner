@@ -2,6 +2,7 @@
 import '@testing-library/jest-dom';
 import { setupServer } from 'msw/node';
 import { QueryClient } from '@tanstack/react-query';
+import { vi, beforeAll, afterEach, afterAll } from 'vitest';
 
 // Mock the Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
@@ -35,10 +36,20 @@ export function createTestQueryClient() {
         gcTime: Infinity,
       },
     },
-    logger: {
-      log: console.log,
-      warn: console.warn,
-      error: () => {},
-    },
   });
 } 
+
+// Setup before tests run
+beforeAll(() => {
+  server.listen();
+});
+
+// Clean up after each test
+afterEach(() => {
+  server.resetHandlers();
+});
+
+// Clean up after all tests
+afterAll(() => {
+  server.close();
+});

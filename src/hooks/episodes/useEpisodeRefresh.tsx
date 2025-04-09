@@ -63,13 +63,18 @@ export function useEpisodeRefresh(userId: string | undefined) {
           scheduled: episode.scheduled,
           publishDate: episode.publish_date,
           notes: episode.notes || '',
-          guestIds: episode.guest_ids ? episode.guest_ids : [],
+          guestIds: episode.guest_ids ? [...episode.guest_ids] : [],
           coverArt: episode.cover_art,
           introduction: episode.introduction,
-          podcastUrls: episode.podcast_urls ? episode.podcast_urls : {},
-          resources: episode.resources ? episode.resources : [],
+          // Convert the podcast_urls to the correct type
+          podcastUrls: typeof episode.podcast_urls === 'object' ? episode.podcast_urls : {},
+          // Convert or initialize resources if needed
+          resources: Array.isArray(episode.resources) ? episode.resources : [],
           createdAt: episode.created_at,
-          updatedAt: episode.updated_at
+          updatedAt: episode.updated_at,
+          // These properties may be optional in the Episode type
+          notesVersions: episode.notes_versions || [],
+          introductionVersions: episode.introduction_versions || []
         }));
         
         console.log(`Loaded ${formattedEpisodes.length} episodes`);

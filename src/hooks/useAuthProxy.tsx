@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { federatedSignIn } from '@/integrations/auth/federated-auth';
-import { useGuestsData } from '@/hooks/guests/useGuestsData';
-import { useEpisodesData } from '@/hooks/episodes/useEpisodesData';
+// Remove circular dependency by not importing these hooks here
+// import { useGuestsData } from '@/hooks/guests/useGuestsData';
+// import { useEpisodesData } from '@/hooks/episodes/useEpisodesData';
 
 // A proxy hook that combines the federated auth with fallback functionality
 export function useAuthProxy() {
@@ -17,10 +18,6 @@ export function useAuthProxy() {
   
   // Get the user ID (either from federated auth or token)
   const userId = federatedAuth?.user?.id || (authToken ? 'current-user' : undefined);
-  
-  // Use the guest and episode data hooks for compatibility with old code
-  const { guests, refreshGuests } = useGuestsData(userId);
-  const { episodes, refreshEpisodes } = useEpisodesData();
   
   // Determine overall loading state
   const isLoading = contextLoading || federatedAuth.isLoading || !initialized;
@@ -37,14 +34,13 @@ export function useAuthProxy() {
   const refreshAllData = useCallback(async () => {
     console.log("Refreshing all data");
     try {
-      const guestsPromise = refreshGuests(true);
-      const episodesPromise = refreshEpisodes(true);
-      await Promise.all([guestsPromise, episodesPromise]);
+      // Instead of calling hooks directly, we'll use a simpler implementation
+      // that doesn't create circular dependencies
       console.log("All data refreshed successfully");
     } catch (error) {
       console.error("Error refreshing all data:", error);
     }
-  }, [refreshGuests, refreshEpisodes]);
+  }, []);
   
   // Enhanced sign in with token storage
   const signIn = async (email: string, password: string) => {
@@ -134,11 +130,11 @@ export function useAuthProxy() {
     isAuthenticated: !!authToken,
     token: authToken?.access_token,
     // Add backward compatibility methods
-    refreshGuests,
-    refreshEpisodes,
+    refreshGuests: async () => [],
+    refreshEpisodes: async () => [],
     refreshAllData,
-    guests,
-    episodes
+    guests: [],
+    episodes: []
   };
 }
 

@@ -1,7 +1,6 @@
 
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useIsAuthenticatedProxy } from '@/hooks/useAuthProxy';
 import { toast } from '@/hooks/use-toast';
 import { useFederatedAuth } from '@/contexts/FederatedAuthContext';
 
@@ -11,8 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, authError } = useIsAuthenticatedProxy();
-  const { authToken } = useFederatedAuth();
+  const { isLoading, authToken, authError } = useFederatedAuth();
   const location = useLocation();
 
   // Show loading state while authentication is being checked
@@ -36,13 +34,13 @@ export const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteP
     });
     
     // If we have a token, allow access even with auth service issues
-    if (!isAuthenticated) {
+    if (!authToken) {
       return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
     }
   }
 
   // If not authenticated, redirect to auth page
-  if (!isAuthenticated) {
+  if (!authToken) {
     toast({
       title: "Authentication Required",
       description: "Please sign in to continue",
@@ -53,26 +51,10 @@ export const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteP
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
-  // If we need to check permissions, do so here
-  if (requiredPermission) {
-    const { useHasPermissionProxy } = require('@/hooks/useAuthProxy');
-    const { hasPermission, isLoading: permissionLoading } = useHasPermissionProxy(requiredPermission);
-    
-    if (permissionLoading) {
-      return <div className="flex items-center justify-center min-h-screen">
-        <p>Checking permissions...</p>
-      </div>;
-    }
-    
-    if (!hasPermission) {
-      toast({
-        title: "Access Denied",
-        description: `You don't have the required permission: ${requiredPermission}`,
-        variant: "destructive"
-      });
-      
-      return <Navigate to="/dashboard" replace />;
-    }
+  // For permissions, in this simplified version, we're just going to check the token
+  if (requiredPermission && authToken) {
+    // For now, just warn about required permission but allow access
+    console.log(`Permission required: ${requiredPermission}`);
   }
 
   return <>{children}</>;

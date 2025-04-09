@@ -1,4 +1,3 @@
-
 // Define UserWithRoles interface for type checking
 export interface UserWithRoles {
   id: string;
@@ -18,4 +17,9 @@ export const getUsers = async (): Promise<UserWithRoles[]> => {
     console.error("Error:", error);
     return [];
   }
+};
+
+// This is an empty service since user management has been removed
+export const userService = {
+  // Empty placeholder for now
 };

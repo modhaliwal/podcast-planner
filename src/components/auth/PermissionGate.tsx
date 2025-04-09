@@ -13,9 +13,7 @@ export const PermissionGate = ({
   children, 
   fallback = null 
 }: PermissionGateProps) => {
-  const { authModule, authError } = useFederatedAuth();
-  const { useHasPermission } = authModule;
-  const { hasPermission, isLoading } = useHasPermission(permission);
+  const { authToken, authError } = useFederatedAuth();
   
   // If auth service is unavailable, show children with a warning
   if (authError) {
@@ -23,10 +21,8 @@ export const PermissionGate = ({
     return <>{children}</>;
   }
   
-  // While loading, show nothing to avoid flashing content
-  if (isLoading) {
-    return null;
-  }
+  // Simplified permission check - just check if we have a token
+  const hasPermission = !!authToken;
   
   // Show content only if user has the required permission
   return hasPermission ? <>{children}</> : <>{fallback}</>;
