@@ -88,7 +88,7 @@ export function useEpisodes() {
           background_research_versions: guest.background_research_versions || null,
           created_at: guest.created_at,
           updated_at: guest.updated_at,
-          user_id: guest.user_id
+          user_id: guest.user_id || '00000000-0000-0000-0000-000000000000'
         };
         
         return guestMapper.toDomain(dbGuest);

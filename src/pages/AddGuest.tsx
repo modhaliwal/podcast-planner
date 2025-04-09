@@ -27,20 +27,22 @@ const AddGuest = () => {
     
     try {
       // Insert the new guest into the database
+      // Using a fixed user_id since we've removed authentication
       const { data, error } = await supabase
         .from('guests')
         .insert({
           name: newGuest.name,
-          title: newGuest.title,
-          company: newGuest.company,
-          email: newGuest.email,
-          phone: newGuest.phone,
-          bio: newGuest.bio,
-          image_url: newGuest.imageUrl,
+          title: newGuest.title || '',
+          company: newGuest.company || null,
+          email: newGuest.email || null,
+          phone: newGuest.phone || null,
+          bio: newGuest.bio || '',
+          image_url: newGuest.imageUrl || null,
           social_links: newGuest.socialLinks as any,
-          notes: newGuest.notes,
+          notes: newGuest.notes || null,
           status: newGuest.status || 'potential',
-          // Remove user_id reference
+          // Add a fixed user_id since the database still requires it
+          user_id: '00000000-0000-0000-0000-000000000000',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
