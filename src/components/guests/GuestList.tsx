@@ -1,8 +1,9 @@
 
-import { Guest } from "@/lib/types";
+import { Guest, Episode } from "@/lib/types";
 import { useAuthProxy } from "@/hooks/useAuthProxy";
 import { GuestCard } from "./GuestListCard";
 import { memo } from "react";
+import { useEpisodes } from "@/hooks/useEpisodes";
 
 interface GuestListProps {
   guests: Guest[];
@@ -10,12 +11,9 @@ interface GuestListProps {
 
 // Memoize the component to prevent unnecessary re-renders
 export const GuestList = memo(function GuestList({ guests }: GuestListProps) {
-  const { user } = useAuthProxy();
+  // Get episodes from the useEpisodes hook to properly link guests to episodes
+  const { episodes } = useEpisodes();
   
-  // In the federated auth system, we might not have episodes directly
-  // This would need to be fetched separately in a real implementation
-  const episodes = []; // This would be replaced with proper data fetching
-
   return (
     <div className="space-y-4">
       {guests.map((guest) => (

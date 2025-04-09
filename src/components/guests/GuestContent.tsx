@@ -5,12 +5,13 @@ import { GuestList } from '@/components/guests/GuestList';
 import { Users } from 'lucide-react';
 import { GuestControls } from '@/components/guests/GuestControls';
 import { Button } from '@/components/ui/button';
+import { useEpisodes } from '@/hooks/useEpisodes';
 
 type GuestStatus = 'all' | 'potential' | 'contacted' | 'confirmed' | 'appeared';
 
 export function GuestContent() {
-  // In a real implementation, this would fetch guests data from an API
-  const guests = []; // This would be replaced with proper data fetching
+  // Use the proper hook to fetch guests and episodes
+  const { guests, isLoading } = useEpisodes();
   const [statusFilter, setStatusFilter] = useState<GuestStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -51,7 +52,11 @@ export function GuestContent() {
         setStatusFilter={setStatusFilter}
       />
 
-      {hasGuests ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      ) : hasGuests ? (
         hasFilteredGuests ? (
           <GuestList guests={filteredGuests} />
         ) : (

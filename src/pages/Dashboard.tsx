@@ -5,27 +5,23 @@ import { StatsCard, RecentGuests, UpcomingEpisodes } from '@/components/dashboar
 import { Calendar, CheckCircle, MicIcon, Users } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
+import { useEpisodes } from '@/hooks/useEpisodes';
 
 const Dashboard = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [guests, setGuests] = useState([]);
-  const [episodes, setEpisodes] = useState([]);
+  const { episodes, guests, isLoading, refreshEpisodes } = useEpisodes();
   
   // Debug guests data
   console.log("Dashboard rendering with guests:", guests?.length, "episodes:", episodes?.length);
   
-  // Load data when the component mounts
+  // Set isLoaded when data is fetched
   useEffect(() => {
     console.log("Dashboard component mounted, initializing data");
     
-    // In a real implementation, this would fetch data from an API
-    // For now, we'll just set isLoaded to true after a short delay
-    const timer = setTimeout(() => {
+    if (!isLoading) {
       setIsLoaded(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [isLoading]);
   
   // Calculate statistics
   const totalGuests = guests?.length || 0;
@@ -39,7 +35,7 @@ const Dashboard = () => {
         title="Dashboard" 
         subtitle="Manage your podcast guests and episodes"
       >
-        {!isLoaded ? (
+        {isLoading || !isLoaded ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>
