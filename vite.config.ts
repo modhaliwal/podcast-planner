@@ -12,10 +12,7 @@ export default defineConfig(({ mode }) => ({
     federation({
       name: 'podcast-manager',
       remotes: {
-        launchpad: {
-          external: 'https://launchpad.skyrocketdigital.com/federation/remote.js',
-          externalType: 'url',
-        },
+        launchpad: 'https://launchpad.skyrocketdigital.com/federation/remote.js',
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })

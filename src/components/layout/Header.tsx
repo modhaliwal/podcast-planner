@@ -9,7 +9,7 @@ import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 
-// Lazy load the UserProfile component from the remote auth module
+// Lazy load the UserProfile component from the remote module
 const UserProfile = React.lazy(() => import('launchpad/UserProfile'));
 
 export function Header() {
