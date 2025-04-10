@@ -221,7 +221,7 @@ export function SocialLinksSection({
         ))}
       </div>
       
-      {/* Edit Main Link Form */}
+      {/* Edit Main Link Form - now consistent with other forms */}
       {editingMainLinkPlatform && (
         <Card className="p-3 mt-2">
           <h4 className="text-xs font-medium mb-3">Edit Link</h4>
@@ -365,14 +365,14 @@ export function SocialLinksSection({
                     </div>
                   ))}
                   
-                  {/* Add link to category form - with improved compact UI */}
+                  {/* Add link to category form - with consistent UI */}
                   <LinkForm 
                     onSubmit={linkData => handleAddLinkToCategory(category.id, linkData)} 
                     compact={true} 
                     className={editingCategoryId === category.id && editingLinkIndex !== null ? "hidden" : ""}
                   />
                   
-                  {/* Edit link in category form - now using the same LinkForm component with submitLabel="Update" */}
+                  {/* Edit link in category form - now using the same LinkForm component with consistent styling */}
                   {editingCategoryId === category.id && editingLinkIndex !== null && (
                     <Card className="p-3">
                       <h4 className="text-xs font-medium mb-3">Edit Link</h4>

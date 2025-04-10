@@ -142,7 +142,7 @@ export function LinkForm({
         </Button>
       ) : (
         <div className="space-y-3">
-          {/* Compact form layout with platform selector and URL input on the same line */}
+          {/* Consistent form layout for both add and edit */}
           <div className="flex gap-2">
             <Select value={platform} onValueChange={handlePlatformChange}>
               <SelectTrigger className={cn("flex-shrink-0", compact ? "w-auto min-w-[46px] px-2" : "")}>
@@ -152,7 +152,7 @@ export function LinkForm({
                     "Select platform"
                 } />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background">
                 {availablePlatforms.map(platform => (
                   <SelectItem key={platform.id} value={platform.id}>
                     <div className="flex items-center">
