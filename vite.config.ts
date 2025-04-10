@@ -33,10 +33,5 @@ export default defineConfig({
     target: 'esnext',
     minify: false,
     cssCodeSplit: false
-  },
-  // Server configuration
-  server: {
-    host: "::",
-    port: 8080
   }
 })
