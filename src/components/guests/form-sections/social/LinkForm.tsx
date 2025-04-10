@@ -145,11 +145,9 @@ export function LinkForm({
           {/* Consistent form layout for both add and edit */}
           <div className="flex gap-2">
             <Select value={platform} onValueChange={handlePlatformChange}>
-              <SelectTrigger className={cn("flex-shrink-0", compact ? "w-auto min-w-[46px] px-2" : "")}>
+              <SelectTrigger className="w-auto min-w-[46px] px-2 flex-shrink-0">
                 <SelectValue placeholder={
-                  compact ? 
-                    renderSelectedPlatformIcon() || <Plus className="w-4 h-4 text-muted-foreground" /> :
-                    "Select platform"
+                  renderSelectedPlatformIcon() || <Plus className="w-4 h-4 text-muted-foreground" />
                 } />
               </SelectTrigger>
               <SelectContent className="bg-background">
