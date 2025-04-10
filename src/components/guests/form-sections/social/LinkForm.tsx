@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Facebook, Linkedin, Instagram, Globe, Youtube, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Platform definitions with icons for consistent use
 export const SOCIAL_PLATFORMS = [
@@ -160,18 +159,10 @@ export function LinkForm({
               <SelectContent className="bg-background">
                 {availablePlatforms.map(platform => (
                   <SelectItem key={platform.id} value={platform.id}>
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center">
-                            {platform.icon}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                          {platform.label}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <div className="flex items-center">
+                      {platform.icon}
+                      <span className="ml-2">{platform.label}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

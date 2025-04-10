@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { SocialLinkCategory } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { LinkForm, SOCIAL_PLATFORMS, LinkFormData } from "./social/LinkForm";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SocialLinksSectionProps {
   form: UseFormReturn<any>;
@@ -176,18 +175,7 @@ export function SocialLinksSection({
         {existingLinks.map(platformId => (
           <div key={platformId} className="flex items-center justify-between p-2 bg-muted/40 rounded">
             <div className="flex items-center flex-1 overflow-hidden">
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center">
-                      {renderPlatformIcon(platformId)}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" align="start">
-                    {getPlatformLabel(platformId)}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {renderPlatformIcon(platformId)}
               <div className="ml-2 overflow-hidden">
                 <a 
                   href={formValues[platformId]} 
@@ -332,18 +320,7 @@ export function SocialLinksSection({
                   {category.links.map((link, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-muted/40 rounded">
                       <div className="flex items-center flex-1 overflow-hidden">
-                        <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center">
-                                {renderPlatformIcon(link.platform)}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="right" align="start">
-                              {getPlatformLabel(link.platform)}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        {renderPlatformIcon(link.platform)}
                         <div className="ml-2 overflow-hidden">
                           <a 
                             href={link.url} 
