@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -160,7 +160,7 @@ export function SocialLinksSection({
 
   // Sync local categories with form values when form values change
   // This is necessary to ensure our local state stays in sync with the form
-  React.useEffect(() => {
+  useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === 'categories') {
         setLocalCategories(value.categories || []);
@@ -318,9 +318,9 @@ export function SocialLinksSection({
         )}
         
         {/* Display Categories - Now always visible */}
-        {categories.length > 0 && (
+        {localCategories.length > 0 && (
           <div className="space-y-6">
-            {categories.map((category: SocialLinkCategory) => (
+            {localCategories.map((category: SocialLinkCategory) => (
               <Card key={category.id} className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium">{category.name}</h4>
