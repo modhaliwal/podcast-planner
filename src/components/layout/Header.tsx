@@ -1,5 +1,5 @@
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Headphones, Menu } from 'lucide-react';
@@ -7,10 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Navigation } from './Navigation';
 import { MobileMenu } from './MobileMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
-import React from 'react';
-
-// Lazy load the UserProfile component from the remote module
-const UserProfile = React.lazy(() => import('launchpad/UserProfile'));
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,10 +38,6 @@ export function Header() {
         {!isMobile && <Navigation />}
         
         <div className="flex items-center gap-2">
-          <Suspense fallback={<div className="px-4 py-2 rounded bg-gray-100 animate-pulse">Loading...</div>}>
-            <UserProfile />
-          </Suspense>
-          
           <Button
             variant="ghost"
             size="icon"
