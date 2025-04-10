@@ -33,5 +33,9 @@ export default defineConfig({
     target: 'esnext',
     minify: false,
     cssCodeSplit: false
+  },
+  // Server configuration for federation
+  server: {
+    port: 8080
   }
 })
