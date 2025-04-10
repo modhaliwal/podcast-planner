@@ -14,7 +14,20 @@ export default defineConfig(({ mode }) => ({
       remotes: {
         launchpad: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-remote',
       },
-      shared: ['react', 'react-dom', 'react-router-dom']
+      shared: {
+        'react': { 
+          requiredVersion: '^18.0.0',
+          singleton: true,  // This is crucial!
+        },
+        'react-dom': { 
+          requiredVersion: '^18.0.0',
+          singleton: true,  // This is crucial!
+        },
+        'react-router-dom': { 
+          requiredVersion: '^6.0.0',
+          singleton: true,  // This is crucial!
+        }
+      }
     })
   ].filter(Boolean),
   resolve: {
