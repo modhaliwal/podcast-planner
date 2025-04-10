@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
     federation({
       name: 'podcast-manager',
       remotes: {
-        launchpad: 'https://launchpad.skyrocketdigital.com/federation/remote.js',
+        launchpad: 'https://skyrocket-launchpad.vercel.app/assets/remoteEntry.js',
       },
       shared: ['react', 'react-dom', 'react-router-dom']
     })
