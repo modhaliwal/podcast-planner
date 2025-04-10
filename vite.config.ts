@@ -12,13 +12,9 @@ export default defineConfig(({ mode }) => ({
       name: 'podcast-manager',
       remotes: {
         auth: {
-          external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-auth/remote-entry',
+          external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-remote',
           externalType: 'url',
         },
-        launchpad: {
-          external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-auth/remote-entry',
-          externalType: 'url',
-        }
       },
       shared: {
         'react': { 
