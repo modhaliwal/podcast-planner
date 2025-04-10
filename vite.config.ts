@@ -1,47 +1,36 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import federation from '@originjs/vite-plugin-federation'
 
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
-import federation from "@originjs/vite-plugin-federation";
-
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
+export default defineConfig({
   plugins: [
-    federation({
-      name: 'podcast-manager-app',
-      remotes: {
-        auth: {
-          external: 'https://admin.skyrocketdigital.com/assets/remoteEntry.js',
-          externalType: 'url',
-        },
-      },
-      shared: ['react', 'react-dom'],
-    }),
     react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
+    federation({
+      name: 'your-module-name',
+      remotes: {
+        launchpad: {
+          external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-auth/remote-entry',
+          externalType: 'url',
+        }
+      },
+      shared: {
+        'react': { 
+          requiredVersion: '^18.0.0',
+        },
+        'react-dom': { 
+          requiredVersion: '^18.0.0',
+        },
+        'react-router-dom': { 
+          requiredVersion: '^6.0.0',
+        }
+      }
+    })
+  ],
+  // Federation requires these build settings
   build: {
     modulePreload: false,
     target: 'esnext',
     minify: false,
-    cssCodeSplit: false,
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      define: {
-        global: 'globalThis',
-      },
-    },
-  },
-}));
+    cssCodeSplit: false
+  }
+})
