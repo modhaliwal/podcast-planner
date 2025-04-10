@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
     federation({
       name: 'podcast-manager',
       remotes: {
-        launchpad: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-remote',
+        launchpad: 'https://services.skyrocketdigital.com/functions/v1/federation-remote',
       },
       shared: {
         'react': { 
