@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 
 // Lazy load the UserProfile component from the remote auth module
-const UserProfile = React.lazy(() => import('auth/UserProfile'));
+const UserProfile = React.lazy(() => import('launchpad/UserProfile'));
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
