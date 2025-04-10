@@ -152,9 +152,12 @@ export function LinkForm({
           <div className="flex gap-2">
             <Select value={platform} onValueChange={handlePlatformChange}>
               <SelectTrigger className="w-auto min-w-[46px] px-2 flex-shrink-0">
+                {/* Custom SelectValue that only shows the icon */}
                 <SelectValue placeholder={
-                  renderSelectedPlatformIcon() || <Plus className="w-4 h-4 text-muted-foreground" />
-                } />
+                  <Plus className="w-4 h-4 text-muted-foreground" />
+                }>
+                  {renderSelectedPlatformIcon()}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-background">
                 {availablePlatforms.map(platform => (
