@@ -21,6 +21,7 @@ import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 
 // Import the Auth component from the remote module
+// Use 'auth/Auth' which maps to the auth remote defined in vite.config.ts
 const LaunchpadAuth = React.lazy(() => import('auth/Auth'));
 
 import "./App.css";
@@ -35,7 +36,7 @@ function App() {
             <Route path="/" element={
               <Suspense fallback={<div>Loading authentication...</div>}>
                 <LaunchpadAuth
-                  render={(auth: { isAuthenticated: boolean }) => (
+                  render={(auth) => (
                     auth.isAuthenticated 
                       ? <Navigate to="/dashboard" replace /> 
                       : <Index />

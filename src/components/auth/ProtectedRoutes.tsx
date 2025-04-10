@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import React, { Suspense } from 'react';
 
 // Import the Auth component from the remote module
+// Using 'auth/Auth' which maps to the auth remote defined in vite.config.ts
 const LaunchpadAuth = React.lazy(() => import('auth/Auth'));
 
 export function ProtectedRoutes() {

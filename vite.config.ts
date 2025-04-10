@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import federation from '@originjs/vite-plugin-federation'
@@ -12,6 +11,10 @@ export default defineConfig(({ mode }) => ({
     federation({
       name: 'podcast-manager',
       remotes: {
+        auth: {
+          external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-auth/remote-entry',
+          externalType: 'url',
+        },
         launchpad: {
           external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-auth/remote-entry',
           externalType: 'url',
