@@ -16,7 +16,7 @@ type NavigationItem = {
 };
 
 const navigationItems: NavigationItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Guests', href: '/guests', icon: UserRound },
   { name: 'Episodes', href: '/episodes', icon: Mic2 },
   { name: 'Settings', href: '/settings', icon: Settings },
@@ -29,7 +29,10 @@ export function Navigation() {
     <nav className="hidden md:block">
       <ul className="flex space-x-1">
         {navigationItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isActive = 
+            (pathname === item.href) || 
+            (item.href !== '/' && pathname.startsWith(`${item.href}/`));
+            
           return (
             <li key={item.name}>
               <Link

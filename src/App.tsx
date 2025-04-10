@@ -25,9 +25,8 @@ function App() {
       <DataProvider>
         <BrowserRouter>
           <Routes>
-            {/* All routes are now public */}
+            {/* Home route points to Dashboard */}
             <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/guests" element={<Guests />} />
             <Route path="/guests/new" element={<AddGuest />} />
             <Route path="/guests/:id" element={<GuestView />} />
