@@ -1,5 +1,5 @@
 
-declare module 'auth/Auth' {
+declare module 'launchpad/Auth' {
   import { ReactNode } from 'react';
   
   interface AuthProps {
@@ -20,12 +20,12 @@ declare module 'auth/Auth' {
   export default Auth;
 }
 
-declare module 'auth/UserProfile' {
+declare module 'launchpad/UserProfile' {
   const UserProfile: React.ComponentType;
   export default UserProfile;
 }
 
-declare module 'auth/ProtectedRoute' {
+declare module 'launchpad/ProtectedRoute' {
   import { ReactNode } from 'react';
   
   interface ProtectedRouteProps {

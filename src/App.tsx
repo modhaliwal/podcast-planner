@@ -21,8 +21,8 @@ import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 
 // Import the Auth component from the remote module
-// Use 'auth/Auth' which maps to the auth remote defined in vite.config.ts
-const LaunchpadAuth = React.lazy(() => import('auth/Auth'));
+// Using 'launchpad/Auth' which maps to the launchpad remote defined in vite.config.ts
+const LaunchpadAuth = React.lazy(() => import('launchpad/Auth'));
 
 import "./App.css";
 

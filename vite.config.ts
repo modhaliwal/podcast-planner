@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import federation from '@originjs/vite-plugin-federation'
@@ -11,22 +12,12 @@ export default defineConfig(({ mode }) => ({
     federation({
       name: 'podcast-manager',
       remotes: {
-        auth: {
-          external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-remote',
+        launchpad: {
+          external: 'https://launchpad.skyrocketdigital.com/federation/remote.js',
           externalType: 'url',
         },
       },
-      shared: {
-        'react': { 
-          requiredVersion: '^18.0.0',
-        },
-        'react-dom': { 
-          requiredVersion: '^18.0.0',
-        },
-        'react-router-dom': { 
-          requiredVersion: '^6.0.0',
-        }
-      }
+      shared: ['react', 'react-dom', 'react-router-dom']
     })
   ].filter(Boolean),
   resolve: {

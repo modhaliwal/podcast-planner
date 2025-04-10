@@ -1,8 +1,8 @@
 
 /// <reference types="vite/client" />
 
-// Auth Remote Module declarations for Launchpad Federation
-declare module 'auth/Auth' {
+// Launchpad Federation Module declarations
+declare module 'launchpad/Auth' {
   import React from 'react';
   
   interface AuthProps {
