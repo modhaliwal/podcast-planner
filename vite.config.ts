@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'your-module-name',
+      name: 'podcast-manager',
       remotes: {
         launchpad: {
           external: 'https://launchpad.skyrocketdigital.com/functions/v1/federation-auth/remote-entry',
