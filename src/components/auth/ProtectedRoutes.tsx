@@ -1,37 +1,30 @@
 
-import React, { Suspense, useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import React, { Suspense } from 'react';
 
+// Import the Auth component from the remote module
 const LaunchpadAuth = React.lazy(() => import('auth/Auth'));
 
-interface LaunchpadAuthType {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-const ProtectedRoutes = () => {
-  const [authState, setAuthState] = useState<LaunchpadAuthType>({
-    isAuthenticated: false,
-    isLoading: true
-  });
-
-  useEffect(() => {
-    // This empty useEffect ensures the component re-renders when the LaunchpadAuth module loads
-  }, []);
+export function ProtectedRoutes() {
+  const location = useLocation();
 
   return (
-    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center">Loading authentication...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading authentication...</div>}>
       <LaunchpadAuth
-        render={(auth: LaunchpadAuthType) => {
+        render={(auth) => {
           if (auth.isLoading) {
-            return <div className="h-screen w-full flex items-center justify-center">Verifying authentication...</div>;
+            return <div className="flex items-center justify-center h-screen">Verifying authentication...</div>;
           }
 
-          return auth.isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
+          return auth.isAuthenticated ? (
+            <Outlet />
+          ) : (
+            <Navigate to="/" state={{ from: location }} replace />
+          );
         }}
       />
     </Suspense>
   );
-};
+}
 
 export default ProtectedRoutes;
