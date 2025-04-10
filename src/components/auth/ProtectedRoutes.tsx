@@ -12,6 +12,7 @@ export function ProtectedRoutes() {
     <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading authentication...</div>}>
       <LaunchpadAuth
         render={(auth) => {
+          // Check if auth.isLoading exists and handle accordingly
           if (auth.isLoading) {
             return <div className="flex items-center justify-center h-screen">Verifying authentication...</div>;
           }
