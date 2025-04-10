@@ -22,15 +22,14 @@ export function SocialLinksSection({
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingLinkIndex, setEditingLinkIndex] = useState<number | null>(null);
   const [editingMainLinkPlatform, setEditingMainLinkPlatform] = useState<string | null>(null);
+  // Add local state to track categories for immediate UI updates
+  const [localCategories, setLocalCategories] = useState<SocialLinkCategory[]>(form.getValues().categories || []);
 
   // Get the form values
   const formValues = form.getValues();
 
   // Define existing links by checking which ones have values
   const existingLinks = SOCIAL_PLATFORMS.filter(platform => platform.id !== 'custom' && formValues[platform.id]).map(platform => platform.id);
-
-  // Get existing categories or initialize empty array
-  const categories = formValues.categories || [];
 
   // Handle adding a new social link
   const handleAddLink = (linkData: LinkFormData) => {
@@ -73,21 +72,25 @@ export function SocialLinksSection({
       name: newCategoryName,
       links: []
     };
-    const updatedCategories = [...categories, newCategory];
+    
+    const updatedCategories = [...localCategories, newCategory];
+    setLocalCategories(updatedCategories);
     form.setValue('categories', updatedCategories);
+    
     setNewCategoryName("");
     setShowCategoryInput(false);
   };
 
   // Handle removing a category
   const handleRemoveCategory = (categoryId: string) => {
-    const updatedCategories = categories.filter((category: SocialLinkCategory) => category.id !== categoryId);
+    const updatedCategories = localCategories.filter((category) => category.id !== categoryId);
+    setLocalCategories(updatedCategories);
     form.setValue('categories', updatedCategories);
   };
 
   // Handle adding a link to a category
   const handleAddLinkToCategory = (categoryId: string, linkData: LinkFormData) => {
-    const updatedCategories = categories.map((category: SocialLinkCategory) => {
+    const updatedCategories = localCategories.map((category) => {
       if (category.id === categoryId) {
         return {
           ...category,
@@ -100,12 +103,14 @@ export function SocialLinksSection({
       }
       return category;
     });
+    
+    setLocalCategories(updatedCategories);
     form.setValue('categories', updatedCategories);
   };
 
   // Handle removing a link from a category
   const handleRemoveLinkFromCategory = (categoryId: string, linkIndex: number) => {
-    const updatedCategories = categories.map((category: SocialLinkCategory) => {
+    const updatedCategories = localCategories.map((category) => {
       if (category.id === categoryId) {
         const updatedLinks = [...category.links];
         updatedLinks.splice(linkIndex, 1);
@@ -116,6 +121,8 @@ export function SocialLinksSection({
       }
       return category;
     });
+    
+    setLocalCategories(updatedCategories);
     form.setValue('categories', updatedCategories);
   };
 
@@ -127,7 +134,7 @@ export function SocialLinksSection({
 
   // Update an existing link
   const handleUpdateLinkInCategory = (categoryId: string, linkIndex: number, linkData: LinkFormData) => {
-    const updatedCategories = categories.map((category: SocialLinkCategory) => {
+    const updatedCategories = localCategories.map((category) => {
       if (category.id === categoryId) {
         const updatedLinks = [...category.links];
         updatedLinks[linkIndex] = {
@@ -142,12 +149,26 @@ export function SocialLinksSection({
       }
       return category;
     });
+    
+    setLocalCategories(updatedCategories);
     form.setValue('categories', updatedCategories);
 
     // Reset editing state
     setEditingCategoryId(null);
     setEditingLinkIndex(null);
   };
+
+  // Sync local categories with form values when form values change
+  // This is necessary to ensure our local state stays in sync with the form
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'categories') {
+        setLocalCategories(value.categories || []);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const renderPlatformIcon = (platformId: string) => {
     const platform = SOCIAL_PLATFORMS.find(p => p.id === platformId);
