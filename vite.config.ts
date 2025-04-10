@@ -2,13 +2,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import federation from '@originjs/vite-plugin-federation'
-import { componentTagger } from 'lovable-tagger'
-import path from 'path'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
     federation({
       name: 'podcast-manager',
       remotes: {
@@ -29,7 +26,7 @@ export default defineConfig(({ mode }) => ({
         }
       }
     })
-  ].filter(Boolean),
+  ],
   // Federation requires these build settings
   build: {
     modulePreload: false,
@@ -41,11 +38,5 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080
-  },
-  // Add path aliases
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
   }
-}))
+})
