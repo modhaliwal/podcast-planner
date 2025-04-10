@@ -47,10 +47,13 @@ export function LinkForm({
   onCancel,
   initialValues,
   excludedPlatforms = [],
-  submitLabel = "Add",
+  submitLabel,
   className = "",
   compact = false
 }: LinkFormProps) {
+  // Determine appropriate submitLabel based on context (edit vs. add)
+  const buttonLabel = submitLabel || (initialValues ? "Update" : "Add");
+  
   const [platform, setPlatform] = useState(initialValues?.platform || "");
   const [url, setUrl] = useState(initialValues?.url || "");
   const [label, setLabel] = useState(initialValues?.label || "");
@@ -185,7 +188,7 @@ export function LinkForm({
               onClick={handleSubmit}
               disabled={!platform || !url.trim()}
             >
-              {submitLabel}
+              {buttonLabel}
             </Button>
             
             <Button
