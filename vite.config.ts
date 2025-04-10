@@ -2,10 +2,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import federation from '@originjs/vite-plugin-federation'
+import { componentTagger } from 'lovable-tagger'
+import path from 'path'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    mode === 'development' && componentTagger(),
     federation({
       name: 'podcast-manager',
       remotes: {
@@ -26,7 +29,7 @@ export default defineConfig({
         }
       }
     })
-  ],
+  ].filter(Boolean),
   // Federation requires these build settings
   build: {
     modulePreload: false,
@@ -34,8 +37,15 @@ export default defineConfig({
     minify: false,
     cssCodeSplit: false
   },
-  // Added server configuration to use port 8080
+  // Server configuration
   server: {
+    host: "::",
     port: 8080
+  },
+  // Add path aliases
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   }
-})
+}))
