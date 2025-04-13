@@ -6,7 +6,6 @@ import { toast } from "@/hooks/use-toast";
  */
 export enum ErrorType {
   NETWORK = 'NETWORK',
-  AUTH = 'AUTH',
   VALIDATION = 'VALIDATION',
   NOT_FOUND = 'NOT_FOUND',
   SERVER = 'SERVER',
@@ -61,8 +60,6 @@ export const handleSupabaseError = (error: any): AppError => {
       } else {
         type = ErrorType.SERVER;
       }
-    } else if (errorCode === 'auth/unauthorized' || errorCode.includes('auth')) {
-      type = ErrorType.AUTH;
     } else if (statusCode === 404) {
       type = ErrorType.NOT_FOUND;
     } else if (statusCode && statusCode >= 400 && statusCode < 500) {
@@ -89,9 +86,6 @@ export const showErrorToast = (error: AppError | Error | string) => {
   } else if ('type' in error) {
     // It's an AppError
     switch (error.type) {
-      case ErrorType.AUTH:
-        title = 'Authentication Error';
-        break;
       case ErrorType.NETWORK:
         title = 'Network Error';
         break;

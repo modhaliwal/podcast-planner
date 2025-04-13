@@ -3,7 +3,13 @@ import { X, Headphones } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { NavItem } from './types';
+import { ReactNode } from 'react';
+
+interface NavItem {
+  name: string;
+  path: string;
+  icon: ReactNode;
+}
 
 interface MobileMenuProps {
   isOpen: boolean;

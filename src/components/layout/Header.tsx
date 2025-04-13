@@ -29,7 +29,7 @@ export function Header() {
     )}>
       <div className="container max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/dashboard" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             <span className="font-medium text-lg sm:text-xl">PodCast Manager</span>
           </Link>
@@ -50,11 +50,27 @@ export function Header() {
         
         <MobileMenu 
           isOpen={isMobileMenuOpen}
-          navItems={[]}
+          navItems={navigationItems}
           onClose={() => setIsMobileMenuOpen(false)}
-          logoPath="/dashboard"
+          logoPath="/"
         />
       </div>
     </header>
   );
 }
+
+// Import the navigation items to use in MobileMenu
+import {
+  LayoutDashboard,
+  UserRound, 
+  Mic2,
+  Settings
+} from 'lucide-react';
+
+// Define navigation items that match Navigation.tsx
+const navigationItems = [
+  { name: 'Dashboard', path: '/', icon: <LayoutDashboard className="mr-2 h-4 w-4" /> },
+  { name: 'Guests', path: '/guests', icon: <UserRound className="mr-2 h-4 w-4" /> },
+  { name: 'Episodes', path: '/episodes', icon: <Mic2 className="mr-2 h-4 w-4" /> },
+  { name: 'Settings', path: '/settings', icon: <Settings className="mr-2 h-4 w-4" /> },
+];
