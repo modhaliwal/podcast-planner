@@ -19,10 +19,9 @@ export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
         episodeNumber: episodeData.episodeNumber,
         scheduled: new Date(episodeData.scheduled).toISOString(),
         status: 'scheduled',
-        introduction: '', // Required field in the database
+        introduction: episodeData.introduction || undefined,  // Use undefined if empty
         guestIds: episodeData.guestIds || [],
-        // Make sure to include topic from the form data
-        topic: episodeData.topic || ''
+        topic: episodeData.topic || undefined  // Use undefined if empty
       };
       
       // Add the episode using the repository

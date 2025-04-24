@@ -99,7 +99,7 @@ export type Database = {
           created_at: string
           episode_number: number
           id: string
-          introduction: string
+          introduction: string | null
           introduction_versions: Json | null
           notes: string | null
           notes_versions: Json | null
@@ -118,7 +118,7 @@ export type Database = {
           created_at?: string
           episode_number: number
           id?: string
-          introduction: string
+          introduction?: string | null
           introduction_versions?: Json | null
           notes?: string | null
           notes_versions?: Json | null
@@ -137,7 +137,7 @@ export type Database = {
           created_at?: string
           episode_number?: number
           id?: string
-          introduction?: string
+          introduction?: string | null
           introduction_versions?: Json | null
           notes?: string | null
           notes_versions?: Json | null

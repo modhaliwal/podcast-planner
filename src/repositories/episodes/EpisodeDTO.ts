@@ -1,8 +1,6 @@
-
 import { ContentVersion, PodcastUrls, RecordingLinks, Resource } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
-
-export type EpisodeStatus = 'scheduled' | 'recorded' | 'published';
+import { EpisodeStatus } from "@/lib/enums";
 
 /**
  * Database representation of Episode
@@ -17,7 +15,7 @@ export interface DBEpisode {
   scheduled: string;
   publish_date?: string | null;
   status: EpisodeStatus;
-  introduction: string;  // Must be required as per database schema
+  introduction: string | null;  // Must be required as per database schema
   notes?: string | null;
   notes_versions?: Json | null;
   introduction_versions?: Json | null;
@@ -42,7 +40,7 @@ export interface CreateEpisodeDTO {
   scheduled: string;
   publishDate?: string;
   status: EpisodeStatus;
-  introduction: string;  // Make this required to match DB schema
+  introduction?: string;  // Changed from required to optional
   notes?: string;
   notesVersions?: ContentVersion[];
   introductionVersions?: ContentVersion[];
@@ -64,7 +62,7 @@ export interface UpdateEpisodeDTO {
   scheduled?: string;
   publishDate?: string;
   status?: EpisodeStatus;
-  introduction?: string;
+  introduction?: string | null;  // Explicitly allow null
   notes?: string;
   notesVersions?: ContentVersion[];
   introductionVersions?: ContentVersion[];
