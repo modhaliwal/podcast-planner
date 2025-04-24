@@ -25,8 +25,13 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls);
     const resources = this.parseJsonField<Resource[]>(dbEpisode.resources);
     
-    // Convert string status to enum value
-    const statusValue = this.convertToEpisodeStatus(dbEpisode.status);
+    // Convert string status to enum
+    let status: EpisodeStatus;
+    switch(dbEpisode.status) {
+      case 'recorded': status = EpisodeStatus.RECORDED; break;
+      case 'published': status = EpisodeStatus.PUBLISHED; break;
+      default: status = EpisodeStatus.SCHEDULED; break;
+    }
     
     return {
       id: dbEpisode.id,
@@ -38,7 +43,7 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       guestIds: guestIds,
       scheduled: dbEpisode.scheduled,
       publishDate: dbEpisode.publish_date || undefined,
-      status: statusValue,
+      status: status,
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
       notesVersions: notesVersions || undefined,
@@ -49,20 +54,6 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       createdAt: dbEpisode.created_at,
       updatedAt: dbEpisode.updated_at,
     };
-  }
-  
-  // Helper method to safely convert string status to enum
-  private convertToEpisodeStatus(status: string): EpisodeStatus {
-    switch (status) {
-      case 'scheduled':
-        return EpisodeStatus.SCHEDULED;
-      case 'recorded':
-        return EpisodeStatus.RECORDED;
-      case 'published':
-        return EpisodeStatus.PUBLISHED;
-      default:
-        return EpisodeStatus.SCHEDULED; // Default fallback
-    }
   }
   
   // Helper method to safely parse JSON fields
@@ -95,9 +86,11 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
     if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
     
-    // Convert enum status to string for database
+    // Convert enum to string for database
     if (episode.status !== undefined) {
-      dbEpisode.status = this.convertFromEpisodeStatus(episode.status);
+      if (episode.status === EpisodeStatus.SCHEDULED) dbEpisode.status = 'scheduled';
+      else if (episode.status === EpisodeStatus.RECORDED) dbEpisode.status = 'recorded';
+      else if (episode.status === EpisodeStatus.PUBLISHED) dbEpisode.status = 'published';
     }
     
     if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
@@ -118,20 +111,6 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     return dbEpisode;
   }
   
-  // Helper method to convert enum status to string for database
-  private convertFromEpisodeStatus(status: EpisodeStatus): string {
-    switch (status) {
-      case EpisodeStatus.SCHEDULED:
-        return 'scheduled';
-      case EpisodeStatus.RECORDED:
-        return 'recorded';
-      case EpisodeStatus.PUBLISHED:
-        return 'published';
-      default:
-        return 'scheduled'; // Default fallback
-    }
-  }
-  
   /**
    * Map from creation DTO to database model
    */
@@ -139,9 +118,14 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     const dbEpisode: Partial<DBEpisode> = {
       title: episode.title,
       episode_number: episode.episodeNumber,
-      scheduled: episode.scheduled,
-      status: this.convertFromEpisodeStatus(episode.status)
+      scheduled: episode.scheduled
     };
+    
+    // Set status based on enum value
+    if (episode.status === EpisodeStatus.SCHEDULED) dbEpisode.status = 'scheduled';
+    else if (episode.status === EpisodeStatus.RECORDED) dbEpisode.status = 'recorded';
+    else if (episode.status === EpisodeStatus.PUBLISHED) dbEpisode.status = 'published';
+    else dbEpisode.status = 'scheduled'; // Default
     
     if (episode.description !== undefined) dbEpisode.description = episode.description;
     if (episode.topic !== undefined) dbEpisode.topic = episode.topic;
@@ -174,9 +158,12 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
     if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
     
-    // Convert enum status to string for database
+    // Convert enum to string for database
     if (episode.status !== undefined) {
-      dbEpisode.status = this.convertFromEpisodeStatus(episode.status);
+      if (episode.status === EpisodeStatus.SCHEDULED) dbEpisode.status = 'scheduled';
+      else if (episode.status === EpisodeStatus.RECORDED) dbEpisode.status = 'recorded';
+      else if (episode.status === EpisodeStatus.PUBLISHED) dbEpisode.status = 'published';
+      else dbEpisode.status = 'scheduled'; // Default
     }
     
     if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;

@@ -1,3 +1,4 @@
+
 import { ContentVersion, PodcastUrls, RecordingLinks, Resource } from "@/lib/types";
 import { Json } from "@/integrations/supabase/types";
 import { EpisodeStatus } from "@/lib/enums";
@@ -14,7 +15,7 @@ export interface DBEpisode {
   cover_art?: string | null;
   scheduled: string;
   publish_date?: string | null;
-  status: EpisodeStatus;
+  status: string; // Database stores as string (not enum)
   introduction: string | null;  // Must be required as per database schema
   notes?: string | null;
   notes_versions?: Json | null;
