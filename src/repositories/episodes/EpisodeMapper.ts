@@ -1,3 +1,4 @@
+
 import { Episode } from "@/lib/types";
 import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
 import { DataMapper } from "../core/DataMapper";
@@ -24,6 +25,9 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     const podcastUrls = this.parseJsonField<PodcastUrls>(dbEpisode.podcast_urls);
     const resources = this.parseJsonField<Resource[]>(dbEpisode.resources);
     
+    // Convert string status to enum value
+    const statusValue = this.convertToEpisodeStatus(dbEpisode.status);
+    
     return {
       id: dbEpisode.id,
       title: dbEpisode.title,
@@ -34,8 +38,7 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       guestIds: guestIds,
       scheduled: dbEpisode.scheduled,
       publishDate: dbEpisode.publish_date || undefined,
-      // Explicitly cast to EpisodeStatus
-      status: EpisodeStatus[dbEpisode.status as keyof typeof EpisodeStatus],
+      status: statusValue,
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
       notesVersions: notesVersions || undefined,
@@ -46,6 +49,20 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       createdAt: dbEpisode.created_at,
       updatedAt: dbEpisode.updated_at,
     };
+  }
+  
+  // Helper method to safely convert string status to enum
+  private convertToEpisodeStatus(status: string): EpisodeStatus {
+    switch (status) {
+      case 'scheduled':
+        return EpisodeStatus.SCHEDULED;
+      case 'recorded':
+        return EpisodeStatus.RECORDED;
+      case 'published':
+        return EpisodeStatus.PUBLISHED;
+      default:
+        return EpisodeStatus.SCHEDULED; // Default fallback
+    }
   }
   
   // Helper method to safely parse JSON fields
@@ -77,7 +94,12 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt || null;
     if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
     if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
-    if (episode.status !== undefined) dbEpisode.status = episode.status;
+    
+    // Convert enum status to string for database
+    if (episode.status !== undefined) {
+      dbEpisode.status = this.convertFromEpisodeStatus(episode.status);
+    }
+    
     if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
     if (episode.notes !== undefined) dbEpisode.notes = episode.notes || null;
     
@@ -96,6 +118,20 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     return dbEpisode;
   }
   
+  // Helper method to convert enum status to string for database
+  private convertFromEpisodeStatus(status: EpisodeStatus): string {
+    switch (status) {
+      case EpisodeStatus.SCHEDULED:
+        return 'scheduled';
+      case EpisodeStatus.RECORDED:
+        return 'recorded';
+      case EpisodeStatus.PUBLISHED:
+        return 'published';
+      default:
+        return 'scheduled'; // Default fallback
+    }
+  }
+  
   /**
    * Map from creation DTO to database model
    */
@@ -104,7 +140,7 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       title: episode.title,
       episode_number: episode.episodeNumber,
       scheduled: episode.scheduled,
-      status: episode.status
+      status: this.convertFromEpisodeStatus(episode.status)
     };
     
     if (episode.description !== undefined) dbEpisode.description = episode.description;
@@ -137,7 +173,12 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
     if (episode.coverArt !== undefined) dbEpisode.cover_art = episode.coverArt || null;
     if (episode.scheduled !== undefined) dbEpisode.scheduled = episode.scheduled;
     if (episode.publishDate !== undefined) dbEpisode.publish_date = episode.publishDate || null;
-    if (episode.status !== undefined) dbEpisode.status = episode.status;
+    
+    // Convert enum status to string for database
+    if (episode.status !== undefined) {
+      dbEpisode.status = this.convertFromEpisodeStatus(episode.status);
+    }
+    
     if (episode.introduction !== undefined) dbEpisode.introduction = episode.introduction || null;
     if (episode.notes !== undefined) dbEpisode.notes = episode.notes || null;
     
