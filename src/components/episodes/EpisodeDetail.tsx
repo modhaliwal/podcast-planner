@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Info, BookText, Image, Download, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -11,6 +10,7 @@ import { EpisodeRecordingLinks } from './EpisodeRecordingLinks';
 import { EpisodePodcastUrls } from './EpisodePodcastUrls';
 import { EpisodeResources } from './EpisodeResources';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Separator } from '@/components/ui/separator';
 import { useMemo } from 'react';
 import { Editor } from '@/components/editor/Editor';
 
@@ -21,7 +21,6 @@ interface EpisodeDetailProps {
 }
 
 export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps) {
-  // Memoize episodeGuests to prevent unnecessary filtering on every render
   const episodeGuests = useMemo(() => 
     guests.filter(guest => episode.guestIds.includes(guest.id)),
     [episode.guestIds, guests]
@@ -49,7 +48,6 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
         <Card>
           <CardContent className="p-3 sm:p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-              {/* Episode Details */}
               <div className="md:col-span-2 order-2 md:order-1">
                 <EpisodeStatusHeader episode={episode} />
                 
@@ -60,7 +58,6 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
                 </div>
               </div>
               
-              {/* Cover Art */}
               <div className="md:col-span-1 order-1 md:order-2">
                 {episode.coverArt ? (
                   <div className="rounded-md overflow-hidden border border-border shadow-sm max-w-[160px] sm:max-w-[200px] mx-auto md:ml-auto md:mr-0">
@@ -99,7 +96,6 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
           </CardContent>
         </Card>
         
-        {/* Introduction Section */}
         <Card>
           <CardContent className="p-3 sm:p-4">
             <h2 className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3">
@@ -107,17 +103,36 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
               Introduction
             </h2>
             
-            <div className="rich-text">
+            <div className="space-y-4">
               {episode.introduction ? (
-                <p className="whitespace-pre-line">{episode.introduction}</p>
+                <div className="rich-text">
+                  <p className="whitespace-pre-line">{episode.introduction}</p>
+                </div>
               ) : (
-                <p className="text-slate-500 dark:text-slate-400 italic">No introduction added yet</p>
+                <div className="rich-text">
+                  <p className="text-slate-500 dark:text-slate-400 italic">No introduction added yet</p>
+                </div>
+              )}
+              
+              {episodeGuests.length > 0 && (
+                <>
+                  <Separator className="my-4" />
+                  <div className="space-y-4">
+                    {episodeGuests.map((guest) => (
+                      <div key={guest.id} className="space-y-2">
+                        <h3 className="text-sm font-medium">About {guest.name}</h3>
+                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                          {guest.bio || `No bio available for ${guest.name}`}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
         </Card>
         
-        {/* Episode Notes Section */}
         <Card>
           <CardContent className="p-3 sm:p-4">
             <h2 className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3">
@@ -135,7 +150,6 @@ export function EpisodeDetail({ episode, guests, className }: EpisodeDetailProps
           </CardContent>
         </Card>
         
-        {/* Resources Section */}
         {episode.resources && episode.resources.length > 0 && (
           <Card>
             <CardContent className="p-3 sm:p-4">
