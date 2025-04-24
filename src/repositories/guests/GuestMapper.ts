@@ -1,3 +1,4 @@
+
 import { Guest, SocialLinks } from "@/lib/types";
 import { DBGuest } from "./GuestRepository";
 import { DataMapper } from "../core/DataMapper";
@@ -37,6 +38,9 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       backgroundResearch: dbGuest.background_research || undefined,
       status: dbGuest.status as Guest['status'] || 'potential',
       socialLinks,
+      // Add proper parsing for version arrays
+      bioVersions: dbGuest.bio_versions as any[] || [],
+      backgroundResearchVersions: dbGuest.background_research_versions as any[] || [],
       createdAt: dbGuest.created_at,
       updatedAt: dbGuest.updated_at,
     };
@@ -57,6 +61,14 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     if (guest.backgroundResearch !== undefined) dbGuest.background_research = guest.backgroundResearch || null;
     if (guest.status !== undefined) dbGuest.status = guest.status || null;
     
+    // Add version mappings
+    if (guest.bioVersions !== undefined) {
+      dbGuest.bio_versions = guest.bioVersions as unknown as Json;
+    }
+    if (guest.backgroundResearchVersions !== undefined) {
+      dbGuest.background_research_versions = guest.backgroundResearchVersions as unknown as Json;
+    }
+    
     // Convert socialLinks object to JSON
     if (guest.socialLinks !== undefined) {
       dbGuest.social_links = guest.socialLinks as unknown as Json;
@@ -66,7 +78,11 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
   }
   
   createDtoToDB(dto: any): Partial<DBGuest> {
-    const { name, title, company, email, phone, bio, imageUrl, website, twitter, linkedin, notes, backgroundResearch, status, socialLinks } = dto;
+    const { 
+      name, title, company, email, phone, bio, imageUrl, website, 
+      twitter, linkedin, notes, backgroundResearch, status, 
+      socialLinks, bioVersions, backgroundResearchVersions 
+    } = dto;
     
     // Process social links to include website, twitter, linkedin if provided
     const processedSocialLinks = { ...socialLinks } as any;
@@ -86,6 +102,8 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       background_research: backgroundResearch || null,
       status: status || 'potential',
       social_links: processedSocialLinks as unknown as Json,
+      bio_versions: bioVersions as unknown as Json || null,
+      background_research_versions: backgroundResearchVersions as unknown as Json || null,
     };
   }
   
@@ -102,6 +120,14 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     if (dto.notes !== undefined) dbGuest.notes = dto.notes || null;
     if (dto.backgroundResearch !== undefined) dbGuest.background_research = dto.backgroundResearch || null;
     if (dto.status !== undefined) dbGuest.status = dto.status || null;
+    
+    // Add version mappings
+    if (dto.bioVersions !== undefined) {
+      dbGuest.bio_versions = dto.bioVersions as unknown as Json;
+    }
+    if (dto.backgroundResearchVersions !== undefined) {
+      dbGuest.background_research_versions = dto.backgroundResearchVersions as unknown as Json;
+    }
     
     // Process social links
     if (dto.socialLinks !== undefined) {
@@ -127,3 +153,4 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     return dbGuest;
   }
 }
+
