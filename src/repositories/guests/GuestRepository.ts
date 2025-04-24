@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { BaseRepository } from '../core/BaseRepository';
-import { Guest } from '@/lib/types';
+import { Guest, ContentVersion } from '@/lib/types';
 import { GuestMapper } from './GuestMapper';
 import { Json } from '@/integrations/supabase/types';
 
@@ -22,6 +22,8 @@ export interface CreateGuestDTO {
   backgroundResearch?: string;
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   socialLinks?: any;
+  bioVersions?: ContentVersion[];
+  backgroundResearchVersions?: ContentVersion[];
 }
 
 export interface UpdateGuestDTO {
@@ -40,6 +42,8 @@ export interface UpdateGuestDTO {
   backgroundResearch?: string;
   status?: 'potential' | 'contacted' | 'confirmed' | 'appeared';
   socialLinks?: any;
+  bioVersions?: ContentVersion[];
+  backgroundResearchVersions?: ContentVersion[];
 }
 
 export interface DBGuest {
