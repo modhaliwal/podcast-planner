@@ -2,33 +2,34 @@
 import { toast } from '@/hooks/toast';
 import { Episode } from '@/types';
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
+import { repositories } from '@/repositories';
+import { CreateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
 
 export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
   try {
     console.log("Creating episodes:", episodesData);
     
-    // This is a mock implementation since we don't have a real backend
-    // In a real app, we would send a request to the server
+    const createdEpisodes: Episode[] = [];
     
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // In a real app, we would get the IDs from the server
-    const createdEpisodes = episodesData.map((episode, index) => {
-      const now = new Date().toISOString();
-      return {
-        id: `temp-id-${index}-${now}`,
-        episodeNumber: episode.episodeNumber,
-        title: episode.title,
-        scheduled: new Date(episode.scheduled).toISOString(),
-        guestIds: episode.guestIds || [],
+    // Process each episode
+    for (const episodeData of episodesData) {
+      // Convert form data to DTO format
+      const episodeDto: CreateEpisodeDTO = {
+        title: episodeData.title,
+        episodeNumber: episodeData.episodeNumber,
+        scheduled: new Date(episodeData.scheduled).toISOString(),
         status: 'scheduled',
-        introduction: '',
-        notes: '',
-        createdAt: now,
-        updatedAt: now
+        introduction: '', // Required field in the database
+        guestIds: episodeData.guestIds || []
       };
-    });
+      
+      // Add the episode using the repository
+      const createdEpisode = await repositories.episodes.add(episodeDto);
+      
+      if (createdEpisode) {
+        createdEpisodes.push(createdEpisode);
+      }
+    }
     
     console.log("Created episodes:", createdEpisodes);
     
@@ -39,6 +40,12 @@ export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
     };
   } catch (error: any) {
     console.error("Error creating episodes:", error);
+    
+    toast({
+      title: "Error creating episodes",
+      description: error.message || "Failed to create episodes",
+      variant: "destructive"
+    });
     
     return {
       success: false,
