@@ -20,6 +20,7 @@ const CreateEpisode = () => {
       episodeNumber: 1, 
       scheduled: getUpcomingFriday(),
       title: `Episode #1`,
+      topic: '', // Initialize with empty string
       guestIds: [] // Initialize with empty array
     }
   ]);
@@ -36,6 +37,7 @@ const CreateEpisode = () => {
         episodeNumber: nextEpisodeNumber,
         scheduled: nextDate,
         title: `Episode #${nextEpisodeNumber}`,
+        topic: '', // Initialize with empty string
         guestIds: [] // Initialize with empty array
       }
     ]);

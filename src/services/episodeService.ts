@@ -15,12 +15,14 @@ export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
     for (const episodeData of episodesData) {
       // Convert form data to DTO format
       const episodeDto: CreateEpisodeDTO = {
-        title: episodeData.title,
+        title: episodeData.title || `Episode #${episodeData.episodeNumber}`,
         episodeNumber: episodeData.episodeNumber,
         scheduled: new Date(episodeData.scheduled).toISOString(),
         status: 'scheduled',
         introduction: '', // Required field in the database
-        guestIds: episodeData.guestIds || []
+        guestIds: episodeData.guestIds || [],
+        // Make sure to include topic from the form data
+        topic: episodeData.topic || ''
       };
       
       // Add the episode using the repository
