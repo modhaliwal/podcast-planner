@@ -22,7 +22,12 @@ export default function EditGuest() {
     try {
       if (!id) return { success: false };
       
-      // Use repository pattern to update guest
+      console.log('Saving guest with background research:', {
+        backgroundResearch: updatedGuest.backgroundResearch,
+        versions: updatedGuest.backgroundResearchVersions
+      });
+      
+      // Use repository pattern to update guest with all fields
       const result = await repositories.guests.update(id, {
         name: updatedGuest.name,
         title: updatedGuest.title,
@@ -30,6 +35,9 @@ export default function EditGuest() {
         email: updatedGuest.email,
         phone: updatedGuest.phone,
         bio: updatedGuest.bio,
+        bioVersions: updatedGuest.bioVersions,
+        backgroundResearch: updatedGuest.backgroundResearch,
+        backgroundResearchVersions: updatedGuest.backgroundResearchVersions,
         socialLinks: updatedGuest.socialLinks,
         notes: updatedGuest.notes,
         status: updatedGuest.status,
@@ -38,6 +46,9 @@ export default function EditGuest() {
       if (!result) {
         throw new Error('Failed to update guest');
       }
+      
+      // Log successful save
+      console.log('Guest updated successfully with background research');
       
       // Refresh guest data
       await refreshGuest();
@@ -51,12 +62,12 @@ export default function EditGuest() {
       
       return { success: true };
     } catch (error: any) {
+      console.error("Error updating guest:", error);
       toast({
         title: "Error",
         description: `Failed to update guest: ${error.message}`,
         variant: "destructive"
       });
-      console.error("Error updating guest:", error);
       return { success: false, error };
     }
   };
