@@ -8,15 +8,17 @@ import { formatAllLinks } from "@/lib/formatLinks";
 interface BackgroundResearchSectionProps {
   form: UseFormReturn<any>;
   guest?: Guest;
+  notes?: string;
 }
 
-export function BackgroundResearchSection({ form, guest }: BackgroundResearchSectionProps) {
+export function BackgroundResearchSection({ form, guest, notes = '' }: BackgroundResearchSectionProps) {
   // Generate parameters for the AI generator
   const generationParameters = {
     name: guest?.name || '',
     title: guest?.title || '',
     company: guest?.company || '',
-    links: guest?.socialLinks ? formatAllLinks(guest.socialLinks) : ''
+    links: guest?.socialLinks ? formatAllLinks(guest.socialLinks) : '',
+    notes
   };
   
   return (

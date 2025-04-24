@@ -8,15 +8,17 @@ import { formatAllLinks } from "@/lib/formatLinks";
 interface BioSectionProps {
   form: UseFormReturn<any>;
   guest?: Guest;
+  notes?: string;
 }
 
-export function BioSection({ form, guest }: BioSectionProps) {
+export function BioSection({ form, guest, notes = '' }: BioSectionProps) {
   // Generate parameters for the AI generator
   const generationParameters = {
     name: guest?.name || '',
     title: guest?.title || '',
     company: guest?.company || '',
-    links: guest?.socialLinks ? formatAllLinks(guest.socialLinks) : ''
+    links: guest?.socialLinks ? formatAllLinks(guest.socialLinks) : '',
+    notes
   };
   
   return (

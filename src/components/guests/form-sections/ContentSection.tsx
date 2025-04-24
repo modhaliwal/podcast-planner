@@ -13,6 +13,9 @@ interface ContentSectionProps {
 }
 
 export function ContentSection({ form, guest }: ContentSectionProps) {
+  // Watch the notes field to pass it to generators
+  const notes = form.watch('notes') || '';
+
   return (
     <div className="space-y-6">
       {/* Notes Section */}
@@ -37,10 +40,18 @@ export function ContentSection({ form, guest }: ContentSectionProps) {
       </Card>
 
       {/* Research Section */}
-      <BackgroundResearchSection form={form} guest={guest} />
+      <BackgroundResearchSection 
+        form={form} 
+        guest={guest} 
+        notes={notes}
+      />
 
       {/* Bio Section */}
-      <BioSection form={form} guest={guest} />
+      <BioSection 
+        form={form} 
+        guest={guest} 
+        notes={notes}
+      />
     </div>
   );
 }
