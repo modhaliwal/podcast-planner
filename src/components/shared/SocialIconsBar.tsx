@@ -148,8 +148,6 @@ export function SocialIconsBar({
               </HoverCardTrigger>
               <HoverCardContent className="w-auto p-4 max-w-sm">
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium">Additional Links</h4>
-                  
                   {socialLinks.categories?.map((category: SocialLinkCategory) => (
                     category.links.length > 0 && (
                       <div key={category.id} className="space-y-2">
