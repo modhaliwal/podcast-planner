@@ -1,6 +1,6 @@
 
 import { toast } from '@/hooks/toast';
-import { Episode } from '@/types';
+import { Episode } from '@/lib/types'; // Change import from '@/types' to '@/lib/types'
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 import { repositories } from '@/repositories';
 import { CreateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
