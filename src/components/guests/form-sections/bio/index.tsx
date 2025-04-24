@@ -23,8 +23,6 @@ export function BioSection({ form, guest, notes = '' }: BioSectionProps) {
   
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-medium mb-4">Bio</h3>
-      
       <AIGenerationField
         buttonLabel="Generate Bio"
         loadingLabel="Generating Bio..."
