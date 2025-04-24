@@ -4,6 +4,7 @@ import { Episode } from '@/lib/types';
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 import { repositories } from '@/repositories';
 import { CreateEpisodeDTO } from '@/repositories/episodes/EpisodeDTO';
+import { EpisodeStatus } from '@/lib/enums';
 
 export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
   try {
@@ -18,7 +19,7 @@ export const createEpisodes = async (episodesData: EpisodeFormData[]) => {
         title: episodeData.title || `Episode #${episodeData.episodeNumber}`,
         episodeNumber: episodeData.episodeNumber,
         scheduled: new Date(episodeData.scheduled).toISOString(),
-        status: 'scheduled',
+        status: EpisodeStatus.SCHEDULED,
         introduction: episodeData.introduction || undefined,  // Use undefined if empty
         guestIds: episodeData.guestIds || [],
         topic: episodeData.topic || undefined  // Use undefined if empty

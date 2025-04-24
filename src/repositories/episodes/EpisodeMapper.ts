@@ -1,9 +1,9 @@
-
 import { Episode } from "@/lib/types";
 import { CreateEpisodeDTO, DBEpisode, UpdateEpisodeDTO } from "./EpisodeDTO";
 import { DataMapper } from "../core/DataMapper";
 import { Json } from "@/integrations/supabase/types";
 import { ContentVersion, RecordingLinks, PodcastUrls, Resource } from "@/lib/types";
+import { EpisodeStatus } from "@/lib/enums";
 
 /**
  * Mapper for converting between Episode domain objects and DB representation
@@ -34,7 +34,7 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       guestIds: guestIds,
       scheduled: dbEpisode.scheduled,
       publishDate: dbEpisode.publish_date || undefined,
-      status: dbEpisode.status,
+      status: dbEpisode.status as EpisodeStatus,
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
       notesVersions: notesVersions || undefined,
