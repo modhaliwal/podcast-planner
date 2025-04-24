@@ -34,7 +34,8 @@ export class EpisodeMapper implements DataMapper<Episode, DBEpisode> {
       guestIds: guestIds,
       scheduled: dbEpisode.scheduled,
       publishDate: dbEpisode.publish_date || undefined,
-      status: dbEpisode.status as EpisodeStatus,
+      // Explicitly cast to EpisodeStatus
+      status: EpisodeStatus[dbEpisode.status as keyof typeof EpisodeStatus],
       introduction: dbEpisode.introduction || undefined,
       notes: dbEpisode.notes || undefined,
       notesVersions: notesVersions || undefined,
