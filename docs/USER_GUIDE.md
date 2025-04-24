@@ -29,6 +29,7 @@ This guide explains how to use the Podcast Planner application to create and man
 ### AI-Generated Content for Guests
 
 1. When editing a guest profile:
+   - Add notes about the guest in the Notes field - these notes will be used to inform the AI content generation
    - Use the "Generate Bio" button to create an AI-generated professional biography
    - Use the "Generate Research" button to create background research for interview preparation
 2. Review generated content and select the version you prefer
@@ -119,3 +120,4 @@ This guide explains how to use the Podcast Planner application to create and man
 2. Select "Settings" to access your profile settings
 3. Update your profile information, including name and profile image
 4. Manage application preferences and appearance settings
+

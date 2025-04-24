@@ -15,8 +15,13 @@ The application supports AI-generated content for:
 
 When generating content, consider the following:
 
-1. **Provide Context**: The more specific information you provide, the better the AI can generate relevant content
+1. **Provide Context**: 
+   - The more specific information you provide, the better the AI can generate relevant content
+   - Use the Notes field to provide private context about guests that will inform AI generation but won't be publicly visible
+   - Include specific angles, topics, or themes you want to emphasize
+
 2. **Review Generated Content**: Always review AI-generated content for accuracy and appropriateness
+
 3. **Edit as Needed**: Use AI-generated content as a starting point and edit to match your voice and style
 
 ### Content Versioning
@@ -88,3 +93,4 @@ When adding resources to episodes:
 - **Scheduled**: Episode is planned with date
 - **Recorded**: Episode has been recorded but not published
 - **Published**: Episode is live on podcast platforms
+
