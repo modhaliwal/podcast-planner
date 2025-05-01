@@ -22,7 +22,7 @@ export const useEpisodeSave = (episodeId?: string) => {
     try {
       console.log("Saving episode with data:", {
         ...data,
-        coverArt: data.coverArt // Log to verify coverArt is included
+        coverArt: data.coverArt ? "Present" : "Not present"
       });
       
       // Update the episode using the repository
@@ -35,7 +35,7 @@ export const useEpisodeSave = (episodeId?: string) => {
         throw new Error("Failed to save episode");
       }
       
-      console.log("Episode updated successfully with cover art:", data.coverArt);
+      console.log("Episode updated successfully with cover art status:", data.coverArt ? "Present" : "Not provided");
       
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["episode", episodeId] });
