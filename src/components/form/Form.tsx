@@ -20,11 +20,24 @@ export function Form<T extends FieldValues>({
   className,
   children,
 }: FormProps<T>) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && e.target instanceof HTMLElement) {
+      // Allow Enter on buttons
+      if (e.target.tagName === 'BUTTON') return;
+      
+      // Prevent form submission on inputs
+      if (e.target.tagName === 'INPUT') {
+        e.preventDefault();
+      }
+    }
+  };
+
   return (
     <FormProvider {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn('space-y-6', className)}
+        onKeyDown={handleKeyDown}
       >
         {children}
       </form>
