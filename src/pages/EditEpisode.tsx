@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -95,8 +94,19 @@ const EditEpisode = () => {
 
   const handleSave = async (updatedEpisode: any) => {
     try {
-      const result = await repositories.episodes.update(id!, updatedEpisode);
+      console.log("Saving episode with cover art:", updatedEpisode.coverArt);
+      
+      // Make sure coverArt is preserved in the update call
+      const result = await repositories.episodes.update(id!, {
+        ...updatedEpisode,
+        coverArt: updatedEpisode.coverArt, // Explicitly include coverArt
+      });
+      
+      // Log successful save
+      console.log('Episode updated successfully with cover art:', updatedEpisode.coverArt);
+      
       await refreshData();
+      await refreshEpisode();
       
       toast({
         title: "Success",

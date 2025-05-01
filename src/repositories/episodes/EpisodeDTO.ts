@@ -58,13 +58,13 @@ export interface UpdateEpisodeDTO {
   episodeNumber?: number;
   description?: string;
   topic?: string;
-  coverArt?: string;
+  coverArt?: string | null;  // Explicitly allow null for image removal
   guestIds?: string[];
   scheduled?: string;
   publishDate?: string;
   status?: EpisodeStatus;
   introduction?: string | null;  // Explicitly allow null
-  notes?: string;
+  notes?: string | null;
   notesVersions?: ContentVersion[];
   introductionVersions?: ContentVersion[];
   recordingLinks?: RecordingLinks;

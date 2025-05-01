@@ -24,7 +24,8 @@ export default function EditGuest() {
       
       console.log('Saving guest with background research:', {
         backgroundResearch: updatedGuest.backgroundResearch,
-        versions: updatedGuest.backgroundResearchVersions
+        versions: updatedGuest.backgroundResearchVersions,
+        imageUrl: updatedGuest.imageUrl // Log the image URL to verify it's being passed
       });
       
       // Use repository pattern to update guest with all fields
@@ -41,6 +42,7 @@ export default function EditGuest() {
         socialLinks: updatedGuest.socialLinks,
         notes: updatedGuest.notes,
         status: updatedGuest.status,
+        imageUrl: updatedGuest.imageUrl, // Added missing imageUrl field
       });
       
       if (!result) {
@@ -48,7 +50,7 @@ export default function EditGuest() {
       }
       
       // Log successful save
-      console.log('Guest updated successfully with background research');
+      console.log('Guest updated successfully with image URL:', updatedGuest.imageUrl);
       
       // Refresh guest data
       await refreshGuest();
