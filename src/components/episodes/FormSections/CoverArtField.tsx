@@ -1,142 +1,100 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
+import { FormField } from '@/components/form';
+import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Upload, Trash, ImageIcon } from 'lucide-react';
-import { toast } from '@/hooks/toast/use-toast';
-import { isBlobUrl } from '@/lib/imageUpload';
+import { Upload } from 'lucide-react';
 
-interface CoverArtFieldProps {
-  imageUrl?: string;
-  title: string;
-  onImageChange: (file: File | null, previewUrl?: string) => void;
-  className?: string;
+export interface CoverArtFieldProps {
+  coverArt?: string | null;
+  onUpload: (file: File) => void;
+  onRemove?: () => void;
+  isUploading?: boolean;
 }
 
-export function CoverArtField({
-  imageUrl,
-  title,
-  onImageChange,
-  className
-}: CoverArtFieldProps) {
-  const [imagePreview, setImagePreview] = React.useState<string | undefined>(undefined);
-  const [localBlobUrl, setLocalBlobUrl] = React.useState<string | undefined>(undefined);
-  const [isRemoved, setIsRemoved] = React.useState(false);
-  
-  React.useEffect(() => {
-    setIsRemoved(false);
-    
-    if (imageUrl && !isBlobUrl(imageUrl)) {
-      setImagePreview(imageUrl);
-    }
-  }, [imageUrl]);
-  
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+export const CoverArtField = ({ 
+  coverArt, 
+  onUpload, 
+  onRemove, 
+  isUploading = false 
+}: CoverArtFieldProps) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Please upload a valid image file (JPEG, PNG or WebP)");
-      return;
-    }
-
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error("Image is too large. Maximum size is 10MB");
-      return;
-    }
-
-    if (localBlobUrl) {
-      URL.revokeObjectURL(localBlobUrl);
-    }
-
-    setIsRemoved(false);
-
-    const previewUrl = URL.createObjectURL(file);
-    setLocalBlobUrl(previewUrl);
-    setImagePreview(previewUrl);
-    
-    onImageChange(file, previewUrl);
+  const handleClick = () => {
+    fileInputRef.current?.click();
   };
 
-  const removeImage = () => {
-    if (localBlobUrl) {
-      URL.revokeObjectURL(localBlobUrl);
-      setLocalBlobUrl(undefined);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onUpload(file);
     }
     
-    setImagePreview(undefined);
-    setIsRemoved(true);
-    
-    onImageChange(null);
-    toast.info("Cover art removed");
+    // Clear the input value to allow re-upload of the same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
-
-  React.useEffect(() => {
-    return () => {
-      if (localBlobUrl) {
-        URL.revokeObjectURL(localBlobUrl);
-      }
-    };
-  }, [localBlobUrl]);
 
   return (
-    <div className={cn("flex flex-col items-center", className)}>
-      <div className="mb-4 w-full max-w-[240px]">
-        <AspectRatio ratio={1} className="bg-muted rounded-md overflow-hidden border">
-          {imagePreview && !isRemoved ? (
-            <img
-              src={imagePreview}
-              alt={`Cover art for ${title}`}
-              className="w-full h-full object-cover"
-              onError={() => {
-                console.error("Failed to load image preview:", imagePreview);
-                setImagePreview(undefined);
-              }}
-            />
+    <FormField
+      label="Cover Art"
+      description="Upload a square image for your episode cover art."
+    >
+      <CardContent className="pt-4 pb-6 px-0">
+        <div className="flex flex-col items-center justify-center gap-4">
+          {coverArt ? (
+            <div className="relative w-48 h-48">
+              <img
+                src={coverArt}
+                alt="Episode cover art"
+                className="w-full h-full object-cover rounded-md shadow-md"
+              />
+              {onRemove && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="absolute -top-2 -right-2"
+                  onClick={onRemove}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
           ) : (
-            <div className="flex items-center justify-center h-full w-full bg-muted">
-              <ImageIcon className="h-10 w-10 text-muted-foreground" />
+            <div
+              className="w-48 h-48 border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={handleClick}
+            >
+              <div className="flex flex-col items-center justify-center p-4">
+                <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Click to upload cover art
+                </p>
+              </div>
             </div>
           )}
-        </AspectRatio>
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <Label htmlFor="cover-art-upload" className="cursor-pointer">
-          <div className="flex items-center gap-2 py-2 px-3 bg-muted rounded-md hover:bg-accent transition-colors">
-            <Upload className="h-4 w-4" />
-            <span>{imagePreview && !isRemoved ? "Change" : "Upload"} Cover Art</span>
-          </div>
-          <Input 
-            id="cover-art-upload" 
-            type="file" 
-            className="hidden" 
-            onChange={handleImageChange}
-            accept="image/jpeg,image/png,image/webp"
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={isUploading}
           />
-        </Label>
-        
-        {imagePreview && !isRemoved && (
-          <Button 
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={removeImage}
-          >
-            <Trash className="h-4 w-4 mr-1" />
-            Remove
-          </Button>
-        )}
-      </div>
-      
-      <p className="text-xs text-muted-foreground mt-2">
-        Supports JPEG, PNG or WebP up to 10MB.
-      </p>
-    </div>
+          
+          {!coverArt && (
+            <Button
+              variant="outline"
+              onClick={handleClick}
+              disabled={isUploading}
+            >
+              {isUploading ? 'Uploading...' : 'Upload Image'}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </FormField>
   );
-}
+};
