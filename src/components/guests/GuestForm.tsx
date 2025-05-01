@@ -8,8 +8,7 @@ import { FormProvider } from "react-hook-form";
 import { Guest } from "@/lib/types";
 import { useGuestForm } from "@/hooks/guests/useGuestForm";
 import { HeadshotSection } from "./form-sections/HeadshotSection";
-import { BasicInfoSection } from "./form-sections/BasicInfoSection";
-import { ContactSection } from "./form-sections/ContactSection";
+import { BasicContactSection } from "./form-sections/BasicContactSection";
 import { SocialLinksSection } from "./form-sections/SocialLinksSection";
 import { ContentSection } from "./form-sections/ContentSection";
 import { FormActions } from "@/components/ui/form-actions";
@@ -52,8 +51,7 @@ export function GuestForm({ guest, onSave, onCancel, onDelete, isSubmitting: pro
               />
             </Card>
             
-            <BasicInfoSection form={form} />
-            <ContactSection form={form} />
+            <BasicContactSection form={form} />
             <SocialLinksSection form={form} />
           </div>
           
