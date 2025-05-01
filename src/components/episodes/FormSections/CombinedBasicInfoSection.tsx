@@ -69,6 +69,7 @@ export function CombinedBasicInfoSection({ form }: CombinedBasicInfoSectionProps
             onUpload={handleUpload}
             onRemove={handleRemove}
             isUploading={isUploading}
+            form={form}
           />
         </div>
       </CardContent>

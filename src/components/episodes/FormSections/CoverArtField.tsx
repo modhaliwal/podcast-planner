@@ -47,7 +47,8 @@ export const CoverArtField = ({
         name="coverArt"
         label="Cover Art"
         description="Upload a square image for your episode cover art."
-        render={(field) => (
+      >
+        {(field) => (
           <div className="flex flex-col items-center justify-center gap-4">
             {coverArt ? (
               <div className="relative w-48 h-48">
@@ -102,7 +103,7 @@ export const CoverArtField = ({
             )}
           </div>
         )}
-      />
+      </FormField>
     );
   }
 
@@ -112,60 +113,62 @@ export const CoverArtField = ({
       label="Cover Art"
       description="Upload a square image for your episode cover art."
     >
-      <CardContent className="pt-4 pb-6 px-0">
-        <div className="flex flex-col items-center justify-center gap-4">
-          {coverArt ? (
-            <div className="relative w-48 h-48">
-              <img
-                src={coverArt}
-                alt="Episode cover art"
-                className="w-full h-full object-cover rounded-md shadow-md"
-              />
-              {onRemove && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="absolute -top-2 -right-2"
-                  onClick={onRemove}
-                >
-                  Remove
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div
-              className="w-48 h-48 border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={handleClick}
-            >
-              <div className="flex flex-col items-center justify-center p-4">
-                <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground text-center">
-                  Click to upload cover art
-                </p>
+      {(field) => (
+        <CardContent className="pt-4 pb-6 px-0">
+          <div className="flex flex-col items-center justify-center gap-4">
+            {coverArt ? (
+              <div className="relative w-48 h-48">
+                <img
+                  src={coverArt}
+                  alt="Episode cover art"
+                  className="w-full h-full object-cover rounded-md shadow-md"
+                />
+                {onRemove && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-2 -right-2"
+                    onClick={onRemove}
+                  >
+                    Remove
+                  </Button>
+                )}
               </div>
-            </div>
-          )}
-          
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileChange}
-            disabled={isUploading}
-          />
-          
-          {!coverArt && (
-            <Button
-              variant="outline"
-              onClick={handleClick}
+            ) : (
+              <div
+                className="w-48 h-48 border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={handleClick}
+              >
+                <div className="flex flex-col items-center justify-center p-4">
+                  <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Click to upload cover art
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
               disabled={isUploading}
-            >
-              {isUploading ? 'Uploading...' : 'Upload Image'}
-            </Button>
-          )}
-        </div>
-      </CardContent>
+            />
+            
+            {!coverArt && (
+              <Button
+                variant="outline"
+                onClick={handleClick}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Uploading...' : 'Upload Image'}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      )}
     </FormField>
   );
 };
