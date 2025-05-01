@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Episode, Guest } from '@/lib/types';
 import { repositories } from '@/repositories';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 
 interface DataContextType {
   episodes: Episode[];
@@ -25,15 +24,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Use the repositories to fetch data
       const [fetchedEpisodes, fetchedGuests] = await Promise.all([
         repositories.episodes.getAll(),
         repositories.guests.getAll()
       ]);
-      
+
       console.log(`Fetched ${fetchedEpisodes.length} episodes and ${fetchedGuests.length} guests`);
-      
+
       setEpisodes(fetchedEpisodes);
       setGuests(fetchedGuests);
     } catch (err) {

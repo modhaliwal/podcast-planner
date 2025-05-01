@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ArrowRight } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { EpisodeFormCard } from '@/components/episodes/CreateEpisodeForm/EpisodeFormCard';
 import { EpisodeFormData } from '@/components/episodes/CreateEpisodeForm/types';
 import { getUpcomingFriday, getNextEpisodeDate } from '@/utils/dateUtils';
@@ -30,7 +29,7 @@ const CreateEpisode = () => {
     const lastEpisode = episodes[episodes.length - 1];
     const nextEpisodeNumber = lastEpisode.episodeNumber + 1;
     const nextDate = getNextEpisodeDate(episodes.length);
-    
+
     setEpisodes([
       ...episodes,
       { 
@@ -65,13 +64,13 @@ const CreateEpisode = () => {
     updatedDate.setHours(hours);
     updatedDate.setMinutes(minutes);
     updatedDate.setSeconds(0);
-    
+
     updateEpisode(index, 'scheduled', updatedDate);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const hasErrors = episodes.some(ep => !ep.episodeNumber || !ep.scheduled);
     if (hasErrors) {
       toast({
@@ -86,18 +85,18 @@ const CreateEpisode = () => {
 
     try {
       const result = await createEpisodes(episodes);
-      
+
       if (!result.success) {
         throw result.error;
       }
 
       await refreshData();
-      
+
       toast({
         title: "Success!",
         description: `Created ${episodes.length} new episodes`
       });
-      
+
       navigate('/episodes');
     } catch (error: any) {
       toast({

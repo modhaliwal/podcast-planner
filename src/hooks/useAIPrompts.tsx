@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 export type AIPrompt = {
@@ -30,7 +29,7 @@ export function useAIPrompts() {
         .from('ai_generators')
         .select('*')
         .order('title');
-      
+
       if (error) throw error;
       setPrompts(data || []);
     } catch (error: any) {
@@ -49,7 +48,7 @@ export function useAIPrompts() {
     try {
       // Generate slug from title if not provided
       const slug = promptData.slug || generateSlug(promptData.title || "");
-      
+
       const { data, error } = await supabase
         .from('ai_generators')
         .insert({
@@ -67,9 +66,9 @@ export function useAIPrompts() {
           updated_at: new Date().toISOString()
         })
         .select();
-      
+
       if (error) throw error;
-      
+
       await fetchPrompts(); // Refresh the prompts
       return true;
     } catch (error: any) {
@@ -87,7 +86,7 @@ export function useAIPrompts() {
     try {
       // Remove slug from updates since it shouldn't be editable after creation
       const { slug: _, ...updatesWithoutSlug } = updates;
-      
+
       const { error } = await supabase
         .from('ai_generators')
         .update({ 
@@ -95,9 +94,9 @@ export function useAIPrompts() {
           updated_at: new Date().toISOString()
         })
         .eq('slug', slug);
-      
+
       if (error) throw error;
-      
+
       await fetchPrompts(); // Refresh the prompts
       return true;
     } catch (error: any) {
@@ -117,9 +116,9 @@ export function useAIPrompts() {
         .from('ai_generators')
         .delete()
         .eq('slug', slug);
-      
+
       if (error) throw error;
-      
+
       await fetchPrompts(); // Refresh the prompts
       return true;
     } catch (error: any) {
@@ -140,7 +139,7 @@ export function useAIPrompts() {
   const getPromptById = useCallback((id: string) => {
     return prompts.find(prompt => prompt.id === id);
   }, [prompts]);
-  
+
   const getPromptBySlug = useCallback((slug: string) => {
     return prompts.find(prompt => prompt.slug === slug);
   }, [prompts]);

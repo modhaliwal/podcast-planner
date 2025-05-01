@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { Guest } from '@/lib/types';
 import { repositories } from '@/repositories';
 import { useData } from '@/context/DataContext';
@@ -12,7 +11,7 @@ const AddGuest = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { refreshData } = useData();
-  
+
   // Create an empty guest template
   const emptyGuest: Guest = {
     id: '',
@@ -23,10 +22,10 @@ const AddGuest = () => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  
+
   const handleSave = async (newGuest: Guest) => {
     setIsSubmitting(true);
-    
+
     try {
       // Use the GuestRepository to add the new guest
       const guestData = {
@@ -41,17 +40,17 @@ const AddGuest = () => {
         status: newGuest.status || 'potential',
         socialLinks: newGuest.socialLinks
       };
-      
+
       const createdGuest = await repositories.guests.add(guestData);
-      
+
       // Refresh global data after creating a new guest
       await refreshData();
-      
+
       toast({
         title: "Success",
         description: "Guest added successfully"
       });
-      
+
       // Navigate to the new guest's page
       navigate(`/guests/${createdGuest.id}`);
     } catch (error: any) {
@@ -65,7 +64,7 @@ const AddGuest = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <Shell>
       <div className="page-container">
@@ -73,7 +72,7 @@ const AddGuest = () => {
           <h1 className="section-title">Add New Guest</h1>
           <p className="section-subtitle">Create a new guest profile for your podcast</p>
         </div>
-        
+
         <GuestForm 
           guest={emptyGuest}
           onSave={handleSave}

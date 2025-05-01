@@ -1,11 +1,10 @@
-
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useGuestData } from '@/hooks/guests/useGuestData';
 import { Shell } from '@/components/layout/Shell';
 import { GuestForm } from '@/components/guests/GuestForm';
 import { DeleteGuestDialog } from '@/components/guests/DeleteGuestDialog';
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { Guest } from '@/lib/types';
 import { repositories } from '@/repositories';
 import { useData } from '@/context/DataContext';
@@ -21,13 +20,13 @@ export default function EditGuest() {
   const handleSave = async (updatedGuest: Guest) => {
     try {
       if (!id) return { success: false };
-      
+
       console.log('Saving guest with background research:', {
         backgroundResearch: updatedGuest.backgroundResearch,
         versions: updatedGuest.backgroundResearchVersions,
         imageUrl: updatedGuest.imageUrl // Log the image URL to verify it's being passed
       });
-      
+
       // Use repository pattern to update guest with all fields
       const result = await repositories.guests.update(id, {
         name: updatedGuest.name,
@@ -44,24 +43,24 @@ export default function EditGuest() {
         status: updatedGuest.status,
         imageUrl: updatedGuest.imageUrl, // Added missing imageUrl field
       });
-      
+
       if (!result) {
         throw new Error('Failed to update guest');
       }
-      
+
       // Log successful save
       console.log('Guest updated successfully with image URL:', updatedGuest.imageUrl);
-      
+
       // Refresh guest data
       await refreshGuest();
       // Also refresh the global data context
       await refreshData();
-      
+
       toast({
         title: "Success",
         description: "Guest updated successfully"
       });
-      
+
       return { success: true };
     } catch (error: any) {
       console.error("Error updating guest:", error);
@@ -77,22 +76,22 @@ export default function EditGuest() {
   const handleDelete = async () => {
     try {
       if (!id) return { success: false };
-      
+
       // Use repository pattern to delete guest
       const success = await repositories.guests.delete(id);
-      
+
       if (!success) {
         throw new Error('Failed to delete guest');
       }
-      
+
       // Refresh the global data context
       await refreshData();
-      
+
       toast({
         title: "Success",
         description: "Guest deleted successfully"
       });
-      
+
       navigate('/guests');
       return { success: true };
     } catch (error: any) {

@@ -1,8 +1,7 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { Episode } from '@/lib/types';
 import { repositories } from '@/repositories';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 
 export function useEpisodeLoader(episodeId: string | undefined) {
   const [episode, setEpisode] = useState<Episode | null>(null);
@@ -17,14 +16,14 @@ export function useEpisodeLoader(episodeId: string | undefined) {
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const fetchedEpisode = await repositories.episodes.getById(episodeId);
-      
+
       if (!fetchedEpisode) {
         throw new Error('Episode not found');
       }
-      
+
       setEpisode(fetchedEpisode);
     } catch (err: any) {
       setError(err instanceof Error ? err : new Error(err?.message || 'Failed to load episode'));

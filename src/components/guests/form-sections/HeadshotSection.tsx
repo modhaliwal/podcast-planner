@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Upload, Trash, ImageIcon } from "lucide-react";
 import { isBlobUrl } from "@/lib/imageUpload";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/toast/use-toast";
 
 interface HeadshotSectionProps {
   initialImageUrl?: string;

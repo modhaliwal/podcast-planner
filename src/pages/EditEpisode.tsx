@@ -5,7 +5,7 @@ import { EpisodeForm } from '@/components/episodes/EpisodeForm';
 import { Button } from '@/components/ui/button';
 import { useEpisodeLoader } from '@/hooks/episodes/useEpisodeLoader';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -27,20 +27,20 @@ const EditEpisode = () => {
   const { guests, refreshData } = useData();
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+
   const { 
     isLoading: isEpisodeLoading, 
     episode, 
     error,
     refreshEpisode
   } = useEpisodeLoader(id);
-  
+
   useEffect(() => {
     refreshData();
   }, [refreshData]);
-  
+
   const isLoading = isEpisodeLoading || isDeleteLoading;
-  
+
   useEffect(() => {
     if (!isEpisodeLoading && !episode) {
       toast({
@@ -51,7 +51,7 @@ const EditEpisode = () => {
       navigate('/episodes');
     }
   }, [isEpisodeLoading, episode, navigate]);
-  
+
   const episodeKey = useMemo(() => {
     if (!episode) return '';
     const versionsCount = episode.notesVersions?.length || 0;
@@ -60,23 +60,23 @@ const EditEpisode = () => {
 
   const handleDelete = async () => {
     if (!id) return { success: false };
-    
+
     setIsDeleteLoading(true);
     try {
       // Delete the episode using repository - fixed method name
       await repositories.episodes.delete(id);
-      
+
       toast({
         title: "Success",
         description: "Episode deleted successfully"
       });
-      
+
       // Refresh global data
       await refreshData();
-      
+
       // Navigate back to episodes list
       navigate('/episodes');
-      
+
       return { success: true };
     } catch (error: any) {
       toast({
@@ -95,24 +95,24 @@ const EditEpisode = () => {
   const handleSave = async (updatedEpisode: any) => {
     try {
       console.log("Saving episode with cover art:", updatedEpisode.coverArt);
-      
+
       // Make sure coverArt is preserved in the update call
       const result = await repositories.episodes.update(id!, {
         ...updatedEpisode,
         coverArt: updatedEpisode.coverArt, // Explicitly include coverArt
       });
-      
+
       // Log successful save
       console.log('Episode updated successfully with cover art:', updatedEpisode.coverArt);
-      
+
       await refreshData();
       await refreshEpisode();
-      
+
       toast({
         title: "Success",
         description: "Episode updated successfully"
       });
-      
+
       return { success: true, data: result };
     } catch (error: any) {
       toast({
@@ -124,7 +124,7 @@ const EditEpisode = () => {
       return { success: false, error };
     }
   };
-  
+
   if (isLoading) {
     return (
       <Shell>
@@ -139,7 +139,7 @@ const EditEpisode = () => {
       </Shell>
     );
   }
-  
+
   if (!episode) {
     return (
       <Shell>
@@ -155,7 +155,7 @@ const EditEpisode = () => {
       </Shell>
     );
   }
-  
+
   const onSave = async (updatedEpisode: any) => {
     const result = await handleSave(updatedEpisode);
     if (result?.success) {
@@ -163,7 +163,7 @@ const EditEpisode = () => {
     }
     return result;
   };
-  
+
   const DeleteButton = () => (
     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
       <AlertDialogTrigger asChild>
@@ -186,7 +186,7 @@ const EditEpisode = () => {
       </AlertDialogContent>
     </AlertDialog>
   );
-  
+
   return (
     <Shell>
       <PageLayout 
