@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { isBlobUrl } from '@/lib/imageUpload';
+import { isBlobUrl, uploadImage } from '@/lib/imageUpload';
 import { toast } from '@/hooks/toast';
 
 interface CoverArtSectionProps {
@@ -64,7 +65,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
       setLocalBlobUrl(previewUrl);
       setImagePreview(previewUrl);
 
-      // Upload to storage first
+      // Upload to storage using the imported utility function
       const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
       if (!uploadedUrl) {
         throw new Error('Failed to upload image');
@@ -206,12 +207,4 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
       </CardContent>
     </Card>
   );
-}
-
-// Placeholder for actual image upload function.  Needs implementation.
-async function uploadImage(file: File, bucket: string, path: string): Promise<string | null> {
-  // Implement your image upload logic here using a service like Firebase Storage, AWS S3, etc.
-  // This example simulates a successful upload.  Replace with your actual upload code.
-  await new Promise(resolve => setTimeout(resolve, 500)); // Simulate upload delay
-  return `https://example.com/images/${path}/${file.name}`;
 }
