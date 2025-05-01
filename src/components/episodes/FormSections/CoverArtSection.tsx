@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { EpisodeFormValues } from '../EpisodeFormSchema';
@@ -20,63 +19,90 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | undefined>(undefined);
   const [isRemoved, setIsRemoved] = useState(false);
-  
+
   useEffect(() => {
     setIsRemoved(false);
-    
+
     if (currentCoverArt && !isBlobUrl(currentCoverArt) && typeof currentCoverArt === 'string') {
       console.log("Setting initial cover art preview:", currentCoverArt);
       setImagePreview(currentCoverArt);
     }
   }, [currentCoverArt]);
-  
-  const handleImageChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast({
+          title: "File too large",
+          description: "Image is too large. Maximum size is 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (localBlobUrl) {
+        URL.revokeObjectURL(localBlobUrl);
+      }
+
+      setIsRemoved(false);
+
+      const previewUrl = URL.createObjectURL(file);
+      setLocalBlobUrl(previewUrl);
+      setImagePreview(previewUrl);
+
+      // Upload to storage first
+      const uploadedUrl = await uploadImage(file, 'podcast-planner', 'cover-art');
+      if (!uploadedUrl) {
+        throw new Error('Failed to upload image');
+      }
+
+      form.setValue('coverArt', uploadedUrl, { shouldValidate: true });
+
       toast({
-        title: "Invalid file type",
-        description: "Please upload a valid image file (JPEG, PNG or GIF)",
+        title: "Success",
+        description: "Cover art uploaded successfully"
+      });
+    } catch (error) {
+      console.error('Error handling cover art upload:', error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload cover art",
         variant: "destructive"
       });
-      return;
+
+      // Clean up on error
+      if (localBlobUrl) {
+        URL.revokeObjectURL(localBlobUrl);
+        setLocalBlobUrl(undefined);
+      }
+      setImagePreview(undefined);
     }
-
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      toast({
-        title: "File too large",
-        description: "Image is too large. Maximum size is 5MB",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (localBlobUrl) {
-      URL.revokeObjectURL(localBlobUrl);
-    }
-
-    setIsRemoved(false);
-
-    const previewUrl = URL.createObjectURL(file);
-    setLocalBlobUrl(previewUrl);
-    setImagePreview(previewUrl);
-    
-    form.setValue('coverArt', previewUrl, { shouldValidate: true });
-  }, [form, localBlobUrl]);
+  };
 
   const removeImage = useCallback(() => {
     if (localBlobUrl) {
       URL.revokeObjectURL(localBlobUrl);
       setLocalBlobUrl(undefined);
     }
-    
+
     setImagePreview(undefined);
     form.setValue('coverArt', undefined, { shouldValidate: true });
     setIsRemoved(true);
-    
+
     toast({
       title: "Image removed",
       description: "Cover art has been removed"
@@ -127,7 +153,7 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                     )}
                   </AspectRatio>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <FormControl>
@@ -142,13 +168,13 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                           <Input
                             type="file"
                             className="absolute inset-0 opacity-0 cursor-pointer"
-                            accept="image/jpeg,image/png,image/gif"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
                             onChange={handleImageChange}
                           />
                         </Button>
                       </div>
                     </FormControl>
-                    
+
                     {imagePreview && !isRemoved && (
                       <Button 
                         type="button"
@@ -161,13 +187,13 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
                       </Button>
                     )}
                   </div>
-                  
+
                   <div className="text-xs text-muted-foreground">
                     <p className="font-medium mb-1">Requirements:</p>
                     <ul className="space-y-1 list-disc pl-4">
                       <li>Recommended size: 1400×1400 pixels</li>
                       <li>Maximum size: 5MB</li>
-                      <li>Formats: JPG, PNG, GIF</li>
+                      <li>Formats: JPG, PNG, GIF, WebP</li>
                       <li>Square aspect ratio (1:1)</li>
                     </ul>
                   </div>
@@ -180,4 +206,12 @@ export function CoverArtSection({ form }: CoverArtSectionProps) {
       </CardContent>
     </Card>
   );
+}
+
+// Placeholder for actual image upload function.  Needs implementation.
+async function uploadImage(file: File, bucket: string, path: string): Promise<string | null> {
+  // Implement your image upload logic here using a service like Firebase Storage, AWS S3, etc.
+  // This example simulates a successful upload.  Replace with your actual upload code.
+  await new Promise(resolve => setTimeout(resolve, 500)); // Simulate upload delay
+  return `https://example.com/images/${path}/${file.name}`;
 }
