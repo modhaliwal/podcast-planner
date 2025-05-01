@@ -174,6 +174,12 @@ export function LinkForm({
             <Input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
               placeholder="URL"
               className="flex-1"
             />
@@ -183,6 +189,12 @@ export function LinkForm({
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
               placeholder="Custom label (optional)"
             />
           )}
