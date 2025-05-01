@@ -8,7 +8,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Upload, Trash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { isBlobUrl } from '@/lib/imageUpload';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast';
 
 interface CoverArtSectionProps {
   form: UseFormReturn<EpisodeFormValues>;
