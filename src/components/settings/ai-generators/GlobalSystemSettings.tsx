@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/toast/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export function GlobalSystemSettings() {

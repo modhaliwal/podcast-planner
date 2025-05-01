@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/toast/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { Guest } from "@/lib/types";
 import { mapDatabaseGuestToGuest } from "@/utils/mappers";

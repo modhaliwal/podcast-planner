@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { guestRepository } from '@/repositories';
 import { Guest } from '@/lib/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { CreateGuestDTO, UpdateGuestDTO } from '@/repositories/guests/GuestRepository';
 
 /**

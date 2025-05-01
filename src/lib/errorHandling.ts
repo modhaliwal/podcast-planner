@@ -1,5 +1,4 @@
-
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/toast/use-toast';
 
 /**
  * Standard error types for the application

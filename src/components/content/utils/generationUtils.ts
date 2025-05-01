@@ -1,4 +1,5 @@
-import { toast } from "@/hooks/use-toast";
+
+import { toast } from "@/hooks/toast/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 /**

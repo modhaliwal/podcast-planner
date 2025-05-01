@@ -1,0 +1,142 @@
+
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Upload, Trash, ImageIcon } from 'lucide-react';
+import { toast } from '@/hooks/toast/use-toast';
+import { isBlobUrl } from '@/lib/imageUpload';
+
+interface CoverArtFieldProps {
+  imageUrl?: string;
+  title: string;
+  onImageChange: (file: File | null, previewUrl?: string) => void;
+  className?: string;
+}
+
+export function CoverArtField({
+  imageUrl,
+  title,
+  onImageChange,
+  className
+}: CoverArtFieldProps) {
+  const [imagePreview, setImagePreview] = React.useState<string | undefined>(undefined);
+  const [localBlobUrl, setLocalBlobUrl] = React.useState<string | undefined>(undefined);
+  const [isRemoved, setIsRemoved] = React.useState(false);
+  
+  React.useEffect(() => {
+    setIsRemoved(false);
+    
+    if (imageUrl && !isBlobUrl(imageUrl)) {
+      setImagePreview(imageUrl);
+    }
+  }, [imageUrl]);
+  
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please upload a valid image file (JPEG, PNG or WebP)");
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("Image is too large. Maximum size is 10MB");
+      return;
+    }
+
+    if (localBlobUrl) {
+      URL.revokeObjectURL(localBlobUrl);
+    }
+
+    setIsRemoved(false);
+
+    const previewUrl = URL.createObjectURL(file);
+    setLocalBlobUrl(previewUrl);
+    setImagePreview(previewUrl);
+    
+    onImageChange(file, previewUrl);
+  };
+
+  const removeImage = () => {
+    if (localBlobUrl) {
+      URL.revokeObjectURL(localBlobUrl);
+      setLocalBlobUrl(undefined);
+    }
+    
+    setImagePreview(undefined);
+    setIsRemoved(true);
+    
+    onImageChange(null);
+    toast.info("Cover art removed");
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (localBlobUrl) {
+        URL.revokeObjectURL(localBlobUrl);
+      }
+    };
+  }, [localBlobUrl]);
+
+  return (
+    <div className={cn("flex flex-col items-center", className)}>
+      <div className="mb-4 w-full max-w-[240px]">
+        <AspectRatio ratio={1} className="bg-muted rounded-md overflow-hidden border">
+          {imagePreview && !isRemoved ? (
+            <img
+              src={imagePreview}
+              alt={`Cover art for ${title}`}
+              className="w-full h-full object-cover"
+              onError={() => {
+                console.error("Failed to load image preview:", imagePreview);
+                setImagePreview(undefined);
+              }}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full w-full bg-muted">
+              <ImageIcon className="h-10 w-10 text-muted-foreground" />
+            </div>
+          )}
+        </AspectRatio>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <Label htmlFor="cover-art-upload" className="cursor-pointer">
+          <div className="flex items-center gap-2 py-2 px-3 bg-muted rounded-md hover:bg-accent transition-colors">
+            <Upload className="h-4 w-4" />
+            <span>{imagePreview && !isRemoved ? "Change" : "Upload"} Cover Art</span>
+          </div>
+          <Input 
+            id="cover-art-upload" 
+            type="file" 
+            className="hidden" 
+            onChange={handleImageChange}
+            accept="image/jpeg,image/png,image/webp"
+          />
+        </Label>
+        
+        {imagePreview && !isRemoved && (
+          <Button 
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={removeImage}
+          >
+            <Trash className="h-4 w-4 mr-1" />
+            Remove
+          </Button>
+        )}
+      </div>
+      
+      <p className="text-xs text-muted-foreground mt-2">
+        Supports JPEG, PNG or WebP up to 10MB.
+      </p>
+    </div>
+  );
+}

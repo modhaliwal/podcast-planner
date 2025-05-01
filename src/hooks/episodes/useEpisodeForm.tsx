@@ -5,7 +5,7 @@ import { EpisodeStatus } from "@/lib/enums";
 import { episodeFormSchema } from "@/components/episodes/EpisodeFormSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from 'react';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/toast/use-toast";
 import { UpdateEpisodeDTO } from "@/repositories/episodes/EpisodeDTO";
 
 interface UseEpisodeFormProps {

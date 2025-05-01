@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Shell } from '@/components/layout/Shell';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/toast/use-toast';
 import { GuestHeader } from '@/components/guests/GuestHeader';
 import { GuestContent } from '@/components/guests/GuestContent';
 import { PageLayout } from '@/components/layout/PageLayout';

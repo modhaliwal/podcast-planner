@@ -22,7 +22,7 @@ import { Editor } from '@/components/editor/Editor';
 import { Textarea } from '@/components/ui/textarea';
 import { ContentVersion as ContentVersionType } from '@/lib/types';
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/toast/use-toast";
 import { useFormContext } from "react-hook-form";
 import { useGeneratorDetails } from '@/hooks/useGeneratorDetails';
 

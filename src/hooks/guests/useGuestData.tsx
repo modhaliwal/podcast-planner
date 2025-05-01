@@ -1,8 +1,7 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { Guest } from "@/lib/types";
 import { repositories } from "@/repositories";
-import { toast } from "@/hooks/toast/use-toast";
+import { toast } from '@/hooks/toast/use-toast';
 
 export function useGuestData(guestId: string | undefined) {
   const [guest, setGuest] = useState<Guest | null>(null);
