@@ -67,7 +67,7 @@ export const useContentGeneration = (
       console.log(`Generating content for ${fieldName} using ${edgeFunctionName}`);
       console.log(`Using preferred provider: ${preferredProvider || 'not specified'}`);
       
-      // Prepare the request body
+      // Prepare the request body with awaited prompt properties
       const requestBody = prepareRequestBody(
         formValues,
         prompt?.prompt_text,

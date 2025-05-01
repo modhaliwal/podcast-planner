@@ -47,8 +47,7 @@ export const CoverArtField = ({
         name="coverArt"
         label="Cover Art"
         description="Upload a square image for your episode cover art."
-      >
-        {(field) => (
+        render={(field) => (
           <div className="flex flex-col items-center justify-center gap-4">
             {coverArt ? (
               <div className="relative w-48 h-48">
@@ -103,7 +102,7 @@ export const CoverArtField = ({
             )}
           </div>
         )}
-      </FormField>
+      />
     );
   }
 
