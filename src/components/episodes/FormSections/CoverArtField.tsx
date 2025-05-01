@@ -110,6 +110,7 @@ export const CoverArtField = ({
   // Original implementation for when form is not passed
   return (
     <FormField
+      name="coverArt"
       label="Cover Art"
       description="Upload a square image for your episode cover art."
     >
