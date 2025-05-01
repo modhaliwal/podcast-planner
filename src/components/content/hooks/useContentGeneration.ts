@@ -58,7 +58,7 @@ export const useContentGeneration = (
       const formValues = form.getValues();
       
       // Get the prompt from AI prompts
-      const prompt = getPromptByKey(promptKey);
+      const prompt = await getPromptByKey(promptKey);
       
       if (!prompt) {
         console.warn(`No prompt found with key: ${promptKey}`);
