@@ -80,8 +80,8 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
           
           <SocialIconsBar 
             socialLinks={guest.socialLinks} 
-            align="center" 
-            variant="profile" 
+            size="sm"
+            variant="default" 
             className="mb-4"
           />
           
