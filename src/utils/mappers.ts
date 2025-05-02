@@ -14,16 +14,20 @@ export const mapDatabaseGuestToGuest = (dbGuest: any): Guest => {
     if (dbGuest.bio_versions) {
       if (typeof dbGuest.bio_versions === 'string') {
         bioVersions = JSON.parse(dbGuest.bio_versions);
-      } else {
+      } else if (Array.isArray(dbGuest.bio_versions)) {
         bioVersions = dbGuest.bio_versions as ContentVersion[];
+      } else {
+        console.warn('bio_versions is not an array:', dbGuest.bio_versions);
       }
     }
     
     if (dbGuest.background_research_versions) {
       if (typeof dbGuest.background_research_versions === 'string') {
         backgroundResearchVersions = JSON.parse(dbGuest.background_research_versions);
-      } else {
+      } else if (Array.isArray(dbGuest.background_research_versions)) {
         backgroundResearchVersions = dbGuest.background_research_versions as ContentVersion[];
+      } else {
+        console.warn('background_research_versions is not an array:', dbGuest.background_research_versions);
       }
     }
   } catch (e) {

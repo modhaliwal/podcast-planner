@@ -21,6 +21,37 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       }
     }
     
+    // Ensure bioVersions and backgroundResearchVersions are always arrays
+    let bioVersions: any[] = [];
+    if (dbGuest.bio_versions) {
+      if (typeof dbGuest.bio_versions === 'string') {
+        try {
+          bioVersions = JSON.parse(dbGuest.bio_versions);
+        } catch (e) {
+          console.error('Error parsing bio_versions JSON:', e);
+        }
+      } else if (Array.isArray(dbGuest.bio_versions)) {
+        bioVersions = dbGuest.bio_versions;
+      } else {
+        console.warn('bio_versions is not an array:', dbGuest.bio_versions);
+      }
+    }
+
+    let backgroundResearchVersions: any[] = [];
+    if (dbGuest.background_research_versions) {
+      if (typeof dbGuest.background_research_versions === 'string') {
+        try {
+          backgroundResearchVersions = JSON.parse(dbGuest.background_research_versions);
+        } catch (e) {
+          console.error('Error parsing background_research_versions JSON:', e);
+        }
+      } else if (Array.isArray(dbGuest.background_research_versions)) {
+        backgroundResearchVersions = dbGuest.background_research_versions;
+      } else {
+        console.warn('background_research_versions is not an array:', dbGuest.background_research_versions);
+      }
+    }
+    
     return {
       id: dbGuest.id,
       name: dbGuest.name,
@@ -38,9 +69,9 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
       backgroundResearch: dbGuest.background_research || undefined,
       status: dbGuest.status as Guest['status'] || 'potential',
       socialLinks,
-      // Add proper parsing for version arrays
-      bioVersions: dbGuest.bio_versions as any[] || [],
-      backgroundResearchVersions: dbGuest.background_research_versions as any[] || [],
+      // Add proper parsing for version arrays to ensure they're always arrays
+      bioVersions: bioVersions,
+      backgroundResearchVersions: backgroundResearchVersions,
       createdAt: dbGuest.created_at,
       updatedAt: dbGuest.updated_at,
     };
@@ -153,4 +184,3 @@ export class GuestMapper implements DataMapper<Guest, DBGuest> {
     return dbGuest;
   }
 }
-
