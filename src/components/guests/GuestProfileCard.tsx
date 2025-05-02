@@ -40,7 +40,7 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
   return (
     <Card className="sticky top-28 mb-6">
       <CardContent className="p-6">
-        <div className="flex flex-col items-center text-center">
+        <div className="flex flex-col items-center">
           {!showAvatar ? (
             <div className="w-full max-w-[200px] mb-4 overflow-hidden rounded-md border relative">
               <AspectRatio ratio={2/3} className="bg-muted">
@@ -78,12 +78,14 @@ export function GuestProfileCard({ guest }: GuestProfileCardProps) {
           <h2 className="text-xl font-semibold">{guest.name}</h2>
           <p className="text-muted-foreground mb-4">{guest.title}</p>
           
-          <SocialIconsBar 
-            socialLinks={guest.socialLinks} 
-            size="sm"
-            variant="default" 
-            className="mb-4"
-          />
+          {/* Social icons bar - properly aligned horizontally */}
+          <div className="w-full flex justify-center mb-4">
+            <SocialIconsBar 
+              socialLinks={guest.socialLinks} 
+              size="sm"
+              variant="default"
+            />
+          </div>
           
           {/* Contact information after social icons */}
           {(guest.email || guest.phone) && (

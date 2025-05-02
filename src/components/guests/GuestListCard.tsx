@@ -1,3 +1,4 @@
+
 import { Guest, Episode } from "@/lib/types";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,7 +39,7 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
     <Link to={`/guests/${guest.id}`} key={guest.id}>
       <Card className="p-4 hover:bg-muted/40 transition-colors">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex w-full">
+          <div className="flex w-full sm:items-start">
             <div className="flex items-start gap-3">
               {/* Avatar section */}
               <Avatar className="h-16 w-16 shrink-0 border">
@@ -50,9 +51,12 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
               <GuestInfo guest={guest} statusColor={statusColor} />
             </div>
             
-            {/* Social links section - now visible in all views */}
+            {/* Social links section - display horizontally across the card  */}
             <div className="ml-auto">
-              <SocialIconsBar socialLinks={guest.socialLinks} size="sm" />
+              <SocialIconsBar 
+                socialLinks={guest.socialLinks} 
+                size="sm" 
+              />
             </div>
           </div>
           
