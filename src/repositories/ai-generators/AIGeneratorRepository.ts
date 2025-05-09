@@ -40,7 +40,8 @@ export class AIGeneratorRepository extends BaseRepository<AIGenerator, AIGenerat
       if (error) throw error;
       if (!data) return null;
       
-      return this.mapper.toDomain(data);
+      // Use explicit typing to avoid deep instantiation
+      return this.mapper.toDomain(data as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by slug:`, error);
       return null;
@@ -61,7 +62,8 @@ export class AIGeneratorRepository extends BaseRepository<AIGenerator, AIGenerat
       if (error) throw error;
       if (!data) return null;
       
-      return this.mapper.toDomain(data);
+      // Use explicit typing to avoid deep instantiation
+      return this.mapper.toDomain(data as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by key:`, error);
       return null;

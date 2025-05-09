@@ -8,15 +8,7 @@ import { AIGenerator, AIGeneratorDB } from './AIGeneratorRepository';
 export class AIGeneratorMapper implements DataMapper<AIGenerator, AIGeneratorDB> {
   toDomain(dbModel: AIGeneratorDB): AIGenerator {
     // Parse parameters if they exist
-    let parameters: Record<string, any> | undefined;
-    if (dbModel.parameters) {
-      try {
-        parameters = JSON.parse(dbModel.parameters);
-      } catch (e) {
-        console.error("Error parsing parameters JSON:", e);
-        parameters = undefined;
-      }
-    }
+    let parameters = dbModel.parameters;
 
     return {
       id: dbModel.id,
