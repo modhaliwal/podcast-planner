@@ -7,9 +7,6 @@ import { AIGenerator, AIGeneratorDB } from './AIGeneratorRepository';
  */
 export class AIGeneratorMapper implements DataMapper<AIGenerator, AIGeneratorDB> {
   toDomain(dbModel: AIGeneratorDB): AIGenerator {
-    // Parse parameters if they exist
-    let parameters = dbModel.parameters;
-
     return {
       id: dbModel.id,
       slug: dbModel.slug,
