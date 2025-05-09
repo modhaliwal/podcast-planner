@@ -27,8 +27,9 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
-      // Break the type chain with a direct cast to the known DB type
-      return this.mapper.toDomain(data as AIGeneratorDB);
+      // Use a simple type assertion without chaining
+      const dbRecord = data as any;
+      return this.mapper.toDomain(dbRecord);
     } catch (error) {
       console.error(`Error finding AI generator by slug:`, error);
       return null;
@@ -49,8 +50,9 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
-      // Break the type chain with a direct cast to the known DB type
-      return this.mapper.toDomain(data as AIGeneratorDB);
+      // Use a simple type assertion without chaining
+      const dbRecord = data as any;
+      return this.mapper.toDomain(dbRecord);
     } catch (error) {
       console.error(`Error finding AI generator by key:`, error);
       return null;

@@ -29,7 +29,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       if (error) throw error;
       if (!data) return null;
       
-      return this.mapper.toDomain(data as D);
+      return this.mapper.toDomain(data as any);
     } catch (error) {
       console.error(`Error finding ${this.tableName} by ID:`, error);
       return null;
@@ -46,7 +46,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       if (error) throw error;
       if (!data) return [];
       
-      return data.map(item => this.mapper.toDomain(item as D));
+      return data.map(item => this.mapper.toDomain(item as any));
     } catch (error) {
       console.error(`Error finding all ${this.tableName}:`, error);
       return [];
@@ -66,7 +66,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
         
       if (error) throw error;
       
-      return this.mapper.toDomain(data as D);
+      return this.mapper.toDomain(data as any);
     } catch (error) {
       console.error(`Error adding to ${this.tableName}:`, error);
       throw error;
@@ -88,7 +88,7 @@ export abstract class BaseRepository<T, D> implements Repository<T> {
       if (error) throw error;
       if (!data) return null;
       
-      return this.mapper.toDomain(data as D);
+      return this.mapper.toDomain(data as any);
     } catch (error) {
       console.error(`Error updating ${this.tableName}:`, error);
       return null;

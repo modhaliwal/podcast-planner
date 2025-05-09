@@ -10,7 +10,7 @@ type AIGeneratorDB = Tables<'ai_generators'>;
  * Mapper for transforming between domain AIPrompt model and database AI generator model
  */
 export class AIGeneratorMapper implements DataMapper<AIPrompt, AIGeneratorDB> {
-  toDomain(dbModel: AIGeneratorDB): AIPrompt {
+  toDomain(dbModel: any): AIPrompt {
     // Parse parameters if they exist
     let parameters: Record<string, any> | undefined;
     if (dbModel.parameters) {
