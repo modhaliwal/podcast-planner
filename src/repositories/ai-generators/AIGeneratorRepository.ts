@@ -110,7 +110,18 @@ export async function addGenerator(generator: AIGenerator): Promise<AIGenerator>
   try {
     const { data, error } = await supabase
       .from('ai_generators')
-      .insert(mapToDBModel(generator))
+      .insert({
+        slug: generator.slug,
+        title: generator.title,
+        prompt_text: generator.prompt_text,
+        example_output: generator.example_output,
+        context_instructions: generator.context_instructions,
+        system_prompt: generator.system_prompt,
+        ai_model: generator.ai_model,
+        model_name: generator.model_name,
+        parameters: generator.parameters,
+        key: generator.key
+      })
       .select('*')
       .single();
       
@@ -128,9 +139,23 @@ export async function addGenerator(generator: AIGenerator): Promise<AIGenerator>
  */
 export async function updateGenerator(id: string, generator: Partial<AIGenerator>): Promise<AIGenerator | null> {
   try {
+    // Only include fields that are present in the partial update
+    const updateData: Partial<AIGeneratorDB> = {};
+    
+    if (generator.title !== undefined) updateData.title = generator.title;
+    if (generator.slug !== undefined) updateData.slug = generator.slug;
+    if (generator.prompt_text !== undefined) updateData.prompt_text = generator.prompt_text;
+    if (generator.example_output !== undefined) updateData.example_output = generator.example_output;
+    if (generator.context_instructions !== undefined) updateData.context_instructions = generator.context_instructions;
+    if (generator.system_prompt !== undefined) updateData.system_prompt = generator.system_prompt;
+    if (generator.ai_model !== undefined) updateData.ai_model = generator.ai_model;
+    if (generator.model_name !== undefined) updateData.model_name = generator.model_name;
+    if (generator.parameters !== undefined) updateData.parameters = generator.parameters;
+    if (generator.key !== undefined) updateData.key = generator.key;
+
     const { data, error } = await supabase
       .from('ai_generators')
-      .update(mapToDBModel(generator))
+      .update(updateData)
       .eq('id', id)
       .select('*')
       .single();
@@ -180,24 +205,5 @@ function mapToDomainModel(dbModel: AIGeneratorDB): AIGenerator {
     model_name: dbModel.model_name || undefined,
     parameters: dbModel.parameters || undefined,
     key: dbModel.key || undefined
-  };
-}
-
-/**
- * Map from domain model to DB model
- */
-function mapToDBModel(domainModel: Partial<AIGenerator>): Partial<AIGeneratorDB> {
-  return {
-    id: domainModel.id,
-    slug: domainModel.slug,
-    title: domainModel.title,
-    prompt_text: domainModel.prompt_text,
-    example_output: domainModel.example_output,
-    context_instructions: domainModel.context_instructions,
-    system_prompt: domainModel.system_prompt,
-    ai_model: domainModel.ai_model,
-    model_name: domainModel.model_name,
-    parameters: domainModel.parameters,
-    key: domainModel.key
   };
 }

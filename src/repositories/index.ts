@@ -17,3 +17,15 @@ export const repositories = {
 };
 
 export type { Repository, Result } from './core/Repository';
+
+// Re-export AI Generators direct database functions
+export { 
+  getAllGenerators,
+  getGeneratorById,
+  getGeneratorBySlug,
+  getGeneratorByKey,
+  addGenerator,
+  updateGenerator,
+  deleteGenerator,
+  type AIGenerator
+} from './ai-generators/AIGeneratorRepository';
