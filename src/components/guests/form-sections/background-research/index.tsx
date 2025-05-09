@@ -12,13 +12,25 @@ interface BackgroundResearchSectionProps {
 }
 
 export function BackgroundResearchSection({ form, guest, notes = '' }: BackgroundResearchSectionProps) {
+  // Get the current background research from the form to concatenate with notes
+  const backgroundResearch = form.watch('backgroundResearch') || '';
+  
+  // Concatenate notes and background research for better context
+  const combinedNotes = `
+${notes}
+
+====== EXISTING RESEARCH ======
+
+${backgroundResearch}
+`.trim();
+  
   // Generate parameters for the AI generator
   const generationParameters = {
     name: guest?.name || '',
     title: guest?.title || '',
     company: guest?.company || '',
     links: guest?.socialLinks ? formatAllLinks(guest.socialLinks) : '',
-    notes
+    notes: combinedNotes // Pass the combined notes to the AI generator
   };
   
   return (
