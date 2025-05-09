@@ -27,6 +27,7 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
+      // Cast data to the correct type before passing to mapper
       return this.mapper.toDomain(data as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by slug:`, error);
@@ -48,6 +49,7 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
+      // Cast data to the correct type before passing to mapper
       return this.mapper.toDomain(data as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by key:`, error);
