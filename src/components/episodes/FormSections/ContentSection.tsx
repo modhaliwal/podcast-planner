@@ -100,12 +100,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   generatorSlug="episode-notes-generator"
                   generationParameters={{
                     topic,
-                    guests: selectedGuests,
-                    guest_notes, // Add formatted guest notes to parameters
-                    episode: {
-                      title: form.watch('title') || '',
-                      topic
-                    }
+                    guest_notes // Only pass the formatted guest notes string, not the guests object or episode
                   }}
                   hoverCardConfig={{
                     promptTitle: "Episode Notes Generator",
@@ -142,7 +137,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                     notes,
                     topic,
                     guests: selectedGuests,
-                    guest_notes, // Add formatted guest notes to parameters here too
+                    guest_notes, // Keep all parameters for the introduction generator
                     episode: {
                       title: form.watch('title') || '',
                       topic
