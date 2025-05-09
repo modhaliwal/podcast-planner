@@ -5,6 +5,7 @@ import { AIPrompt } from '@/hooks/useAIPrompts';
 import { Tables } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 
+// Define the database model type directly
 type AIGeneratorDB = Tables<'ai_generators'>;
 
 export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorDB> {
