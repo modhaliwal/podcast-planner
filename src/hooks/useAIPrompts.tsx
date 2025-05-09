@@ -1,22 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/toast/use-toast';
 import { repositories } from '@/repositories';
+import { AIGenerator } from '@/repositories/ai-generators/AIGeneratorRepository';
 
-// Define the AIPrompt interface that's being imported in other files
-export interface AIPrompt {
-  id?: string;
-  slug: string;
-  title: string;
-  prompt_text: string;
-  example_output?: string;
-  context_instructions?: string;
-  system_prompt?: string;
-  ai_model?: string;
-  model_name?: string;
-  parameters?: string;
-}
+// Re-export the AIGenerator interface as AIPrompt for backward compatibility
+export type AIPrompt = AIGenerator;
 
 export function useAIPrompts() {
   const [isLoading, setIsLoading] = useState(false);

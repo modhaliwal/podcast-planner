@@ -1,16 +1,12 @@
 
 import { DataMapper } from '../core/DataMapper';
-import { AIPrompt } from '@/hooks/useAIPrompts';
-import { Tables } from '@/integrations/supabase/types';
-
-// Define DB type directly from Supabase-generated types
-type AIGeneratorDB = Tables<'ai_generators'>;
+import { AIGenerator, AIGeneratorDB } from './AIGeneratorRepository';
 
 /**
- * Mapper for transforming between domain AIPrompt model and database AI generator model
+ * Mapper for transforming between domain AIGenerator model and database AI generator model
  */
-export class AIGeneratorMapper implements DataMapper<AIPrompt, AIGeneratorDB> {
-  toDomain(dbModel: any): AIPrompt {
+export class AIGeneratorMapper implements DataMapper<AIGenerator, AIGeneratorDB> {
+  toDomain(dbModel: AIGeneratorDB): AIGenerator {
     // Parse parameters if they exist
     let parameters: Record<string, any> | undefined;
     if (dbModel.parameters) {
@@ -36,7 +32,7 @@ export class AIGeneratorMapper implements DataMapper<AIPrompt, AIGeneratorDB> {
     };
   }
 
-  toDB(domainModel: Partial<AIPrompt>): Partial<AIGeneratorDB> {
+  toDB(domainModel: Partial<AIGenerator>): Partial<AIGeneratorDB> {
     return {
       id: domainModel.id,
       slug: domainModel.slug,
@@ -51,11 +47,11 @@ export class AIGeneratorMapper implements DataMapper<AIPrompt, AIGeneratorDB> {
     };
   }
 
-  createDtoToDB(dto: Partial<AIPrompt>): Partial<AIGeneratorDB> {
+  createDtoToDB(dto: Partial<AIGenerator>): Partial<AIGeneratorDB> {
     return this.toDB(dto);
   }
 
-  updateDtoToDB(dto: Partial<AIPrompt>): Partial<AIGeneratorDB> {
+  updateDtoToDB(dto: Partial<AIGenerator>): Partial<AIGeneratorDB> {
     return this.toDB(dto);
   }
 }

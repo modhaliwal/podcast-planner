@@ -1,14 +1,27 @@
 
 import { BaseRepository, TableName } from '../core/BaseRepository';
 import { aiGeneratorMapper } from './AIGeneratorMapper';
-import { AIPrompt } from '@/hooks/useAIPrompts';
 import { Tables } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 
-// Define the database model type directly
-type AIGeneratorDB = Tables<'ai_generators'>;
+// Define the database model type directly from Supabase types
+export type AIGeneratorDB = Tables<'ai_generators'>;
 
-export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorDB> {
+// Define the domain model interface here to break circular dependency
+export interface AIGenerator {
+  id?: string;
+  slug: string;
+  title: string;
+  prompt_text: string;
+  example_output?: string;
+  context_instructions?: string;
+  system_prompt?: string;
+  ai_model?: string;
+  model_name?: string;
+  parameters?: string;
+}
+
+export class AIGeneratorRepository extends BaseRepository<AIGenerator, AIGeneratorDB> {
   constructor() {
     super('ai_generators' as TableName, aiGeneratorMapper);
   }
@@ -16,7 +29,7 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
   /**
    * Get a generator by its slug
    */
-  async getBySlug(slug: string): Promise<AIPrompt | null> {
+  async getBySlug(slug: string): Promise<AIGenerator | null> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -27,9 +40,7 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
-      // Use a simple type assertion without chaining
-      const dbRecord = data as any;
-      return this.mapper.toDomain(dbRecord);
+      return this.mapper.toDomain(data);
     } catch (error) {
       console.error(`Error finding AI generator by slug:`, error);
       return null;
@@ -39,7 +50,7 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
   /**
    * Get a generator by its key (used for retrieving specific generators by functionality)
    */
-  async getByKey(key: string): Promise<AIPrompt | null> {
+  async getByKey(key: string): Promise<AIGenerator | null> {
     try {
       const { data, error } = await supabase
         .from(this.tableName)
@@ -50,9 +61,7 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
-      // Use a simple type assertion without chaining
-      const dbRecord = data as any;
-      return this.mapper.toDomain(dbRecord);
+      return this.mapper.toDomain(data);
     } catch (error) {
       console.error(`Error finding AI generator by key:`, error);
       return null;
