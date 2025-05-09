@@ -60,7 +60,6 @@ export function ContentSection({ form, guest }: ContentSectionProps) {
         form={form} 
         guest={guest} 
         notes={notes}
-        guest_info={guest_info}
       />
 
       {/* Bio Section */}
@@ -68,7 +67,6 @@ export function ContentSection({ form, guest }: ContentSectionProps) {
         form={form} 
         guest={guest} 
         notes={notes}
-        guest_info={guest_info}
       />
     </div>
   );
