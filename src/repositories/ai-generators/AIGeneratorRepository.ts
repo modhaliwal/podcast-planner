@@ -27,8 +27,8 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
-      // Use type assertion with "as unknown" first to break circular reference
-      return this.mapper.toDomain(data as unknown as AIGeneratorDB);
+      // Break the type chain with a direct cast to the known DB type
+      return this.mapper.toDomain(data as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by slug:`, error);
       return null;
@@ -49,8 +49,8 @@ export class AIGeneratorRepository extends BaseRepository<AIPrompt, AIGeneratorD
       if (error) throw error;
       if (!data) return null;
       
-      // Use type assertion with "as unknown" first to break circular reference
-      return this.mapper.toDomain(data as unknown as AIGeneratorDB);
+      // Break the type chain with a direct cast to the known DB type
+      return this.mapper.toDomain(data as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by key:`, error);
       return null;

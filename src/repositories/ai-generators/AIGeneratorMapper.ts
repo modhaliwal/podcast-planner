@@ -3,6 +3,7 @@ import { DataMapper } from '../core/DataMapper';
 import { AIPrompt } from '@/hooks/useAIPrompts';
 import { Tables } from '@/integrations/supabase/types';
 
+// Define DB type directly from Supabase-generated types
 type AIGeneratorDB = Tables<'ai_generators'>;
 
 /**
