@@ -40,8 +40,8 @@ export class AIGeneratorRepository extends BaseRepository<AIGenerator, AIGenerat
       if (error) throw error;
       if (!data) return null;
       
-      // Break type recursion by using type assertion
-      return this.mapper.toDomain(data as any);
+      // Use correct type assertion with unknown intermediate step to avoid circular reference
+      return this.mapper.toDomain(data as unknown as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by slug:`, error);
       return null;
@@ -62,8 +62,8 @@ export class AIGeneratorRepository extends BaseRepository<AIGenerator, AIGenerat
       if (error) throw error;
       if (!data) return null;
       
-      // Break type recursion by using type assertion
-      return this.mapper.toDomain(data as any);
+      // Use correct type assertion with unknown intermediate step to avoid circular reference
+      return this.mapper.toDomain(data as unknown as AIGeneratorDB);
     } catch (error) {
       console.error(`Error finding AI generator by key:`, error);
       return null;
