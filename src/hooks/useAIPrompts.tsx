@@ -1,8 +1,15 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/toast/use-toast';
-import { repositories } from '@/repositories';
-import { AIGenerator } from '@/repositories/ai-generators/AIGeneratorRepository';
+import { 
+  AIGenerator,
+  getAllGenerators,
+  getGeneratorByKey,
+  updateGenerator,
+  addGenerator,
+  deleteGenerator
+} from '@/repositories/ai-generators/AIGeneratorRepository';
 
 // Re-export the AIGenerator interface as AIPrompt for backward compatibility
 export type AIPrompt = AIGenerator;
@@ -15,7 +22,7 @@ export function useAIPrompts() {
   const fetchPrompts = async () => {
     setIsLoading(true);
     try {
-      const fetchedPrompts = await repositories.aiGenerators.getAll();
+      const fetchedPrompts = await getAllGenerators();
       setPrompts(fetchedPrompts);
     } catch (error: any) {
       console.error("Error fetching AI prompts:", error);
@@ -73,7 +80,7 @@ export function useAIPrompts() {
   const getPromptByKey = async (key: string) => {
     setIsLoading(true);
     try {
-      const prompt = await repositories.aiGenerators.getByKey(key);
+      const prompt = await getGeneratorByKey(key);
       return prompt;
     } catch (error: any) {
       console.error("Error getting prompt by key:", error);
@@ -98,8 +105,8 @@ export function useAIPrompts() {
         throw new Error(`Prompt with slug ${slug} not found`);
       }
       
-      // Update the prompt using the repository
-      await repositories.aiGenerators.update(existingPrompt.id, data);
+      // Update the prompt using direct function
+      await updateGenerator(existingPrompt.id, data);
       
       // Refresh prompts list
       await fetchPrompts();
@@ -127,8 +134,8 @@ export function useAIPrompts() {
   const createPrompt = async (data: AIPrompt) => {
     setIsLoading(true);
     try {
-      // Create the prompt using the repository
-      await repositories.aiGenerators.add(data);
+      // Create the prompt using direct function
+      await addGenerator(data);
       
       // Refresh prompts list
       await fetchPrompts();
@@ -162,8 +169,8 @@ export function useAIPrompts() {
         throw new Error(`Prompt with slug ${slug} not found`);
       }
       
-      // Delete the prompt using the repository
-      await repositories.aiGenerators.delete(existingPrompt.id);
+      // Delete the prompt using direct function
+      await deleteGenerator(existingPrompt.id);
       
       // Refresh prompts list
       await fetchPrompts();
