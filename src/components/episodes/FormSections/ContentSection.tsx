@@ -13,6 +13,27 @@ interface ContentSectionProps {
   guests: Guest[];
 }
 
+// Format guest information into a structured string
+function formatGuestNotes(guests: Guest[]): string {
+  if (!guests || guests.length === 0) {
+    return "No guests for this episode.";
+  }
+
+  return guests.map(guest => {
+    // Build guest information with proper formatting
+    const guestInfo = [
+      `--- GUEST: ${guest.name || "Unnamed Guest"} ---`,
+      guest.title ? `Title: ${guest.title}` : '',
+      guest.company ? `Company: ${guest.company}` : '',
+      `Bio: ${guest.bio || "No bio available."}`
+    ]
+    .filter(Boolean) // Remove empty lines
+    .join('\n');
+    
+    return guestInfo;
+  }).join('\n\n');
+}
+
 export function ContentSection({ form, guests = [] }: ContentSectionProps) {
   // Get the current topic value for use in AI generation
   const topic = form.watch('topic') || '';
@@ -21,6 +42,9 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
   
   // Find selected guests from the full guests array
   const selectedGuests = guests.filter(g => selectedGuestIds.includes(g.id));
+
+  // Generate formatted guest notes for AI context
+  const guest_notes = formatGuestNotes(selectedGuests);
   
   return (
     <Card className="md:col-span-2">
@@ -77,6 +101,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   generationParameters={{
                     topic,
                     guests: selectedGuests,
+                    guest_notes, // Add formatted guest notes to parameters
                     episode: {
                       title: form.watch('title') || '',
                       topic
@@ -117,6 +142,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                     notes,
                     topic,
                     guests: selectedGuests,
+                    guest_notes, // Add formatted guest notes to parameters here too
                     episode: {
                       title: form.watch('title') || '',
                       topic

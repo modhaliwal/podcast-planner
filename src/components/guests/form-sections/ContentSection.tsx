@@ -15,6 +15,22 @@ interface ContentSectionProps {
 export function ContentSection({ form, guest }: ContentSectionProps) {
   // Watch the notes field to pass it to generators
   const notes = form.watch('notes') || '';
+  
+  // Format guest data for use in AI generation similar to the episode ContentSection
+  const formatGuestData = (guest?: Guest): string => {
+    if (!guest) return "No guest data available.";
+    
+    return [
+      `Name: ${guest.name || "Unnamed Guest"}`,
+      guest.title ? `Title: ${guest.title}` : '',
+      guest.company ? `Company: ${guest.company}` : '',
+      `Bio: ${guest.bio || "No bio available."}`
+    ]
+    .filter(Boolean) // Remove empty lines
+    .join('\n');
+  };
+
+  const guest_info = formatGuestData(guest);
 
   return (
     <div className="space-y-6">
