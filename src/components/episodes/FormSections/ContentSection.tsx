@@ -100,8 +100,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   generatorSlug="episode-notes-generator"
                   generationParameters={{
                     topic,
-                    guests: selectedGuests,
-                    guest_notes, // Add formatted guest notes to parameters
+                    guest_notes,
                     episode: {
                       title: form.watch('title') || '',
                       topic
@@ -141,8 +140,7 @@ export function ContentSection({ form, guests = [] }: ContentSectionProps) {
                   generationParameters={{
                     notes,
                     topic,
-                    guests: selectedGuests,
-                    guest_notes, // Add formatted guest notes to parameters here too
+                    guest_notes,
                     episode: {
                       title: form.watch('title') || '',
                       topic
