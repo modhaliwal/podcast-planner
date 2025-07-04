@@ -39,8 +39,8 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
     <Link to={`/guests/${guest.id}`} key={guest.id}>
       <Card className="p-4 hover:bg-muted/40 transition-colors">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex w-full sm:items-start">
-            <div className="flex items-start gap-3">
+          <div className="flex w-full sm:items-start min-w-0">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
               {/* Avatar section */}
               <Avatar className="h-16 w-16 shrink-0 border">
                 <AvatarImage src={guest.imageUrl} alt={guest.name} />
@@ -52,7 +52,7 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
             </div>
             
             {/* Social links section - display horizontally across the card  */}
-            <div className="ml-auto">
+            <div className="ml-auto shrink-0">
               <SocialIconsBar 
                 socialLinks={guest.socialLinks} 
                 size="sm" 

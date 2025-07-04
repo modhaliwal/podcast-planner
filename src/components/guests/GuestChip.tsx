@@ -44,17 +44,17 @@ export const GuestChip = React.memo(function GuestChip({
 
   const ChipContent = () => (
     <div className={cn(
-      "flex items-center bg-muted rounded-lg hover:bg-accent transition-colors", 
+      "flex items-center bg-muted rounded-lg hover:bg-accent transition-colors min-w-0", 
       chipSizes[size],
       className
     )}>
-      <Avatar className={cn("mr-2", avatarSizes[size])}>
+      <Avatar className={cn("mr-2 shrink-0", avatarSizes[size])}>
         <AvatarImage src={guest.imageUrl} alt={guest.name} />
         <AvatarFallback className="text-xs">
           {getGuestInitials(guest.name)}
         </AvatarFallback>
       </Avatar>
-      <span>{guest.name}</span>
+      <span className="truncate">{guest.name}</span>
     </div>
   );
 
