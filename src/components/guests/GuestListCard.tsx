@@ -2,11 +2,13 @@
 import { Guest, Episode } from "@/lib/types";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { guestStatusColors } from "@/lib/statusColors";
 import { SocialIconsBar } from "@/components/shared/SocialIconsBar";
 import { GuestInfo } from "./GuestListInfo";
 import { GuestEpisodeMiniCard } from "./GuestEpisodeMiniCard";
+import { cn } from "@/lib/utils";
 
 interface GuestCardProps {
   guest: Guest;
@@ -39,7 +41,7 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
     <Link to={`/guests/${guest.id}`} key={guest.id}>
       <Card className="p-4 hover:bg-muted/40 transition-colors">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex w-full sm:items-start min-w-0">
+          <div className="flex w-full sm:items-start min-w-0 relative">
             <div className="flex items-start gap-3 min-w-0 flex-1">
               {/* Avatar section */}
               <Avatar className="h-16 w-16 shrink-0 border">
@@ -47,16 +49,37 @@ export function GuestCard({ guest, episodes }: GuestCardProps) {
                 <AvatarFallback className="text-lg">{initials}</AvatarFallback>
               </Avatar>
               
-              {/* Guest info section */}
-              <GuestInfo guest={guest} statusColor={statusColor} />
+              {/* Guest info section with social icons below */}
+              <div className="flex-1 min-w-0 space-y-2">
+                <GuestInfo guest={guest} statusColor={statusColor} showStatus={false} />
+                <div className="max-w-full">
+                  <SocialIconsBar 
+                    socialLinks={guest.socialLinks} 
+                    size="sm" 
+                    align="start"
+                  />
+                </div>
+              </div>
             </div>
             
-            {/* Social links section - display horizontally across the card  */}
-            <div className="ml-auto shrink-0">
-              <SocialIconsBar 
-                socialLinks={guest.socialLinks} 
-                size="sm" 
-              />
+            {/* Status chip in top right */}
+            <div className="absolute top-0 right-0">
+              {guest.status && (
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "text-xs capitalize px-2 py-0.5 shrink-0",
+                    statusColor.bg,
+                    statusColor.text,
+                    statusColor.border,
+                    statusColor.darkBg,
+                    statusColor.darkText,
+                    statusColor.darkBorder
+                  )}
+                >
+                  {guest.status}
+                </Badge>
+              )}
             </div>
           </div>
           
